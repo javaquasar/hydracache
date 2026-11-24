@@ -33,16 +33,25 @@ concurrency:
 
 jobs:
   verify:
-    name: Verify published crates
+    name: Verify published crates (Rust ${{ matrix.toolchain }})
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain: [stable, '1.88.0']
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+      CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS: fallback
 
     steps:
       - name: Checkout verification fixture
         uses: actions/checkout@v5
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
 
       - name: Download publication manifest
         if: inputs.metadata_artifact != ''
@@ -52,13 +61,13 @@ jobs:
           path: target/release-publish
 
       - name: Create consumer project
-        run: cargo new hydracache-consumer --lib
+        run: cargo new --lib --edition 2021 --vcs none "$RUNNER_TEMP/hydracache-consumer"
 
       - name: Create dependency-order smoke project
-        run: cargo new hydracache-order-smoke --lib
+        run: cargo new --lib --edition 2021 --vcs none "$RUNNER_TEMP/hydracache-order-smoke"
 
       - name: Add published dependencies in package order
-        working-directory: hydracache-order-smoke
+        working-directory: ${{ runner.temp }}/hydracache-order-smoke
         run: |
           set -euo pipefail
           manifest="$GITHUB_WORKSPACE/target/release-publish/packages.txt"
@@ -80,12 +89,12 @@ jobs:
           fi
           for package in "${packages[@]}"; do
             [[ -z "$package" ]] && continue
-            cargo add "$package@${{ inputs.version }}"
+            cargo add "$package@=$RELEASE_VERSION"
             cargo check
           done
 
       - name: Add published dependencies
-        working-directory: hydracache-consumer
+        working-directory: ${{ runner.temp }}/hydracache-consumer
         run: |
           set -euo pipefail
           manifest="$GITHUB_WORKSPACE/target/release-publish/packages.txt"
@@ -107,7 +116,7 @@ jobs:
           fi
           for package in "${packages[@]}"; do
             [[ -z "$package" ]] && continue
-            cargo add "$package@${{ inputs.version }}"
+            cargo add "$package@=$RELEASE_VERSION"
           done
           cargo add serde --features derive
           cargo add serde_json --dev
@@ -115,19 +124,84 @@ jobs:
 
       - name: Install smoke test fixture
         timeout-minutes: 15
-        working-directory: hydracache-consumer
+        working-directory: ${{ runner.temp }}/hydracache-consumer
         run: cp "$GITHUB_WORKSPACE/tests/post-publish-consumer/src/lib.rs" src/lib.rs
 
+      - name: Add the 0.74.1 shared SQLite check
+        if: inputs.version == '0.74.1'
+        working-directory: ${{ runner.temp }}/hydracache-consumer
+        run: |
+          set -euo pipefail
+          cargo add 'diesel@=2.4.0' --no-default-features --features sqlite
+          cargo add 'libsqlite3-sys@=0.40.0' --features bundled
+          mkdir -p tests
+          cp "$GITHUB_WORKSPACE/tests/post-publish-consumer/fixtures/sqlite.rs" tests/sqlite.rs
+
       - name: Check published consumer
-        working-directory: hydracache-consumer
+        working-directory: ${{ runner.temp }}/hydracache-consumer
         run: cargo check
 
       - name: Test published consumer
-        working-directory: hydracache-consumer
-        run: cargo test
+        working-directory: ${{ runner.temp }}/hydracache-consumer
+        run: cargo test --locked
 
       - name: Build published docs
-        working-directory: hydracache-consumer
+        working-directory: ${{ runner.temp }}/hydracache-consumer
         env:
           RUSTDOCFLAGS: -D warnings
-        run: cargo doc --no-deps
+        run: cargo doc --no-deps --locked
+
+      - name: Install the published server on Rust 1.88
+        if: inputs.version == '0.74.1' && matrix.toolchain == '1.88.0'
+        working-directory: ${{ runner.temp }}/hydracache-consumer
+        run: |
+          set -euo pipefail
+          install_root="$RUNNER_TEMP/hydracache-install"
+          cargo install --locked --registry crates-io hydracache-server \
+            --version "=$RELEASE_VERSION" --root "$install_root"
+          test -x "$install_root/bin/hydracache-server"
+          cargo install --list --root "$install_root"
+
+      - name: Audit the public consumer and server lockfiles without exceptions
+        if: inputs.version == '0.74.1' && matrix.toolchain == '1.88.0'
+        working-directory: ${{ runner.temp }}/hydracache-consumer
+        run: |
+          set -euo pipefail
+          rustup toolchain install stable --profile minimal
+          cargo +stable install cargo-audit --version 0.22.2 --locked
+          advisory_db="$RUNNER_TEMP/rustsec-advisory-db"
+          git clone --depth 1 https://github.com/RustSec/advisory-db.git "$advisory_db"
+          git -C "$advisory_db" rev-parse HEAD
+          name="hydracache-server-$RELEASE_VERSION"
+          archive="$RUNNER_TEMP/$name.crate"
+          curl --fail --silent --show-error --retry 3 \
+            "https://static.crates.io/crates/hydracache-server/$name.crate" --output "$archive"
+          python3 - "$archive" "$RELEASE_VERSION" <<'PY'
+          from hashlib import file_digest
+          from pathlib import Path
+          import sys
+          import tomllib
+
+          archive, version = Path(sys.argv[1]), sys.argv[2]
+          with Path("Cargo.lock").open("rb") as lock:
+              entry, = (row for row in tomllib.load(lock)["package"]
+                        if row["name"] == "hydracache-server" and row["version"] == version)
+          if entry.get("source") != "registry+https://github.com/rust-lang/crates.io-index":
+              raise SystemExit("The locked server must come from crates.io")
+          with archive.open("rb") as stream:
+              if file_digest(stream, "sha256").hexdigest() != entry["checksum"]:
+                  raise SystemExit("The downloaded archive differs from the consumer lockfile")
+          PY
+          tar -xOzf "$archive" "$name/Cargo.lock" > "$RUNNER_TEMP/server.Cargo.lock"
+          for lock in Cargo.lock "$RUNNER_TEMP/server.Cargo.lock"; do
+            cargo audit --db "$advisory_db" --no-fetch --deny warnings --json -f "$lock" > audit.json
+            python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path("audit.json").read_text())
+          if report["settings"]["ignore"] or report["vulnerabilities"]["count"] or report["warnings"]:
+              raise SystemExit("RustSec requires zero findings, warnings and exceptions")
+          print(f'Audited {report["lockfile"]["dependency-count"]} dependencies')
+          PY
+          done
