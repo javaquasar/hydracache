@@ -1,4 +1,4 @@
-# TD-0015: Demo fidelity gaps (per-node commit, send-time drops, push delivery timing)
+# TD-0015: Demo fidelity gaps (per-node applied writes, send-time drops, push delivery timing)
 
 ## Status
 
@@ -16,17 +16,25 @@ record keeps the ideas that would close the gaps.
 
 ## The Three Gaps
 
-### 1. Commit progress is cluster-wide, not per node
+### 1. Per-node progress is not reported (only a cluster-wide count)
 
 `SimWorld` builds every `NodeView` with the same cluster-wide `committed_entries` for both
 `commit_index` and `applied_index` (`crates/hydracache-sim/src/world.rs`, the `node_view` calls;
 `crates/hydracache-sim/src/snapshot.rs`). A crashed node's `commit_index` keeps rising with the
 cluster. The demo therefore shows per-node lag as **replica agreement** (sampled keys whose
-stored version matches the live majority), not as commit progress.
+stored version matches the live majority).
 
-Idea: expose each node's own committed / applied position from its runtime state in
-`NodeView`, then draw the bar under a node as its commit index against the leader's, with
-agreement kept as a second signal.
+There is no per-node commit position to expose: the product `ClusterNode` replicates without a
+log (the writer stores locally and broadcasts `ReplicatePut` with its own sequence; followers
+apply what arrives), so "commit index of a node" exists neither in the product nor in the
+simulator. The honest per-node measure is **writes applied on the node**.
+
+Idea: count the write, invalidate and flush operations each node applies in
+`SimWorld::drain_node_effects` (where the simulator applies every node's storage requests),
+carry the count over when `catch_up_node` copies state to a restarted node, and report it in a
+new `NodeView` field (for example `applied_writes`), leaving `commit_index` / `applied_index`
+unchanged. The demo then draws the bar under a node as writes applied on it against the
+leader's, with replica agreement kept as a second signal.
 
 ### 2. Messages dropped at send time are invisible
 
@@ -73,9 +81,8 @@ Any of:
 
 ## Definition Of Done
 
-1. `NodeView` carries each node's own commit and applied positions; the demo bar shows commit
-   progress against the leader; tests cover a crashed node falling behind and catching up after
-   restart.
+1. `NodeView` carries the writes applied on each node; the demo bar shows them against the
+   leader's; tests cover a crashed node falling behind and catching up after restart.
 2. `LinkView` carries per-cause drop counters; a partitioned link with traffic shows rising
    send-time drops in the snapshot and a loss marker in the demo; tests cover each cause.
 3. Push flashes follow engine delivery (engine record or per-step settle); a test asserts the

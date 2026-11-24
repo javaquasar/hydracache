@@ -127,8 +127,8 @@ guarantee.
   convenience so a paused cluster visibly reacts; the engine has no such
   self-advancing clock.
 
-Three of these gaps have recorded ideas for closing them (per-node commit
-positions, send-time drop counters, push flashes timed to engine delivery):
+Three of these gaps have recorded ideas for closing them (writes applied
+per node, send-time drop counters, push flashes timed to engine delivery):
 [TD-0015](../docs/technical-debt/TD-0015-demo-fidelity-gaps.md).
 
 ### Not represented at all — the production stack
