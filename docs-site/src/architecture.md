@@ -30,6 +30,6 @@ The bus propagates intent, not values. This keeps distributed behavior local-fir
 
 ## Cluster Flow
 
-Client/member cluster mode adds role, node id, generation, membership, ownership, and peer-fetch vocabulary. It does not turn HydraCache into a production data grid by itself.
+Client/member cluster mode adds roles, node ids, generations, membership, and deterministic ownership. On top of that, opt-in crates provide chitchat discovery, a raft-rs metadata control plane with a durable log, HTTP peer fetch and owner load, and external invalidation transports over Redis or NATS. The grid layer adds replicated values with backups, per-operation consistency levels, online resharding, checkpoints, and multi-region links.
 
-Use cluster APIs when the application needs stable membership diagnostics or a future route toward owner-based peer reads. Keep local cache semantics visible even when multiple processes participate.
+None of this is required for the embedded case: an application that only needs a local or query-result cache does not pull in cluster dependencies, and local cache semantics stay visible when several processes participate. See [Client and Member Cluster](guides/client-member-cluster.md) for the support boundary.
