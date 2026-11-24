@@ -53,6 +53,11 @@
       "title": "Optimization Starts With Measurement: Reading Allocations, RSS, and Runtime Together",
       "file": "007-optimization-starts-with-measurement.md",
       "status": "draft"
+    },
+    {
+      "title": "Why a Rust Binary Can Ship Before Its Crate",
+      "file": "010-why-a-rust-binary-can-ship-before-its-crate.md",
+      "status": "draft"
     }
   ]
 }
