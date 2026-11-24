@@ -63,6 +63,10 @@ const graphSim = {
   tallies: new Map(),
   // Nodes back from a crash or a disable that still lag the live majority.
   recovering: new Set(),
+  // When a push's data-flow pulse reaches each vertex (performance.now()
+  // time), and flashes waiting for that moment.
+  pulseArrivals: new Map(),
+  pendingFlashes: new Map(),
   pulses: [],
   interactionsBound: false,
 };
@@ -87,6 +91,8 @@ export function resetGraph() {
   graphSim.overlays = [];
   graphSim.tallies = new Map();
   graphSim.recovering = new Set();
+  graphSim.pulseArrivals = new Map();
+  graphSim.pendingFlashes = new Map();
 }
 
 const VIEW_BOX = { width: 800, height: 520 };
@@ -465,6 +471,29 @@ function markCrashAndRecovery(group, node, status, shown, behind) {
   if (!reducedMotion()) restartClass(group, "synced");
 }
 
+// A change a push caused shows when the push's message reaches the vertex
+// (the data-flow pulse), not when the engine already holds it: the entry node
+// flashes first, then each replica, then the subscribers. Without a pulse in
+// flight (reduced motion, or a change of another cause) it flashes at once.
+function flashWhenReached(id, group, name) {
+  const at = graphSim.pulseArrivals.get(id);
+  if (at !== undefined && at > performance.now()) {
+    graphSim.pendingFlashes.set(id, { at, group, name });
+    return;
+  }
+  restartClass(group, name);
+}
+
+function applyDueFlashes(now) {
+  for (const [id, flash] of graphSim.pendingFlashes) {
+    if (now < flash.at) continue;
+    graphSim.pendingFlashes.delete(id);
+    graphSim.pulseArrivals.delete(id);
+    // The vertex may have been rebuilt since; flash the current one.
+    restartClass(graphSim.dom?.vertices.get(id)?.group ?? flash.group, flash.name);
+  }
+}
+
 function restartClass(element, name) {
   element.classList.remove(name);
   void element.getBoundingClientRect();
@@ -525,9 +554,7 @@ function applyNodeVisual(item, node, marks, snapshot) {
       .join(" "),
   );
   if (marks.changed.has(node.id)) {
-    // Restart the flash even when the node also changed on the last step.
-    void item.group.getBoundingClientRect();
-    item.group.classList.add("changed");
+    flashWhenReached(node.id, item.group, "changed");
   }
   if (graphSim.tallies.has(node.id)) item.group.classList.add("campaigning");
   // A re-render must not reveal the badge while the baton is still flying.
@@ -889,6 +916,7 @@ function paintGraph(now) {
   }
   updatePulses(now);
   applyDueNodes(now);
+  applyDueFlashes(now);
   updateRoleOverlays(now);
   host.onPaint?.();
 }
@@ -1093,18 +1121,20 @@ function updatePulses(now) {
   graphSim.pulses = remaining;
 }
 
-export function playDataFlowPulse(clientId, namespace) {
-  if (!graphSim.dom || !host.getSnapshot()) {
+// `snapshot` defaults to the one on screen; a first push by a new writer
+// passes the snapshot taken right after the push, where the writer exists
+// (it has no vertex yet, so the pulse starts at its entry node).
+export function playDataFlowPulse(clientId, namespace, snapshot = host?.getSnapshot()) {
+  if (!graphSim.dom || !snapshot) {
     return;
   }
   if (document.documentElement.dataset.reducedMotion === "true") {
     return;
   }
-  const snapshot = host.getSnapshot();
   const clientVertexId = `client:${clientId}`;
   const client = (snapshot.clients || []).find((c) => c.id === clientId);
   const entryNode = client?.connected_node;
-  if (!entryNode || !graphSim.pos.has(clientVertexId)) {
+  if (!entryNode || !graphSim.pos.has(entryNode)) {
     return;
   }
   const peers = (snapshot.nodes || [])
@@ -1137,7 +1167,17 @@ export function playDataFlowPulse(clientId, namespace) {
   if (movers.length === 0) {
     return;
   }
-  graphSim.pulses.push({ t0: performance.now(), movers });
+  const t0 = performance.now();
+  graphSim.pulses.push({ t0, movers });
+  // Each vertex lights up when the message reaches it (flashWhenReached).
+  for (const mover of movers) {
+    const at = t0 + mover.startMs + mover.durMs;
+    graphSim.pulseArrivals.set(mover.toId, Math.max(graphSim.pulseArrivals.get(mover.toId) ?? 0, at));
+    if (mover.toId.startsWith("sub:")) {
+      const group = graphSim.dom.vertices.get(mover.toId)?.group;
+      if (group) graphSim.pendingFlashes.set(mover.toId, { at, group, name: "received" });
+    }
+  }
   startGraphSim();
 }
 
@@ -1152,6 +1192,7 @@ function startGraphSim() {
       graphSim.packets.length > 0 ||
       graphSim.pulses.length > 0 ||
       graphSim.pendingNodes.size > 0 ||
+      graphSim.pendingFlashes.size > 0 ||
       graphSim.overlays.length > 0 ||
       energy > 0.05 ||
       fitError > 0.5;

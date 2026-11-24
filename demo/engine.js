@@ -43,6 +43,10 @@ export class WasmSimSession {
     this.handle.unsubscribe(client, namespace);
   }
 
+  async remove_client(client) {
+    this.handle.remove_client(client);
+  }
+
   async push_event(client, namespace, key, value) {
     return this.handle.push_event(client, namespace, key, value);
   }
@@ -132,6 +136,10 @@ export class ServerSimSession {
 
   async unsubscribe(client, ns) {
     this.snapshot = await this.post("/sim/inject", { action: "unsubscribe", client, ns });
+  }
+
+  async remove_client(client) {
+    this.snapshot = await this.post("/sim/inject", { action: "remove_client", client });
   }
 
   async push_event(client, ns, key, value) {

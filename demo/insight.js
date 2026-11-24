@@ -129,6 +129,8 @@ export function describeAction(action) {
       return `unsubscribe ${action.client}@${action.ns}`;
     case "add_client":
       return `add writer ${action.client} on ${action.ns}`;
+    case "remove_client":
+      return `remove writer ${action.client}`;
     case "push_event":
       return `push ${action.ns}/${action.key} from ${action.client}`;
     case "mode_change":

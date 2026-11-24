@@ -1206,9 +1206,56 @@ test("writers_and_subscribers_are_managed_separately", async ({ page }) => {
   await expect(page.locator(".vertex.subscriber")).toHaveCount(0);
   await expect(page.locator(".namespace-flow")).toHaveCount(0);
 
+  // A writer can be removed; the timeline records it.
+  await page.getByTestId("remove-client-a").click();
+  await expect(writers).not.toContainText("client-a");
+  await expect(page.locator(".vertex.client")).toHaveCount(0);
+  await expect(page.getByTestId("events-panel")).toContainText("remove writer client-a");
+
   // Namespaces in use are offered in the namespace fields.
   await page.getByTestId("manual-client").fill("client-c");
   await page.getByTestId("manual-ns").fill("orders");
   await page.getByTestId("add-client-button").click();
   await expect(page.locator("#namespace-options option[value='orders']")).toHaveCount(1);
+});
+
+// A push lights each vertex up when its message gets there: the entry node
+// when the request arrives, the replicas after it, the subscriber last.
+test("push_flashes_vertices_as_the_message_reaches_them", async ({ page }) => {
+  await openReady(page);
+  await page.getByTestId("tab-clients").click();
+  await page.getByTestId("add-client-button").click();
+  await page.getByTestId("subscribe-button").click();
+  await expect(page.locator(".vertex.subscriber")).toHaveCount(1);
+  await page.waitForTimeout(2000);
+  await page.evaluate(() => {
+    window.__flashes = {};
+    window.__t0 = performance.now();
+    new MutationObserver((records) => {
+      for (const record of records) {
+        const vertex = record.target;
+        const name = (vertex.getAttribute("aria-label") || "").split(/[ ,]/)[0];
+        const cls = vertex.getAttribute("class") || "";
+        for (const flash of ["changed", "received"]) {
+          if (cls.includes(flash) && window.__flashes[name] === undefined) {
+            window.__flashes[name] = performance.now() - window.__t0;
+          }
+        }
+      }
+    }).observe(document.querySelector("#cluster-graph"), { attributes: true, attributeFilter: ["class"], subtree: true });
+  });
+  await page.getByTestId("push-client-a").click();
+  await expect
+    .poll(() => page.evaluate(() => Object.keys(window.__flashes).length), { timeout: 5000 })
+    .toBeGreaterThanOrEqual(4);
+  const flashes = await page.evaluate(() => window.__flashes);
+  const entry = await page.evaluate(() =>
+    document.querySelector("[data-client='client-a'] .entity-meta").textContent.split("via ")[1].trim(),
+  );
+  const replicas = Object.entries(flashes).filter(([name]) => name.startsWith("node-") && name !== entry);
+  // The request travels before the entry node flashes; replicas follow it,
+  // and the subscriber hears about it last.
+  expect(flashes[entry]).toBeGreaterThan(300);
+  for (const [, at] of replicas) expect(at).toBeGreaterThan(flashes[entry]);
+  expect(flashes["reader-1"]).toBeGreaterThan(Math.max(...replicas.map(([, at]) => at)));
 });

@@ -2272,6 +2272,27 @@ dd.changed,
   border-radius: 6px;
 }
 
+/* A subscriber flashes when the pushed event reaches it. */
+.vertex.entity.received circle {
+  animation: entity-received 900ms ease-out;
+}
+
+@keyframes entity-received {
+  0% {
+    stroke-width: 7;
+    fill: color-mix(in srgb, var(--event) 30%, var(--surface));
+  }
+
+  100% {
+    stroke-width: 2.5;
+  }
+}
+
+.entity-actions {
+  display: flex;
+  gap: 6px;
+}
+
 .vertex.node.changed {
   animation: hc-node-flash 1.4s ease-out;
 }

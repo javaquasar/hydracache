@@ -815,7 +815,22 @@ function renderClients(snapshot) {
     push.setAttribute("data-testid", `push-${client.id}`);
     push.setAttribute("aria-label", `Push ${el.manualKey.value || "the key"} as ${client.id} to ${client.namespace}`);
     push.addEventListener("click", () => void runAction(() => pushEventFor(client.id, client.namespace)));
-    row.append(push);
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "ghost";
+    remove.textContent = "Remove";
+    remove.setAttribute("data-testid", `remove-${client.id}`);
+    remove.setAttribute("aria-label", `Remove writer ${client.id}`);
+    remove.addEventListener("click", () =>
+      void runAction(async () => {
+        await state.sim?.remove_client(client.id);
+        await refresh();
+      }),
+    );
+    const actions = document.createElement("div");
+    actions.className = "entity-actions";
+    actions.append(push, remove);
+    row.append(actions);
     clients.append(row);
   }
   if (!clients.childElementCount) {
@@ -1474,8 +1489,7 @@ async function runTourAction(action) {
       await settleAfterIntervention();
       break;
     case "push":
-      playDataFlowPulse(action.client, action.ns);
-      await state.sim.push_event(action.client, action.ns, action.key, action.value);
+      await pushWithPulse(action.client, action.ns, action.key, action.value);
       await settleAfterIntervention();
       break;
     default:
@@ -1581,12 +1595,20 @@ async function pushEventFor(client, namespace) {
   if (!state.sim) {
     return;
   }
-  // Start the visual data-flow before the engine call so the request is seen
-  // travelling into the cluster while the push commits and replicates.
-  playDataFlowPulse(client, namespace);
-  await state.sim.push_event(client, namespace, el.manualKey.value, el.manualValue.value);
+  await pushWithPulse(client, namespace, el.manualKey.value, el.manualValue.value);
   await settleAfterIntervention();
   await refresh();
+}
+
+// Push and show its data flow. For a known writer the pulse starts before the
+// engine call, so the request is seen travelling in while it commits; a first
+// push by a new writer creates it, so its pulse starts right after the push.
+// Graph vertices flash as the pulse reaches them (graph.js flashWhenReached).
+async function pushWithPulse(client, namespace, key, value) {
+  const known = (state.snapshot?.clients || []).some((entry) => entry.id === client);
+  if (known) playDataFlowPulse(client, namespace);
+  await state.sim.push_event(client, namespace, key, value);
+  if (!known) playDataFlowPulse(client, namespace, JSON.parse(await state.sim.snapshot_json()));
 }
 
 async function settleAfterIntervention() {
