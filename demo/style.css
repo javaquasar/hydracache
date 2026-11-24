@@ -1375,6 +1375,19 @@ dd {
   overflow-wrap: anywhere;
 }
 
+/* Graph labels are pictures of engine state, not text to select; a drag on
+   the graph also suppresses selection on the page (graph.js). */
+#cluster-graph {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+html.graph-dragging,
+html.graph-dragging * {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
 .vertex {
   cursor: grab;
 }

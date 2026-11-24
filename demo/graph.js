@@ -1223,6 +1223,7 @@ function bindVertexDrag(group, vertex) {
     const start = { x: event.clientX, y: event.clientY };
     p.fixed = true;
     graphSim.drag = { id: vertex.id };
+    holdTextSelection(true);
     startGraphSim();
     capturePointer(group, event.pointerId);
 
@@ -1243,6 +1244,7 @@ function bindVertexDrag(group, vertex) {
       finished = true;
       p.fixed = false;
       graphSim.drag = null;
+      holdTextSelection(false);
       if (group.hasPointerCapture?.(ev.pointerId)) group.releasePointerCapture(ev.pointerId);
       group.removeEventListener("pointermove", move);
       group.removeEventListener("pointerup", up);
@@ -1268,6 +1270,14 @@ function bindVertexDrag(group, vertex) {
   });
 }
 
+// A drag on the graph must not select text (node labels, or page text the
+// pointer passes over): drop any selection it started and suppress selection
+// on the whole page until the drag ends (CSS: html.graph-dragging).
+function holdTextSelection(on) {
+  document.documentElement.classList.toggle("graph-dragging", on);
+  if (on) window.getSelection?.()?.removeAllRanges();
+}
+
 // Capture can fail for a pointer the browser no longer tracks; dragging still
 // works through the element's own listeners, so this is not an error.
 function capturePointer(target, pointerId) {
@@ -1289,6 +1299,7 @@ function bindGraphInteractions() {
     const sy = ctm && ctm.d ? ctm.d : 1;
     const start = { x: event.clientX, y: event.clientY, tx: graphSim.view.tx, ty: graphSim.view.ty };
     graphSim.drag = { pan: true };
+    holdTextSelection(true);
     capturePointer(host.svg, event.pointerId);
     // A plain click (e.g. to dismiss a popover) is not a pan: the view stays
     // fitted until the pointer really moves, so the cluster keeps re-centring
@@ -1314,6 +1325,7 @@ function bindGraphInteractions() {
       if (finished) return;
       finished = true;
       graphSim.drag = null;
+      holdTextSelection(false);
       if (host.svg.hasPointerCapture?.(ev.pointerId)) host.svg.releasePointerCapture(ev.pointerId);
       host.svg.removeEventListener("pointermove", move);
       host.svg.removeEventListener("pointerup", up);

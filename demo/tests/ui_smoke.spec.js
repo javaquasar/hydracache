@@ -1259,3 +1259,25 @@ test("push_flashes_vertices_as_the_message_reaches_them", async ({ page }) => {
   for (const [, at] of replicas) expect(at).toBeGreaterThan(flashes[entry]);
   expect(flashes["reader-1"]).toBeGreaterThan(Math.max(...replicas.map(([, at]) => at)));
 });
+
+// Dragging a node or panning the canvas never selects text (the labels, or
+// page text the pointer crosses); ordinary page text stays selectable.
+test("graph_drags_do_not_select_text", async ({ page }) => {
+  await openReady(page);
+  await page.locator("#cluster-graph").scrollIntoViewIfNeeded();
+  const drag = async (locator, dx, dy) => {
+    const box = await locator.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + dx, box.y + box.height / 2 + dy, { steps: 10 });
+    const during = await page.evaluate(() => window.getSelection().toString());
+    await page.mouse.up();
+    return [during, await page.evaluate(() => window.getSelection().toString())];
+  };
+  expect(await drag(page.locator(".vertex.node .v-id").first(), 120, 400)).toEqual(["", ""]);
+  expect(await drag(page.locator("#cluster-graph"), -150, 0)).toEqual(["", ""]);
+  await expect(page.locator("html")).not.toHaveClass(/graph-dragging/);
+
+  await page.getByTestId("guide-text").click({ clickCount: 3 });
+  expect(await page.evaluate(() => window.getSelection().toString())).toContain("three-node cluster");
+});
