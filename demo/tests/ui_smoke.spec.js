@@ -955,3 +955,76 @@ test("reduced_motion_applies_roles_at_once_without_overlays", async ({ page }) =
   await expect(page.locator(".vertex.node.role-leader")).toHaveCount(1);
   await expect(page.locator(".leader-baton")).toHaveCount(0);
 });
+
+// Node badges draw their own icons where a font glyph is unreliable, and each
+// node shows on how many sampled keys it holds the live majority's version.
+test("node_badges_and_replica_agreement", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=80&steps=12&scenario=default`);
+  await expect(page.getByTestId("timeline-label")).toHaveText("step 12 of 12");
+  const node = (id) => page.locator(`.vertex.node[aria-label^="${id},"]`);
+  const rows = page.getByTestId("nodes-panel");
+  await expect(node("node-0").locator(".v-progress")).toHaveAttribute("data-agree", /^(\d+)\/\1$/);
+
+  await rows.getByRole("button", { name: "Crash" }).nth(2).click();
+  await expect(node("node-2")).toHaveClass(/role-crashed/);
+  await expect(node("node-2").locator(".v-badge text")).toHaveText("✕");
+  // The crashed node stops applying writes; the others move on, so it lags.
+  await page.getByTestId("step").click();
+  await page.getByTestId("step").click();
+  await expect(node("node-2").locator(".v-progress")).toHaveClass(/behind/);
+
+  await rows.getByRole("button", { name: "Disable" }).nth(1).click();
+  await expect(node("node-1")).toHaveClass(/role-disabled/);
+  await expect(node("node-1").locator(".v-badge text")).toHaveText("");
+  await expect(node("node-1").locator(".v-icon")).toHaveAttribute("d", /^M/);
+});
+
+test("link_labels_are_pills_and_delay_shows_its_time", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=80&steps=12&scenario=default`);
+  await expect(page.getByTestId("timeline-label")).toHaveText("step 12 of 12");
+  const link = async (value, action) => {
+    await page.getByTestId("link-select").selectOption(value);
+    await page.getByTestId(`${action}-link`).click();
+  };
+  await link("node-0>node-1", "partition");
+  await link("node-0>node-2", "delay");
+  await expect(page.locator(".link-label.partitioned .link-text")).toHaveText("partitioned");
+  await expect(page.locator(".link-label.delayed .link-text")).toHaveText(/^delayed · \d+ ms$/);
+  const pills = page.locator(".link-label:not(.up) .link-pill");
+  await expect(pills).toHaveCount(2);
+  for (const width of await pills.evaluateAll((rects) => rects.map((rect) => Number(rect.getAttribute("width"))))) {
+    expect(width).toBeGreaterThan(40);
+  }
+});
+
+test("legend_folds_and_remembers_the_choice", async ({ page }, testInfo) => {
+  await openReady(page);
+  const legend = page.getByTestId("graph-legend");
+  const mobile = testInfo.project.name.startsWith("mobile");
+  // Open on wide screens, folded on narrow ones.
+  expect(await legend.evaluate((details) => details.open)).toBe(!mobile);
+  if (!mobile) {
+    // The fit keeps the cluster clear of the open legend overlay.
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const box = document.querySelector(".graph-legend").getBoundingClientRect();
+          return [...document.querySelectorAll(".vertex.node .v-body")].some((node) => {
+            const rect = node.getBoundingClientRect();
+            return rect.bottom > box.top && rect.left < box.right && rect.right > box.left;
+          });
+        }),
+      )
+      .toBe(false);
+  }
+  await page.getByTestId("legend-toggle").click();
+  expect(await legend.evaluate((details) => details.open)).toBe(mobile);
+  // The <details> toggle event (which stores the choice) is asynchronous.
+  await expect
+    .poll(() => page.evaluate(() => window.localStorage.getItem("hydracache-demo-legend")))
+    .toBe(mobile ? "open" : "closed");
+  await page.reload();
+  await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
+  expect(await legend.evaluate((details) => details.open)).toBe(mobile);
+  await expect(legend).toContainText("heartbeat");
+});

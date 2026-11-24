@@ -10,6 +10,7 @@ import { SCENARIOS } from "./scenarios.js";
 import { ServerSimSession, WasmSimSession } from "./engine.js";
 import {
   fitGraph,
+  refreshGraphFit,
   initGraph,
   playDataFlowPulse,
   resetGraph,
@@ -189,6 +190,7 @@ async function boot() {
   bindPreferenceState();
   bindTheme();
   bindIntro();
+  bindLegend();
   buildNodePopover();
   bindTabs();
   bindDock();
@@ -1856,6 +1858,31 @@ function positionNodePopover() {
 // First-visit introduction: three pointers, dismissed once, reopened with "?".
 // ---------------------------------------------------------------------------
 const INTRO_KEY = "hydracache-demo-intro-seen";
+
+// The graph legend folds into one "Legend" button. Open by default on wide
+// screens, folded on narrow ones; a viewer's own choice is remembered (a
+// per-viewer convenience, so storage failures just fall back to the default).
+const LEGEND_KEY = "hydracache-demo-legend";
+
+function bindLegend() {
+  const legend = document.querySelector(".graph-legend");
+  if (!legend) return;
+  let stored = null;
+  try {
+    stored = window.localStorage.getItem(LEGEND_KEY);
+  } catch {
+    stored = null;
+  }
+  legend.open = stored ? stored === "open" : window.matchMedia("(min-width: 901px)").matches;
+  legend.addEventListener("toggle", () => {
+    try {
+      window.localStorage.setItem(LEGEND_KEY, legend.open ? "open" : "closed");
+    } catch {
+      // Storage blocked: the choice lasts for this page only.
+    }
+    refreshGraphFit();
+  });
+}
 
 function bindIntro() {
   let seen = false;

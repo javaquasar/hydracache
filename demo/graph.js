@@ -1,7 +1,7 @@
 // Force-directed cluster graph (presentation only: positions carry no engine
 // meaning). The page passes in its SVG element and a few hooks; the graph
 // never reads page state directly.
-import { nodeStatus } from "./insight.js";
+import { keyAgreement, nodeStatus } from "./insight.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -100,6 +100,28 @@ function overlaysOnCanvas() {
   return !legend || getComputedStyle(legend).position === "absolute";
 }
 
+// Keep the cluster clear of the legend overlay: measure where the legend's top
+// edge falls in viewBox units (the SVG letterboxes the 800x520 viewBox), so a
+// tall legend or a short canvas still leaves the nodes uncovered. A folded
+// legend is one small button.
+function fitInsets() {
+  if (!overlaysOnCanvas()) return FIT_INSETS_COMPACT;
+  const legend = host?.svg.parentElement?.querySelector(".graph-legend");
+  const frame = host?.svg.getBoundingClientRect();
+  if (!legend || !frame || frame.height === 0) return FIT_INSETS;
+  const box = legend.getBoundingClientRect();
+  if (box.height === 0) return FIT_INSETS;
+  const k = Math.min(frame.width / VIEW_BOX.width, frame.height / VIEW_BOX.height);
+  const top = frame.top + (frame.height - VIEW_BOX.height * k) / 2;
+  const legendTop = (box.top - top) / k;
+  return { ...FIT_INSETS, bottom: Math.max(36, Math.min(VIEW_BOX.height * 0.45, VIEW_BOX.height - legendTop + 10)) };
+}
+
+/** Re-run the fit (e.g. after an overlay changed size) without forcing it on. */
+export function refreshGraphFit() {
+  startGraphSim();
+}
+
 // Every change of the fit mode goes through here so the app can show it (the
 // Fit button reads "pressed" while the view follows the cluster).
 function setAutoFit(value) {
@@ -148,7 +170,7 @@ function fitTarget() {
     maxY = Math.max(maxY, p.y + r);
   }
   const overlays = overlaysOnCanvas();
-  const insets = overlays ? FIT_INSETS : FIT_INSETS_COMPACT;
+  const insets = fitInsets();
   const maxScale = overlays ? FIT_LIMITS.max : FIT_LIMITS.maxCompact;
   const box = {
     x: insets.left,
@@ -204,7 +226,8 @@ export function syncGraph(snapshot) {
     if (drawnPairs.has(key)) continue;
     drawnPairs.add(key);
     const reverse = (snapshot.links || []).find((o) => o.from === link.to && o.to === link.from);
-    edges.push({ a: link.from, b: link.to, kind: "node", state: worstLinkState(link.state, reverse?.state), from: link.from, to: link.to });
+    const delay = Math.max(Number(link.delay_millis) || 0, Number(reverse?.delay_millis) || 0);
+    edges.push({ a: link.from, b: link.to, kind: "node", state: worstLinkState(link.state, reverse?.state), delay, from: link.from, to: link.to });
   }
   for (const c of clients) {
     if (c.connected_node) edges.push({ a: c.connected_node, b: `client:${c.id}`, kind: "entity", active: Boolean(c.last_op) });
@@ -281,7 +304,9 @@ function buildGraphDom(snapshot) {
   for (const edge of graphSim.edges) {
     if (edge.kind === "node") {
       const visual = svg("line", { class: "link" });
-      const label = svg("text", { class: "link-label" });
+      // A pill behind the text keeps the label readable over lines and packets.
+      const label = svg("g", { class: "link-label" });
+      label.append(svg("rect", { class: "link-pill", rx: 9 }), svg("text", { class: "link-text", y: 4 }));
       // The wide invisible hit line is also the keyboard target for the link.
       const hit = svg("line", { class: "link-hit", tabindex: 0, role: "button" });
       hit.addEventListener("click", (event) => {
@@ -307,13 +332,21 @@ function buildGraphDom(snapshot) {
         transform: `translate(${GRAPH.nodeRadius * 0.72} ${-GRAPH.nodeRadius * 0.72})`,
         "aria-hidden": "true",
       });
-      badge.append(svg("circle", { r: 13 }), svg("text", { y: 5 }));
+      // Glyph for most roles; a drawn icon where fonts are unreliable.
+      badge.append(svg("circle", { r: 13 }), svg("text", { y: 5 }), svg("path", { class: "v-icon" }));
+      // Commit progress against the furthest node (the leader in steady state).
+      const progress = svg("g", { class: "v-progress", transform: "translate(-20 27)", "aria-hidden": "true" });
+      progress.append(
+        svg("rect", { class: "v-progress-track", width: 40, height: 4, rx: 2 }),
+        svg("rect", { class: "v-progress-fill", width: 0, height: 4, rx: 2 }),
+      );
       group.append(
         // Pulses around a campaigning candidate (CSS shows it for that role).
         svg("circle", { class: "v-ring", r: GRAPH.nodeRadius + 9 }),
         svg("circle", { class: "v-body", r: GRAPH.nodeRadius }),
         svg("text", { class: "v-id", y: -5 }),
         svg("text", { class: "v-sub", y: 17 }),
+        progress,
         badge,
       );
     } else {
@@ -394,6 +427,26 @@ function reducedMotion() {
   return document.documentElement.dataset.reducedMotion === "true";
 }
 
+// Per-node replica agreement, computed once per snapshot.
+let agreementCache = { snapshot: null, byNode: new Map() };
+
+function replicaAgreement(snapshot, nodeId) {
+  if (agreementCache.snapshot !== snapshot) {
+    const byNode = new Map();
+    for (const key of keyAgreement(snapshot).keys) {
+      for (const cell of key.cells) {
+        if (cell.version === null) continue;
+        const entry = byNode.get(cell.node) ?? { agreeing: 0, sampled: 0 };
+        entry.sampled += 1;
+        if (cell.version === key.majority) entry.agreeing += 1;
+        byNode.set(cell.node, entry);
+      }
+    }
+    agreementCache = { snapshot, byNode };
+  }
+  return agreementCache.byNode.get(nodeId) ?? { agreeing: 0, sampled: 0 };
+}
+
 // What a node looks like for one snapshot: role class, labels and name.
 function applyNodeVisual(item, node, marks, snapshot) {
   const status = nodeStatus(node);
@@ -429,7 +482,19 @@ function applyNodeVisual(item, node, marks, snapshot) {
   // with "id, status", matches the visible text (WCAG 2.5.3).
   item.group.querySelector(".v-id").textContent = `${node.id} `;
   item.group.querySelector(".v-sub").textContent = status;
-  item.group.querySelector(".v-badge text").textContent = ROLE_BADGES[status] ?? "";
+  const icon = BADGE_ICONS[status];
+  item.group.querySelector(".v-badge text").textContent = icon ? "" : ROLE_BADGES[status] ?? "";
+  item.group.querySelector(".v-icon").setAttribute("d", icon ?? "");
+  // Replica agreement: on how many sampled keys this node holds the version
+  // the live majority holds. (The simulator reports one cluster-wide commit
+  // index, so per-node lag shows in the stored values, not in commit_index.)
+  const { agreeing, sampled } = replicaAgreement(snapshot, node.id);
+  const share = sampled > 0 ? agreeing / sampled : 0;
+  const bar = item.group.querySelector(".v-progress");
+  bar.classList.toggle("empty", sampled === 0);
+  bar.classList.toggle("behind", sampled > 0 && agreeing < sampled);
+  bar.querySelector(".v-progress-fill").setAttribute("width", (40 * share).toFixed(1));
+  bar.dataset.agree = `${agreeing}/${sampled}`;
   item.group.setAttribute("aria-label", `${node.id}, ${status}, term ${node.term}`);
   graphSim.nodeShown.set(node.id, { status, term: node.term });
   announceRoleChange(node, status, shown, snapshot);
@@ -473,7 +538,7 @@ function updateGraphVisuals(snapshot) {
     const selected = current && current.from === edge.from && current.to === edge.to;
     visual.setAttribute("class", ["link", edge.state, selected ? "selected" : ""].filter(Boolean).join(" "));
     label.setAttribute("class", `link-label ${edge.state}`);
-    label.textContent = edge.state === "up" ? "" : edge.state;
+    setLinkLabel(label, linkLabelText(edge));
     hit.setAttribute("aria-label", `link ${edge.from} to ${edge.to}, ${edge.state}${selected ? ", selected" : ""}`);
     hit.setAttribute("aria-pressed", selected ? "true" : "false");
   }
@@ -678,6 +743,7 @@ function paintGraph(now) {
       line.setAttribute("x2", pb.x);
       line.setAttribute("y2", pb.y);
     };
+    const placed = [];
     for (const { edge, visual, hit, label } of graphSim.dom.edges) {
       setLine(visual, edge.a, edge.b);
       setLine(hit, edge.a, edge.b);
@@ -690,10 +756,22 @@ function paintGraph(now) {
         const nx = -(pb.y - pa.y) / length;
         const ny = (pb.x - pa.x) / length;
         const side = ny > 0 ? -1 : 1;
-        label.setAttribute("x", (pa.x + pb.x) / 2 + nx * 18 * side);
-        label.setAttribute("y", (pa.y + pb.y) / 2 + ny * 18 * side + 4);
+        const width = Number(label.querySelector(".link-pill")?.getAttribute("width")) || 0;
+        placed.push({ label, width, x: (pa.x + pb.x) / 2 + nx * 20 * side, y: (pa.y + pb.y) / 2 + ny * 20 * side });
       }
     }
+    // Crossing lines can put two pills on top of each other: push the lower
+    // one down until they no longer overlap.
+    const visible = placed.filter((item) => item.width > 0).sort((a, b) => a.y - b.y);
+    for (let i = 0; i < visible.length; i += 1) {
+      for (let j = 0; j < i; j += 1) {
+        const above = visible[j];
+        const below = visible[i];
+        const overlapX = Math.abs(above.x - below.x) < (above.width + below.width) / 2 + 4;
+        if (overlapX && below.y - above.y < 24) below.y = above.y + 24;
+      }
+    }
+    for (const item of placed) item.label.setAttribute("transform", `translate(${item.x} ${item.y})`);
     for (const { edge, line } of graphSim.dom.entityEdges) setLine(line, edge.a, edge.b);
   }
   const reduced = document.documentElement.dataset.reducedMotion === "true";
@@ -1124,10 +1202,49 @@ const ROLE_BADGES = {
   leader: "★",
   candidate: "?",
   crashed: "✕",
-  disabled: "‖",
   joining: "+",
   catching_up: "↻",
 };
+
+// Drawn badge icons (stroked paths in a 26px badge): a power symbol for a
+// disabled node, and a slashed circle for one cut off from the cluster (the
+// engine reports an isolated node as "disconnected").
+const BADGE_ICONS = {
+  disabled: "M-4.4 -3.6 A6 6 0 1 0 4.4 -3.6 M0 -7 V-0.5",
+  disconnected: "M0 -6.5 A6.5 6.5 0 1 1 -0.01 -6.5 Z M-4.6 4.6 L4.6 -4.6",
+};
+
+// "partitioned", or "delayed · N ms" with the longest pending delay on the
+// pair (it counts down as the delayed messages approach delivery).
+function linkLabelText(edge) {
+  if (edge.state === "up") return "";
+  if (edge.state === "delayed" && edge.delay > 0) return `delayed · ${edge.delay} ms`;
+  return edge.state;
+}
+
+function setLinkLabel(label, text) {
+  const textNode = label.querySelector(".link-text");
+  if (textNode.textContent === text) return;
+  textNode.textContent = text;
+  const pill = label.querySelector(".link-pill");
+  if (!text) {
+    pill.setAttribute("width", 0);
+    return;
+  }
+  // Size the pill from the rendered text; fall back to an estimate when the
+  // label is not laid out yet (hidden canvas).
+  let width = 0;
+  try {
+    width = textNode.getComputedTextLength();
+  } catch {
+    width = 0;
+  }
+  width = (width || text.length * 7.4) + 16;
+  pill.setAttribute("x", (-width / 2).toFixed(1));
+  pill.setAttribute("y", -10);
+  pill.setAttribute("width", width.toFixed(1));
+  pill.setAttribute("height", 20);
+}
 
 // When collapsing the two directed links of a pair into one drawn line, show the
 // most degraded state so a partition/delay is never hidden by a healthy reverse.

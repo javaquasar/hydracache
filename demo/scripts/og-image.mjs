@@ -19,6 +19,8 @@ try {
   await page.addInitScript(() => {
     try {
       window.localStorage.setItem("hydracache-demo-intro-seen", "1");
+      // A folded legend keeps the preview about the cluster.
+      window.localStorage.setItem("hydracache-demo-legend", "closed");
     } catch {
       // Storage blocked: the intro may show, which is still a valid preview.
     }

@@ -688,6 +688,53 @@ main[aria-busy="true"] .side-panel button {
   pointer-events: none;
 }
 
+/* The legend is a <details>: open it from its "Legend" button; the choice is
+   remembered per viewer (app.js). Only the button takes pointer events, so
+   the graph under an open legend stays draggable. */
+.graph-legend summary {
+  pointer-events: auto;
+  cursor: pointer;
+  width: max-content;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.graph-legend:not([open]) {
+  padding: 4px 10px;
+}
+
+.graph-legend[open] summary {
+  margin-bottom: 2px;
+}
+
+.legend-badge {
+  width: 14px;
+  height: 14px;
+}
+
+.legend-badge circle {
+  fill: var(--idle-stroke);
+}
+
+.legend-badge.cut circle {
+  fill: var(--muted);
+}
+
+.legend-badge path {
+  fill: none;
+  stroke: var(--on-accent);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.legend-progress {
+  display: inline-block;
+  width: 18px;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent) 60%, color-mix(in srgb, var(--ink) 14%, transparent) 60%);
+}
+
 .legend-group {
   display: flex;
   flex-wrap: wrap;
@@ -1253,8 +1300,42 @@ dd {
 .node.role-crashed .v-badge,
 .node.role-disabled .v-badge,
 .node.role-joining .v-badge,
-.node.role-catching_up .v-badge {
+.node.role-catching_up .v-badge,
+.node.role-disconnected .v-badge {
   display: inline;
+}
+
+.node.role-disconnected .v-badge circle {
+  fill: var(--muted);
+}
+
+/* Drawn badge icons (power for disabled, slashed circle for isolated). */
+.v-icon {
+  fill: none;
+  stroke: var(--on-accent);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+/* Replica agreement: sampled keys on which the node holds the live majority's
+   version (amber while it lags, e.g. after a crash, until it resyncs). */
+.v-progress-track {
+  fill: color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.v-progress-fill {
+  fill: var(--accent);
+  transition: width 260ms ease;
+}
+
+.v-progress.behind .v-progress-fill {
+  fill: var(--warn);
+}
+
+.v-progress.empty,
+.node.crashed .v-progress,
+.node.disabled .v-progress {
+  opacity: 0.35;
 }
 
 .v-badge circle {
@@ -1412,22 +1493,39 @@ dd {
 }
 
 .link-label {
-  font-size: 13px;
-  font-weight: 800;
-  text-anchor: middle;
-  paint-order: stroke;
-  stroke: var(--surface);
-  stroke-width: 4px;
-  stroke-linejoin: round;
   pointer-events: none;
 }
 
-.link-label.partitioned {
+.link-label.up {
+  display: none;
+}
+
+.link-text {
+  font-size: 12px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
+.link-pill {
+  fill: var(--surface);
+  stroke-width: 1.5;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12));
+}
+
+.link-label.partitioned .link-text {
   fill: var(--danger);
 }
 
-.link-label.delayed {
+.link-label.partitioned .link-pill {
+  stroke: var(--danger);
+}
+
+.link-label.delayed .link-text {
   fill: var(--warn);
+}
+
+.link-label.delayed .link-pill {
+  stroke: var(--warn);
 }
 
 .link.partitioned {

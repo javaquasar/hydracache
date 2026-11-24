@@ -236,12 +236,20 @@
                 <span aria-hidden="true">⤢</span>
               </button>
             </div>
-            <div class="graph-legend" data-testid="graph-legend" aria-label="graph legend">
+            <details class="graph-legend" data-testid="graph-legend" open>
+              <summary data-testid="legend-toggle">Legend</summary>
               <div class="legend-group">
                 <span><i class="legend-node leader"></i>leader</span>
                 <span><i class="legend-node follower"></i>follower</span>
                 <span><i class="legend-node candidate"></i>candidate</span>
                 <span><i class="legend-node crashed"></i>crashed</span>
+                <span>
+                  <svg class="legend-badge" viewBox="-13 -13 26 26" aria-hidden="true"><circle r="13"></circle><path d="M-4.4 -3.6 A6 6 0 1 0 4.4 -3.6 M0 -7 V-0.5"></path></svg>disabled
+                </span>
+                <span>
+                  <svg class="legend-badge cut" viewBox="-13 -13 26 26" aria-hidden="true"><circle r="13"></circle><path d="M0 -6.5 A6.5 6.5 0 1 1 -0.01 -6.5 Z M-4.6 4.6 L4.6 -4.6"></path></svg>isolated
+                </span>
+                <span title="Sampled keys on which the node holds the live majority's version"><i class="legend-progress"></i>replica agreement</span>
               </div>
               <div class="legend-group">
                 <span><i class="legend-dot vote"></i>vote</span>
@@ -254,7 +262,7 @@
                 <span><i class="legend-line partitioned"></i>partitioned</span>
                 <span><i class="legend-line delayed"></i>delayed</span>
               </div>
-            </div>
+            </details>
             <p id="graph-hint" class="graph-hint">
               Drag to pan · Ctrl + wheel to zoom · click a node or a line for details
             </p>

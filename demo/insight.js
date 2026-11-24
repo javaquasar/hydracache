@@ -85,7 +85,7 @@ export function keyAgreement(snapshot) {
         diverged: live.has(id) && version !== majority,
       };
     });
-    return { key: key.key, cells, agree: counts.size <= 1 && !counts.has(null) };
+    return { key: key.key, cells, majority, agree: counts.size <= 1 && !counts.has(null) };
   });
   return { keys, agree: keys.every((key) => key.agree) };
 }

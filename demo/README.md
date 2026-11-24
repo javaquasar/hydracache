@@ -73,7 +73,15 @@ guarantee.
   scrolls the page.
 - **Node badges, link labels, the legend, timeline ticks, and the light/dark
   theme** restate engine state (role, link state, recorded actions, leader and
-  verdict changes) for readability; they add no information of their own. The
+  verdict changes) for readability; they add no information of their own. Node
+  badges draw a power icon for a disabled node and a slashed circle for an
+  isolated one (the engine reports it as `disconnected`). The bar under each
+  node is its replica agreement: on how many sampled keys it holds the live
+  majority's version (the simulator reports one cluster-wide commit index, so
+  per-node lag shows in stored values). Link labels are pills; a delayed link
+  shows the longest pending delay on the pair, counting down. The legend folds
+  into a "Legend" button (open on wide screens, folded on narrow ones, the
+  viewer's choice remembered), and the fit keeps the cluster clear of it. The
   theme follows the OS setting until you pick one with the ◐ button.
 - **Packet and data-flow animations.** `in_flight` messages are real, and their
   travel follows the engine's delivery schedule: a message's flight lasts its
