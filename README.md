@@ -207,6 +207,8 @@ published only with their exact host, scenario, and method — see the
 
 ## Learn more
 
+- Public documentation: <https://javaquasar.github.io/hydracache/index.html>
+  (source in [`docs-site`](docs-site/))
 - [Getting Started](https://javaquasar.github.io/hydracache/getting-started.html) →
   [Architecture](https://javaquasar.github.io/hydracache/architecture.html) →
   [Local Cache](https://javaquasar.github.io/hydracache/guides/local-cache.html) →
