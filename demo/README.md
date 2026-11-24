@@ -18,11 +18,17 @@ guarantee.
 
 ### Faithful — real engine code and real checkers
 
-- **Invariant verdicts are real.** The verdict panel is produced by the actual
-  invariant checker (consensus prefix, durability, no-tombstone-resurrection,
-  convergence, read-your-writes) — the same checkers the `0.44` deterministic
-  simulation testing (DST) gates use. A reported violation is a real violation of
-  real state.
+- **Invariant verdicts are real, and exactly as broad as listed.** The verdict
+  panel is produced by the actual invariant checker. The live world checks the
+  workload-history invariants (`read-your-writes`, `invalidate-read`), the
+  election/topology invariants (`election_safety`, `leader_requires_quorum`,
+  `no_stale_leader_writes`, `index_monotonicity`, `catchup_no_skip`,
+  `event_after_commit`) and `resource_bounded_growth`; the page lists them from
+  the snapshot's `checked_invariants`. The replica-snapshot invariants
+  (`consensus-prefix`, `durability`, `tombstone-resurrection`, `convergence`)
+  run in the DST suites but are **not** part of the live verdict. A reported
+  violation is a real violation of real state, and its first violating step is
+  kept.
 - **Deterministic and replayable.** Execution is driven by a seeded `SimRng` /
   `SimClock`; the same `seed` reproduces the same run. The shared URL and the
   copy-reproducer button reproduce the exact run.
@@ -71,8 +77,8 @@ guarantee.
 
 Real networked Raft transport, the `hydracache-server` daemon, the durable
 storage engine and recovery (`0.51`), mTLS / encryption-at-rest (`0.48`),
-persistence, configurable consistency levels, and the real external client wire
-protocol. `hydracache-sim` is a **sans-IO seam over the core logic**, not the
+persistence, per-level consistency reads and writes, and the real external
+client wire protocol. `hydracache-sim` is a **sans-IO seam over the core logic**, not the
 production runtime.
 
 This layer is also where the currently open deployment debt lives, so a perfect
@@ -114,6 +120,10 @@ Then open:
 http://127.0.0.1:5173/demo/
 ```
 
+The dev server serves only `demo/`. It also mounts the same files at
+`http://127.0.0.1:5173/hydracache/demo/`, the path GitHub Pages uses, so relative
+asset URLs can be checked locally exactly as they are published.
+
 The default engine is the local WASM package. To drive the same UI through the
 sandbox HTTP API instead, run the sandbox and add `engine=server` plus the API
 base:
@@ -126,15 +136,97 @@ cargo run -p hydracache-sandbox -- --backend memory
 http://127.0.0.1:5173/demo/?engine=server&api=http://127.0.0.1:3000
 ```
 
-The page URL carries `seed`, `steps`, and `scenario`, so a shared URL can be
-replayed locally. The copy-reproducer button emits the matching `hydracache-sim`
-CLI command.
+`?api=` accepts only a same-origin path or a loopback API (`localhost`,
+`127.0.0.1`, `[::1]`); any other host is refused and the lab stays disabled, so a
+shared link cannot make the page render another server's verdict.
 
-## DevRel CI
+## Using the lab
 
-`.github/workflows/demo.yml` runs outside the fast PR gate. It builds the WASM
-package, runs the headless UI and seed-share smoke tests, and publishes the
-static `demo/` artifact to GitHub Pages on nightly/manual/tag runs.
+- **Guide.** Every scenario (and the default run) has a short guided tour.
+  `Do it` runs the step's actions through the same engine calls as the buttons;
+  the text describes what to look at and never claims an outcome the engine did
+  not produce.
+- **Timeline.** The slider under the graph rebuilds any earlier step of the
+  current run by replaying its script prefix (interventions up to that step,
+  resumed exactly there), so a rewound view is the real engine state at that
+  step. Events list recorded interventions plus the leader changes and verdict
+  transitions this page observed. Step, Play, or any other action while rewound
+  continues from the visible step and drops the later recording.
+- **Run to leader / replica agreement / violation.** Steps the engine until the
+  condition holds, and stops loudly after 500 steps if it never does.
+- **Verdict panel.** Lists the snapshot's `checked_invariants` (the exact set
+  behind the verdict), the violation detail, and the first violating step.
+- **Consistency panel.** For each product level (`one`, `local_quorum`,
+  `quorum`, `each_quorum`, `all`) it shows whether an operation could be
+  acknowledged right now, how many acknowledgements it needs, and the product's
+  reason when it cannot (snapshot `consistency`). The rules are the product's
+  `ConsistencyLevel` rules, mirrored in the simulator for the browser build and
+  parity-tested against the product. It reports availability on the current
+  topology; the simulator does not execute per-level reads or writes.
+- **Keys panel.** Per-node stored checksums for each sampled key; live replicas
+  that differ from the majority are highlighted, down nodes are struck through.
+
+## Sharing and reproducing a run
+
+The page URL carries `seed`, `steps`, and `scenario`. Once the run has
+interventions (node, link, workload, client actions, a mode change, or a loaded
+scenario), it also carries `script=`: a `ReplayScriptV1` with every recorded
+action and the step to resume at, which rebuilds the identical snapshot. The
+copy-reproducer button emits that replay link, or the matching `hydracache-sim`
+CLI command (`vopr --seed … --steps …`) for a plain seeded run.
+
+`Download script` saves the same replay script as JSON. Replay it outside the
+browser, including every intervention and the curated scenario it started from:
+
+```powershell
+cargo run -p hydracache-sim --bin vopr -- --script hydracache-replay-seed-80-step-42.json
+```
+
+`vopr --script` prints the run summary, `first_violation_step`, and the verdict,
+and exits `2` on a violation, so a violation found in the browser can become a
+regression test. A violation shown in the header always names the reproducer
+for that run: the plain `--seed/--steps` command only when no intervention or
+scenario shaped it.
+
+## CI and publishing
+
+Two workflows cover the demo; neither is part of the fast PR gate.
+
+- `.github/workflows/docs-site.yml` owns publishing. It runs on pull requests
+  that touch `demo/`, the simulator crates, or the docs, on pushes to `main`, and
+  on manual dispatch. It builds the WASM package, copies the page modules
+  (`index.html`, `style.css`, `app.js`, `scenarios.js`, `share.js`) and the
+  `pkg/` output into `docs-site/book/demo/`, and runs `npm --prefix demo run build`
+  and the full Playwright suite against that bundle served at
+  `/hydracache/demo/`. On `main` pushes and manual runs it deploys the docs site
+  and simulator to GitHub Pages
+  (`https://javaquasar.github.io/hydracache/demo/`) and then verifies that every
+  published simulator file matches the SHA-256 of the tested bundle.
+- `.github/workflows/demo.yml` is a nightly, `main`-push, and manual smoke. It
+  builds the WASM package and runs the UI and seed-share Playwright specs against
+  `demo/` directly. It does not deploy Pages.
+
+Tests: `npm --prefix demo test` runs the `node:test` unit suite (`demo/unit`,
+URL/share and view-model helpers) and then Playwright on desktop and mobile
+viewports. `demo/tests/server_engine.spec.js` drives the same UI through the
+sandbox (`engine=server`, raft election); it is skipped unless
+`HYDRACACHE_SANDBOX_URL` is set, and `demo.yml` runs it against a freshly built
+sandbox:
+
+```powershell
+cargo run -p hydracache-sandbox -- --backend memory
+```
+
+```powershell
+$env:HYDRACACHE_SANDBOX_URL = "http://127.0.0.1:3000"; npx --prefix demo playwright test server_engine --workers=1
+```
+
+`npm --prefix demo run build` (`scripts/check-static.mjs`) fails when a file the
+page needs is missing (including `pkg/`, so build WASM first), when a module the
+page loads is not in the `docs-site.yml` bundle list, when
+`demo/package.json` does not carry the workspace version from `Cargo.toml`, or
+when the dev server would serve a file outside `demo/`. Bump
+`demo/package.json` (and its lockfile) together with the workspace version.
 
 The local C7 smoke gate uses the same tooling:
 

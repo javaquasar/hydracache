@@ -33,7 +33,7 @@ fn full_mixed_run_replays_identically_from_script() {
 
 #[test]
 fn every_new_snapshot_field_bumped_schema() {
-    assert_eq!(SIM_SNAPSHOT_SCHEMA_VERSION, 6);
+    assert_eq!(SIM_SNAPSHOT_SCHEMA_VERSION, 8);
 
     let mut world = SimWorld::new(0x5371, SimConfig::default());
     world
@@ -43,7 +43,7 @@ fn every_new_snapshot_field_bumped_schema() {
     let encoded = snapshot.to_json();
     let decoded = SimSnapshot::from_json(&encoded).expect("current snapshot decodes");
 
-    assert_eq!(decoded.schema_version, 6);
+    assert_eq!(decoded.schema_version, 8);
     assert_eq!(decoded.formation_phase, "formed");
     assert!(decoded
         .nodes
@@ -63,6 +63,9 @@ fn every_new_snapshot_field_bumped_schema() {
         "Version `3` adds typed `in_flight`",
         "Version `4` adds manual-mode `clients`, `subscribers`, and `sync_progress`",
         "Version `5` adds topology/mode state",
+        "Version `6` adds `connected_node`",
+        "Version `7` adds `workload_enabled`, `checked_invariants`, and `first_violation_step`",
+        "Version `8` adds `consistency`",
         "`ReplayScriptV1` simulator control artifact",
     ] {
         assert!(compat.contains(marker), "missing COMPAT marker: {marker}");
@@ -156,6 +159,7 @@ fn mixed_lab_script() -> ReplayScriptV1 {
             },
             ControlActionV1::Step { at_step: 12, n: 3 },
         ],
+        target_step: None,
     }
 }
 
