@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { stubViolatingServer, violatingServerUrl } from "./support/violation-stub.js";
+
 const demoUrl = process.env.HYDRACACHE_DEMO_URL ?? "http://127.0.0.1:5173/demo/";
 
 test("loads_steps_and_renders_verdict", async ({ page }) => {
@@ -605,57 +607,8 @@ test("node_popover_shows_details_and_runs_node_actions", async ({ page }) => {
 // through the server-engine path against a stubbed /sim API whose snapshots
 // are real WASM snapshots with a violated verdict spliced in.
 test("violation_pauses_jumps_to_first_step_and_explains", async ({ page }) => {
-  await page.goto(demoUrl);
-  const real = await page.evaluate(async () => {
-    const wasm = await import(new URL("./pkg/hydracache_sim_wasm.js", window.location.href).href);
-    if (typeof wasm.default === "function") {
-      await wasm.default();
-    }
-    const handle = new wasm.SimHandle(80n);
-    handle.run(8n);
-    return { snapshot: JSON.parse(handle.snapshot_json()), script: JSON.parse(handle.replay_script_json()) };
-  });
-  const holding = { ...real.snapshot, step: 0, first_violation_step: null, verdict: { status: "holding" } };
-  const ids = real.snapshot.nodes.map((node) => node.id);
-  const violated = (step) => ({
-    ...real.snapshot,
-    step,
-    first_violation_step: 9,
-    verdict: {
-      status: "violated",
-      invariant: "election_safety",
-      detail: `two leaders in term 1: ${ids[0]} and ${ids[2]}`,
-    },
-  });
-  const controlTargets = [];
-  let current = holding;
-  const api = "http://127.0.0.1:3999";
-  await page.route(`${api}/**`, async (route) => {
-    const request = route.request();
-    const headers = {
-      "access-control-allow-origin": "*",
-      "access-control-allow-headers": "content-type",
-      "access-control-allow-methods": "GET, POST, OPTIONS",
-    };
-    if (request.method() === "OPTIONS") {
-      await route.fulfill({ status: 204, headers });
-      return;
-    }
-    const path = new URL(request.url()).pathname;
-    if (path === "/sim/step") {
-      current = violated(12);
-    } else if (path === "/sim/control") {
-      const body = request.postDataJSON();
-      controlTargets.push(body.target_step);
-      current = body.target_step >= 9 ? violated(body.target_step) : { ...holding, step: body.target_step };
-    } else if (path === "/sim/new") {
-      current = holding;
-    }
-    const body = path === "/sim/replay" ? { ...real.script, actions: [] } : current;
-    await route.fulfill({ status: 200, headers: { ...headers, "content-type": "application/json" }, json: body });
-  });
-
-  await page.goto(`${demoUrl}?engine=server&api=${encodeURIComponent(api)}`);
+  const { ids, controlTargets } = await stubViolatingServer(page, demoUrl);
+  await page.goto(violatingServerUrl(demoUrl));
   await expect(page.getByTestId("verdict")).toContainText("invariants hold");
   await expect(page.getByTestId("violation-card")).toBeHidden();
 

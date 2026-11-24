@@ -272,3 +272,27 @@ npx --prefix demo playwright test
 
 The Playwright config runs both the desktop `1440x900` and mobile `390x844`
 viewports and checks the liquid-glass accessibility fallbacks.
+
+`tests/a11y.spec.js` runs axe-core (WCAG 2.2 A/AA rules) over each side-panel
+tab, the dark theme, the node popover, the shortcuts dialog and the violation
+card; any violation fails the test with the rule and the selectors it hit.
+
+`tests/visual.spec.js` compares the graph-free panels against screenshot
+baselines in `tests/visual.spec.js-snapshots/`. Baselines are per OS and per
+viewport (`<name>-<viewport>-<platform>.png`); on a platform with no committed
+baseline the tests are skipped, not failed. Record or refresh them after an
+intended visual change:
+
+```powershell
+npx --prefix demo playwright test demo/tests/visual.spec.js --update-snapshots
+```
+
+`og-image.png` is the 1200x630 link-preview image named by the Open Graph and
+Twitter card tags in `index.html`; `npm run build` checks that it exists, has
+that size, and is bundled and checksummed by `docs-site.yml`. After a visible
+UI change, re-render it from the running page (`npm --prefix demo run serve`
+in another terminal):
+
+```powershell
+node demo/scripts/og-image.mjs
+```

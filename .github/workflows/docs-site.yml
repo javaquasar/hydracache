@@ -91,10 +91,10 @@ jobs:
           set -euo pipefail
           destination=docs-site/book/demo
           install -d "$destination/pkg"
-          install -m 0644 demo/{index.html,style.css,app.js,engine.js,graph.js,scenarios.js,share.js,insight.js} "$destination/"
+          install -m 0644 demo/{index.html,style.css,app.js,engine.js,graph.js,scenarios.js,share.js,insight.js,og-image.png} "$destination/"
           install -m 0644 demo/pkg/{hydracache_sim_wasm.js,hydracache_sim_wasm_bg.wasm} "$destination/pkg/"
           cd "$destination"
-          hashes=$(sha256sum --binary index.html style.css app.js engine.js graph.js scenarios.js share.js insight.js pkg/hydracache_sim_wasm.js pkg/hydracache_sim_wasm_bg.wasm)
+          hashes=$(sha256sum --binary index.html style.css app.js engine.js graph.js scenarios.js share.js insight.js og-image.png pkg/hydracache_sim_wasm.js pkg/hydracache_sim_wasm_bg.wasm)
           printf 'demo_hashes=%s\n' "$(printf '%s\n' "$hashes" | base64 -w0)" >> "$GITHUB_OUTPUT"
 
       - name: Check documentation links

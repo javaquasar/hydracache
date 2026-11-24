@@ -336,7 +336,10 @@ function updateGraphVisuals(snapshot) {
         void item.group.getBoundingClientRect();
         item.group.classList.add("changed");
       }
-      item.group.querySelector(".v-id").textContent = node.id;
+      // The trailing space is not drawn (SVG drops it) but keeps the id and the
+      // status apart in the vertex's text, so its accessible name, which starts
+      // with "id, status", matches the visible text (WCAG 2.5.3).
+      item.group.querySelector(".v-id").textContent = `${node.id} `;
       item.group.querySelector(".v-sub").textContent = status;
       item.group.querySelector(".v-badge text").textContent = ROLE_BADGES[status] ?? "";
       item.group.setAttribute("aria-label", `${node.id}, ${status}, term ${node.term}`);
