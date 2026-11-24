@@ -1711,7 +1711,8 @@ dd.changed,
 
 /* Violation card: the strongest moment of the lab, shown above the workspace. */
 .violation-card {
-  margin-bottom: 14px;
+  /* Same inset as the top bar and controls, which also sit in .shell. */
+  margin: 10px 16px 0;
   padding: 16px 18px;
   border-radius: 8px;
   border-left: 6px solid var(--danger);
@@ -1828,7 +1829,8 @@ dd.changed,
 
 /* First-visit intro. */
 .intro-card {
-  margin-bottom: 14px;
+  /* Same inset as the top bar and controls, which also sit in .shell. */
+  margin: 10px 16px 0;
   padding: 14px 18px;
   border-radius: 8px;
 }

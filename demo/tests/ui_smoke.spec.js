@@ -775,3 +775,25 @@ test("hidden_tab_panels_paint_when_their_tab_opens", async ({ page }) => {
   await page.getByTestId("tab-verdict").click();
   await expect(page.getByTestId("verdict-panel")).toContainText("election_safety");
 });
+
+test("intro_and_violation_cards_align_with_the_controls", async ({ page }) => {
+  await openReady(page);
+  const box = async (locator) => (await locator.boundingBox()) ?? { x: NaN, y: NaN, width: NaN, height: NaN };
+  const controls = await box(page.locator(".controls"));
+  const intro = page.getByTestId("intro");
+  await expect(intro).toBeVisible();
+  const card = await box(intro);
+  expect(Math.abs(card.x - controls.x)).toBeLessThanOrEqual(1);
+  expect(Math.abs(card.width - controls.width)).toBeLessThanOrEqual(1);
+  // A visible gap under the controls, not flush against them.
+  expect(card.y - (controls.y + controls.height)).toBeGreaterThanOrEqual(8);
+
+  // The violation card shares the same inset (checked without a violation by
+  // showing it directly; its content is covered by the violation smoke test).
+  await page.getByTestId("violation-card").evaluate((node) => {
+    node.hidden = false;
+  });
+  const violation = await box(page.getByTestId("violation-card"));
+  expect(Math.abs(violation.x - controls.x)).toBeLessThanOrEqual(1);
+  expect(Math.abs(violation.width - controls.width)).toBeLessThanOrEqual(1);
+});
