@@ -90,6 +90,14 @@ export function keyAgreement(snapshot) {
   return { keys, agree: keys.every((key) => key.agree) };
 }
 
+// The whole 64-bit checksum as 16 hex digits (tooltips).
+export function fullVersion(version) {
+  if (version === null || version === undefined) {
+    return "—";
+  }
+  return BigInt.asUintN(64, BigInt(version)).toString(16).padStart(16, "0");
+}
+
 export function shortVersion(version) {
   if (version === null || version === undefined) {
     return "—";

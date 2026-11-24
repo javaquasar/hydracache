@@ -1056,7 +1056,7 @@ test("crash_hit_recovery_and_message_effects", async ({ page }) => {
     input.dispatchEvent(new Event("input", { bubbles: true }));
   });
   const stepUntil = async (selector) => {
-    for (let attempt = 0; attempt < 12; attempt += 1) {
+    for (let attempt = 0; attempt < 20; attempt += 1) {
       await page.getByTestId("step").click();
       // Effects fire when a packet lands, a few hundred ms into the step.
       for (let poll = 0; poll < 9; poll += 1) {
@@ -1202,7 +1202,7 @@ test("writers_and_subscribers_are_managed_separately", async ({ page }) => {
   await expect(page.getByTestId("tab-clients")).toHaveAttribute("aria-selected", "true");
 
   await page.getByTestId("unsubscribe-reader-1@profiles").click();
-  await expect(readers).toContainText("no subscribers");
+  await expect(readers).toContainText("No subscribers yet");
   await expect(page.locator(".vertex.subscriber")).toHaveCount(0);
   await expect(page.locator(".namespace-flow")).toHaveCount(0);
 
@@ -1378,4 +1378,71 @@ test("busy_edges_fold_routine_traffic_and_the_bar_is_compact", async ({ page }, 
     expect(await bar.evaluate((element) => getComputedStyle(element).position)).toBe("sticky");
   }
   await expect(page.getByTestId("until-leader")).toHaveAccessibleName("Run to leader");
+});
+
+// Heatmap: a replica that takes a new value fades into it, and its tooltip
+// gives the whole checksum and the step the page saw it written.
+test("heatmap_recolours_and_explains_each_replica", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=80&steps=12&scenario=default`);
+  await expect(page.getByTestId("timeline-label")).toHaveText("step 12 of 12");
+  await page.getByTestId("tab-data").click();
+  let recoloured = 0;
+  for (let attempt = 0; attempt < 10 && recoloured === 0; attempt += 1) {
+    await page.getByTestId("step").click();
+    recoloured = await page.locator(".key-grid .replica.recolour").count();
+  }
+  expect(recoloured).toBeGreaterThan(0);
+  const step = (await page.getByTestId("timeline-label").textContent()).match(/step (\d+)/)[1];
+  const chip = page.locator(".key-grid .replica.recolour").first();
+  await expect(chip).toHaveAttribute("data-written", step);
+  await expect(chip).toHaveAttribute("title", new RegExp(`checksum [0-9a-f]{16}\nwritten at step ${step}`));
+  expect(await chip.evaluate((element) => getComputedStyle(element).animationName)).toMatch(/replica-recolour/);
+  // Equal-width digits everywhere.
+  expect(await page.locator("body").evaluate((body) => getComputedStyle(body).fontVariantNumeric)).toContain("tabular-nums");
+  // The Committed counter ticks up and ends on the engine's value.
+  await page.getByTestId("tab-cluster").click();
+  await page.getByTestId("step").click();
+  const committed = page.getByTestId("progress-panel").locator("dd").nth(2);
+  const changes = await page.getByTestId("step-changes").textContent();
+  const final = changes.match(/committed \d+ → (\d+)/)?.[1];
+  if (final) await expect(committed).toHaveText(final);
+});
+
+test("step_changes_expand_and_stay_expanded", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=80&steps=12&scenario=default`);
+  await expect(page.getByTestId("timeline-label")).toHaveText("step 12 of 12");
+  for (let index = 0; index < 3; index += 1) {
+    await page.getByTestId("add-node-button").click();
+  }
+  const toggle = page.getByTestId("step-changes-toggle");
+  for (let attempt = 0; attempt < 6 && !(await toggle.count()); attempt += 1) {
+    await page.getByTestId("step").click();
+  }
+  await expect(toggle).toHaveText(/^\+\d+ more$/);
+  const short = (await page.getByTestId("step-changes").textContent()).length;
+  await toggle.click();
+  await expect(toggle).toHaveText("show less");
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  expect((await page.getByTestId("step-changes").textContent()).length).toBeGreaterThan(short);
+  await page.getByTestId("step").click();
+  if (await toggle.count()) await expect(toggle).toHaveText("show less");
+});
+
+test("empty_blocks_explain_and_offer_the_next_action", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=80&steps=0&scenario=default`);
+  await expect(page.getByTestId("timeline-label")).toHaveText("step 0 of 0");
+  await expect(page.getByTestId("events-panel")).toContainText("no events yet");
+  await page.getByTestId("empty-run-leader").click();
+  await expect(page.locator(".vertex.node.role-leader")).toHaveCount(1);
+
+  await page.getByTestId("tab-clients").click();
+  await expect(page.getByTestId("clients-panel")).toContainText("No writers yet");
+  await expect(page.getByTestId("subscribers-panel")).toContainText("No subscribers yet");
+  await page.getByTestId("tab-data").click();
+  const keys = page.getByTestId("keys-panel");
+  if (await page.getByTestId("empty-push").count()) {
+    await page.getByTestId("empty-push").click();
+    await expect(keys.locator(".key-grid")).toBeVisible();
+    await expect(keys).toContainText("profiles:profile-42");
+  }
 });

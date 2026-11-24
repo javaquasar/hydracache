@@ -257,7 +257,7 @@ shared link cannot make the page render another server's verdict.
   reaches it in the data-flow pulse: the entry node when the request
   arrives, each replica after it, the subscriber last (a first push by a new
   writer starts at its entry node). Reduced motion flashes them at once.
-- **Keys heatmap.** One row per sampled key, one column per node. A cell's
+- **Keys heatmap.** A replica that takes a new value fades from its old colour to the new one; hovering a cell gives the whole checksum and the step the page saw it written. One row per sampled key, one column per node. A cell's
   colour is derived from its stored checksum, so equal checksums share a colour;
   live replicas that differ from the majority are outlined, down nodes are
   striped, and `—` means no replica.

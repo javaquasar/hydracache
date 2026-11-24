@@ -30,6 +30,7 @@ import {
   predictionHolds,
   scriptAtStep,
   scriptFileName,
+  fullVersion,
   shortVersion,
   shortcutFor,
   speedLabel,
@@ -55,6 +56,12 @@ const URL_WRITE_INTERVAL_MS = 1000;
 
 const state = {
   presentFullscreen: false,
+  // When the page saw each key's current version on each node: "key|node" ->
+  // step. Kept per run (reset with the timeline).
+  keyWrites: new Map(),
+  changesExpanded: false,
+  shownCommitted: null,
+  committedAnimation: 0,
   SimHandle: null,
   activeTab: "cluster",
   // Last view signature each panel was painted from (see paintPanel).
@@ -549,6 +556,9 @@ function render() {
       : `${snapshot.mode || "manual"} · no interventions`;
   el.workload.checked = Boolean(snapshot.workload_enabled);
   recordObservation(snapshot);
+  for (const change of state.changes?.keys ?? []) {
+    state.keyWrites.set(`${change.key}|${change.node}`, snapshot.step);
+  }
   const focus = violationFocus(snapshot);
   state.marks = {
     changed: new Set(state.changes?.nodes.keys() ?? []),
@@ -688,6 +698,26 @@ function renderLinkOptions() {
   }
 }
 
+// The Committed counter ticks up to its new value instead of jumping (at
+// once under reduced motion, and whenever it goes down, e.g. on a rewind).
+function countUp(element, value) {
+  const from = state.shownCommitted;
+  state.shownCommitted = value;
+  window.cancelAnimationFrame(state.committedAnimation);
+  if (from === null || value <= from || document.documentElement.dataset.reducedMotion === "true") {
+    return element;
+  }
+  element.textContent = String(from);
+  const start = performance.now();
+  const tick = (now) => {
+    const t = Math.min((now - start) / 450, 1);
+    element.textContent = String(Math.round(from + (value - from) * (1 - (1 - t) * (1 - t))));
+    if (t < 1) state.committedAnimation = window.requestAnimationFrame(tick);
+  };
+  state.committedAnimation = window.requestAnimationFrame(tick);
+  return element;
+}
+
 function renderProgress(snapshot) {
   const progress = snapshot.progress;
   el.progress.replaceChildren(
@@ -696,7 +726,7 @@ function renderProgress(snapshot) {
     term("Logical time", snapshot.logical_time_millis),
     desc(`${snapshot.logical_time_millis} ms`),
     term("Committed", progress.committed_entries),
-    desc(progress.committed_entries, state.changes?.committed ? "changed" : ""),
+    countUp(desc(progress.committed_entries, state.changes?.committed ? "changed" : ""), progress.committed_entries),
     term("Formation", snapshot.formation_phase || "unknown"),
     desc(snapshot.formation_phase || "unknown"),
     term("Election", snapshot.election_source || "unknown"),
@@ -863,9 +893,8 @@ function renderClients(snapshot) {
     clients.append(row);
   }
   if (!clients.childElementCount) {
-    const empty = document.createElement("p");
-    empty.textContent = "no writers yet: add one, or push to create it";
-    clients.append(empty);
+    // The form right above is the action; the block only explains.
+    clients.append(emptyState("No writers yet. A writer pushes values into one namespace; add one above, or push to create it."));
   }
 
   const subscribers = document.createElement("div");
@@ -896,13 +925,29 @@ function renderClients(snapshot) {
     subscribers.append(row);
   }
   if (!subscribers.childElementCount) {
-    const empty = document.createElement("p");
-    empty.textContent = "no subscribers";
-    subscribers.append(empty);
+    subscribers.append(emptyState("No subscribers yet. A subscriber receives the committed events of one namespace; subscribe one above."));
   }
   el.clients.replaceChildren(clients);
   el.subscribers.replaceChildren(subscribers);
   renderNamespaceOptions(snapshot);
+}
+
+// An empty block says what would appear there and offers the action that
+// makes it appear.
+function emptyState(text, actionLabel, testId, onAction) {
+  const box = document.createElement("div");
+  box.className = "empty-state empty-action";
+  const note = document.createElement("p");
+  note.textContent = text;
+  const action = document.createElement("button");
+  action.type = "button";
+  action.className = "ghost";
+  action.textContent = actionLabel;
+  action.setAttribute("data-testid", testId);
+  action.addEventListener("click", onAction);
+  box.append(note);
+  if (actionLabel) box.append(action);
+  return box;
 }
 
 function entityRow(name, meta, detail) {
@@ -992,13 +1037,14 @@ function renderKeys(snapshot) {
   const agreement = keyAgreement(snapshot);
   const keys = agreement.keys.slice(0, MAX_KEY_ROWS);
   if (keys.length === 0) {
-    const empty = document.createElement("p");
-    empty.className = "empty-state";
-    empty.textContent = "no sampled keys yet — they appear once the workload or a push writes";
-    el.keys.replaceChildren(empty);
+    el.keys.replaceChildren(
+      emptyState("No sampled keys yet. They appear once the workload or a push writes a value.", "Push a value", "empty-push", () =>
+        void runAction(() => pushEventFor(manualClientId(), (el.manualNs.value || "profiles").trim())),
+      ),
+    );
     return;
   }
-  const changedKeys = new Set((state.changes?.keys ?? []).map((change) => `${change.key}|${change.node}`));
+  const changedKeys = new Map((state.changes?.keys ?? []).map((change) => [`${change.key}|${change.node}`, change]));
   const nodes = (snapshot.nodes || []).map((node) => node.id);
   const table = document.createElement("table");
   table.className = "key-grid";
@@ -1035,13 +1081,16 @@ function renderKeys(snapshot) {
     for (const cell of key.cells) {
       const td = document.createElement("td");
       const chip = document.createElement("span");
-      const changed = changedKeys.has(`${key.key}|${cell.node}`);
+      const change = changedKeys.get(`${key.key}|${cell.node}`);
+      const fromHue = change && change.before !== null && change.before !== undefined ? versionHue(change.before) : null;
+      // A replica that took a new value fades from its old colour to the new
+      // one; one that had no value yet flashes.
       chip.className = [
         "replica",
         cell.version === null ? "missing" : "",
         cell.diverged ? "diverged" : "",
         cell.live ? "" : "down",
-        changed ? "changed" : "",
+        change ? (fromHue !== null && cell.version !== null ? "recolour" : "changed") : "",
       ]
         .filter(Boolean)
         .join(" ");
@@ -1049,13 +1098,19 @@ function renderKeys(snapshot) {
       if (hue !== null) {
         chip.style.setProperty("--hue", String(hue));
       }
+      if (fromHue !== null) {
+        chip.style.setProperty("--from-hue", String(fromHue));
+      }
       chip.textContent = shortVersion(cell.version).slice(-4);
       const downNote = cell.live ? "" : " (down)";
+      const written = state.keyWrites.get(`${key.key}|${cell.node}`);
+      const when = written === undefined ? "unchanged since this run was opened" : `written at step ${written}`;
       chip.title =
         cell.version === null
-          ? `${cell.node}: no replica${downNote}`
-          : `${cell.node}: checksum ${cell.version}${cell.diverged ? ", differs from the majority" : ""}${downNote}`;
-      chip.setAttribute("aria-label", chip.title);
+          ? `${cell.node}: no replica of ${key.key}${downNote}`
+          : `${cell.node} · ${key.key}\nchecksum ${fullVersion(cell.version)}\n${when}${cell.diverged ? "\ndiffers from the live majority" : ""}${downNote}`;
+      chip.dataset.written = written === undefined ? "" : String(written);
+      chip.setAttribute("aria-label", chip.title.replaceAll("\n", ", "));
       td.append(chip);
       row.append(td);
     }
@@ -1085,6 +1140,8 @@ function renderKeys(snapshot) {
 function startTimeline(scenario, base) {
   state.timeline = { script: null, base, furthest: base, rewound: false };
   state.observations = new Map();
+  state.keyWrites = new Map();
+  state.shownCommitted = null;
   state.tour = freshTour(scenario);
 }
 
@@ -1210,6 +1267,13 @@ function renderEventGroups(groups) {
     const empty = document.createElement("li");
     empty.className = "event empty";
     empty.textContent = "no events yet — interventions, leader changes, and verdict changes appear here";
+    const run = document.createElement("button");
+    run.type = "button";
+    run.className = "ghost";
+    run.textContent = "Run to leader";
+    run.setAttribute("data-testid", "empty-run-leader");
+    run.addEventListener("click", () => el.untilButtons.find((button) => button.dataset.until === "leader")?.click());
+    empty.append(" ", run);
     items.push(empty);
   }
   el.events.replaceChildren(...items);
@@ -2002,11 +2066,27 @@ function renderChanges() {
     return;
   }
   el.stepChanges.classList.remove("quiet");
-  const shown = changes.summary.slice(0, MAX_CHANGE_ITEMS);
-  const more = changes.summary.length - shown.length;
+  const expanded = state.changesExpanded;
+  const shown = expanded ? changes.summary : changes.summary.slice(0, MAX_CHANGE_ITEMS);
+  const more = changes.summary.length - Math.min(changes.summary.length, MAX_CHANGE_ITEMS);
   const label = document.createElement("strong");
   label.textContent = "Changed: ";
-  el.stepChanges.replaceChildren(label, `${shown.join(" · ")}${more > 0 ? ` · +${more} more` : ""}`);
+  const parts = [label, shown.join(" · ")];
+  if (more > 0) {
+    // The rest of the list on demand; the choice holds for later steps.
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "link-button";
+    toggle.setAttribute("data-testid", "step-changes-toggle");
+    toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+    toggle.textContent = expanded ? "show less" : `+${more} more`;
+    toggle.addEventListener("click", () => {
+      state.changesExpanded = !state.changesExpanded;
+      renderChanges();
+    });
+    parts.push(" · ", toggle);
+  }
+  el.stepChanges.replaceChildren(...parts);
 }
 
 // ---------------------------------------------------------------------------

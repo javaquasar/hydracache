@@ -3109,3 +3109,79 @@ kbd {
     width: min(210px, 100%);
   }
 }
+
+/* -------------------------------------------------------------------------
+   Numbers, heatmap recolour, expandable changes, empty states.
+   ------------------------------------------------------------------------- */
+/* Equal-width digits everywhere, so counters, steps and delays do not
+   jitter while the run plays. */
+body {
+  font-variant-numeric: tabular-nums;
+}
+
+/* A replica that took a new value fades from its old colour to the new. */
+.key-grid .replica.recolour {
+  animation: replica-recolour 800ms ease-out;
+}
+
+@keyframes replica-recolour {
+  from {
+    background: hsl(var(--from-hue, 0) 70% 86%);
+    transform: scale(1.12);
+  }
+  to {
+    background: hsl(var(--hue, 0) 70% 86%);
+    transform: scale(1);
+  }
+}
+
+:root[data-theme="dark"] .key-grid .replica.recolour {
+  animation-name: replica-recolour-dark;
+}
+
+@keyframes replica-recolour-dark {
+  from {
+    background: hsl(var(--from-hue, 0) 42% 34%);
+    transform: scale(1.12);
+  }
+  to {
+    background: hsl(var(--hue, 0) 42% 34%);
+    transform: scale(1);
+  }
+}
+
+.key-grid .replica {
+  cursor: help;
+}
+
+.link-button {
+  min-height: 24px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--accent-strong);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.empty-action {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+.empty-action p {
+  margin: 0;
+}
+
+.empty-action,
+.empty-action p {
+  font-style: normal;
+}
