@@ -49,6 +49,9 @@ const URL_WRITE_INTERVAL_MS = 1000;
 
 const state = {
   SimHandle: null,
+  activeTab: "cluster",
+  // Last view signature each panel was painted from (see paintPanel).
+  painted: new Map(),
   engine: "wasm",
   apiBase: "",
   sim: null,
@@ -483,7 +486,6 @@ function render() {
   renderVerdict(snapshot);
   renderViolationCard(focus);
   renderChanges();
-  renderVerdictPanel(snapshot);
   renderTimeline(snapshot);
   renderGuide();
   syncGraph(snapshot);
@@ -491,10 +493,7 @@ function render() {
   renderSelectedLink();
   renderProgress(snapshot);
   renderNodes(snapshot);
-  renderSignals(snapshot);
-  renderClients(snapshot);
-  renderConsistency(snapshot);
-  renderKeys(snapshot);
+  renderTabPanels(snapshot);
   renderNodePopover();
   renderTabBadges(snapshot);
   syncDock();
@@ -1020,7 +1019,8 @@ function renderTimeline(snapshot) {
   el.timelineInput.value = String(snapshot.step);
   el.timelineInput.disabled = max <= base;
   el.timelineLabel.textContent = `step ${snapshot.step} of ${max}`;
-  const markEvents = timelineEvents(script, state.observations);
+  const allEvents = timelineEvents(script, state.observations);
+  const markEvents = [...allEvents];
   const first = snapshot.first_violation_step;
   if (first !== null && first !== undefined) {
     markEvents.push({ step: first, kind: "verdict", text: "first violation reported by the checker" });
@@ -1029,10 +1029,12 @@ function renderTimeline(snapshot) {
   el.timelineHelp.textContent = rewound
     ? `Rewound to step ${snapshot.step} of a recording that reaches step ${max}. Drag forward to replay it; Step, Play or any action continues from here and drops the later recording.`
     : "Drag to rebuild any earlier step of this run from its seed and recorded actions.";
-  const events = timelineEvents(script, state.observations).filter(
-    (event) => event.step >= base && event.step <= max,
-  );
+  const events = allEvents.filter((event) => event.step >= base && event.step <= max);
   const groups = groupEvents(events, snapshot.step).slice(-MAX_TIMELINE_EVENTS);
+  paintPanel("events", null, JSON.stringify(groups), () => renderEventGroups(groups));
+}
+
+function renderEventGroups(groups) {
   const items = groups.map((group) => {
     const item = document.createElement("li");
     item.className = ["event", "event-group", group.current ? "current" : "", group.future ? "future" : ""]
@@ -1076,7 +1078,12 @@ function renderTimeline(snapshot) {
 // Event ticks over the scrubber: where the leader changed, the verdict flipped,
 // or a recorded action happened.
 function renderTimelineMarks(events, base, max) {
-  const marks = timelineMarks(events, base, max).map((mark) => {
+  const views = timelineMarks(events, base, max);
+  paintPanel("timeline-marks", null, JSON.stringify(views), () => paintTimelineMarks(views));
+}
+
+function paintTimelineMarks(views) {
+  const marks = views.map((mark) => {
     const tick = document.createElement("span");
     tick.className = `timeline-mark ${mark.kind}`;
     tick.style.left = `${mark.percent}%`;
@@ -1556,6 +1563,7 @@ async function createSimulation(seed) {
   state.violationDismissed = null;
   closeNodePopover({ restoreFocus: false });
   state.nodeRows.clear();
+  state.painted.clear();
   el.nodes.replaceChildren();
   if (state.engine === "server") {
     const sim = new ServerSimSession(state.apiBase);
@@ -1916,6 +1924,8 @@ function bindTabs() {
 }
 
 function selectTab(name) {
+  const changed = state.activeTab !== name;
+  state.activeTab = name;
   for (const tab of el.tabs) {
     const selected = tab.dataset.tab === name;
     tab.setAttribute("aria-selected", selected ? "true" : "false");
@@ -1924,6 +1934,64 @@ function selectTab(name) {
   for (const panel of el.tabPanels) {
     panel.hidden = panel.dataset.tabpanel !== name;
   }
+  // Panels in the newly shown tab were skipped while hidden: paint them now.
+  if (changed && state.snapshot) {
+    renderTabPanels(state.snapshot);
+  }
+}
+
+// The panels that live inside side-panel tabs. Each paints only while its tab
+// is shown; selectTab calls this again so a newly shown tab is current.
+function renderTabPanels(snapshot) {
+  paintPanel("verdict-panel", "verdict", verdictPanelSignature(snapshot), () => renderVerdictPanel(snapshot));
+  paintPanel("signals", "cluster", JSON.stringify([(snapshot.in_flight || []).slice(0, 8), snapshot.over_budget]), () => renderSignals(snapshot));
+  paintPanel("clients", "clients", JSON.stringify([snapshot.clients, snapshot.subscribers]), () => renderClients(snapshot));
+  paintPanel("consistency", "data", consistencySignature(snapshot), () => renderConsistency(snapshot));
+  paintPanel("keys", "data", keysSignature(snapshot), () => renderKeys(snapshot));
+}
+
+// ---------------------------------------------------------------------------
+// Paint budget. Auto-play re-renders every tick; a panel is rebuilt only when
+// it is visible (its tab is the active one, or it lives outside the tabs) and
+// the slice of the snapshot it shows has changed since it was last painted.
+// A panel skipped while hidden is forgotten, so showing its tab repaints it
+// from the current snapshot: nothing shown is ever older than the engine.
+// ---------------------------------------------------------------------------
+function paintPanel(name, tab, signature, paint) {
+  if (tab !== null && tab !== state.activeTab) {
+    state.painted.delete(name);
+    return false;
+  }
+  if (state.painted.get(name) === signature) {
+    return false;
+  }
+  paint();
+  state.painted.set(name, signature);
+  return true;
+}
+
+function verdictPanelSignature(snapshot) {
+  return JSON.stringify([
+    snapshot.verdict,
+    snapshot.first_violation_step,
+    snapshot.checked_invariants,
+    snapshot.step,
+  ]);
+}
+
+function consistencySignature(snapshot) {
+  return JSON.stringify([
+    snapshot.consistency,
+    keyAgreement(snapshot),
+    snapshot.progress?.committed_entries,
+  ]);
+}
+
+function keysSignature(snapshot) {
+  return JSON.stringify([
+    keyAgreement(snapshot),
+    (state.changes?.keys ?? []).map((change) => `${change.key}|${change.node}`),
+  ]);
 }
 
 // Small state markers on the tabs, so a problem in a hidden tab is still seen.

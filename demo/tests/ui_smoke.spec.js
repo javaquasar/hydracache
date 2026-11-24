@@ -149,6 +149,7 @@ test("reduced_motion_and_transparency_fallbacks_apply", async ({ page }) => {
 
 test("consistency_panel_shows_product_level_availability", async ({ page }) => {
   await openReady(page);
+  await page.getByTestId("tab-data").click();
   const panel = page.getByTestId("consistency-panel");
   await expect(panel).toContainText("does not run per-level reads or writes");
   await expect(panel).toContainText("live replicas agree on sampled keys");
@@ -158,14 +159,19 @@ test("consistency_panel_shows_product_level_availability", async ({ page }) => {
   await expect(panel.locator("[data-level='quorum']")).toContainText("needs 2 of 3, 3 live");
 
   const crash = page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" });
+  // Node controls live on the Cluster tab; the panel is read on the Data tab.
+  await page.getByTestId("tab-cluster").click();
   await crash.nth(2).click();
+  await page.getByTestId("tab-data").click();
   await expect(panel.locator("[data-level='all']")).toHaveClass(/bad/);
   await expect(panel.locator("[data-level='all']")).toContainText(
     "requires 3 live acknowledgements from 3 replicas, only 2 are live",
   );
   await expect(panel.locator("[data-level='quorum']")).toHaveClass(/ok/);
 
+  await page.getByTestId("tab-cluster").click();
   await crash.nth(1).click();
+  await page.getByTestId("tab-data").click();
   await expect(panel.locator("[data-level='quorum']")).toHaveClass(/bad/);
   await expect(panel.locator("[data-level='local_quorum']")).toContainText(
     "regional quorum unsatisfied: local needs 2, has 1",
@@ -268,6 +274,7 @@ test("cancelled_pointer_on_client_does_not_push", async ({ page }) => {
 
 test("verdict_panel_lists_exactly_what_is_checked", async ({ page }) => {
   await openReady(page);
+  await page.getByTestId("tab-verdict").click();
   const panel = page.getByTestId("verdict-panel");
   await expect(panel).toContainText("election_safety");
   await expect(panel).toContainText("read-your-writes");
@@ -800,4 +807,18 @@ test("mobile_run_dock_follows_when_controls_scroll_away", async ({ page }, testI
   await expect(page.getByTestId("dock-play")).toHaveText("Play");
   await page.evaluate(() => window.scrollTo(0, 0));
   await expect(dock).toBeHidden();
+});
+
+test("hidden_tab_panels_paint_when_their_tab_opens", async ({ page }) => {
+  await openReady(page);
+  // Advance while the Data tab is hidden: its panels are not rebuilt, but
+  // opening the tab shows them painted from the current step.
+  await page.getByTestId("step").click();
+  await page.getByTestId("step").click();
+  await page.getByTestId("tab-data").click();
+  await expect(page.getByTestId("consistency-panel")).toContainText("live replicas agree");
+  const keys = await page.getByTestId("keys-panel").textContent();
+  expect((keys ?? "").trim().length).toBeGreaterThan(0);
+  await page.getByTestId("tab-verdict").click();
+  await expect(page.getByTestId("verdict-panel")).toContainText("election_safety");
 });

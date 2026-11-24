@@ -46,6 +46,7 @@ test("copy_reproducer_roundtrips_mode_and_actions", async ({ page, browser }) =>
   await replayed.goto(replayUrl ?? "");
   await expect(replayed.getByTestId("intervention-status")).toContainText("mixed");
   await expect(replayed.getByTestId("intervention-status")).toContainText("3 replay action");
+  await replayed.getByTestId("tab-clients").click();
   await expect(replayed.getByTestId("subscribers-panel")).toContainText("client-a@profiles");
   await replayed.close();
 });
@@ -72,6 +73,7 @@ test("copy_reproducer_replays_faults_to_identical_snapshot", async ({ page, brow
   await replayed.goto(replayUrl ?? "");
   await expect(replayed.getByTestId("snapshot-hash")).toHaveText(liveHash ?? "");
   await expect(replayed.getByTestId("intervention-status")).toContainText("3 replay action");
+  await replayed.getByTestId("tab-clients").click();
   await expect(replayed.getByTestId("workload-toggle")).not.toBeChecked();
   await replayed.close();
 });
