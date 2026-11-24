@@ -47,6 +47,9 @@ const graphSim = {
   drag: null,
   raf: null,
   packets: [],
+  // Flight length in steps per message id, kept while the message is in flight.
+  flightTotals: new Map(),
+  packetEpoch: 0,
   pulses: [],
   interactionsBound: false,
 };
@@ -63,6 +66,7 @@ export function resetGraph() {
   graphSim.autoFit = true;
   graphSim.drag = null;
   graphSim.packets = [];
+  graphSim.flightTotals = new Map();
 }
 
 const VIEW_BOX = { width: 800, height: 520 };
@@ -390,19 +394,57 @@ function onActivateKey(target, activate) {
   });
 }
 
+// Packets follow the engine's delivery schedule instead of a decorative loop.
+// A message's flight lasts `remaining_millis` (in steps) + 1 steps, measured the
+// first time it is seen; on each step it covers that step's share of the edge,
+// so an undelayed message crosses in one step and a delayed one crawls. While
+// the run waits, the current step's share replays at the play speed. A message
+// the engine will drop on delivery (its directed link is cut, or its target is
+// down) is drawn as doomed and fades out before it arrives.
+export function packetFlights(snapshot, previous = new Map()) {
+  const stepMillis = snapshot.step > 0 ? Math.max(1, Number(snapshot.logical_time_millis) / snapshot.step) : 1;
+  const nodes = new Map((snapshot.nodes || []).map((node) => [node.id, node]));
+  const links = new Map((snapshot.links || []).map((link) => [`${link.from}>${link.to}`, link.state]));
+  const lanes = new Map();
+  const totals = new Map();
+  const flights = (snapshot.in_flight || []).slice(0, 16).map((message) => {
+    const left = Math.ceil(Math.max(0, Number(message.remaining_millis) || 0) / stepMillis);
+    const total = Math.max(previous.get(message.id) ?? 0, left + 1);
+    totals.set(message.id, total);
+    const flown = total - left - 1;
+    const target = nodes.get(message.to);
+    const doomed =
+      links.get(`${message.from}>${message.to}`) === "partitioned" ||
+      Boolean(target && (target.crashed || target.disabled || target.up === false));
+    const edge = [message.from, message.to].sort().join("|");
+    const lane = lanes.get(edge) ?? 0;
+    lanes.set(edge, lane + 1);
+    return { message, start: flown / total, end: (flown + 1) / total, lane, doomed };
+  });
+  return { flights, totals };
+}
+
 function rebuildPackets(snapshot) {
   graphSim.packets = [];
   if (!graphSim.dom) return;
   graphSim.dom.packetLayer.replaceChildren();
-  const messages = (snapshot.in_flight || []).slice(0, 16);
-  messages.forEach((message, index) => {
-    if (!graphSim.pos.has(message.from) || !graphSim.pos.has(message.to)) return;
-    const kind = packetKind(message.kind);
+  graphSim.packetEpoch = performance.now();
+  const { flights, totals } = packetFlights(snapshot, graphSim.flightTotals);
+  graphSim.flightTotals = totals;
+  for (const { message, start, end, lane, doomed } of flights) {
+    if (!graphSim.pos.has(message.from) || !graphSim.pos.has(message.to)) continue;
+    const kind = `${packetKind(message.kind)}${doomed ? " doomed" : ""}`;
     const trail = svg("line", { class: `packet-trail ${kind}` });
     const dot = svg("circle", { class: `packet ${kind}`, r: 9 });
+    Object.assign(dot.dataset, {
+      from: message.from,
+      to: message.to,
+      kind: message.kind,
+      span: `${start.toFixed(3)}-${end.toFixed(3)}`,
+    });
     graphSim.dom.packetLayer.append(trail, dot);
-    graphSim.packets.push({ dot, trail, from: message.from, to: message.to, offset: index / Math.max(messages.length, 1) });
-  });
+    graphSim.packets.push({ dot, trail, from: message.from, to: message.to, start, end, lane, doomed });
+  }
 }
 
 function applyGraphForces() {
@@ -525,17 +567,31 @@ function paintGraph(now) {
     for (const { edge, line } of graphSim.dom.entityEdges) setLine(line, edge.a, edge.b);
   }
   const reduced = document.documentElement.dataset.reducedMotion === "true";
-  const base = (now / 1150) % 1;
+  const period = Math.max(300, Number(host.getStepMillis?.()) || 1150);
+  const phase = ((now - (graphSim.packetEpoch ?? 0)) % period) / period;
   for (const packet of graphSim.packets) {
     const pa = P.get(packet.from);
     const pb = P.get(packet.to);
     if (!pa || !pb) continue;
-    const progress = reduced ? 0.5 : (base + packet.offset) % 1;
+    // Messages sharing an edge leave a little apart; every one arrives within
+    // the step and then rests at its step's end point until the next cycle.
+    const stagger = Math.min(packet.lane, 3) * 0.12;
+    const t = reduced ? 0.5 : Math.min(Math.max((phase - stagger) / 0.6, 0), 1);
+    const eased = t * t * (3 - 2 * t);
+    let progress = packet.start + (packet.end - packet.start) * eased;
+    let opacity = 1;
+    if (packet.doomed) {
+      // Dropped on delivery: it never reaches the target.
+      progress = Math.min(progress, packet.start + (packet.end - packet.start) * 0.8, 0.82);
+      opacity = reduced ? 0.55 : 1 - 0.85 * eased;
+    }
+    packet.dot.style.opacity = opacity;
+    packet.trail.style.opacity = opacity;
     const x = pa.x + (pb.x - pa.x) * progress;
     const y = pa.y + (pb.y - pa.y) * progress;
     packet.dot.setAttribute("cx", x);
     packet.dot.setAttribute("cy", y);
-    const tail = Math.max(0, progress - 0.16);
+    const tail = Math.max(packet.start, progress - 0.16);
     packet.trail.setAttribute("x1", pa.x + (pb.x - pa.x) * tail);
     packet.trail.setAttribute("y1", pa.y + (pb.y - pa.y) * tail);
     packet.trail.setAttribute("x2", x);

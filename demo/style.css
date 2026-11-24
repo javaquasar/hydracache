@@ -759,6 +759,11 @@ main[aria-busy="true"] .side-panel button {
   background: var(--event);
 }
 
+.legend-dot.doomed {
+  background: transparent;
+  border: 2px dashed var(--danger);
+}
+
 .side-panel {
   display: grid;
   align-content: start;
@@ -1369,6 +1374,20 @@ dd {
 .packet.vote-request,
 .packet.vote-response {
   fill: var(--accent-alt);
+}
+
+/* A message the engine will drop on delivery (cut link or target down): no
+   pulse, a dashed danger ring, and an inline opacity fade set by graph.js. */
+.packet.doomed {
+  stroke: var(--danger);
+  stroke-width: 3;
+  stroke-dasharray: 4 3;
+  animation: none;
+}
+
+.packet-trail.doomed {
+  stroke: color-mix(in srgb, var(--danger) 45%, transparent);
+  animation: none;
 }
 
 @keyframes packet-pulse {

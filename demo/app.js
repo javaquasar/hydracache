@@ -182,6 +182,8 @@ async function boot() {
     onNodePress: (id) => openNodePopover(id),
     getNodeMarks: () => state.marks,
     onPaint: () => positionNodePopover(),
+    // Packets cover one step of their flight per play interval.
+    getStepMillis: () => Number(el.speed.value),
   });
   bindPreferenceState();
   bindTheme();

@@ -49,6 +49,10 @@ guarantee.
   simulator election model for the lab; not a product consensus claim"*. That FSM
   is validated against the native raft harness for safety, quorum denial, and
   bounded convergence, but it is **not a product consensus claim**.
+  Since 0.74 it honours cut links the way the raft path does: no election signal
+  crosses a partitioned link, votes and heartbeat rounds count only peers
+  connected both ways, a leader that no longer reaches a quorum steps down, and a
+  node that cannot reach a quorum does not campaign.
 - **Cluster / node FSM, client routing, and heartbeat traffic are approximations.**
   `connected_node` (which node a client/subscriber attaches to) is a deterministic
   hash, not the real smart-routing logic; follower→leader heartbeat acks exist for
@@ -71,8 +75,14 @@ guarantee.
   theme** restate engine state (role, link state, recorded actions, leader and
   verdict changes) for readability; they add no information of their own. The
   theme follows the OS setting until you pick one with the ◐ button.
-- **Packet and data-flow animations.** `in_flight` messages are real, but their
-  on-screen travel timing is cosmetic. The client → node → replication →
+- **Packet and data-flow animations.** `in_flight` messages are real, and their
+  travel follows the engine's delivery schedule: a message's flight lasts its
+  `remaining_millis` (converted to steps) plus one step, so an undelayed message
+  crosses its edge in one step and a delayed one advances by its share per
+  step. A message the engine will drop on delivery (its directed link is cut,
+  or its target is crashed, disabled or isolated) is drawn dashed and fades
+  before arrival ("lost" in the legend). The wall-clock speed of that travel
+  follows the play speed and is cosmetic. The client → node → replication →
   subscriber **pulse** fired on a push is a choreographed overlay; its "fan out to
   every node" matches the simulator's full-replication model, not the product's
   configurable RF.

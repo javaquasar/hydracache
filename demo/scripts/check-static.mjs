@@ -36,6 +36,7 @@ const required = [
   "tests/support/violation-stub.js",
   "unit/share.test.mjs",
   "unit/insight.test.mjs",
+  "unit/packets.test.mjs",
   "scripts/serve-static.mjs",
   "scripts/og-image.mjs",
   "og-image.png",

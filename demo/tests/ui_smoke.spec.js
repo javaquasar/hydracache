@@ -797,3 +797,60 @@ test("intro_and_violation_cards_align_with_the_controls", async ({ page }) => {
   expect(Math.abs(violation.x - controls.x)).toBeLessThanOrEqual(1);
   expect(Math.abs(violation.width - controls.width)).toBeLessThanOrEqual(1);
 });
+
+// Packets are drawn from the engine's in-flight messages and follow its rules:
+// nothing crosses a cut link (the election model honours partitions too), a
+// delayed message covers only its share of the edge per step, and a message
+// whose target is down is drawn as lost.
+test("packets_follow_link_state_and_delivery_schedule", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=80&steps=12&scenario=default`);
+  await expect(page.getByTestId("timeline-label")).toHaveText("step 12 of 12");
+  const packets = () =>
+    page.locator(".packet-layer circle.packet").evaluateAll((dots) =>
+      dots.map((dot) => ({
+        from: dot.dataset.from,
+        to: dot.dataset.to,
+        kind: dot.dataset.kind,
+        span: dot.dataset.span.split("-").map(Number),
+        doomed: dot.classList.contains("doomed"),
+      })),
+    );
+  const initial = await packets();
+  expect(initial.length).toBeGreaterThan(0);
+  expect(initial.every((packet) => packet.span[0] === 0 && packet.span[1] === 1)).toBe(true);
+
+  const linkAction = async (link, action) => {
+    await page.getByTestId("link-select").selectOption(link);
+    await page.getByTestId(`${action}-link`).click();
+    await expect(page.getByTestId("selected-link")).toContainText(link.replace(">", " -> "));
+  };
+  await linkAction("node-0>node-1", "partition");
+  await linkAction("node-1>node-0", "partition");
+  await linkAction("node-0>node-2", "delay");
+
+  const delayedSpan = async () => {
+    const all = await packets();
+    const crossing = all.filter(
+      (packet) => [packet.from, packet.to].sort().join("|") === "node-0|node-1",
+    );
+    expect(crossing, "nothing crosses the cut link").toEqual([]);
+    const delayed = all.find(
+      (packet) => packet.from === "node-0" && packet.to === "node-2" && packet.span[1] - packet.span[0] < 0.1,
+    );
+    expect(delayed, "the delayed message covers a small share per step").toBeTruthy();
+    return delayed.span;
+  };
+  const before = await delayedSpan();
+  const label = await page.getByTestId("timeline-label").textContent();
+  await page.getByTestId("step").click();
+  await expect(page.getByTestId("timeline-label")).not.toHaveText(label ?? "");
+  const after = await delayedSpan();
+  expect(after[0]).toBeGreaterThan(before[0]);
+
+  const crash = page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" });
+  await crash.nth(2).click();
+  await expect(page.locator(".vertex.node.crashed")).toHaveCount(1);
+  const toCrashed = (await packets()).filter((packet) => packet.to === "node-2");
+  expect(toCrashed.length).toBeGreaterThan(0);
+  expect(toCrashed.every((packet) => packet.doomed), "messages to a crashed node are drawn as lost").toBe(true);
+});
