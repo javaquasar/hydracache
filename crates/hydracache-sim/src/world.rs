@@ -343,6 +343,7 @@ impl SimWorld {
             }
             ControlActionV1::AddClient { client, ns, .. } => self.add_client(client, ns),
             ControlActionV1::Unsubscribe { client, ns, .. } => self.unsubscribe(client, ns),
+            ControlActionV1::RemoveClient { client, .. } => self.remove_client(client),
             ControlActionV1::ModeChange { mode, .. } => {
                 self.mode = mode;
                 Ok(())
@@ -537,6 +538,20 @@ impl SimWorld {
             )));
         }
         self.record(format!("manual_unsubscribe:{client}:{namespace}"));
+        Ok(())
+    }
+
+    /// Remove a manual-mode writer client. Its operations already recorded in
+    /// the history stay (they happened); a later push under the same name
+    /// registers a new writer. Fails loud when no such writer exists.
+    pub fn remove_client(&mut self, client: impl Into<String>) -> Result<(), ControlApplyError> {
+        let client = client.into();
+        if self.clients.remove(&client).is_none() {
+            return Err(ControlApplyError::InvalidAction(format!(
+                "no writer named '{client}'"
+            )));
+        }
+        self.record(format!("manual_remove_client:{client}"));
         Ok(())
     }
 

@@ -169,6 +169,14 @@ impl SimHandle {
             .map_err(|error| JsValue::from_str(&error.to_string()))
     }
 
+    /// Remove a manual-mode writer client.
+    pub fn remove_client(&mut self, client: String) -> Result<(), JsValue> {
+        let at_step = self.world.outcome().steps;
+        self.world
+            .apply_control_action(hydracache_sim::ControlActionV1::RemoveClient { at_step, client })
+            .map_err(|error| JsValue::from_str(&error.to_string()))
+    }
+
     /// Remove a manual-mode subscriber.
     pub fn unsubscribe(&mut self, client: String, namespace: String) -> Result<(), JsValue> {
         let at_step = self.world.outcome().steps;

@@ -151,6 +151,8 @@ pub enum ControlActionV1 {
         client: String,
         ns: String,
     },
+    /// Remove a writer client; its recorded history stays (0.74).
+    RemoveClient { at_step: u64, client: String },
     /// Change the UI/lab mode.
     ModeChange { at_step: u64, mode: SimMode },
     /// Crash a node.
@@ -200,6 +202,7 @@ impl ControlActionV1 {
             | Self::Subscribe { at_step, .. }
             | Self::AddClient { at_step, .. }
             | Self::Unsubscribe { at_step, .. }
+            | Self::RemoveClient { at_step, .. }
             | Self::ModeChange { at_step, .. }
             | Self::Crash { at_step, .. }
             | Self::Restart { at_step, .. }

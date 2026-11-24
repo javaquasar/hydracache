@@ -86,6 +86,9 @@ enum SimInjectRequest {
         client: String,
         ns: String,
     },
+    RemoveClient {
+        client: String,
+    },
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -251,6 +254,9 @@ fn apply_injection(
             client,
             ns,
         },
+        SimInjectRequest::RemoveClient { client } => {
+            ControlActionV1::RemoveClient { at_step, client }
+        }
     };
     world
         .apply_control_action(action)

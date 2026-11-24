@@ -195,6 +195,13 @@ async fn sim_routes_accept_topology_control_actions() {
         .unwrap()
         .iter()
         .any(|client| client["id"] == "client-b"));
+    let removed = post_json(
+        app.clone(),
+        "/sim/inject",
+        json!({"action": "remove_client", "client": "client-b"}).to_string(),
+    )
+    .await;
+    assert!(removed["clients"].as_array().unwrap().is_empty());
 
     post_json(
         app.clone(),

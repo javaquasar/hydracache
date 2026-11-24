@@ -260,3 +260,36 @@ fn writer_and_subscriber_actions_replay_identically() {
     .expect("script replays");
     assert_eq!(replayed.snapshot(), world.snapshot());
 }
+
+#[test]
+fn removed_writer_leaves_its_history_and_fails_loud_twice() {
+    let mut world = manual_world();
+    world
+        .push_event("client-a", NS, KEY, "fresh")
+        .expect("manual push applies");
+    let committed = world.snapshot().progress.committed_entries;
+    world
+        .remove_client("client-a")
+        .expect("a writer can be removed");
+    let snapshot = world.snapshot();
+    assert!(snapshot.clients.is_empty());
+    assert_eq!(
+        snapshot.progress.committed_entries, committed,
+        "history stays"
+    );
+    let twice = world.remove_client("client-a").unwrap_err();
+    assert!(twice.to_string().contains("no writer named"), "{twice}");
+    // The name can be used again: a new writer registers.
+    world
+        .add_client("client-a", NS)
+        .expect("name is free again");
+
+    // Through the shared control surface an unknown writer fails loud too.
+    let mut other = manual_world();
+    other
+        .apply_control_action(ControlActionV1::RemoveClient {
+            at_step: 8,
+            client: "ghost".to_owned(),
+        })
+        .unwrap_err();
+}
