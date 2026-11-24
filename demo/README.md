@@ -82,7 +82,19 @@ guarantee.
   step. A message the engine will drop on delivery (its directed link is cut,
   or its target is crashed, disabled or isolated) is drawn dashed and fades
   before arrival ("lost" in the legend). The wall-clock speed of that travel
-  follows the play speed and is cosmetic. The client → node → replication →
+  follows the play speed and is cosmetic. Shapes tell message families apart without
+  colour: votes are diamonds, replicated writes squares (labelled with their
+  key), invalidations triangles, and control traffic (heartbeats, acks) small
+  faint dots.
+- **Within-step staging and role overlays.** The engine changes state once per
+  step; the graph orders what it shows inside the step. A role change that a
+  message causes is shown when that message lands (a voter turns when the vote
+  request reaches it, a follower when the heartbeat does); local causes (a
+  timeout, a crash, a user action) show at once. The leader's star travelling
+  from the previous leader, the "term N" label, the ring around the node
+  running the election and its "votes" tally (its own vote plus vote responses
+  as they land, against the quorum) restate in-flight messages and snapshot
+  state. Reduced motion shows every change at once, without overlays. The client → node → replication →
   subscriber **pulse** fired on a push is a choreographed overlay; its "fan out to
   every node" matches the simulator's full-replication model, not the product's
   configurable RF.

@@ -806,7 +806,7 @@ test("packets_follow_link_state_and_delivery_schedule", async ({ page }) => {
   await page.goto(`${demoUrl}?seed=80&steps=12&scenario=default`);
   await expect(page.getByTestId("timeline-label")).toHaveText("step 12 of 12");
   const packets = () =>
-    page.locator(".packet-layer circle.packet").evaluateAll((dots) =>
+    page.locator(".packet-layer .packet").evaluateAll((dots) =>
       dots.map((dot) => ({
         from: dot.dataset.from,
         to: dot.dataset.to,
@@ -899,4 +899,59 @@ test("canvas_click_keeps_the_view_fitted_and_drag_releases_fit", async ({ page }
   await expect(fit).toHaveAttribute("aria-pressed", "false");
   await fit.click();
   await expect(fit).toHaveAttribute("aria-pressed", "true");
+});
+
+// A role change a message causes is shown when that message lands: on the
+// step node-0 times out, it campaigns at once, the others turn only when its
+// vote request reaches them, and its tally counts responses as they arrive.
+test("election_is_staged_by_message_arrival", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=80&steps=2&scenario=default`);
+  await expect(page.getByTestId("timeline-label")).toHaveText("step 2 of 2");
+  // Slow steps, so the in-step stages are observable.
+  await page.locator("#speed-input").evaluate((input) => {
+    input.value = input.max;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  const node = (id) => page.locator(`.vertex.node[aria-label^="${id},"]`);
+  await page.getByTestId("step").click();
+
+  await expect(node("node-0")).toHaveClass(/role-candidate/);
+  await expect(node("node-0")).toHaveClass(/campaigning/);
+  await expect(node("node-1")).toHaveClass(/role-joining/);
+  const tally = page.locator(".vote-tally");
+  await expect(tally).toHaveText("1/2 votes");
+  const votes = page.locator(".packet-layer .packet[data-family='vote']");
+  await expect(votes.first()).toBeAttached();
+  expect(await votes.first().locator("path.packet-shape").count()).toBe(1);
+
+  // The request lands, the voter turns; the responses land, the tally fills.
+  await expect(node("node-1")).toHaveClass(/role-candidate/);
+  await expect(node("node-1")).not.toHaveClass(/campaigning/);
+  await expect(tally).toHaveText("2/2 votes");
+  await expect(tally).toHaveClass(/won/);
+
+  // The next step elects node-0; its badge pops in (no previous leader).
+  await page.getByTestId("step").click();
+  await expect(node("node-0")).toHaveClass(/role-leader/);
+  await expect(tally).toHaveCount(0);
+
+  // Crash the leader: the star travels to whichever node wins next.
+  await page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" }).first().click();
+  await expect(page.locator(".leader-baton")).toHaveCount(1);
+  await expect(page.locator(".vertex.node.role-leader")).toHaveCount(1);
+  await expect(page.locator(".leader-baton")).toHaveCount(0);
+});
+
+test("reduced_motion_applies_roles_at_once_without_overlays", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(`${demoUrl}?seed=80&steps=2&scenario=default`);
+  await expect(page.locator("html")).toHaveAttribute("data-reduced-motion", "true");
+  await page.getByTestId("step").click();
+  await expect(page.locator('.vertex.node[aria-label^="node-1,"]')).toHaveClass(/role-candidate/);
+  await expect(page.locator(".vote-tally")).toHaveText("2/2 votes");
+  await expect(page.locator(".term-float")).toHaveCount(0);
+  await page.getByTestId("step").click();
+  await page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" }).first().click();
+  await expect(page.locator(".vertex.node.role-leader")).toHaveCount(1);
+  await expect(page.locator(".leader-baton")).toHaveCount(0);
 });

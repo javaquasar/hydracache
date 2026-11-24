@@ -50,6 +50,17 @@ const graphSim = {
   // Flight length in steps per message id, kept while the message is in flight.
   flightTotals: new Map(),
   packetEpoch: 0,
+  // Identity of the in-flight set last drawn, so a re-render of the same step
+  // does not restart the packets mid-flight.
+  packetKey: "",
+  // Causal staging: what each node currently shows, and role changes waiting
+  // for the message that causes them to arrive (see stageNodeVisual).
+  nodeShown: new Map(),
+  pendingNodes: new Map(),
+  lastLeaderId: null,
+  // Role overlays (leader baton, term labels) and live vote tallies.
+  overlays: [],
+  tallies: new Map(),
   pulses: [],
   interactionsBound: false,
 };
@@ -67,6 +78,12 @@ export function resetGraph() {
   graphSim.drag = null;
   graphSim.packets = [];
   graphSim.flightTotals = new Map();
+  graphSim.packetKey = "";
+  graphSim.nodeShown = new Map();
+  graphSim.pendingNodes = new Map();
+  graphSim.lastLeaderId = null;
+  graphSim.overlays = [];
+  graphSim.tallies = new Map();
 }
 
 const VIEW_BOX = { width: 800, height: 520 };
@@ -211,8 +228,10 @@ export function syncGraph(snapshot) {
     graphSim.topoKey = topoKey;
   }
 
-  updateGraphVisuals(snapshot);
+  // Packets first: node role changes are timed to their arrival.
   rebuildPackets(snapshot);
+  updateGraphVisuals(snapshot);
+  syncVoteTally(snapshot);
   startGraphSim();
 }
 
@@ -247,10 +266,17 @@ function buildGraphDom(snapshot) {
   const pulseLayer = svg("g", { class: "pulse-layer", "aria-hidden": "true" });
   const labelLayer = svg("g", { class: "link-labels", "aria-hidden": "true" });
   const vertexLayer = svg("g", { class: "vertices" });
-  viewport.append(edgeLayer, entityLinkLayer, packetLayer, pulseLayer, labelLayer, vertexLayer);
+  // Above the vertices: leader baton, term labels and vote tallies. Hidden from
+  // assistive tech; the node's own name carries its role and term.
+  const roleLayer = svg("g", { class: "role-layer", "aria-hidden": "true" });
+  viewport.append(edgeLayer, entityLinkLayer, packetLayer, pulseLayer, labelLayer, vertexLayer, roleLayer);
   host.svg.append(viewport);
 
-  const dom = { viewport, packetLayer, pulseLayer, edges: [], entityEdges: [], vertices: new Map() };
+  const dom = { viewport, packetLayer, pulseLayer, roleLayer, edges: [], entityEdges: [], vertices: new Map() };
+  // A rebuilt canvas has no packets or overlays drawn yet.
+  graphSim.packetKey = "";
+  graphSim.overlays = [];
+  graphSim.tallies = new Map();
 
   for (const edge of graphSim.edges) {
     if (edge.kind === "node") {
@@ -283,6 +309,8 @@ function buildGraphDom(snapshot) {
       });
       badge.append(svg("circle", { r: 13 }), svg("text", { y: 5 }));
       group.append(
+        // Pulses around a campaigning candidate (CSS shows it for that role).
+        svg("circle", { class: "v-ring", r: GRAPH.nodeRadius + 9 }),
         svg("circle", { class: "v-body", r: GRAPH.nodeRadius }),
         svg("text", { class: "v-id", y: -5 }),
         svg("text", { class: "v-sub", y: 17 }),
@@ -318,7 +346,98 @@ function buildGraphDom(snapshot) {
   graphSim.dom = dom;
 }
 
+// ---------------------------------------------------------------------------
+// Causal staging. A role change that a message causes is shown when that
+// message arrives: a voter turns when the vote request lands, a follower when
+// the leader's heartbeat lands. Changes with a local cause (a candidate's own
+// timeout, a crash, a user action) and changes with no arriving cause show at
+// once. Reduced motion shows everything at once.
+// ---------------------------------------------------------------------------
+const CAUSING_KINDS = new Set(["vote_request", "leader_heartbeat"]);
+
+function packetArrivalTime(packet) {
+  const period = Math.max(300, Number(host.getStepMillis?.()) || 1150);
+  return graphSim.packetEpoch + period * (Math.min(packet.lane, 3) * 0.12 + 0.6);
+}
+
+function causeArrival(nodeId) {
+  let latest = null;
+  for (const packet of graphSim.packets) {
+    if (packet.to !== nodeId || packet.doomed || packet.end < 1 || !CAUSING_KINDS.has(packet.kind)) continue;
+    const at = packetArrivalTime(packet);
+    latest = latest === null ? at : Math.max(latest, at);
+  }
+  return latest;
+}
+
+function stageNodeVisual(item, node, marks, snapshot) {
+  const shown = graphSim.nodeShown.get(node.id);
+  const status = nodeStatus(node);
+  const at = shown && shown.status !== status && !reducedMotion() ? causeArrival(node.id) : null;
+  if (at === null) {
+    applyNodeVisual(item, node, marks, snapshot);
+    return;
+  }
+  graphSim.pendingNodes.set(node.id, { at, apply: () => applyNodeVisual(item, node, marks, snapshot) });
+}
+
+function applyDueNodes(now, all = false) {
+  for (const [id, pending] of graphSim.pendingNodes) {
+    if (all || now >= pending.at) {
+      graphSim.pendingNodes.delete(id);
+      pending.apply();
+    }
+  }
+}
+
+function reducedMotion() {
+  return document.documentElement.dataset.reducedMotion === "true";
+}
+
+// What a node looks like for one snapshot: role class, labels and name.
+function applyNodeVisual(item, node, marks, snapshot) {
+  const status = nodeStatus(node);
+  const shown = graphSim.nodeShown.get(node.id);
+  const isNew = !seenNodes.has(node.id);
+  seenNodes.add(node.id);
+  item.group.setAttribute(
+    "class",
+    [
+      "vertex",
+      "node",
+      `role-${status}`,
+      node.crashed ? "crashed" : "",
+      node.disabled ? "disabled" : "",
+      isNew ? "joining" : "",
+      marks.implicated.has(node.id) ? "implicated" : "",
+    ]
+      .filter(Boolean)
+      .join(" "),
+  );
+  if (marks.changed.has(node.id)) {
+    // Restart the flash even when the node also changed on the last step.
+    void item.group.getBoundingClientRect();
+    item.group.classList.add("changed");
+  }
+  if (graphSim.tallies.has(node.id)) item.group.classList.add("campaigning");
+  // A re-render must not reveal the badge while the baton is still flying.
+  if (graphSim.overlays.some((overlay) => overlay.group === item.group)) {
+    item.group.classList.add("baton-incoming");
+  }
+  // The trailing space is not drawn (SVG drops it) but keeps the id and the
+  // status apart in the vertex's text, so its accessible name, which starts
+  // with "id, status", matches the visible text (WCAG 2.5.3).
+  item.group.querySelector(".v-id").textContent = `${node.id} `;
+  item.group.querySelector(".v-sub").textContent = status;
+  item.group.querySelector(".v-badge text").textContent = ROLE_BADGES[status] ?? "";
+  item.group.setAttribute("aria-label", `${node.id}, ${status}, term ${node.term}`);
+  graphSim.nodeShown.set(node.id, { status, term: node.term });
+  announceRoleChange(node, status, shown, snapshot);
+}
+
 function updateGraphVisuals(snapshot) {
+  // A newer snapshot supersedes anything still waiting from the last one.
+  applyDueNodes(0, true);
   const marks = host.getNodeMarks?.() ?? { changed: new Set(), implicated: new Set() };
   const nodeById = new Map((snapshot.nodes || []).map((n) => [n.id, n]));
   for (const [, item] of graphSim.dom.vertices) {
@@ -326,35 +445,7 @@ function updateGraphVisuals(snapshot) {
     if (v.kind === "node") {
       const node = nodeById.get(v.id);
       if (!node) continue;
-      const status = nodeStatus(node);
-      const isNew = !seenNodes.has(node.id);
-      seenNodes.add(node.id);
-      item.group.setAttribute(
-        "class",
-        [
-          "vertex",
-          "node",
-          `role-${status}`,
-          node.crashed ? "crashed" : "",
-          node.disabled ? "disabled" : "",
-          isNew ? "joining" : "",
-          marks.implicated.has(node.id) ? "implicated" : "",
-        ]
-          .filter(Boolean)
-          .join(" "),
-      );
-      if (marks.changed.has(node.id)) {
-        // Restart the flash even when the node also changed on the last step.
-        void item.group.getBoundingClientRect();
-        item.group.classList.add("changed");
-      }
-      // The trailing space is not drawn (SVG drops it) but keeps the id and the
-      // status apart in the vertex's text, so its accessible name, which starts
-      // with "id, status", matches the visible text (WCAG 2.5.3).
-      item.group.querySelector(".v-id").textContent = `${node.id} `;
-      item.group.querySelector(".v-sub").textContent = status;
-      item.group.querySelector(".v-badge text").textContent = ROLE_BADGES[status] ?? "";
-      item.group.setAttribute("aria-label", `${node.id}, ${status}, term ${node.term}`);
+      stageNodeVisual(item, node, marks, snapshot);
     } else {
       // Vertices are rebuilt only on topology change, so read the live entity.
       const ref =
@@ -433,26 +524,57 @@ export function packetFlights(snapshot, previous = new Map()) {
 }
 
 function rebuildPackets(snapshot) {
-  graphSim.packets = [];
   if (!graphSim.dom) return;
+  const key = `${snapshot.step}|${snapshot.logical_time_millis}|${(snapshot.in_flight || []).map((message) => message.id).join(",")}`;
+  if (key === graphSim.packetKey) return;
+  graphSim.packetKey = key;
+  graphSim.packets = [];
   graphSim.dom.packetLayer.replaceChildren();
   graphSim.packetEpoch = performance.now();
   const { flights, totals } = packetFlights(snapshot, graphSim.flightTotals);
   graphSim.flightTotals = totals;
   for (const { message, start, end, lane, doomed } of flights) {
     if (!graphSim.pos.has(message.from) || !graphSim.pos.has(message.to)) continue;
+    const family = packetFamily(message.kind);
     const kind = `${packetKind(message.kind)}${doomed ? " doomed" : ""}`;
-    const trail = svg("line", { class: `packet-trail ${kind}` });
-    const dot = svg("circle", { class: `packet ${kind}`, r: 9 });
+    // Control traffic (heartbeats, acks) stays quiet: small and trail-less.
+    const trail = family === "control" ? null : svg("line", { class: `packet-trail ${kind}` });
+    const dot = svg("g", { class: `packet ${kind}` });
+    dot.append(packetShape(family));
+    const label = family === "data" && message.key ? svg("text", { class: "packet-key", y: -13 }, shortKey(message.key)) : null;
+    if (label) dot.append(label);
     Object.assign(dot.dataset, {
       from: message.from,
       to: message.to,
       kind: message.kind,
+      family,
       span: `${start.toFixed(3)}-${end.toFixed(3)}`,
     });
-    graphSim.dom.packetLayer.append(trail, dot);
-    graphSim.packets.push({ dot, trail, from: message.from, to: message.to, start, end, lane, doomed });
+    if (trail) graphSim.dom.packetLayer.append(trail);
+    graphSim.dom.packetLayer.append(dot);
+    graphSim.packets.push({ dot, trail, label, from: message.from, to: message.to, kind: message.kind, start, end, lane, doomed });
   }
+}
+
+// Shape per message family, so kinds read without relying on colour.
+function packetShape(family) {
+  switch (family) {
+    case "vote":
+      return svg("path", { class: "packet-shape", d: "M0 -10 L10 0 L0 10 L-10 0 Z" });
+    case "data":
+      return svg("rect", { class: "packet-shape", x: -8, y: -8, width: 16, height: 16, rx: 3 });
+    case "event":
+      return svg("path", { class: "packet-shape", d: "M0 -10 L9.5 7 L-9.5 7 Z" });
+    case "control":
+      return svg("circle", { class: "packet-shape", r: 5 });
+    default:
+      return svg("circle", { class: "packet-shape", r: 8 });
+  }
+}
+
+function shortKey(key) {
+  const text = String(key);
+  return text.length > 12 ? `${text.slice(0, 11)}…` : text;
 }
 
 function applyGraphForces() {
@@ -594,18 +716,23 @@ function paintGraph(now) {
       opacity = reduced ? 0.55 : 1 - 0.85 * eased;
     }
     packet.dot.style.opacity = opacity;
-    packet.trail.style.opacity = opacity;
     const x = pa.x + (pb.x - pa.x) * progress;
     const y = pa.y + (pb.y - pa.y) * progress;
-    packet.dot.setAttribute("cx", x);
-    packet.dot.setAttribute("cy", y);
-    const tail = Math.max(packet.start, progress - 0.16);
-    packet.trail.setAttribute("x1", pa.x + (pb.x - pa.x) * tail);
-    packet.trail.setAttribute("y1", pa.y + (pb.y - pa.y) * tail);
-    packet.trail.setAttribute("x2", x);
-    packet.trail.setAttribute("y2", y);
+    packet.dot.setAttribute("transform", `translate(${x} ${y})`);
+    // The key label reads mid-edge and fades near the nodes it would overlap.
+    if (packet.label) packet.label.style.opacity = String(Math.min(1, Math.sin(Math.PI * progress) * 1.6));
+    if (packet.trail) {
+      packet.trail.style.opacity = opacity;
+      const tail = Math.max(packet.start, progress - 0.16);
+      packet.trail.setAttribute("x1", pa.x + (pb.x - pa.x) * tail);
+      packet.trail.setAttribute("y1", pa.y + (pb.y - pa.y) * tail);
+      packet.trail.setAttribute("x2", x);
+      packet.trail.setAttribute("y2", y);
+    }
   }
   updatePulses(now);
+  applyDueNodes(now);
+  updateRoleOverlays(now);
   host.onPaint?.();
 }
 
@@ -626,6 +753,120 @@ export function vertexClientPoint(id) {
 }
 
 // Transient, choreographed "data flow" triggered by a client push: request travels
+// ---------------------------------------------------------------------------
+// Role transitions as events: the leader's star travels from the previous
+// leader to the new one, a new term floats up from the node that started it,
+// and a campaigning candidate counts the vote responses as they land.
+// ---------------------------------------------------------------------------
+function announceRoleChange(node, status, shown, snapshot) {
+  const layer = graphSim.dom?.roleLayer;
+  if (!layer) return;
+  const motion = !reducedMotion();
+  if (status === "leader" && shown?.status !== "leader") {
+    const from = graphSim.lastLeaderId;
+    if (motion && from && from !== node.id && graphSim.pos.has(from)) {
+      const baton = svg("g", { class: "leader-baton" });
+      baton.append(svg("circle", { r: 13 }), svg("text", { y: 5 }, ROLE_BADGES.leader));
+      layer.append(baton);
+      const group = graphSim.dom.vertices.get(node.id)?.group;
+      group?.classList.add("baton-incoming");
+      graphSim.overlays.push({ kind: "baton", el: baton, from, to: node.id, t0: performance.now(), duration: 750, group });
+    } else if (motion) {
+      const group = graphSim.dom.vertices.get(node.id)?.group;
+      group?.classList.remove("badge-pop");
+      void group?.getBoundingClientRect();
+      group?.classList.add("badge-pop");
+    }
+    graphSim.lastLeaderId = node.id;
+  }
+  const termRose = shown && Number(node.term) > Number(shown.term);
+  // Only the node that opened the term (the one sending vote requests, or the
+  // leader) announces it; voters move to the term silently.
+  const opened = status === "leader" || graphSim.packets.some((packet) => packet.kind === "vote_request" && packet.from === node.id);
+  if (motion && termRose && opened) {
+    const label = svg("text", { class: "term-float" }, `term ${node.term}`);
+    layer.append(label);
+    graphSim.overlays.push({ kind: "term", el: label, nodeId: node.id, t0: performance.now(), duration: 1100 });
+  }
+}
+
+// The node sending vote requests this step is the candidate; its tally counts
+// its own vote plus each vote response as it arrives, against the quorum.
+function syncVoteTally(snapshot) {
+  const layer = graphSim.dom?.roleLayer;
+  if (!layer) return;
+  const requests = graphSim.packets.filter((packet) => packet.kind === "vote_request");
+  const candidates = new Set(requests.map((packet) => packet.from));
+  for (const [id, tally] of graphSim.tallies) {
+    if (!candidates.has(id)) {
+      tally.el.remove();
+      graphSim.tallies.delete(id);
+    }
+  }
+  for (const [id, item] of graphSim.dom.vertices) {
+    if (item.vertex.kind === "node") item.group.classList.toggle("campaigning", candidates.has(id));
+  }
+  const quorum = Math.floor((snapshot.nodes || []).length / 2) + 1;
+  for (const id of candidates) {
+    const times = graphSim.packets
+      .filter((packet) => packet.kind === "vote_response" && packet.to === id && !packet.doomed && packet.end >= 1)
+      .map((packet) => (reducedMotion() ? 0 : packetArrivalTime(packet)));
+    let tally = graphSim.tallies.get(id);
+    if (!tally) {
+      tally = { el: svg("text", { class: "vote-tally" }) };
+      layer.append(tally.el);
+      graphSim.tallies.set(id, tally);
+    }
+    Object.assign(tally, { times, quorum });
+    tally.el.dataset.node = id;
+  }
+}
+
+function updateRoleOverlays(now) {
+  const P = graphSim.pos;
+  const remaining = [];
+  for (const overlay of graphSim.overlays) {
+    const t = Math.min((now - overlay.t0) / overlay.duration, 1);
+    const eased = t * t * (3 - 2 * t);
+    if (overlay.kind === "baton") {
+      const a = P.get(overlay.from);
+      const b = P.get(overlay.to);
+      if (a && b) {
+        const r = GRAPH.nodeRadius * 0.72;
+        // An arc, so the hand-over reads as a pass rather than a slide.
+        const lift = Math.sin(Math.PI * eased) * 46;
+        const x = a.x + r + (b.x - a.x) * eased;
+        const y = a.y - r + (b.y - a.y) * eased - lift;
+        overlay.el.setAttribute("transform", `translate(${x} ${y})`);
+      }
+    } else if (overlay.kind === "term") {
+      const p = P.get(overlay.nodeId);
+      if (p) {
+        overlay.el.setAttribute("x", p.x);
+        overlay.el.setAttribute("y", p.y - GRAPH.nodeRadius - 14 - 22 * eased);
+        overlay.el.style.opacity = String(1 - t * t);
+      }
+    }
+    if (t < 1) {
+      remaining.push(overlay);
+    } else {
+      overlay.el.remove();
+      overlay.group?.classList.remove("baton-incoming");
+    }
+  }
+  graphSim.overlays = remaining;
+  for (const [id, tally] of graphSim.tallies) {
+    const p = P.get(id);
+    if (!p) continue;
+    const votes = 1 + tally.times.filter((at) => now >= at).length;
+    const text = `${Math.min(votes, tally.quorum)}/${tally.quorum} votes`;
+    if (tally.el.textContent !== text) tally.el.textContent = text;
+    tally.el.classList.toggle("won", votes >= tally.quorum);
+    tally.el.setAttribute("x", p.x);
+    tally.el.setAttribute("y", p.y + GRAPH.nodeRadius + 24);
+  }
+}
+
 // client -> entry node, replicates entry node -> peers, then is delivered entry
 // node(s) -> subscriber(s). Decorative overlay on its own layer (survives refresh).
 function updatePulses(now) {
@@ -725,6 +966,8 @@ function startGraphSim() {
       graphSim.drag ||
       graphSim.packets.length > 0 ||
       graphSim.pulses.length > 0 ||
+      graphSim.pendingNodes.size > 0 ||
+      graphSim.overlays.length > 0 ||
       energy > 0.05 ||
       fitError > 0.5;
     graphSim.raf = busy ? requestAnimationFrame(tick) : null;
@@ -895,25 +1138,28 @@ function worstLinkState(a, b) {
   return right > left ? b : a;
 }
 
+// Message family drives colour and shape: votes, data (writes being
+// replicated), events (invalidations and flushes), and control traffic
+// (heartbeats and acks).
+export function packetFamily(kind) {
+  const normalized = String(kind || "").toLowerCase();
+  if (normalized.includes("vote")) return "vote";
+  if (normalized.includes("heartbeat") || normalized === "ack") return "control";
+  if (normalized.includes("put") || normalized.includes("upsert") || normalized.includes("data")) return "data";
+  if (normalized.includes("invalid") || normalized.includes("flush") || normalized.includes("event")) return "event";
+  return "message";
+}
+
 function packetKind(kind) {
   const normalized = String(kind || "message")
     .trim()
     .toLowerCase()
     .replace(/_/g, "-")
     .replace(/[^a-z0-9-]/g, "-");
-  if (normalized.includes("heartbeat")) {
-    return "heartbeat";
-  }
-  if (normalized.includes("vote")) {
-    return `vote ${normalized}`;
-  }
-  if (normalized.includes("upsert") || normalized.includes("data")) {
-    return `data ${normalized}`;
-  }
-  if (normalized.includes("invalid") || normalized.includes("event")) {
-    return `event ${normalized}`;
-  }
-  return normalized || "message";
+  const family = packetFamily(kind);
+  // "heartbeat" keeps its colour class; "control" marks it quiet.
+  if (family === "control") return `control heartbeat ${normalized}`;
+  return family === "message" ? normalized || "message" : `${family} ${normalized}`;
 }
 
 function svg(name, attrs = {}, text = null) {

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { packetFlights } from "../graph.js";
+import { packetFamily, packetFlights } from "../graph.js";
 
 const nodes = [
   { id: "node-0", up: true, crashed: false, disabled: false },
@@ -92,5 +92,40 @@ describe("packetFlights", () => {
       flights.map((flight) => flight.lane),
       [0, 1, 0],
     );
+  });
+});
+
+describe("packetFamily", () => {
+  it("groups engine message kinds into votes, data, events and control", () => {
+    const families = Object.fromEntries(
+      [
+        "vote_request",
+        "vote_response",
+        "replicate_put",
+        "upserted",
+        "replicate_invalidate",
+        "replicate_flush",
+        "invalidated",
+        "leader_heartbeat",
+        "heartbeat_ack",
+        "heartbeat",
+        "ack",
+        "something_else",
+      ].map((kind) => [kind, packetFamily(kind)]),
+    );
+    assert.deepEqual(families, {
+      vote_request: "vote",
+      vote_response: "vote",
+      replicate_put: "data",
+      upserted: "data",
+      replicate_invalidate: "event",
+      replicate_flush: "event",
+      invalidated: "event",
+      leader_heartbeat: "control",
+      heartbeat_ack: "control",
+      heartbeat: "control",
+      ack: "control",
+      something_else: "message",
+    });
   });
 });
