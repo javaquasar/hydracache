@@ -25,6 +25,7 @@ import {
   leaderOf,
   nodeDetails,
   nodeStatus,
+  predictionHolds,
   scriptAtStep,
   scriptFileName,
   shortVersion,
@@ -33,6 +34,7 @@ import {
   stepChanges,
   timelineEvents,
   timelineMarks,
+  tourOutcome,
   verdictView,
   versionHue,
   violationFocus,
@@ -77,7 +79,7 @@ const state = {
   timeline: { script: null, base: 0, furthest: 0, rewound: false },
   // Per-step observations made by this page (leader, verdict) for the event list.
   observations: new Map(),
-  tour: { scenario: "default", index: 0, crashed: null },
+  tour: freshTour("default"),
   // What changed since the previously rendered snapshot of the same run
   // (insight.stepChanges); null right after a new run is created.
   changes: null,
@@ -119,6 +121,17 @@ const el = {
   guideBack: document.querySelector("#guide-back"),
   guideDo: document.querySelector("#guide-do"),
   guideNext: document.querySelector("#guide-next"),
+  guideDots: document.querySelector("#guide-dots"),
+  guideOutcome: document.querySelector("#guide-outcome"),
+  guidePredict: document.querySelector("#guide-predict"),
+  guidePredictQuestion: document.querySelector("#guide-predict-question"),
+  guidePredictOptions: document.querySelector("#guide-predict-options"),
+  guideRun: document.querySelector("#guide-run"),
+  guideLink: document.querySelector("#guide-link"),
+  guideFinale: document.querySelector("#guide-finale"),
+  guideFinaleText: document.querySelector("#guide-finale-text"),
+  guideNextTour: document.querySelector("#guide-next-tour"),
+  guideCopyRun: document.querySelector("#guide-copy-run"),
   electionSourceChip: document.querySelector("#election-source-chip"),
   seedInput: document.querySelector("#seed-input"),
   scenario: document.querySelector("#scenario-select"),
@@ -241,6 +254,10 @@ async function boot() {
       // keep the controls usable (Reset starts a fresh seeded run).
       showNotice(`Shared run could not be loaded: ${errorMessage(error)}`);
     }
+    // A link to a guide step opens the guide on that step (?tourStep=N).
+    if (initial.tourStep > 0) {
+      moveTourTo(initial.tourStep - 1);
+    }
     setBusy(false);
   });
 }
@@ -319,6 +336,13 @@ function bindEvents() {
   el.guideBack.addEventListener("click", () => moveTour(-1));
   el.guideNext.addEventListener("click", () => moveTour(1));
   el.guideDo.addEventListener("click", () => void runAction(runTourStep));
+  el.guideRun.addEventListener("click", () => void playTour());
+  el.guideLink.addEventListener("click", () => void copyStepLink());
+  el.guideNextTour.addEventListener(
+    "click",
+    () => void runAction(() => loadScenario(el.guideNextTour.dataset.scenario)),
+  );
+  el.guideCopyRun.addEventListener("click", () => void runAction(copyReproducer, { keepTimeline: true }));
   el.seedInput.addEventListener("input", () => validateSeedInput());
   el.subscribe.addEventListener("click", () =>
     void runAction(async () => {
@@ -465,6 +489,7 @@ async function writeShareUrl() {
       state.engine,
       state.apiBase,
       replayScriptJson,
+      state.tour.index + 1,
     );
   } catch (error) {
     showNotice(`Share URL was not updated: ${errorMessage(error)}`, "warn");
@@ -952,7 +977,7 @@ function renderKeys(snapshot) {
 function startTimeline(scenario, base) {
   state.timeline = { script: null, base, furthest: base, rewound: false };
   state.observations = new Map();
-  state.tour = { scenario, index: 0, crashed: null };
+  state.tour = freshTour(scenario);
 }
 
 function scenarioBaseStep(name) {
@@ -1152,10 +1177,25 @@ async function downloadScript() {
 }
 
 // ---------------------------------------------------------------------------
-// Guided tours (scenarios.js): narration plus optional engine actions.
+// Guided tours (scenarios.js): narration plus optional engine actions. After
+// "Do it" the guide reads the result back from the snapshot (tourOutcome) and
+// marks the step done, or says plainly that its claim did not happen. A step
+// may ask for a prediction first; the right answer is whatever the engine did.
 // ---------------------------------------------------------------------------
+const TOUR_PAUSE_MS = 1600;
+
+function freshTour(scenario) {
+  return { scenario, index: 0, crashed: [], results: new Map(), predictions: new Map(), running: false };
+}
+
 function currentTour() {
   return SCENARIOS.find((scenario) => scenario.name === state.tour.scenario)?.tour ?? [];
+}
+
+function nextTourScenario() {
+  const withTours = SCENARIOS.filter((scenario) => scenario.tour?.length);
+  const at = withTours.findIndex((scenario) => scenario.name === state.tour.scenario);
+  return withTours[(at + 1) % withTours.length];
 }
 
 function renderGuide() {
@@ -1163,19 +1203,116 @@ function renderGuide() {
   const scenario = SCENARIOS.find((candidate) => candidate.name === state.tour.scenario);
   const index = Math.min(state.tour.index, Math.max(tour.length - 1, 0));
   const step = tour[index];
+  const result = state.tour.results.get(index);
   el.guideTitle.textContent = tour.length
     ? `Guide · ${scenario.title} · ${index + 1}/${tour.length}`
     : "Guide";
   el.guideText.textContent = step?.text ?? "No guide for this run.";
-  el.guideBack.disabled = index === 0;
-  el.guideNext.disabled = index >= tour.length - 1;
-  el.guideDo.disabled = !step?.actions?.length;
+  renderGuideDots(tour, index);
+  renderGuidePrediction(step, index, result);
+  el.guideOutcome.hidden = !result;
+  if (result) {
+    el.guideOutcome.className = `guide-outcome ${result.ok ? "ok" : "bad"}`;
+    const main = document.createElement("span");
+    main.textContent = `${result.ok ? "✓" : "✗"} ${result.text}`;
+    el.guideOutcome.replaceChildren(main);
+    // The prediction is about the reader, not the engine: its own line.
+    if (result.prediction) {
+      const guess = document.createElement("span");
+      guess.className = `guide-guess ${result.guessRight ? "right" : "wrong"}`;
+      guess.textContent = result.prediction;
+      el.guideOutcome.append(guess);
+    }
+  }
+  const busy = state.tour.running;
+  el.guideBack.disabled = index === 0 || busy;
+  el.guideNext.disabled = index >= tour.length - 1 || busy;
+  el.guideDo.disabled = !step?.actions?.length || Boolean(result?.ok) || busy;
+  // Once a step is done, Next becomes the obvious way on.
+  el.guideNext.classList.toggle("primary", Boolean(result?.ok));
+  el.guideDo.classList.toggle("primary", !result?.ok);
+  el.guideRun.textContent = busy ? "Stop the tour" : "Play the tour";
+  el.guideRun.disabled = tour.length === 0;
+  renderGuideFinale(tour, index);
+}
+
+function renderGuideDots(tour, index) {
+  const dots = tour.map((_step, at) => {
+    const result = state.tour.results.get(at);
+    const dot = document.createElement("li");
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = ["guide-dot", result ? (result.ok ? "done" : "failed") : "", at === index ? "current" : ""]
+      .filter(Boolean)
+      .join(" ");
+    const status = result ? (result.ok ? ", done" : ", did not happen") : "";
+    button.setAttribute("aria-label", `Step ${at + 1} of ${tour.length}${status}`);
+    if (at === index) button.setAttribute("aria-current", "step");
+    button.disabled = state.tour.running;
+    button.addEventListener("click", () => moveTourTo(at));
+    dot.append(button);
+    return dot;
+  });
+  el.guideDots.replaceChildren(...dots);
+}
+
+function renderGuidePrediction(step, index, result) {
+  const predict = step?.predict;
+  el.guidePredict.hidden = !predict;
+  if (!predict) return;
+  const chosen = state.tour.predictions.get(index);
+  el.guidePredictQuestion.textContent = predict.question;
+  const buttons = predict.options.map((option, at) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "guide-option";
+    button.textContent = option.label;
+    button.setAttribute("aria-pressed", chosen === at ? "true" : "false");
+    // After the step ran, mark what actually happened.
+    if (result?.actual === at) button.classList.add("actual");
+    else if (result && chosen === at) button.classList.add("wrong");
+    button.disabled = Boolean(result) || state.tour.running;
+    button.addEventListener("click", () => {
+      state.tour.predictions.set(index, at);
+      renderGuide();
+    });
+    return button;
+  });
+  el.guidePredictOptions.replaceChildren(...buttons);
+}
+
+function renderGuideFinale(tour, index) {
+  const last = tour.length - 1;
+  const finished = tour.length > 0 && index === last && state.tour.results.get(last)?.ok;
+  el.guideFinale.hidden = !finished;
+  if (!finished) return;
+  const checked = [...state.tour.results.values()].filter((result) => result.ok).length;
+  const reported = tour.filter((step) => step.report).length;
+  el.guideFinaleText.textContent = `Tour complete: ${checked} of ${reported} checked steps confirmed by the engine.`;
+  const next = nextTourScenario();
+  el.guideNextTour.textContent = `Next tour: ${next.title}`;
+  el.guideNextTour.dataset.scenario = next.name;
 }
 
 function moveTour(delta) {
+  moveTourTo(state.tour.index + delta);
+}
+
+function moveTourTo(target) {
   const tour = currentTour();
-  state.tour.index = Math.min(Math.max(state.tour.index + delta, 0), Math.max(tour.length - 1, 0));
+  state.tour.index = Math.min(Math.max(target, 0), Math.max(tour.length - 1, 0));
+  // Open the tab the step is about, so its text and the panel line up.
+  const focus = tour[state.tour.index]?.focus;
+  if (focus?.tab) selectTab(focus.tab);
   renderGuide();
+  scheduleUrlWrite();
+}
+
+// Show where a step's result is: open its tab and spotlight the element.
+function showTourFocus(focus) {
+  if (!focus) return;
+  if (focus.tab) selectTab(focus.tab);
+  if (focus.target) spotlight(document.querySelector(focus.target));
 }
 
 function tourNode(node) {
@@ -1187,62 +1324,145 @@ function tourNode(node) {
     return leader;
   }
   if (node === "$crashed") {
-    if (!state.tour.crashed) {
+    const last = state.tour.crashed.at(-1);
+    if (!last) {
       throw new Error("this guide has not crashed a node yet");
     }
-    return state.tour.crashed;
+    return last;
   }
   return node;
 }
 
 async function runTourStep() {
   const tour = currentTour();
-  const step = tour[state.tour.index];
-  for (const action of step?.actions ?? []) {
-    switch (action.type) {
-      case "until":
-        await runUntil(action.condition);
-        break;
-      case "run":
-        await state.sim.run(action.steps);
-        break;
-      case "crash": {
-        const node = tourNode(action.node);
-        await state.sim.crash_node(node);
-        state.tour.crashed = node;
-        await settleAfterIntervention();
-        break;
-      }
-      case "restart":
-        await state.sim.restart_node(tourNode(action.node));
-        await settleAfterIntervention();
-        break;
-      case "partition":
-      case "heal":
-        await state.sim.inject(action.type, action.from, action.to, BigInt(0));
-        await settleAfterIntervention();
-        break;
-      case "workload":
-        await state.sim.set_workload_enabled(action.enabled);
-        break;
-      case "subscribe":
-        await state.sim.subscribe(action.client, action.ns);
-        await settleAfterIntervention();
-        break;
-      case "push":
-        playDataFlowPulse(action.client, action.ns);
-        await state.sim.push_event(action.client, action.ns, action.key, action.value);
-        await settleAfterIntervention();
-        break;
-      default:
-        throw new Error(`unknown guide action '${action.type}'`);
+  const index = state.tour.index;
+  const step = tour[index];
+  if (!step?.actions?.length) return;
+  const before = state.snapshot;
+  try {
+    for (const action of step.actions) {
+      await runTourAction(action);
+      await refresh();
     }
-    await refresh();
+  } catch (error) {
+    state.tour.results.set(index, { ok: false, text: `The step stopped: ${errorMessage(error)}` });
+    renderGuide();
+    throw error;
   }
-  if (state.tour.index < tour.length - 1) {
-    state.tour.index += 1;
+  const result = step.report
+    ? tourOutcome(step.report, state.snapshot, { before, crashed: state.tour.crashed.at(-1) })
+    : { ok: true, text: `Done at step ${state.snapshot.step}.` };
+  if (step.predict) {
+    const actual = step.predict.options.findIndex((option) => predictionHolds(option.when, state.snapshot));
+    const chosen = state.tour.predictions.get(index);
+    result.actual = actual;
+    if (chosen !== undefined && actual >= 0) {
+      result.guessRight = chosen === actual;
+      result.prediction =
+        chosen === actual
+          ? "Your prediction was right."
+          : `You predicted "${step.predict.options[chosen].label}"; the engine did "${step.predict.options[actual].label}".`;
+    }
   }
+  state.tour.results.set(index, result);
   renderGuide();
+  showTourFocus(step.focus);
+  announce(`Guide step ${index + 1}: ${result.ok ? "done" : "did not happen"}. ${result.text}`);
+}
+
+async function runTourAction(action) {
+  switch (action.type) {
+    case "until":
+      await runUntil(action.condition);
+      break;
+    case "run":
+      await state.sim.run(action.steps);
+      break;
+    case "crash": {
+      const node = tourNode(action.node);
+      await state.sim.crash_node(node);
+      state.tour.crashed.push(node);
+      await settleAfterIntervention();
+      break;
+    }
+    case "restart": {
+      const nodes = action.node === "$all_crashed" ? [...state.tour.crashed] : [tourNode(action.node)];
+      if (nodes.length === 0) {
+        throw new Error("this guide has not crashed a node yet");
+      }
+      for (const node of nodes) {
+        await state.sim.restart_node(node);
+      }
+      state.tour.crashed = state.tour.crashed.filter((node) => !nodes.includes(node));
+      await settleAfterIntervention();
+      break;
+    }
+    case "partition":
+    case "heal":
+      await state.sim.inject(action.type, action.from, action.to, BigInt(0));
+      await settleAfterIntervention();
+      break;
+    case "workload":
+      await state.sim.set_workload_enabled(action.enabled);
+      break;
+    case "subscribe":
+      await state.sim.subscribe(action.client, action.ns);
+      await settleAfterIntervention();
+      break;
+    case "push":
+      playDataFlowPulse(action.client, action.ns);
+      await state.sim.push_event(action.client, action.ns, action.key, action.value);
+      await settleAfterIntervention();
+      break;
+    default:
+      throw new Error(`unknown guide action '${action.type}'`);
+  }
+}
+
+// Play the tour: run each remaining step, pause on its result, move on. It
+// stops on a step whose claim did not happen, or when the user stops it.
+async function playTour() {
+  if (state.tour.running) {
+    state.tour.running = false;
+    renderGuide();
+    return;
+  }
+  state.tour.running = true;
+  renderGuide();
+  const scenario = state.tour.scenario;
+  const pause = () => new Promise((resolve) => window.setTimeout(resolve, TOUR_PAUSE_MS));
+  try {
+    for (;;) {
+      const tour = currentTour();
+      const index = state.tour.index;
+      const step = tour[index];
+      if (step?.actions?.length && !state.tour.results.get(index)?.ok) {
+        await runAction(runTourStep);
+      }
+      if (!state.tour.running || state.tour.scenario !== scenario) break;
+      if (step?.actions?.length && !state.tour.results.get(index)?.ok) break;
+      if (index >= tour.length - 1) break;
+      await pause();
+      if (!state.tour.running || state.tour.scenario !== scenario) break;
+      moveTourTo(index + 1);
+      await pause();
+    }
+  } finally {
+    state.tour.running = false;
+    renderGuide();
+  }
+}
+
+// The page URL already carries the run (seed, script) and the guide step.
+async function copyStepLink() {
+  await enqueue(writeShareUrl);
+  const link = window.location.href;
+  try {
+    await navigator.clipboard?.writeText(link);
+  } catch (_error) {
+    // Clipboard blocked: the link is still shown below.
+  }
+  el.copyStatus.textContent = link;
 }
 
 async function applyLinkAction(action) {

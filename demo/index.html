@@ -304,11 +304,28 @@
         <aside class="side-panel">
           <section class="glass-panel guide" aria-label="guide">
             <h2 id="guide-title" data-testid="guide-title">Guide</h2>
+            <ol id="guide-dots" class="guide-dots" data-testid="guide-dots" aria-label="Guide steps"></ol>
             <p id="guide-text" data-testid="guide-text"></p>
+            <div id="guide-predict" class="guide-predict" data-testid="guide-predict" hidden>
+              <p id="guide-predict-question" class="guide-question"></p>
+              <div id="guide-predict-options" class="guide-options" role="group" aria-labelledby="guide-predict-question"></div>
+            </div>
+            <p id="guide-outcome" class="guide-outcome" data-testid="guide-outcome" role="status" hidden></p>
             <div class="button-row">
               <button id="guide-back" class="ghost" type="button" data-testid="guide-back">Back</button>
               <button id="guide-do" class="primary" type="button" data-testid="guide-do">Do it</button>
               <button id="guide-next" type="button" data-testid="guide-next">Next</button>
+            </div>
+            <div id="guide-finale" class="guide-finale" data-testid="guide-finale" hidden>
+              <p id="guide-finale-text"></p>
+              <div class="button-row">
+                <button id="guide-next-tour" class="primary" type="button" data-testid="guide-next-tour">Next tour</button>
+                <button id="guide-copy-run" type="button" data-testid="guide-copy-run">Copy reproducer</button>
+              </div>
+            </div>
+            <div class="guide-extra">
+              <button id="guide-run" class="ghost" type="button" data-testid="guide-run">Play the tour</button>
+              <button id="guide-link" class="ghost" type="button" data-testid="guide-link">Copy link to this step</button>
             </div>
           </section>
 

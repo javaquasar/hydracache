@@ -1210,6 +1210,144 @@ dd {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+/* Step dots: done (green), did not happen (red), current (ringed). */
+.guide-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: -4px 0 6px -5px;
+  padding: 0;
+  list-style: none;
+}
+
+/* A 24px target (WCAG 2.5.8) around a 14px dot. */
+.guide-dot {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  min-height: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.guide-dot::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--idle-stroke);
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.guide-dot.done::before {
+  border-color: var(--ok);
+  background: var(--ok);
+}
+
+.guide-dot.failed::before {
+  border-color: var(--danger);
+  background: var(--danger);
+}
+
+.guide-dot.current::before {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* A prediction asked before the step runs. */
+.guide-predict {
+  margin: 0 0 10px;
+}
+
+.guide .guide-question {
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.guide-options {
+  display: grid;
+  gap: 6px;
+}
+
+.guide-option {
+  text-align: left;
+}
+
+.guide-option[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.guide-option.actual::after {
+  content: " ← what happened";
+  color: var(--ok);
+  font-weight: 700;
+}
+
+/* What the engine did, read back after "Do it". */
+.guide .guide-outcome {
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.guide-guess {
+  display: block;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.guide-option.wrong::after {
+  content: " ← your guess";
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.guide-option:disabled {
+  opacity: 1;
+  color: var(--muted);
+}
+
+.guide-option.actual:disabled {
+  color: var(--ink);
+}
+
+.guide-outcome.ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.guide-outcome.bad {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.guide-finale {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.guide-finale .button-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.guide-extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.guide-extra button {
+  font-size: var(--font-small);
+}
+
 .key-row strong {
   overflow-wrap: anywhere;
 }

@@ -191,7 +191,17 @@ shared link cannot make the page render another server's verdict.
 - **Guide.** Every scenario (and the default run) has a short guided tour.
   `Do it` runs the step's actions through the same engine calls as the buttons;
   the text describes what to look at and never claims an outcome the engine did
-  not produce.
+  not produce. After `Do it` the guide reads the result back from the snapshot
+  (leader and term, delivery and replicas holding the value, live nodes
+  against the quorum, unavailable consistency levels, agreement) and marks the
+  step done; when the step's claim did not happen it says so (✗) and does not
+  move on. Each step opens the side-panel tab it is about and spotlights where
+  its result shows. The default tour crosses the quorum boundary: a second
+  crash leaves one live node and no leader, then a restart recovers. Some steps
+  ask for a prediction first; the right answer is whatever the engine then did.
+  Step dots jump between steps, "Play the tour" runs the rest with pauses,
+  "Copy link to this step" shares the run and the step (`?tourStep=N`), and the
+  last step offers the next tour and the reproducer.
 - **Timeline.** The slider under the graph rebuilds any earlier step of the
   current run by replaying its script prefix (interventions up to that step,
   resumed exactly there), so a rewound view is the real engine state at that

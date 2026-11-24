@@ -470,3 +470,109 @@ export function shortcutFor(event, target = "page") {
   }
   return null;
 }
+
+// ---------------------------------------------------------------------------
+// Guide outcomes. After "Do it" the guide states what the engine actually
+// did, from the snapshot alone; `ok` is false when the step's claim did not
+// happen, and the guide says so instead of moving on as if it had.
+// ---------------------------------------------------------------------------
+function plural(count, noun) {
+  return `${count} ${noun}${count === 1 ? "" : "s"}`;
+}
+
+export function quorumSize(snapshot) {
+  return Math.floor((snapshot.nodes || []).length / 2) + 1;
+}
+
+export function predictionHolds(when, snapshot) {
+  switch (when) {
+    case "leader":
+      return leaderOf(snapshot) !== null;
+    case "no_leader":
+      return leaderOf(snapshot) === null;
+    default:
+      throw new Error(`unknown guide prediction '${when}'`);
+  }
+}
+
+export function tourOutcome(report, snapshot, ctx = {}) {
+  const total = (snapshot.nodes || []).length;
+  const live = liveNodeIds(snapshot).length;
+  const quorum = quorumSize(snapshot);
+  const leader = leaderOf(snapshot);
+  const committed = snapshot.progress?.committed_entries ?? 0;
+  switch (report?.kind) {
+    case "leader": {
+      if (!leader) return { ok: false, text: `No leader at step ${snapshot.step}.` };
+      const node = snapshot.nodes.find((candidate) => candidate.id === leader);
+      const previous = ctx.before ? leaderOf(ctx.before) : null;
+      const change = previous && previous !== leader ? ` (was ${previous})` : "";
+      return { ok: true, text: `Leader ${leader}${change}, term ${node.term}, at step ${snapshot.step}.` };
+    }
+    case "subscribed": {
+      const sub = (snapshot.subscribers || []).find(
+        (candidate) => candidate.client_id === report.client && candidate.namespace === report.ns,
+      );
+      return sub
+        ? { ok: true, text: `${report.client} is subscribed to ${report.ns}, attached to ${sub.connected_node}.` }
+        : { ok: false, text: `${report.client} is not subscribed to ${report.ns}.` };
+    }
+    case "delivered": {
+      const fullKey = `${report.ns}:${report.key}`;
+      const sub = (snapshot.subscribers || []).find(
+        (candidate) => candidate.client_id === report.client && candidate.namespace === report.ns,
+      );
+      const event = sub?.last_event;
+      if (!event || event.key !== fullKey) {
+        return { ok: false, text: `${report.key} has not been delivered to ${report.client} yet.` };
+      }
+      const replicas = (snapshot.keys || []).find((key) => key.key === fullKey)?.replicas ?? [];
+      const holding = replicas.filter((replica) => replica.version === event.version).length;
+      return {
+        ok: true,
+        text: `${report.key} committed at index ${event.commit_index} and delivered to ${report.client} at step ${event.delivered_at_step}; ${holding} of ${replicas.length} replicas hold it.`,
+      };
+    }
+    case "crashed": {
+      const node = ctx.crashed;
+      const down = (snapshot.nodes || []).find((candidate) => candidate.id === node)?.crashed;
+      if (!down) return { ok: false, text: `${node ?? "The node"} is not crashed.` };
+      const verdict = live >= quorum ? "still a quorum" : "not a quorum";
+      return { ok: true, text: `${node} crashed: ${live} of ${total} nodes live, quorum is ${quorum} (${verdict}).` };
+    }
+    case "no_leader": {
+      if (leader) return { ok: false, text: `${leader} is still leader at step ${snapshot.step}.` };
+      const unavailable = (snapshot.consistency || []).filter((level) => !level.satisfiable).map((level) => level.level);
+      const levels = unavailable.length ? ` Unavailable levels: ${unavailable.join(", ")}.` : "";
+      const before = ctx.before?.progress?.committed_entries;
+      const progress =
+        before === undefined || before === committed
+          ? `Committed entries: ${committed}.`
+          : `Committed entries ${before} → ${committed} (written before the quorum was lost).`;
+      return {
+        ok: true,
+        text: `No leader: ${live} of ${total} nodes live, a quorum needs ${quorum}. ${progress}${levels}`,
+      };
+    }
+    case "agree": {
+      const agreement = keyAgreement(snapshot);
+      return agreement.agree
+        ? { ok: true, text: `All live replicas agree on ${plural(agreement.keys.length, "sampled key")} at step ${snapshot.step}.` }
+        : { ok: false, text: `Replicas still differ at step ${snapshot.step}.` };
+    }
+    case "committed": {
+      const before = ctx.before?.progress?.committed_entries ?? committed;
+      return { ok: true, text: `Committed entries ${before} → ${committed} by step ${snapshot.step}.` };
+    }
+    case "diverged": {
+      const differing = keyAgreement(snapshot).keys.filter((key) => !key.agree).length;
+      const sampled = (snapshot.keys || []).length;
+      return {
+        ok: true,
+        text: `${differing} of ${plural(sampled, "sampled key")} ${differing === 1 ? "differs" : "differ"} between replicas at step ${snapshot.step}.`,
+      };
+    }
+    default:
+      throw new Error(`unknown guide report '${report?.kind}'`);
+  }
+}

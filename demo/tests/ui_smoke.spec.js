@@ -311,12 +311,23 @@ test("run_to_leader_elects_and_run_to_violation_fails_loud", async ({ page }) =>
 
 test("guide_runs_the_default_tour", async ({ page }) => {
   await page.goto(`${demoUrl}?seed=91&steps=0&scenario=default`);
-  await expect(page.getByTestId("guide-title")).toContainText("1/6");
+  await expect(page.getByTestId("guide-title")).toContainText("1/7");
   await page.getByTestId("guide-do").click();
   await expect(page.getByTestId("nodes-panel")).toContainText("leader");
-  await expect(page.getByTestId("guide-title")).toContainText("2/6");
+  // The guide reads the result back and stays on the step until Next.
+  const outcome = page.getByTestId("guide-outcome");
+  await expect(outcome).toHaveClass(/ok/);
+  await expect(outcome).toContainText(/✓ Leader node-\d, term \d+, at step \d+\./);
+  await expect(page.getByTestId("guide-title")).toContainText("1/7");
+  await expect(page.getByTestId("guide-do")).toBeDisabled();
+  await expect(page.locator(".guide-dot.done")).toHaveCount(1);
+  // Next opens the tab the step is about.
+  await page.getByTestId("guide-next").click();
+  await expect(page.getByTestId("guide-title")).toContainText("2/7");
+  await expect(page.getByTestId("tab-clients")).toHaveAttribute("aria-selected", "true");
   await page.getByTestId("guide-back").click();
-  await expect(page.getByTestId("guide-title")).toContainText("1/6");
+  await expect(page.getByTestId("guide-title")).toContainText("1/7");
+  await expect(outcome).toBeVisible();
 });
 
 test("workload_checkbox_follows_the_engine", async ({ page }) => {
@@ -1087,4 +1098,68 @@ test("link_cut_marker_delay_crawl_and_backlog", async ({ page }) => {
   // Undelayed pairs carry no backlog.
   const others = await page.locator(".link.up").evaluateAll((lines) => lines.map((line) => line.dataset.backlog));
   expect(others.every((value) => value === "0")).toBe(true);
+});
+
+// The default tour crosses the quorum boundary, checks a prediction against
+// what the engine did, and ends with a way on to the next tour.
+test("guide_prediction_boundary_and_finale", async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.goto(`${demoUrl}?seed=91&steps=0&scenario=default`);
+  await expect(page.getByTestId("guide-title")).toContainText("1/7");
+  const doStep = async () => {
+    await page.getByTestId("guide-do").click();
+    await expect(page.getByTestId("guide-outcome")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId("guide-outcome")).toHaveClass(/ok/);
+  };
+  for (let index = 0; index < 4; index += 1) {
+    await doStep();
+    await page.getByTestId("guide-next").click();
+  }
+  await expect(page.getByTestId("guide-title")).toContainText("5/7");
+  // Guess wrong on purpose: one node alone cannot lead.
+  await page.getByTestId("guide-predict").getByRole("button", { name: "It becomes leader on its own" }).click();
+  await doStep();
+  await expect(page.getByTestId("guide-outcome")).toContainText("No leader: 1 of 3 nodes live, a quorum needs 2.");
+  await expect(page.locator(".guide-guess.wrong")).toContainText('the engine did "No leader: one node is not a quorum"');
+  await expect(page.locator(".guide-option.actual")).toContainText("No leader");
+  await expect(page.locator(".guide-option.wrong")).toContainText("It becomes leader");
+  await expect(page.getByTestId("tab-data")).toHaveAttribute("aria-selected", "true");
+
+  for (let index = 5; index < 7; index += 1) {
+    await page.getByTestId("guide-next").click();
+    await doStep();
+  }
+  const finale = page.getByTestId("guide-finale");
+  await expect(finale).toBeVisible();
+  await expect(finale).toContainText("Tour complete: 7 of 7 checked steps confirmed by the engine.");
+  await expect(page.locator(".guide-dot.done")).toHaveCount(7);
+  await page.getByTestId("guide-next-tour").click();
+  await expect(page.getByTestId("guide-title")).toContainText("Minority partition cannot commit · 1/3");
+});
+
+test("guide_deep_link_play_and_honest_failure", async ({ page }) => {
+  test.setTimeout(60_000);
+  // A link opens the guide on its step and its tab.
+  await page.goto(`${demoUrl}?seed=91&steps=0&scenario=default&tourStep=3`);
+  await expect(page.getByTestId("guide-title")).toContainText("3/7");
+  await expect(page.getByTestId("tab-data")).toHaveAttribute("aria-selected", "true");
+  await page.getByTestId("guide-link").click();
+  await expect(page.getByTestId("copy-status")).toContainText("tourStep=3");
+
+  // A step whose precondition never happened says so instead of moving on.
+  await page.locator(".guide-dot").nth(5).click();
+  await expect(page.getByTestId("guide-title")).toContainText("6/7");
+  await page.getByTestId("guide-do").click();
+  await expect(page.getByTestId("guide-outcome")).toHaveClass(/bad/);
+  await expect(page.getByTestId("guide-outcome")).toContainText("✗ The step stopped: this guide has not crashed a node yet");
+  await expect(page.locator(".guide-dot.failed")).toHaveCount(1);
+
+  // Play the tour runs the remaining steps with pauses and stops at the end.
+  await page.goto(`${demoUrl}?scenario=each_quorum_region_loss_fails_loud`);
+  await expect(page.getByTestId("guide-title")).toContainText("1/2");
+  await page.getByTestId("guide-run").click();
+  await expect(page.getByTestId("guide-run")).toHaveText("Stop the tour");
+  await expect(page.getByTestId("guide-finale")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByTestId("guide-outcome")).toContainText(/✓ Leader node-\d/);
+  await expect(page.getByTestId("guide-run")).toHaveText("Play the tour");
 });

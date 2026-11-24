@@ -11,6 +11,8 @@ import {
   leaderOf,
   nodeDetails,
   nodeStatus,
+  predictionHolds,
+  quorumSize,
   scriptAtStep,
   shortVersion,
   shortcutFor,
@@ -18,6 +20,7 @@ import {
   stepChanges,
   timelineEvents,
   timelineMarks,
+  tourOutcome,
   verdictView,
   versionHue,
   violationFocus,
@@ -354,5 +357,95 @@ describe("shortcutFor", () => {
     assert.equal(shortcutFor({ key: " " }, "control"), null);
     assert.equal(shortcutFor({ key: "ArrowRight" }, "control"), null);
     assert.equal(shortcutFor({ key: "." }, "control"), "step");
+  });
+});
+
+describe("guide outcomes", () => {
+  const node = (id, extra = {}) => ({ id, term: 2, vote_state: "follower", crashed: false, disabled: false, ...extra });
+  const world = (overrides = {}) => ({
+    step: 30,
+    nodes: [node("node-0", { vote_state: "leader" }), node("node-1"), node("node-2")],
+    progress: { committed_entries: 12 },
+    keys: [],
+    subscribers: [],
+    consistency: [],
+    ...overrides,
+  });
+
+  test("quorum and predictions come from the snapshot", () => {
+    assert.equal(quorumSize(world()), 2);
+    assert.equal(predictionHolds("leader", world()), true);
+    const leaderless = world({ nodes: [node("node-0"), node("node-1")] });
+    assert.equal(predictionHolds("no_leader", leaderless), true);
+    assert.throws(() => predictionHolds("maybe", world()), /unknown guide prediction/);
+  });
+
+  test("leader reports the change against the snapshot before the step", () => {
+    const before = world({ nodes: [node("node-1", { vote_state: "leader" }), node("node-0")] });
+    assert.deepEqual(tourOutcome({ kind: "leader" }, world(), { before }), {
+      ok: true,
+      text: "Leader node-0 (was node-1), term 2, at step 30.",
+    });
+    assert.equal(tourOutcome({ kind: "leader" }, world({ nodes: [node("node-0")] })).ok, false);
+  });
+
+  test("no_leader states live nodes, quorum and unavailable levels", () => {
+    const snapshot = world({
+      nodes: [node("node-0"), node("node-1", { crashed: true }), node("node-2", { crashed: true })],
+      consistency: [
+        { level: "one", satisfiable: true },
+        { level: "quorum", satisfiable: false },
+      ],
+    });
+    const outcome = tourOutcome({ kind: "no_leader" }, snapshot, { before: world() });
+    assert.equal(outcome.ok, true);
+    assert.equal(
+      outcome.text,
+      "No leader: 1 of 3 nodes live, a quorum needs 2. Committed entries: 12. Unavailable levels: quorum.",
+    );
+    assert.equal(tourOutcome({ kind: "no_leader" }, world()).ok, false);
+  });
+
+  test("delivered needs the subscriber's last event for that key", () => {
+    const delivered = world({
+      subscribers: [
+        {
+          client_id: "client-a",
+          namespace: "profiles",
+          connected_node: "node-1",
+          last_event: { key: "profiles:p-1", version: 7, commit_index: 5, delivered_at_step: 9 },
+        },
+      ],
+      keys: [{ key: "profiles:p-1", replicas: [{ node_id: "node-0", version: 7 }, { node_id: "node-1", version: 7 }, { node_id: "node-2", version: 3 }] }],
+    });
+    const report = { kind: "delivered", client: "client-a", ns: "profiles", key: "p-1" };
+    assert.deepEqual(tourOutcome(report, delivered), {
+      ok: true,
+      text: "p-1 committed at index 5 and delivered to client-a at step 9; 2 of 3 replicas hold it.",
+    });
+    assert.equal(tourOutcome(report, world()).ok, false);
+    assert.equal(tourOutcome({ kind: "subscribed", client: "client-a", ns: "profiles" }, delivered).ok, true);
+  });
+
+  test("crashed says whether the survivors are still a quorum", () => {
+    const snapshot = world({ nodes: [node("node-0", { crashed: true }), node("node-1"), node("node-2")] });
+    assert.equal(
+      tourOutcome({ kind: "crashed" }, snapshot, { crashed: "node-0" }).text,
+      "node-0 crashed: 2 of 3 nodes live, quorum is 2 (still a quorum).",
+    );
+    assert.equal(tourOutcome({ kind: "crashed" }, world(), { crashed: "node-0" }).ok, false);
+  });
+
+  test("agree, diverged and committed read the stored values", () => {
+    const keys = [{ key: "k", replicas: [{ node_id: "node-0", version: 1 }, { node_id: "node-1", version: 1 }, { node_id: "node-2", version: 1 }] }];
+    assert.equal(tourOutcome({ kind: "agree" }, world({ keys })).text, "All live replicas agree on 1 sampled key at step 30.");
+    const split = [{ key: "k", replicas: [{ node_id: "node-0", version: 1 }, { node_id: "node-1", version: 2 }, { node_id: "node-2", version: 1 }] }];
+    assert.equal(tourOutcome({ kind: "agree" }, world({ keys: split })).ok, false);
+    assert.equal(tourOutcome({ kind: "diverged" }, world({ keys: split })).text, "1 of 1 sampled key differs between replicas at step 30.");
+    assert.equal(
+      tourOutcome({ kind: "committed" }, world(), { before: world({ progress: { committed_entries: 4 } }) }).text,
+      "Committed entries 4 → 12 by step 30.",
+    );
+    assert.throws(() => tourOutcome({ kind: "nope" }, world()), /unknown guide report/);
   });
 });
