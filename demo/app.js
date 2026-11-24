@@ -23,6 +23,7 @@ import {
   groupEvents,
   keyAgreement,
   leaderOf,
+  nextFreeName,
   nodeDetails,
   nodeStatus,
   predictionHolds,
@@ -147,6 +148,10 @@ const el = {
   speed: document.querySelector("#speed-input"),
   manualClient: document.querySelector("#manual-client"),
   manualNs: document.querySelector("#manual-ns"),
+  manualReader: document.querySelector("#manual-reader"),
+  manualReaderNs: document.querySelector("#manual-reader-ns"),
+  namespaceOptions: document.querySelector("#namespace-options"),
+  addClient: document.querySelector("#add-client-button"),
   manualKey: document.querySelector("#manual-key"),
   manualValue: document.querySelector("#manual-value"),
   subscribe: document.querySelector("#subscribe-button"),
@@ -193,6 +198,10 @@ async function boot() {
       render();
     },
     onClientPress: (client) => void runAction(() => pushEventFor(client.id, client.namespace)),
+    onSubscriberPress: (subscriber) => {
+      selectTab("clients");
+      spotlight(el.subscribers.querySelector(`[data-subscriber="${CSS.escape(subscriber.id)}"]`));
+    },
     onNodePress: (id) => openNodePopover(id),
     getNodeMarks: () => state.marks,
     onPaint: () => positionNodePopover(),
@@ -346,9 +355,18 @@ function bindEvents() {
   el.seedInput.addEventListener("input", () => validateSeedInput());
   el.subscribe.addEventListener("click", () =>
     void runAction(async () => {
-      await state.sim?.subscribe(manualClientId(), el.manualNs.value);
+      await state.sim?.subscribe(fieldValue(el.manualReader, "subscriber"), fieldValue(el.manualReaderNs, "namespace"));
       await settleAfterIntervention();
       await refresh();
+      // Ready for the next one: suggest a free subscriber name.
+      el.manualReader.value = nextFreeName("reader-", subscriberNames(state.snapshot));
+    }),
+  );
+  el.addClient.addEventListener("click", () =>
+    void runAction(async () => {
+      await state.sim?.add_client(fieldValue(el.manualClient, "writer"), fieldValue(el.manualNs, "namespace"));
+      await refresh();
+      el.manualClient.value = nextFreeName("client-", (state.snapshot?.clients || []).map((client) => client.id));
     }),
   );
   el.pushEvent.addEventListener("click", () =>
@@ -787,36 +805,50 @@ function renderSignals(snapshot) {
 
 function renderClients(snapshot) {
   const clients = document.createElement("div");
-  clients.className = "metric-list";
+  clients.className = "metric-list entity-list";
   for (const client of snapshot.clients || []) {
-    const row = document.createElement("div");
-    row.className = "metric";
-    const label = document.createElement("strong");
-    label.textContent = client.id;
-    const meta = document.createElement("span");
-    meta.textContent = client.last_op || client.namespace;
-    row.append(label, meta);
+    const row = entityRow(client.id, `${client.namespace} · via ${client.connected_node ?? "—"}`, client.last_op || "no writes yet");
+    row.dataset.client = client.id;
+    const push = document.createElement("button");
+    push.type = "button";
+    push.textContent = "Push";
+    push.setAttribute("data-testid", `push-${client.id}`);
+    push.setAttribute("aria-label", `Push ${el.manualKey.value || "the key"} as ${client.id} to ${client.namespace}`);
+    push.addEventListener("click", () => void runAction(() => pushEventFor(client.id, client.namespace)));
+    row.append(push);
     clients.append(row);
   }
   if (!clients.childElementCount) {
     const empty = document.createElement("p");
-    empty.textContent = "no manual clients";
+    empty.textContent = "no writers yet: add one, or push to create it";
     clients.append(empty);
   }
 
   const subscribers = document.createElement("div");
-  subscribers.className = "metric-list";
+  subscribers.className = "metric-list entity-list";
   for (const subscriber of snapshot.subscribers || []) {
-    const row = document.createElement("div");
-    row.className = "metric";
-    const label = document.createElement("strong");
-    label.textContent = subscriber.id;
     const event = subscriber.last_event
-      ? `${subscriber.last_event.kind} ${subscriber.last_event.key}`
-      : "waiting";
-    const meta = document.createElement("span");
-    meta.textContent = `${event}; lag ${subscriber.lag}; drop ${subscriber.dropped}`;
-    row.append(label, meta);
+      ? `${subscriber.last_event.kind} ${subscriber.last_event.key} @ step ${subscriber.last_event.delivered_at_step}`
+      : "waiting for events";
+    const row = entityRow(
+      subscriber.id,
+      `via ${subscriber.connected_node ?? "—"} · lag ${subscriber.lag} · dropped ${subscriber.dropped}`,
+      event,
+    );
+    row.dataset.subscriber = subscriber.id;
+    const leave = document.createElement("button");
+    leave.type = "button";
+    leave.className = "ghost";
+    leave.textContent = "Unsubscribe";
+    leave.setAttribute("data-testid", `unsubscribe-${subscriber.id}`);
+    leave.setAttribute("aria-label", `Unsubscribe ${subscriber.client_id} from ${subscriber.namespace}`);
+    leave.addEventListener("click", () =>
+      void runAction(async () => {
+        await state.sim?.unsubscribe(subscriber.client_id, subscriber.namespace);
+        await refresh();
+      }),
+    );
+    row.append(leave);
     subscribers.append(row);
   }
   if (!subscribers.childElementCount) {
@@ -826,6 +858,38 @@ function renderClients(snapshot) {
   }
   el.clients.replaceChildren(clients);
   el.subscribers.replaceChildren(subscribers);
+  renderNamespaceOptions(snapshot);
+}
+
+function entityRow(name, meta, detail) {
+  const row = document.createElement("div");
+  row.className = "metric entity-row";
+  const text = document.createElement("div");
+  const label = document.createElement("strong");
+  label.textContent = name;
+  const where = document.createElement("span");
+  where.className = "entity-meta";
+  where.textContent = meta;
+  const last = document.createElement("span");
+  last.className = "entity-detail";
+  last.textContent = detail;
+  text.append(label, where, last);
+  row.append(text);
+  return row;
+}
+
+// Namespace fields suggest the namespaces already in use (free text allowed).
+function renderNamespaceOptions(snapshot) {
+  const names = new Set(["profiles"]);
+  for (const client of snapshot.clients || []) names.add(client.namespace);
+  for (const subscriber of snapshot.subscribers || []) names.add(subscriber.namespace);
+  el.namespaceOptions.replaceChildren(
+    ...[...names].sort().map((name) => {
+      const option = document.createElement("option");
+      option.value = name;
+      return option;
+    }),
+  );
 }
 
 // The simulator is one fully replicated Raft group: per-request consistency
@@ -1493,6 +1557,19 @@ function togglePlay() {
 // sim until the user presses Step. These are ordinary deterministic steps, so the
 // run stays seed-reproducible. No-op while auto-playing (the interval steps already)
 // and capped so a legitimately leaderless cluster cannot spin forever.
+// A required text field: trimmed, and an empty one fails loud with its name.
+function fieldValue(input, name) {
+  const value = (input?.value || "").trim();
+  if (!value) {
+    throw new Error(`enter a ${name} name`);
+  }
+  return value;
+}
+
+function subscriberNames(snapshot) {
+  return (snapshot?.subscribers || []).map((subscriber) => subscriber.client_id);
+}
+
 function manualClientId() {
   const value = (el.manualClient?.value || "").trim();
   return value || "client-a";

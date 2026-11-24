@@ -125,6 +125,10 @@ export function describeAction(action) {
       return action.enabled ? "workload on" : "workload off";
     case "subscribe":
       return `subscribe ${action.client}@${action.ns}`;
+    case "unsubscribe":
+      return `unsubscribe ${action.client}@${action.ns}`;
+    case "add_client":
+      return `add writer ${action.client} on ${action.ns}`;
     case "push_event":
       return `push ${action.ns}/${action.key} from ${action.client}`;
     case "mode_change":
@@ -576,3 +580,19 @@ export function tourOutcome(report, snapshot, ctx = {}) {
       throw new Error(`unknown guide report '${report?.kind}'`);
   }
 }
+
+// Next unused name: client-b, client-c, ... or reader-2, reader-3, ...
+export function nextFreeName(prefix, taken) {
+  const used = new Set(taken);
+  if (prefix === "client-") {
+    for (let code = 97; code <= 122; code += 1) {
+      const name = `${prefix}${String.fromCharCode(code)}`;
+      if (!used.has(name)) return name;
+    }
+  }
+  for (let index = 1; ; index += 1) {
+    const name = `${prefix}${index}`;
+    if (!used.has(name)) return name;
+  }
+}
+

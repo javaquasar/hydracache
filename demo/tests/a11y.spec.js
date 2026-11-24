@@ -44,6 +44,12 @@ for (const tab of ["cluster", "clients", "data", "verdict"]) {
     await page.getByTestId("step").click();
     await page.getByTestId(`tab-${tab}`).click();
     await expect(page.getByTestId(`tab-${tab}`)).toHaveAttribute("aria-selected", "true");
+    if (tab === "clients") {
+      // Rows, buttons and graph vertices for a writer and a subscriber.
+      await page.getByTestId("add-client-button").click();
+      await page.getByTestId("subscribe-button").click();
+      await expect(page.locator(".vertex.subscriber")).toHaveCount(1);
+    }
     await expectNoAxeViolations(page, `${tab} tab`);
   });
 }

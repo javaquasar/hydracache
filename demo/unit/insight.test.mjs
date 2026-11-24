@@ -10,6 +10,7 @@ import {
   keyAgreement,
   leaderOf,
   nodeDetails,
+  nextFreeName,
   nodeStatus,
   predictionHolds,
   quorumSize,
@@ -447,5 +448,13 @@ describe("guide outcomes", () => {
       "Committed entries 4 → 12 by step 30.",
     );
     assert.throws(() => tourOutcome({ kind: "nope" }, world()), /unknown guide report/);
+  });
+});
+
+describe("nextFreeName", () => {
+  test("suggests the next unused writer letter and subscriber number", () => {
+    assert.equal(nextFreeName("client-", []), "client-a");
+    assert.equal(nextFreeName("client-", ["client-a", "client-b"]), "client-c");
+    assert.equal(nextFreeName("reader-", ["reader-1", "reader-3"]), "reader-2");
   });
 });

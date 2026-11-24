@@ -259,7 +259,7 @@ test("playing_throttles_share_url_writes", async ({ page }) => {
 test("cancelled_pointer_on_client_does_not_push", async ({ page }) => {
   await openReady(page);
   await page.getByTestId("tab-clients").click();
-  await page.getByTestId("subscribe-button").click();
+  await page.getByTestId("add-client-button").click();
   await expect(page.getByTestId("intervention-status")).toContainText("1 replay action");
   const client = page.locator(".vertex.client").first();
   const init = { pointerId: 7, isPrimary: true, bubbles: true, clientX: 0, clientY: 0 };
@@ -358,7 +358,7 @@ test("keyboard_selects_and_partitions_a_link", async ({ page }) => {
 test("keyboard_pushes_from_a_client_vertex", async ({ page }) => {
   await openReady(page);
   await page.getByTestId("tab-clients").click();
-  await page.getByTestId("subscribe-button").click();
+  await page.getByTestId("add-client-button").click();
   await expect(page.getByTestId("intervention-status")).toContainText("1 replay action");
   const client = page.locator(".vertex.client").first();
   await expect(client).toHaveAttribute("role", "button");
@@ -1162,4 +1162,53 @@ test("guide_deep_link_play_and_honest_failure", async ({ page }) => {
   await expect(page.getByTestId("guide-finale")).toBeVisible({ timeout: 20_000 });
   await expect(page.getByTestId("guide-outcome")).toContainText(/✓ Leader node-\d/);
   await expect(page.getByTestId("guide-run")).toHaveText("Play the tour");
+});
+
+// Writers and subscribers are separate: a writer is added without writing, a
+// subscriber is only a reader, each row has its own action, and the graph
+// links writers to the subscribers of their namespace.
+test("writers_and_subscribers_are_managed_separately", async ({ page }) => {
+  await openReady(page);
+  await page.getByTestId("tab-clients").click();
+  const writers = page.getByTestId("clients-panel");
+  const readers = page.getByTestId("subscribers-panel");
+
+  await page.getByTestId("add-client-button").click();
+  await expect(writers).toContainText("client-a");
+  await expect(writers).toContainText("no writes yet");
+  await expect(page.getByTestId("manual-client")).toHaveValue("client-b");
+  // Adding an existing writer fails loud.
+  await page.getByTestId("manual-client").fill("client-a");
+  await page.getByTestId("add-client-button").click();
+  await expect(page.getByTestId("action-notice")).toContainText("client 'client-a' already exists");
+
+  await page.getByTestId("subscribe-button").click();
+  await expect(readers).toContainText("reader-1@profiles");
+  await expect(readers).toContainText("waiting for events");
+  await expect(page.getByTestId("manual-reader")).toHaveValue("reader-2");
+  await expect(page.locator(".vertex.subscriber")).toHaveCount(1);
+  await expect(page.locator(".vertex.client")).toHaveCount(1);
+  await expect(page.locator(".namespace-flow")).toHaveCount(1);
+
+  await page.getByTestId("push-client-a").click();
+  await expect(writers).toContainText("push profiles:profile-42");
+  await page.getByTestId("step").click();
+  await expect(readers).toContainText(/upserted profiles:profile-42 @ step \d+/);
+
+  // The subscriber on the graph opens its row.
+  await page.getByTestId("tab-data").click();
+  await page.locator(".vertex.subscriber").first().focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("tab-clients")).toHaveAttribute("aria-selected", "true");
+
+  await page.getByTestId("unsubscribe-reader-1@profiles").click();
+  await expect(readers).toContainText("no subscribers");
+  await expect(page.locator(".vertex.subscriber")).toHaveCount(0);
+  await expect(page.locator(".namespace-flow")).toHaveCount(0);
+
+  // Namespaces in use are offered in the namespace fields.
+  await page.getByTestId("manual-client").fill("client-c");
+  await page.getByTestId("manual-ns").fill("orders");
+  await page.getByTestId("add-client-button").click();
+  await expect(page.locator("#namespace-options option[value='orders']")).toHaveCount(1);
 });

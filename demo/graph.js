@@ -166,7 +166,7 @@ function fitTarget() {
   let maxX = -Infinity;
   let maxY = -Infinity;
   for (const p of graphSim.pos.values()) {
-    const r = p.kind === "node" ? GRAPH.nodeRadius + 14 : GRAPH.entityRadius + 26;
+    const r = p.kind === "node" ? GRAPH.nodeRadius + 14 : GRAPH.entityRadius + 40;
     minX = Math.min(minX, p.x - r);
     minY = Math.min(minY, p.y - r);
     maxX = Math.max(maxX, p.x + r);
@@ -299,6 +299,8 @@ function buildGraphDom(snapshot) {
   const viewport = svg("g", { class: "graph-viewport" });
   const edgeLayer = svg("g", { class: "links" });
   const entityLinkLayer = svg("g", { class: "entity-links", "aria-hidden": "true" });
+  // Writer -> subscriber of the same namespace: where its events will go.
+  const flowLayer = svg("g", { class: "namespace-flows", "aria-hidden": "true" });
   const packetLayer = svg("g", { class: "packet-layer", "aria-hidden": "true" });
   const pulseLayer = svg("g", { class: "pulse-layer", "aria-hidden": "true" });
   const labelLayer = svg("g", { class: "link-labels", "aria-hidden": "true" });
@@ -306,10 +308,10 @@ function buildGraphDom(snapshot) {
   // Above the vertices: leader baton, term labels and vote tallies. Hidden from
   // assistive tech; the node's own name carries its role and term.
   const roleLayer = svg("g", { class: "role-layer", "aria-hidden": "true" });
-  viewport.append(edgeLayer, entityLinkLayer, packetLayer, pulseLayer, labelLayer, vertexLayer, roleLayer);
+  viewport.append(edgeLayer, flowLayer, entityLinkLayer, packetLayer, pulseLayer, labelLayer, vertexLayer, roleLayer);
   host.svg.append(viewport);
 
-  const dom = { viewport, packetLayer, pulseLayer, roleLayer, edges: [], entityEdges: [], vertices: new Map() };
+  const dom = { viewport, packetLayer, pulseLayer, roleLayer, flowLayer, flows: [], edges: [], entityEdges: [], vertices: new Map() };
   // A rebuilt canvas has no packets or overlays drawn yet.
   graphSim.packetKey = "";
   graphSim.overlays = [];
@@ -373,16 +375,21 @@ function buildGraphDom(snapshot) {
     } else {
       group.append(
         svg("circle", { r: GRAPH.entityRadius }),
-        svg("text", { class: "entity-id", y: 4 }),
-        svg("text", { class: "entity-sub", y: 36 }),
+        // Role glyph inside (writer sends up, subscriber receives down); the
+        // name and namespace sit below, where they fit.
+        svg("text", { class: "entity-glyph", y: 6, "aria-hidden": "true" }, vertex.kind === "client" ? "↑" : "↓"),
+        svg("text", { class: "entity-id", y: 36 }),
+        svg("text", { class: "entity-sub", y: 50 }),
       );
+      group.setAttribute("tabindex", "0");
+      group.setAttribute("role", "button");
       if (vertex.kind === "client") {
         group.append(svg("title", {}, "Click or press Enter to push (drag to move)"));
-        group.setAttribute("tabindex", "0");
-        group.setAttribute("role", "button");
         onActivateKey(group, () => host.onClientPress(vertex.ref));
       } else {
-        group.setAttribute("role", "img");
+        // A subscriber opens its row in the Subscribers list.
+        group.append(svg("title", {}, "Click or press Enter to show this subscriber (drag to move)"));
+        onActivateKey(group, () => host.onSubscriberPress?.(vertex.ref));
       }
     }
     if (vertex.kind === "node") {
@@ -569,14 +576,17 @@ function updateGraphVisuals(snapshot) {
         v.ref;
       v.ref = ref;
       const active = v.kind === "client" ? Boolean(ref.last_op) : Boolean(ref.last_event);
-      item.group.setAttribute("class", ["vertex", "entity", v.kind, active ? "active" : "", v.kind === "client" ? "clickable" : ""].filter(Boolean).join(" "));
-      item.group.querySelector(".entity-id").textContent = v.kind === "client" ? ref.id : ref.client_id || ref.id;
+      item.group.setAttribute("class", ["vertex", "entity", v.kind, active ? "active" : "", "clickable"].filter(Boolean).join(" "));
+      const name = v.kind === "client" ? ref.id : ref.client_id || ref.id;
+      // Trailing space: not drawn, but keeps name and namespace apart so the
+      // accessible name starts with the visible text (WCAG 2.5.3).
+      item.group.querySelector(".entity-id").textContent = `${name} `;
       item.group.querySelector(".entity-sub").textContent = ref.namespace || "";
       item.group.setAttribute(
         "aria-label",
         v.kind === "client"
-          ? `client ${ref.id} on ${ref.namespace}; press Enter to push`
-          : `subscriber ${ref.client_id || ref.id} on ${ref.namespace}`,
+          ? `${name} ${ref.namespace}, writer; press Enter to push`
+          : `${name} ${ref.namespace}, subscriber; press Enter to show it`,
       );
     }
   }
@@ -598,6 +608,7 @@ function updateGraphVisuals(snapshot) {
     hit.setAttribute("aria-label", `link ${edge.from} to ${edge.to}, ${edge.state}${selected ? ", selected" : ""}`);
     hit.setAttribute("aria-pressed", selected ? "true" : "false");
   }
+  syncNamespaceFlows(snapshot);
   for (const { edge: built, line } of graphSim.dom.entityEdges) {
     const edge = liveEdges.get(`${built.a}>${built.b}`) ?? built;
     line.setAttribute("class", ["entity-link", edge.kind === "entity" && edge.b.startsWith("sub:") ? "subscriber" : "client", edge.active ? "active" : ""].filter(Boolean).join(" "));
@@ -831,6 +842,7 @@ function paintGraph(now) {
     }
     for (const item of placed) item.label.setAttribute("transform", `translate(${item.x} ${item.y})`);
     for (const { edge, line } of graphSim.dom.entityEdges) setLine(line, edge.a, edge.b);
+    for (const { from, to, line } of graphSim.dom.flows) setLine(line, from, to);
   }
   const reduced = document.documentElement.dataset.reducedMotion === "true";
   const period = Math.max(300, Number(host.getStepMillis?.()) || 1150);
@@ -1195,6 +1207,9 @@ function bindVertexDrag(group, vertex) {
       group.removeEventListener("pointerup", up);
       group.removeEventListener("pointercancel", cancel);
       group.removeEventListener("lostpointercapture", cancel);
+      if (completed && !graphSim.movedDuringPress && vertex.kind === "subscriber") {
+        host.onSubscriberPress?.(vertex.ref);
+      }
       if (completed && !graphSim.movedDuringPress && vertex.kind === "client") {
         host.onClientPress(vertex.ref);
       }
@@ -1308,6 +1323,30 @@ const BADGE_ICONS = {
   disabled: "M-4.4 -3.6 A6 6 0 1 0 4.4 -3.6 M0 -7 V-0.5",
   disconnected: "M0 -6.5 A6.5 6.5 0 1 1 -0.01 -6.5 Z M-4.6 4.6 L4.6 -4.6",
 };
+
+// One dashed line per writer and subscriber that share a namespace.
+function syncNamespaceFlows(snapshot) {
+  const dom = graphSim.dom;
+  const pairs = [];
+  for (const client of snapshot.clients || []) {
+    for (const subscriber of snapshot.subscribers || []) {
+      if (client.namespace === subscriber.namespace) {
+        pairs.push({ from: `client:${client.id}`, to: `sub:${subscriber.id}`, ns: client.namespace });
+      }
+    }
+  }
+  const key = pairs.map((pair) => `${pair.from}>${pair.to}`).join(",");
+  if (key === dom.flowKey) return;
+  dom.flowKey = key;
+  dom.flows = pairs
+    .filter((pair) => graphSim.pos.has(pair.from) && graphSim.pos.has(pair.to))
+    .map((pair) => {
+      const line = svg("line", { class: "namespace-flow" });
+      line.dataset.namespace = pair.ns;
+      return { ...pair, line };
+    });
+  dom.flowLayer.replaceChildren(...dom.flows.map((flow) => flow.line));
+}
 
 // "partitioned", or "delayed · N ms" with the longest pending delay on the
 // pair (it counts down as the delayed messages approach delivery).

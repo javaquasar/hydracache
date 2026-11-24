@@ -728,6 +728,29 @@ main[aria-busy="true"] .side-panel button {
   stroke-linecap: round;
 }
 
+.legend-entity {
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--accent-alt);
+  border-radius: 50%;
+  color: var(--accent-alt);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.legend-entity.subscriber {
+  border-color: var(--event);
+  color: var(--event);
+}
+
+.legend-line.flow {
+  border-top: 2px dotted var(--event);
+}
+
 .legend-progress {
   display: inline-block;
   width: 18px;
@@ -1931,6 +1954,40 @@ dd {
 
 /* Manual clients / subscribers drawn just outside the cluster ring, linked to the
    node they are routed to. The link "flows" while data is moving. */
+/* Writer -> subscriber of the same namespace (where its events go). */
+.namespace-flow {
+  stroke: var(--event);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 6;
+  stroke-linecap: round;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Writer and subscriber rows: name, where, last activity, and an action. */
+.entity-row {
+  align-items: center;
+}
+
+.entity-row > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.entity-meta,
+.entity-detail {
+  color: var(--muted);
+  font-size: var(--font-small);
+  overflow-wrap: anywhere;
+}
+
+.panel-note {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: var(--font-small);
+}
+
 .entity-links {
   pointer-events: none;
 }
@@ -1994,11 +2051,26 @@ html[data-reduced-motion="true"] .pulse-layer {
   stroke-width: 3.5;
 }
 
+.entity .entity-glyph {
+  fill: var(--accent-alt);
+  font-size: 16px;
+  font-weight: 800;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.entity.subscriber .entity-glyph {
+  fill: var(--event);
+}
+
 .entity .entity-id {
   fill: var(--ink);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
 }
 
 .entity .entity-sub {
@@ -2006,6 +2078,9 @@ html[data-reduced-motion="true"] .pulse-layer {
   font-size: 10px;
   font-weight: 600;
   text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
 }
 
 .entity.clickable {

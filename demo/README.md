@@ -231,6 +231,16 @@ shared link cannot make the page render another server's verdict.
   progress, signals), Clients, Data (keys, consistency), and Verdict. Tab badges
   restate what a hidden tab would show: nodes down, client count, replicas
   differing, and the verdict.
+- **Writers and subscribers.** The Clients tab keeps them apart, as the engine
+  does since 0.74. "+ Add writer" registers a writer for a namespace without
+  writing (`add_client`); each writer row has its own Push. "+ Subscribe"
+  creates a reader only (`subscribe` no longer creates a writer twin); each
+  subscriber row shows its last event, lag and drops, and Unsubscribe
+  (`unsubscribe`). Names are pre-filled with the next free one, namespace
+  fields suggest the namespaces in use, and an existing writer or a missing
+  subscription fails loud. On the graph a writer (↑) pushes when clicked, a
+  subscriber (↓) opens its row, and a dotted line joins writers to the
+  subscribers of their namespace.
 - **Keys heatmap.** One row per sampled key, one column per node. A cell's
   colour is derived from its stored checksum, so equal checksums share a colour;
   live replicas that differ from the majority are outlined, down nodes are

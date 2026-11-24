@@ -259,6 +259,11 @@
                 <span title="The engine drops it on delivery: its link is cut or its target is down"><i class="legend-dot doomed"></i>lost</span>
               </div>
               <div class="legend-group">
+                <span><i class="legend-entity writer" aria-hidden="true">↑</i>writer</span>
+                <span><i class="legend-entity subscriber" aria-hidden="true">↓</i>subscriber</span>
+                <span><i class="legend-line flow"></i>same namespace</span>
+              </div>
+              <div class="legend-group">
                 <span><i class="legend-line partitioned"></i>partitioned</span>
                 <span><i class="legend-line delayed"></i>delayed</span>
               </div>
@@ -396,34 +401,51 @@
           <div id="tabpanel-clients" class="tab-panel" role="tabpanel" aria-labelledby="tab-clients" data-tabpanel="clients" hidden>
             <section class="glass-panel">
               <details class="panel" open>
-                <summary><h2>Client</h2></summary>
+                <summary><h2>Writers</h2></summary>
+                <p class="panel-note">A writer pushes values into one namespace. Push from its row, or click it on the graph.</p>
                 <div class="manual-controls">
                   <label>
-                    Client
-                    <input id="manual-client" value="client-a" data-testid="manual-client" />
+                    Writer
+                    <input id="manual-client" value="client-a" autocomplete="off" data-testid="manual-client" />
                   </label>
                   <label>
                     Namespace
-                    <input id="manual-ns" value="profiles" data-testid="manual-ns" />
+                    <input id="manual-ns" value="profiles" list="namespace-options" autocomplete="off" data-testid="manual-ns" />
                   </label>
                   <label>
                     Key
-                    <input id="manual-key" value="profile-42" data-testid="manual-key" />
+                    <input id="manual-key" value="profile-42" autocomplete="off" data-testid="manual-key" />
                   </label>
                   <label>
                     Value
-                    <input id="manual-value" value="fresh" data-testid="manual-value" />
+                    <input id="manual-value" value="fresh" autocomplete="off" data-testid="manual-value" />
                   </label>
                   <div class="button-row">
-                    <button id="subscribe-button" type="button" data-testid="subscribe-button">
-                      Subscribe
-                    </button>
-                    <button id="push-event-button" type="button" data-testid="push-event-button">
-                      Push
-                    </button>
+                    <button id="add-client-button" type="button" data-testid="add-client-button">+ Add writer</button>
+                    <button id="push-event-button" type="button" data-testid="push-event-button">Push</button>
                   </div>
                 </div>
                 <div id="clients-panel" data-testid="clients-panel"></div>
+              </details>
+            </section>
+            <section class="glass-panel">
+              <details class="panel" open>
+                <summary><h2>Subscribers</h2></summary>
+                <p class="panel-note">A subscriber receives the committed events of one namespace. It is a reader only.</p>
+                <div class="manual-controls">
+                  <label>
+                    Subscriber
+                    <input id="manual-reader" value="reader-1" autocomplete="off" data-testid="manual-reader" />
+                  </label>
+                  <label>
+                    Namespace
+                    <input id="manual-reader-ns" value="profiles" list="namespace-options" autocomplete="off" data-testid="manual-reader-ns" />
+                  </label>
+                  <div class="button-row">
+                    <button id="subscribe-button" type="button" data-testid="subscribe-button">+ Subscribe</button>
+                  </div>
+                </div>
+                <datalist id="namespace-options"></datalist>
                 <div id="subscribers-panel" data-testid="subscribers-panel"></div>
               </details>
             </section>
