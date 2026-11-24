@@ -938,7 +938,16 @@ impl SimWorld {
         match self.election_backend {
             ElectionBackend::Model => {
                 let previous_trace_len = self.election.trace().len();
-                self.election.step(self.steps, &live_nodes);
+                // The model sees the same partitions the network enforces, so
+                // its signals and quorum never cross a cut link.
+                let blocked = live_nodes
+                    .iter()
+                    .flat_map(|from| live_nodes.iter().map(move |to| (from, to)))
+                    .filter(|(from, to)| from != to && !self.network.can_deliver(from, to))
+                    .map(|(from, to)| (from.clone(), to.clone()))
+                    .collect();
+                self.election
+                    .step_with_partitions(self.steps, &live_nodes, &blocked);
                 let new_events = self.election.trace()[previous_trace_len..].to_vec();
                 for event in new_events {
                     self.record(event);
