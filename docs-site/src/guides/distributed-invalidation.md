@@ -18,13 +18,24 @@ Important semantics:
 
 ## Framed Boundary
 
-`InMemoryFramedInvalidationBus` serializes each message into a `CacheInvalidationFrame` before delivery. It is still in-process, but it exercises the binary boundary that external transports can use later.
+`InMemoryFramedInvalidationBus` serializes each message into a `CacheInvalidationFrame` before delivery. It is still in-process, but it exercises the same binary frame boundary that the external transports use.
 
 ```rust
 {{#include ../../examples/src/bin/distributed_invalidation.rs:framed-bus}}
 ```
 
-Use this for transport experiments and compatibility tests. It is not a production Redis, NATS, Postgres, or TCP adapter.
+Use this for transport experiments and compatibility tests. For invalidation across processes, use one of the external transports below.
+
+## External Transports
+
+Two opt-in crates carry the same invalidation frames between processes:
+
+| Crate | Transport | Verification |
+| --- | --- | --- |
+| `hydracache-transport-redis` | Redis via the async Redis client | Redis testcontainers smoke test |
+| `hydracache-transport-nats` | NATS via the async NATS client | NATS testcontainers smoke test |
+
+Both implement the `InvalidationTransport` seam and keep the same semantics as the in-memory bus: values are not replicated, and malformed frames are reported as decode errors instead of being silently dropped. Delivery guarantees are those of the underlying broker, so keep TTL as a freshness bound for writes whose invalidation can be lost.
 
 ## Custom Transports
 
