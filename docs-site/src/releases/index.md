@@ -14,6 +14,10 @@ repository notes, GitHub release source, search index and public site on the sam
 - [HydraCache 0.74.0](0.74.0.md) — signed Linux maintenance binary, Raft
   proposal validation and a verified six-hour stability test.
 
+## Release candidates
+
+- [HydraCache 0.74.1](0.74.1.md) — Rust 1.88 registry maintenance and verified dependency forks.
+
 ## Verification records
 
 - [HydraCache 0.72 verification](../reference/release-0.72-verification.md) — executable gates,
