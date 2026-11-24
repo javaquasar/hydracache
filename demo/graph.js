@@ -68,6 +68,8 @@ const graphSim = {
   tallies: new Map(),
   // Nodes back from a crash or a disable that still lag the live majority.
   recovering: new Set(),
+  // Drop counters last drawn per node pair, to burst when they rise.
+  dropTotals: new Map(),
   // When a push's data-flow pulse reaches each vertex (performance.now()
   // time), and flashes waiting for that moment.
   pulseArrivals: new Map(),
@@ -98,6 +100,7 @@ export function resetGraph() {
   graphSim.overlays = [];
   graphSim.tallies = new Map();
   graphSim.recovering = new Set();
+  graphSim.dropTotals = new Map();
   graphSim.pulseArrivals = new Map();
   graphSim.pendingFlashes = new Map();
 }
@@ -267,7 +270,8 @@ export function syncGraph(snapshot) {
     const delay = Math.max(Number(link.delay_millis) || 0, Number(reverse?.delay_millis) || 0);
     const inFlight = (Number(link.in_flight) || 0) + (Number(reverse?.in_flight) || 0);
     const backlog = backlogs.get(key) ?? 0;
-    edges.push({ a: link.from, b: link.to, kind: "node", state: worstLinkState(link.state, reverse?.state), delay, inFlight, backlog, from: link.from, to: link.to });
+    const drops = pairDrops(link, reverse);
+    edges.push({ a: link.from, b: link.to, kind: "node", state: worstLinkState(link.state, reverse?.state), delay, inFlight, backlog, drops, from: link.from, to: link.to });
   }
   for (const c of clients) {
     if (c.connected_node) edges.push({ a: c.connected_node, b: `client:${c.id}`, kind: "entity", active: Boolean(c.last_op) });
@@ -737,13 +741,19 @@ function updateGraphVisuals(snapshot) {
     const selected = current && current.from === edge.from && current.to === edge.to;
     visual.setAttribute("class", ["link", edge.state, selected ? "selected" : ""].filter(Boolean).join(" "));
     cut.classList.toggle("shown", edge.state === "partitioned");
+    if (edge.drops) {
+      burstNewDrops(edge);
+      hit.dataset.dropped = String(edge.drops.total);
+    }
     // A pair with held-back messages swells with its backlog.
     const backlog = edge.backlog ?? 0;
     visual.style.strokeWidth = backlog > 0 ? String(3 + Math.min(5, backlog * 1.5)) : "";
     visual.dataset.backlog = String(backlog);
     label.setAttribute("class", `link-label ${edge.state}`);
     setLinkLabel(label, linkLabelText(edge));
-    hit.setAttribute("aria-label", `link ${edge.from} to ${edge.to}, ${edge.state}${selected ? ", selected" : ""}`);
+    const dropped = edge.drops?.total ? `, ${dropsText(edge.drops)}` : "";
+    hit.setAttribute("aria-label", `link ${edge.from} to ${edge.to}, ${edge.state}${dropped}${selected ? ", selected" : ""}`);
+    setHitTitle(hit, `${edge.from} ↔ ${edge.to}: ${edge.state}; ${dropsText(edge.drops)}`);
     hit.setAttribute("aria-pressed", selected ? "true" : "false");
   }
   syncNamespaceFlows(snapshot);
@@ -1470,6 +1480,15 @@ const BADGE_ICONS = {
   disconnected: "M0 -6.5 A6.5 6.5 0 1 1 -0.01 -6.5 Z M-4.6 4.6 L4.6 -4.6",
 };
 
+function setHitTitle(hit, text) {
+  let title = hit.querySelector("title");
+  if (!title) {
+    title = svg("title");
+    hit.append(title);
+  }
+  if (title.textContent !== text) title.textContent = text;
+}
+
 // One dashed line per writer and subscriber that share a namespace.
 function syncNamespaceFlows(snapshot) {
   const dom = graphSim.dom;
@@ -1494,12 +1513,58 @@ function syncNamespaceFlows(snapshot) {
   dom.flowLayer.replaceChildren(...dom.flows.map((flow) => flow.line));
 }
 
+// Messages a node pair dropped (both directions), by cause, from the
+// snapshot's per-link counters (schema 9); zeros on older snapshots.
+export function pairDrops(link, reverse) {
+  const read = (view, field) => Number(view?.drops?.[field]) || 0;
+  const sum = (field) => read(link, field) + read(reverse, field);
+  const refused = sum("cut_at_send") + sum("cut_at_delivery");
+  const injected = sum("injected");
+  // Delivered to a down node, per end: a burst shows at that node.
+  const downAt = { [link.to]: read(link, "target_down"), [link.from]: read(reverse, "target_down") };
+  return { refused, injected, downAt, total: refused + injected + downAt[link.to] + downAt[link.from] };
+}
+
 // "partitioned", or "delayed · N ms" with the longest pending delay on the
 // pair (it counts down as the delayed messages approach delivery).
 function linkLabelText(edge) {
   if (edge.state === "up") return "";
   if (edge.state === "delayed" && edge.delay > 0) return `delayed · ${edge.delay} ms`;
+  // A cut link says how much traffic it has refused (cumulative for the run).
+  if (edge.state === "partitioned" && edge.drops?.refused > 0) return `partitioned · ${edge.drops.refused} refused`;
   return edge.state;
+}
+
+function dropsText(drops) {
+  if (!drops || drops.total === 0) return "no messages dropped";
+  const parts = [];
+  if (drops.refused) parts.push(`${drops.refused} refused by the cut`);
+  if (drops.injected) parts.push(`${drops.injected} dropped by an injected fault`);
+  for (const [node, count] of Object.entries(drops.downAt)) {
+    if (count) parts.push(`${count} lost at ${node} while it was down`);
+  }
+  return parts.join(", ");
+}
+
+// When a pair's drop counters rise, burst a loss marker where it happened:
+// at the cut for refused or injected drops, at the node for messages that
+// reached it while it was down.
+function burstNewDrops(edge) {
+  const previous = graphSim.dropTotals.get(`${edge.a}|${edge.b}`);
+  graphSim.dropTotals.set(`${edge.a}|${edge.b}`, edge.drops);
+  if (!previous || reducedMotion()) return;
+  const pa = graphSim.pos.get(edge.a);
+  const pb = graphSim.pos.get(edge.b);
+  if (!pa || !pb) return;
+  if (edge.drops.refused + edge.drops.injected > previous.refused + previous.injected) {
+    spawnLossBurst((pa.x + pb.x) / 2, (pa.y + pb.y) / 2);
+  }
+  for (const [node, count] of Object.entries(edge.drops.downAt)) {
+    if (count > (previous.downAt[node] ?? 0)) {
+      const [from, to] = node === edge.b ? [pa, pb] : [pb, pa];
+      spawnLossBurst(from.x + (to.x - from.x) * 0.78, from.y + (to.y - from.y) * 0.78);
+    }
+  }
 }
 
 function setLinkLabel(label, text) {

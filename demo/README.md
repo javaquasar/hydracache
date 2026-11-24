@@ -90,7 +90,11 @@ guarantee.
   turns amber only when writes are missing (crashed, isolated, behind a cut).
   A red dashed track adds the second signal: its stored values differ from
   the live majority once replication has settled. Link labels are pills; a delayed link
-  shows the longest pending delay on the pair, counting down. The legend folds
+  shows the longest pending delay on the pair, counting down, and a cut link
+  how many messages it has refused (snapshot link `drops`, cumulative for the
+  run). When a pair's drop counters rise, a loss marker bursts at the cut, or
+  at the node that received messages while it was down; the link's tooltip
+  and accessible name give the breakdown by cause. The legend folds
   into a "Legend" button (open on wide screens, folded on narrow ones, the
   viewer's choice remembered), and the fit keeps the cluster clear of it. The
   theme follows the OS setting until you pick one with the ◐ button.
@@ -130,8 +134,8 @@ guarantee.
   convenience so a paused cluster visibly reacts; the engine has no such
   self-advancing clock.
 
-Two of these gaps have recorded ideas for closing them (send-time drop
-counters, push flashes timed to engine delivery; per-node applied writes is
+One of these gaps has a recorded idea for closing it (push flashes timed to
+engine delivery; per-node applied writes and send-time drop counters are
 done):
 [TD-0015](../docs/technical-debt/TD-0015-demo-fidelity-gaps.md).
 

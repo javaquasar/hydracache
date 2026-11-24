@@ -504,7 +504,7 @@ test("visual_controls_theme_zoom_and_timeline_marks", async ({ page }) => {
   await page.getByTestId("partition-link").click();
   await page.getByTestId("step").click();
   await expect(page.getByTestId("timeline-marks").locator(".timeline-mark.action")).toHaveCount(1);
-  await expect(page.locator(".link-label.partitioned")).toHaveText("partitioned");
+  await expect(page.locator(".link-label.partitioned")).toHaveText(/^partitioned( · \d+ refused)?$/);
   await expect(page.locator(".node.role-leader .v-badge, .node .v-badge").first()).toBeAttached();
 
   // No horizontal scrolling at any viewport size.
@@ -1013,7 +1013,7 @@ test("link_labels_are_pills_and_delay_shows_its_time", async ({ page }) => {
   };
   await link("node-0>node-1", "partition");
   await link("node-0>node-2", "delay");
-  await expect(page.locator(".link-label.partitioned .link-text")).toHaveText("partitioned");
+  await expect(page.locator(".link-label.partitioned .link-text")).toHaveText(/^partitioned( · \d+ refused)?$/);
   await expect(page.locator(".link-label.delayed .link-text")).toHaveText(/^delayed · \d+ ms$/);
   const pills = page.locator(".link-label:not(.up) .link-pill");
   await expect(pills).toHaveCount(2);
@@ -1456,4 +1456,26 @@ test("empty_blocks_explain_and_offer_the_next_action", async ({ page }) => {
     await expect(keys.locator(".key-grid")).toBeVisible();
     await expect(keys).toContainText("profiles:profile-42");
   }
+});
+
+// A cut link shows how much traffic it refused (snapshot link drops), bursts
+// a loss marker as the count rises, and says so to assistive tech.
+test("cut_links_count_refused_traffic", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=80&steps=12&scenario=default`);
+  await expect(page.getByTestId("timeline-label")).toHaveText("step 12 of 12");
+  const link = async (value) => {
+    await page.getByTestId("link-select").selectOption(value);
+    await page.getByTestId("partition-link").click();
+  };
+  await link("node-0>node-1");
+  await link("node-1>node-0");
+  await page.getByTestId("step").click();
+  const pill = page.locator(".link-label.partitioned .link-text");
+  await expect(pill).toHaveText(/^partitioned · \d+ refused$/);
+  const before = Number((await pill.textContent()).match(/(\d+) refused/)[1]);
+  await page.getByTestId("step").click();
+  await expect.poll(async () => Number((await pill.textContent()).match(/(\d+) refused/)[1])).toBeGreaterThan(before);
+  const hit = page.locator('.link-hit[aria-label^="link node-0 to node-1"]');
+  await expect(hit).toHaveAttribute("aria-label", /refused by the cut/);
+  expect(Number(await hit.getAttribute("data-dropped"))).toBeGreaterThan(0);
 });

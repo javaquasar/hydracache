@@ -4,8 +4,9 @@
 
 Open — recorded 2026-11-24 as ideas. Item 1 done on 2026-11-24 (snapshot schema 9,
 `NodeView.applied_writes`; the demo bar shows it against the most up-to-date live node, since
-writes enter through whichever node a client is attached to, not only the leader). Items 2 and
-3 remain open.
+writes enter through whichever node a client is attached to, not only the leader). Item 2
+done on 2026-11-24 (`LinkView.drops` by cause in schema 9; the demo shows refused counts on cut
+links and bursts loss markers as counters rise). Item 3 remains open.
 
 Owner: simulator / demo.
 
@@ -40,7 +41,7 @@ unchanged. The demo then draws the bar under a node as writes applied on it agai
 most up-to-date live node (writes enter through any node a client is attached to, not only
 the leader), with replica agreement kept as a second signal.
 
-### 2. Messages dropped at send time are invisible
+### 2. Messages dropped at send time are invisible — done
 
 `SimNetwork::send` (`crates/hydracache-sim/src/network.rs`) returns without a trace when the
 directed link is partitioned, and `LinkFault::Drop` discards the packet the same way. Only
@@ -88,7 +89,8 @@ Any of:
 1. Done: `NodeView` carries the writes applied on each node; the demo bar shows them against
    the most up-to-date live node; tests cover a crashed node falling behind and catching up
    after restart, and a follower falling behind a partition.
-2. `LinkView` carries per-cause drop counters; a partitioned link with traffic shows rising
+2. Done: `LinkView` carries per-cause drop counters (`cut_at_send`, `injected`,
+   `cut_at_delivery`, `target_down`); a partitioned link with traffic shows rising
    send-time drops in the snapshot and a loss marker in the demo; tests cover each cause.
 3. Push flashes follow engine delivery (engine record or per-step settle); a test asserts the
    flash order matches the steps the engine applied the value on each node.

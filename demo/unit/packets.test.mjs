@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { foldRoutineTraffic, nodeProgress, packetFamily, packetFlights, tidyTargets } from "../graph.js";
+import { foldRoutineTraffic, nodeProgress, packetFamily, packetFlights, pairDrops, tidyTargets } from "../graph.js";
 
 const nodes = [
   { id: "node-0", up: true, crashed: false, disabled: false },
@@ -220,5 +220,17 @@ describe("nodeProgress", () => {
   it("falls back to replica agreement on snapshots without applied_writes", () => {
     const progress = nodeProgress({ nodes: [{ id: "node-0" }], keys: [] }, { id: "node-0" });
     assert.deepEqual(progress, { applied: 0, pending: 0, reference: 0, missing: 0 });
+  });
+});
+
+describe("pairDrops", () => {
+  it("sums both directions by cause and keeps down-node losses per end", () => {
+    const link = { from: "a", to: "b", drops: { cut_at_send: 3, injected: 1, cut_at_delivery: 2, target_down: 4 } };
+    const reverse = { from: "b", to: "a", drops: { cut_at_send: 5, injected: 0, cut_at_delivery: 0, target_down: 1 } };
+    assert.deepEqual(pairDrops(link, reverse), { refused: 10, injected: 1, downAt: { b: 4, a: 1 }, total: 16 });
+  });
+
+  it("reads zeros from snapshots without drop counters", () => {
+    assert.deepEqual(pairDrops({ from: "a", to: "b" }, undefined), { refused: 0, injected: 0, downAt: { b: 0, a: 0 }, total: 0 });
   });
 });
