@@ -102,7 +102,16 @@ guarantee.
   from the previous leader, the "term N" label, the ring around the node
   running the election and its "votes" tally (its own vote plus vote responses
   as they land, against the quorum) restate in-flight messages and snapshot
-  state. Reduced motion shows every change at once, without overlays. The client → node → replication →
+  state. Reduced motion shows every change at once, without overlays.
+- **Event effects.** A node going down greys out with a short shudder; one
+  coming back shows a rotating ring while its replicas lag the live majority
+  and flashes once they agree. A delivered vote, write or invalidation
+  ripples at its target; a message the engine drops on delivery bursts where
+  it vanishes. A partitioned link is drawn broken (a gap and two bars), a
+  delayed one crawls, and a pair with held-back messages (not deliverable on
+  the next step) swells with that backlog. Graphics meet 3:1 contrast against
+  the canvas in both themes (WCAG 1.4.11). Reduced motion turns the effects
+  off. The client → node → replication →
   subscriber **pulse** fired on a push is a choreographed overlay; its "fan out to
   every node" matches the simulator's full-replication model, not the product's
   configurable RF.

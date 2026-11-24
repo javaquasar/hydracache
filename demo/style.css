@@ -39,7 +39,8 @@
   --leader-fill: #d7f1ec;
   --joining-fill: #eef0ff;
   --idle-fill: #eef1f3;
-  --idle-stroke: #93a3a0;
+  /* 3:1 against white and the idle fill (WCAG 1.4.11 non-text contrast). */
+  --idle-stroke: #6f807d;
   --disabled-fill: #ededed;
   --blob-opacity: 0.6;
   --font-small: 13px;
@@ -1372,6 +1373,85 @@ dd {
   animation: node-join 620ms ease-out;
 }
 
+/* Going down: the node greys out with a short shudder and its badge grows in. */
+.node.down-hit {
+  animation: down-shudder 420ms ease-out;
+}
+
+.node.down-hit .v-body {
+  animation: down-grey 700ms ease-out;
+}
+
+.node.down-hit .v-badge > * {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: badge-pop 560ms cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+@keyframes down-shudder {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  25% {
+    translate: -4px 0;
+  }
+
+  50% {
+    translate: 4px 0;
+  }
+
+  75% {
+    translate: -2px 0;
+  }
+}
+
+@keyframes down-grey {
+  from {
+    filter: grayscale(0);
+  }
+
+  40% {
+    filter: grayscale(1) brightness(0.9);
+  }
+
+  to {
+    filter: grayscale(0);
+  }
+}
+
+/* Back from a crash or a disable but still lagging the live majority: a
+   rotating dashed ring until its replicas agree again. */
+.node.recovering .v-ring {
+  opacity: 1;
+  stroke: var(--accent-alt);
+  stroke-dasharray: 10 8;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: resync-spin 2.4s linear infinite;
+}
+
+@keyframes resync-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.node.synced .v-body {
+  animation: synced-flash 900ms ease-out;
+}
+
+@keyframes synced-flash {
+  0% {
+    stroke-width: 9;
+  }
+
+  100% {
+    stroke-width: 3;
+  }
+}
+
 /* The node running the election (sending vote requests): a ring that breathes
    while its votes come in. Voters that moved to the term do not pulse. */
 .v-ring {
@@ -1424,7 +1504,9 @@ dd {
   text-anchor: middle;
 }
 
-.node.badge-pop .v-badge {
+/* Animate the badge's parts, not the badge: its own transform attribute
+   places it on the node's rim and a CSS transform would replace it. */
+.node.badge-pop .v-badge > * {
   transform-box: fill-box;
   transform-origin: center;
   animation: badge-pop 520ms cubic-bezier(0.3, 1.6, 0.5, 1);
@@ -1438,6 +1520,28 @@ dd {
   to {
     transform: scale(1);
   }
+}
+
+/* A delivered message ripples out of its target node; a lost one bursts. */
+.arrival-ripple {
+  fill: none;
+  stroke: var(--accent-alt);
+  stroke-width: 3;
+  pointer-events: none;
+}
+
+.arrival-ripple.data {
+  stroke: var(--data);
+}
+
+.arrival-ripple.event {
+  stroke: var(--event);
+}
+
+.loss-burst line {
+  stroke: var(--danger);
+  stroke-width: 3;
+  stroke-linecap: round;
 }
 
 /* "term N" rises from the node that opened the new term and fades. */
@@ -1536,6 +1640,39 @@ dd {
 .link.delayed {
   stroke: var(--warn);
   stroke-dasharray: 3 6;
+  /* Dashes crawl slowly along a delayed link: traffic is moving, just late. */
+  animation: delay-crawl 2.4s linear infinite;
+}
+
+@keyframes delay-crawl {
+  to {
+    stroke-dashoffset: -36;
+  }
+}
+
+.link {
+  transition: stroke-width 300ms ease;
+}
+
+/* A partitioned link is broken in the middle: a gap and two bars. */
+.link-cut {
+  display: none;
+  pointer-events: none;
+}
+
+.link-cut.shown {
+  display: inline;
+}
+
+.link-cut-gap {
+  stroke: var(--surface);
+  stroke-width: 12;
+}
+
+.link-cut-bar {
+  stroke: var(--danger);
+  stroke-width: 3;
+  stroke-linecap: round;
 }
 
 .link.selected {
@@ -1614,13 +1751,12 @@ dd {
 
 /* Control traffic (heartbeats, acks) is small and faint so votes and data
    stand out; shapes come from packetShape() in graph.js. */
-.packet.control .packet-shape {
-  opacity: 0.55;
-}
-
+/* Quiet by size, not by fading: a faded dot fell below 3:1 against the
+   canvas (WCAG 1.4.11), so control dots stay solid and do not pulse. */
 .packet.control {
   filter: none;
   stroke-width: 1.5;
+  animation: none;
 }
 
 .packet-key {

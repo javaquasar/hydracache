@@ -61,6 +61,8 @@ const graphSim = {
   // Role overlays (leader baton, term labels) and live vote tallies.
   overlays: [],
   tallies: new Map(),
+  // Nodes back from a crash or a disable that still lag the live majority.
+  recovering: new Set(),
   pulses: [],
   interactionsBound: false,
 };
@@ -84,6 +86,7 @@ export function resetGraph() {
   graphSim.lastLeaderId = null;
   graphSim.overlays = [];
   graphSim.tallies = new Map();
+  graphSim.recovering = new Set();
 }
 
 const VIEW_BOX = { width: 800, height: 520 };
@@ -221,13 +224,24 @@ export function syncGraph(snapshot) {
   // Edges: cluster node pairs (deduped) + entity -> connected node.
   const edges = [];
   const drawnPairs = new Set();
+  // Backlog per node pair: messages that will not be delivered on the next
+  // step (normal traffic is always delivered next step; delays pile up).
+  const stepMillis = snapshot.step > 0 ? Math.max(1, Number(snapshot.logical_time_millis) / snapshot.step) : 1;
+  const backlogs = new Map();
+  for (const message of snapshot.in_flight || []) {
+    if ((Number(message.remaining_millis) || 0) <= stepMillis) continue;
+    const pair = [message.from, message.to].sort().join("|");
+    backlogs.set(pair, (backlogs.get(pair) ?? 0) + 1);
+  }
   for (const link of snapshot.links || []) {
     const key = [link.from, link.to].slice().sort().join("|");
     if (drawnPairs.has(key)) continue;
     drawnPairs.add(key);
     const reverse = (snapshot.links || []).find((o) => o.from === link.to && o.to === link.from);
     const delay = Math.max(Number(link.delay_millis) || 0, Number(reverse?.delay_millis) || 0);
-    edges.push({ a: link.from, b: link.to, kind: "node", state: worstLinkState(link.state, reverse?.state), delay, from: link.from, to: link.to });
+    const inFlight = (Number(link.in_flight) || 0) + (Number(reverse?.in_flight) || 0);
+    const backlog = backlogs.get(key) ?? 0;
+    edges.push({ a: link.from, b: link.to, kind: "node", state: worstLinkState(link.state, reverse?.state), delay, inFlight, backlog, from: link.from, to: link.to });
   }
   for (const c of clients) {
     if (c.connected_node) edges.push({ a: c.connected_node, b: `client:${c.id}`, kind: "entity", active: Boolean(c.last_op) });
@@ -309,14 +323,21 @@ function buildGraphDom(snapshot) {
       label.append(svg("rect", { class: "link-pill", rx: 9 }), svg("text", { class: "link-text", y: 4 }));
       // The wide invisible hit line is also the keyboard target for the link.
       const hit = svg("line", { class: "link-hit", tabindex: 0, role: "button" });
+      // A partitioned link is drawn broken: a gap with two bars across it.
+      const cut = svg("g", { class: "link-cut", "aria-hidden": "true" });
+      cut.append(
+        svg("line", { class: "link-cut-gap", x1: -9, y1: 0, x2: 9, y2: 0 }),
+        svg("line", { class: "link-cut-bar", x1: -6, y1: -8, x2: -6, y2: 8 }),
+        svg("line", { class: "link-cut-bar", x1: 6, y1: -8, x2: 6, y2: 8 }),
+      );
       hit.addEventListener("click", (event) => {
         event.stopPropagation();
         host.onSelectLink({ from: edge.from, to: edge.to });
       });
       onActivateKey(hit, () => host.onSelectLink({ from: edge.from, to: edge.to }));
-      edgeLayer.append(visual, hit);
+      edgeLayer.append(visual, cut, hit);
       labelLayer.append(label);
-      dom.edges.push({ edge, visual, hit, label });
+      dom.edges.push({ edge, visual, hit, label, cut });
     } else {
       const line = svg("line", { class: "entity-link" });
       entityLinkLayer.append(line);
@@ -414,6 +435,35 @@ function stageNodeVisual(item, node, marks, snapshot) {
   graphSim.pendingNodes.set(node.id, { at, apply: () => applyNodeVisual(item, node, marks, snapshot) });
 }
 
+// A node that goes down gets a short hit (it greys out and its badge grows in);
+// a node that comes back is marked "recovering" while its replicas lag the
+// live majority, and flashes "synced" once they agree again.
+function markCrashAndRecovery(group, node, status, shown, behind) {
+  const down = status === "crashed" || status === "disabled";
+  const wasDown = shown && (shown.status === "crashed" || shown.status === "disabled");
+  if (down && shown && !wasDown && !reducedMotion()) {
+    restartClass(group, "down-hit");
+  }
+  if (down) {
+    graphSim.recovering.delete(node.id);
+    return;
+  }
+  if (wasDown) graphSim.recovering.add(node.id);
+  if (!graphSim.recovering.has(node.id)) return;
+  if (behind) {
+    group.classList.add("recovering");
+    return;
+  }
+  graphSim.recovering.delete(node.id);
+  if (!reducedMotion()) restartClass(group, "synced");
+}
+
+function restartClass(element, name) {
+  element.classList.remove(name);
+  void element.getBoundingClientRect();
+  element.classList.add(name);
+}
+
 function applyDueNodes(now, all = false) {
   for (const [id, pending] of graphSim.pendingNodes) {
     if (all || now >= pending.at) {
@@ -496,6 +546,7 @@ function applyNodeVisual(item, node, marks, snapshot) {
   bar.querySelector(".v-progress-fill").setAttribute("width", (40 * share).toFixed(1));
   bar.dataset.agree = `${agreeing}/${sampled}`;
   item.group.setAttribute("aria-label", `${node.id}, ${status}, term ${node.term}`);
+  markCrashAndRecovery(item.group, node, status, shown, sampled > 0 && agreeing < sampled);
   graphSim.nodeShown.set(node.id, { status, term: node.term });
   announceRoleChange(node, status, shown, snapshot);
 }
@@ -533,10 +584,15 @@ function updateGraphVisuals(snapshot) {
   // only); take state from the current edges so partitions and delays show.
   const liveEdges = new Map(graphSim.edges.map((edge) => [`${edge.a}>${edge.b}`, edge]));
   const current = host.getSelectedLink();
-  for (const { edge: built, visual, hit, label } of graphSim.dom.edges) {
+  for (const { edge: built, visual, hit, label, cut } of graphSim.dom.edges) {
     const edge = liveEdges.get(`${built.a}>${built.b}`) ?? built;
     const selected = current && current.from === edge.from && current.to === edge.to;
     visual.setAttribute("class", ["link", edge.state, selected ? "selected" : ""].filter(Boolean).join(" "));
+    cut.classList.toggle("shown", edge.state === "partitioned");
+    // A pair with held-back messages swells with its backlog.
+    const backlog = edge.backlog ?? 0;
+    visual.style.strokeWidth = backlog > 0 ? String(3 + Math.min(5, backlog * 1.5)) : "";
+    visual.dataset.backlog = String(backlog);
     label.setAttribute("class", `link-label ${edge.state}`);
     setLinkLabel(label, linkLabelText(edge));
     hit.setAttribute("aria-label", `link ${edge.from} to ${edge.to}, ${edge.state}${selected ? ", selected" : ""}`);
@@ -617,7 +673,7 @@ function rebuildPackets(snapshot) {
     });
     if (trail) graphSim.dom.packetLayer.append(trail);
     graphSim.dom.packetLayer.append(dot);
-    graphSim.packets.push({ dot, trail, label, from: message.from, to: message.to, kind: message.kind, start, end, lane, doomed });
+    graphSim.packets.push({ dot, trail, label, family, from: message.from, to: message.to, kind: message.kind, start, end, lane, doomed });
   }
 }
 
@@ -744,12 +800,14 @@ function paintGraph(now) {
       line.setAttribute("y2", pb.y);
     };
     const placed = [];
-    for (const { edge, visual, hit, label } of graphSim.dom.edges) {
+    for (const { edge, visual, hit, label, cut } of graphSim.dom.edges) {
       setLine(visual, edge.a, edge.b);
       setLine(hit, edge.a, edge.b);
       const pa = P.get(edge.a);
       const pb = P.get(edge.b);
       if (pa && pb) {
+        const angle = (Math.atan2(pb.y - pa.y, pb.x - pa.x) * 180) / Math.PI;
+        cut.setAttribute("transform", `translate(${(pa.x + pb.x) / 2} ${(pa.y + pb.y) / 2}) rotate(${angle})`);
         // Sit the state label beside the line (not on it) so packets and the
         // dashed stroke do not cover it.
         const length = Math.hypot(pb.x - pa.x, pb.y - pa.y) || 1;
@@ -776,7 +834,9 @@ function paintGraph(now) {
   }
   const reduced = document.documentElement.dataset.reducedMotion === "true";
   const period = Math.max(300, Number(host.getStepMillis?.()) || 1150);
-  const phase = ((now - (graphSim.packetEpoch ?? 0)) % period) / period;
+  const elapsed = now - (graphSim.packetEpoch ?? 0);
+  const phase = (elapsed % period) / period;
+  const cycle = Math.floor(elapsed / period);
   for (const packet of graphSim.packets) {
     const pa = P.get(packet.from);
     const pb = P.get(packet.to);
@@ -797,6 +857,13 @@ function paintGraph(now) {
     const x = pa.x + (pb.x - pa.x) * progress;
     const y = pa.y + (pb.y - pa.y) * progress;
     packet.dot.setAttribute("transform", `translate(${x} ${y})`);
+    // Each cycle a delivered message ripples at its target, and a lost one
+    // bursts where it vanishes. Control traffic stays silent.
+    if (!reduced && t >= 1 && packet.end >= 1 && packet.firedCycle !== cycle && packet.family !== "control") {
+      packet.firedCycle = cycle;
+      if (packet.doomed) spawnLossBurst(x, y);
+      else spawnArrivalRipple(packet.to, packet.family);
+    }
     // The key label reads mid-edge and fades near the nodes it would overlap.
     if (packet.label) packet.label.style.opacity = String(Math.min(1, Math.sin(Math.PI * progress) * 1.6));
     if (packet.trail) {
@@ -900,6 +967,23 @@ function syncVoteTally(snapshot) {
   }
 }
 
+function spawnArrivalRipple(nodeId, family) {
+  const layer = graphSim.dom?.roleLayer;
+  if (!layer || !graphSim.pos.has(nodeId)) return;
+  const ring = svg("circle", { class: `arrival-ripple ${family}`, r: GRAPH.nodeRadius });
+  layer.prepend(ring);
+  graphSim.overlays.push({ kind: "ripple", el: ring, nodeId, t0: performance.now(), duration: 520 });
+}
+
+function spawnLossBurst(x, y) {
+  const layer = graphSim.dom?.roleLayer;
+  if (!layer) return;
+  const burst = svg("g", { class: "loss-burst" });
+  burst.append(svg("line", { x1: -6, y1: -6, x2: 6, y2: 6 }), svg("line", { x1: -6, y1: 6, x2: 6, y2: -6 }));
+  layer.append(burst);
+  graphSim.overlays.push({ kind: "burst", el: burst, x, y, t0: performance.now(), duration: 480 });
+}
+
 function updateRoleOverlays(now) {
   const P = graphSim.pos;
   const remaining = [];
@@ -917,6 +1001,17 @@ function updateRoleOverlays(now) {
         const y = a.y - r + (b.y - a.y) * eased - lift;
         overlay.el.setAttribute("transform", `translate(${x} ${y})`);
       }
+    } else if (overlay.kind === "ripple") {
+      const p = P.get(overlay.nodeId);
+      if (p) {
+        overlay.el.setAttribute("cx", p.x);
+        overlay.el.setAttribute("cy", p.y);
+        overlay.el.setAttribute("r", GRAPH.nodeRadius + 18 * eased);
+        overlay.el.style.opacity = String(0.7 * (1 - t));
+      }
+    } else if (overlay.kind === "burst") {
+      overlay.el.setAttribute("transform", `translate(${overlay.x} ${overlay.y}) scale(${0.6 + 0.9 * eased})`);
+      overlay.el.style.opacity = String(1 - t);
     } else if (overlay.kind === "term") {
       const p = P.get(overlay.nodeId);
       if (p) {

@@ -954,6 +954,9 @@ test("reduced_motion_applies_roles_at_once_without_overlays", async ({ page }) =
   await page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" }).first().click();
   await expect(page.locator(".vertex.node.role-leader")).toHaveCount(1);
   await expect(page.locator(".leader-baton")).toHaveCount(0);
+  await expect(page.locator(".vertex.node.down-hit")).toHaveCount(0);
+  await page.waitForTimeout(1500);
+  await expect(page.locator(".arrival-ripple, .loss-burst")).toHaveCount(0);
 });
 
 // Node badges draw their own icons where a font glyph is unreliable, and each
@@ -1027,4 +1030,61 @@ test("legend_folds_and_remembers_the_choice", async ({ page }, testInfo) => {
   await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
   expect(await legend.evaluate((details) => details.open)).toBe(mobile);
   await expect(legend).toContainText("heartbeat");
+});
+
+test("crash_hit_recovery_and_message_effects", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=80&steps=12&scenario=default`);
+  await expect(page.getByTestId("timeline-label")).toHaveText("step 12 of 12");
+  const node = (id) => page.locator(`.vertex.node[aria-label^="${id},"]`);
+  const rows = page.getByTestId("nodes-panel");
+
+  // Fast steps; step until a delivered non-control message ripples at its
+  // target (some steps carry only quiet heartbeat traffic).
+  await page.locator("#speed-input").evaluate((input) => {
+    input.value = input.min;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  const stepUntil = async (selector) => {
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      await page.getByTestId("step").click();
+      // Effects fire when a packet lands, a few hundred ms into the step.
+      for (let poll = 0; poll < 9; poll += 1) {
+        if ((await page.locator(selector).count()) > 0) return true;
+        await page.waitForTimeout(100);
+      }
+    }
+    return false;
+  };
+  expect(await stepUntil(".arrival-ripple")).toBe(true);
+
+  await rows.getByRole("button", { name: "Crash" }).nth(2).click();
+  await expect(node("node-2")).toHaveClass(/down-hit/);
+  // Writes still addressed to the crashed node are lost: they burst.
+  expect(await stepUntil(".loss-burst")).toBe(true);
+
+  await rows.getByRole("button", { name: "Restart" }).first().click();
+  await expect(node("node-2")).toHaveClass(/synced|recovering/);
+});
+
+test("link_cut_marker_delay_crawl_and_backlog", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=80&steps=12&scenario=default`);
+  await expect(page.getByTestId("timeline-label")).toHaveText("step 12 of 12");
+  await expect(page.locator(".link-cut.shown")).toHaveCount(0);
+  const link = async (value, action) => {
+    await page.getByTestId("link-select").selectOption(value);
+    await page.getByTestId(`${action}-link`).click();
+  };
+  await link("node-0>node-1", "partition");
+  await expect(page.locator(".link-cut.shown")).toHaveCount(1);
+
+  await link("node-0>node-2", "delay");
+  const delayed = page.locator(".link.delayed");
+  await expect(delayed).toHaveCount(1);
+  expect(await delayed.evaluate((line) => getComputedStyle(line).animationName)).toBe("delay-crawl");
+  // The held-back message is a backlog on that pair: the line swells.
+  expect(Number(await delayed.getAttribute("data-backlog"))).toBeGreaterThan(0);
+  expect(await delayed.evaluate((line) => parseFloat(getComputedStyle(line).strokeWidth))).toBeGreaterThan(3);
+  // Undelayed pairs carry no backlog.
+  const others = await page.locator(".link.up").evaluateAll((lines) => lines.map((line) => line.dataset.backlog));
+  expect(others.every((value) => value === "0")).toBe(true);
 });
