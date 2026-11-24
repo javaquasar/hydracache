@@ -78,6 +78,14 @@ enum SimInjectRequest {
         client: String,
         ns: String,
     },
+    AddClient {
+        client: String,
+        ns: String,
+    },
+    Unsubscribe {
+        client: String,
+        ns: String,
+    },
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -229,6 +237,16 @@ fn apply_injection(
             value,
         },
         SimInjectRequest::Subscribe { client, ns } => ControlActionV1::Subscribe {
+            at_step,
+            client,
+            ns,
+        },
+        SimInjectRequest::AddClient { client, ns } => ControlActionV1::AddClient {
+            at_step,
+            client,
+            ns,
+        },
+        SimInjectRequest::Unsubscribe { client, ns } => ControlActionV1::Unsubscribe {
             at_step,
             client,
             ns,

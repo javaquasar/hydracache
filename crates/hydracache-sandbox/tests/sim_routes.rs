@@ -184,6 +184,32 @@ async fn sim_routes_accept_topology_control_actions() {
     .await;
     assert!(rejoined["rebalance"].is_object());
 
+    let writer = post_json(
+        app.clone(),
+        "/sim/inject",
+        json!({"action": "add_client", "client": "client-b", "ns": "profiles"}).to_string(),
+    )
+    .await;
+    assert!(writer["clients"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|client| client["id"] == "client-b"));
+
+    post_json(
+        app.clone(),
+        "/sim/inject",
+        json!({"action": "subscribe", "client": "reader-1", "ns": "profiles"}).to_string(),
+    )
+    .await;
+    let left = post_json(
+        app.clone(),
+        "/sim/inject",
+        json!({"action": "unsubscribe", "client": "reader-1", "ns": "profiles"}).to_string(),
+    )
+    .await;
+    assert!(left["subscribers"].as_array().unwrap().is_empty());
+
     let added = post_json(
         app,
         "/sim/inject",

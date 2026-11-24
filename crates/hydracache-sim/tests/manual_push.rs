@@ -155,3 +155,108 @@ fn versions_for(snapshot: &hydracache_sim::SimSnapshot, key: &str) -> Vec<u64> {
         .map(|replica| replica.version)
         .collect()
 }
+
+// Since 0.74 writers and subscribers are separate: subscribing creates only a
+// reader, a writer can be registered before it writes, and a subscriber can
+// leave.
+#[test]
+fn subscribe_creates_only_a_subscriber() {
+    let mut world = manual_world();
+    world.subscribe("reader-1", NS);
+    let snapshot = world.snapshot();
+    assert!(snapshot.clients.is_empty(), "no writer twin");
+    assert_eq!(snapshot.subscribers.len(), 1);
+    assert_eq!(snapshot.subscribers[0].id, "reader-1@profiles");
+}
+
+#[test]
+fn add_client_registers_a_writer_without_writing() {
+    let mut world = manual_world();
+    let committed = world.snapshot().progress.committed_entries;
+    world
+        .add_client("client-b", NS)
+        .expect("a new writer registers");
+    let snapshot = world.snapshot();
+    let writer = snapshot
+        .clients
+        .iter()
+        .find(|client| client.id == "client-b")
+        .expect("writer is visible");
+    assert_eq!(writer.namespace, NS);
+    assert_eq!(writer.last_op, None);
+    assert!(writer.connected_node.is_some());
+    assert!(snapshot.subscribers.is_empty());
+    assert_eq!(
+        snapshot.progress.committed_entries, committed,
+        "nothing written"
+    );
+
+    let again = world.add_client("client-b", NS).unwrap_err();
+    assert!(again.to_string().contains("already exists"), "{again}");
+    let empty = world.add_client(" ", NS).unwrap_err();
+    assert!(empty.to_string().contains("needs a client name"), "{empty}");
+}
+
+#[test]
+fn unsubscribed_reader_stops_receiving_and_fails_loud_twice() {
+    let mut world = manual_world();
+    world.subscribe("reader-1", NS);
+    world
+        .unsubscribe("reader-1", NS)
+        .expect("a subscriber can leave");
+    world
+        .push_event("client-a", NS, KEY, "fresh")
+        .expect("manual push applies");
+    world.run(2);
+    assert!(world.snapshot().subscribers.is_empty());
+
+    let twice = world.unsubscribe("reader-1", NS).unwrap_err();
+    assert!(twice.to_string().contains("is not subscribed"), "{twice}");
+}
+
+#[test]
+fn writer_and_subscriber_actions_replay_identically() {
+    let mut world = SimWorld::new(0x5331, SimConfig::default());
+    for action in [
+        ControlActionV1::Workload {
+            at_step: 0,
+            enabled: false,
+        },
+        ControlActionV1::AddClient {
+            at_step: 0,
+            client: "client-b".to_owned(),
+            ns: NS.to_owned(),
+        },
+        ControlActionV1::Subscribe {
+            at_step: 0,
+            client: "reader-1".to_owned(),
+            ns: NS.to_owned(),
+        },
+        ControlActionV1::Step { at_step: 0, n: 8 },
+        ControlActionV1::PushEvent {
+            at_step: 8,
+            client: "client-b".to_owned(),
+            ns: NS.to_owned(),
+            key: KEY.to_owned(),
+            value: "fresh".to_owned(),
+        },
+        ControlActionV1::Step { at_step: 8, n: 2 },
+        ControlActionV1::Unsubscribe {
+            at_step: 10,
+            client: "reader-1".to_owned(),
+            ns: NS.to_owned(),
+        },
+    ] {
+        world.apply_control_action(action).expect("action applies");
+    }
+    let script = world.replay_script();
+    let json = script.to_json();
+    assert!(json.contains("\"type\":\"add_client\""), "{json}");
+    assert!(json.contains("\"type\":\"unsubscribe\""), "{json}");
+    let replayed = hydracache_sim::replay_world(
+        &hydracache_sim::ReplayScriptV1::from_json(&json).expect("script parses"),
+        |seed| SimWorld::new(seed, SimConfig::default()),
+    )
+    .expect("script replays");
+    assert_eq!(replayed.snapshot(), world.snapshot());
+}

@@ -341,6 +341,8 @@ impl SimWorld {
                 self.subscribe(client, ns);
                 Ok(())
             }
+            ControlActionV1::AddClient { client, ns, .. } => self.add_client(client, ns),
+            ControlActionV1::Unsubscribe { client, ns, .. } => self.unsubscribe(client, ns),
             ControlActionV1::ModeChange { mode, .. } => {
                 self.mode = mode;
                 Ok(())
@@ -473,10 +475,13 @@ impl SimWorld {
     }
 
     /// Subscribe a manual-mode client to namespace cache events.
+    ///
+    /// Creates only the subscriber (a reader); a writer with the same name is
+    /// registered by [`Self::add_client`] or by its first push. Subscribing an
+    /// existing subscriber again is a no-op.
     pub fn subscribe(&mut self, client: impl Into<String>, namespace: impl Into<String>) {
         let client = client.into();
         let namespace = namespace.into();
-        self.ensure_client_actor(&client, &namespace);
         let id = subscriber_id(&client, &namespace);
         self.subscribers
             .entry(id.clone())
@@ -488,6 +493,51 @@ impl SimWorld {
                 last_event: None,
                 dropped: 0,
             });
+    }
+
+    /// Register a manual-mode writer client for a namespace without writing.
+    ///
+    /// Fails loud on an empty name or namespace and on a client that already
+    /// exists, rather than silently re-pointing it.
+    pub fn add_client(
+        &mut self,
+        client: impl Into<String>,
+        namespace: impl Into<String>,
+    ) -> Result<(), ControlApplyError> {
+        let client = client.into();
+        let namespace = namespace.into();
+        if client.trim().is_empty() || namespace.trim().is_empty() {
+            return Err(ControlApplyError::InvalidAction(
+                "add_client needs a client name and a namespace".to_owned(),
+            ));
+        }
+        if self.clients.contains_key(&client) {
+            return Err(ControlApplyError::InvalidAction(format!(
+                "client '{client}' already exists"
+            )));
+        }
+        self.ensure_client_actor(&client, &namespace);
+        self.record(format!("manual_add_client:{client}:{namespace}"));
+        Ok(())
+    }
+
+    /// Remove a manual-mode subscriber; its undelivered events are dropped
+    /// with it. Fails loud when the client is not subscribed to `namespace`.
+    pub fn unsubscribe(
+        &mut self,
+        client: impl Into<String>,
+        namespace: impl Into<String>,
+    ) -> Result<(), ControlApplyError> {
+        let client = client.into();
+        let namespace = namespace.into();
+        let id = subscriber_id(&client, &namespace);
+        if self.subscribers.remove(&id).is_none() {
+            return Err(ControlApplyError::InvalidAction(format!(
+                "'{client}' is not subscribed to '{namespace}'"
+            )));
+        }
+        self.record(format!("manual_unsubscribe:{client}:{namespace}"));
+        Ok(())
     }
 
     /// Push a manual-mode cache event into the simulated cluster.
