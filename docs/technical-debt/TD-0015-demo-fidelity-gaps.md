@@ -2,7 +2,10 @@
 
 ## Status
 
-Open — recorded 2026-11-24 as ideas; not scheduled.
+Open — recorded 2026-11-24 as ideas. Item 1 done on 2026-11-24 (snapshot schema 9,
+`NodeView.applied_writes`; the demo bar shows it against the most up-to-date live node, since
+writes enter through whichever node a client is attached to, not only the leader). Items 2 and
+3 remain open.
 
 Owner: simulator / demo.
 
@@ -16,7 +19,7 @@ record keeps the ideas that would close the gaps.
 
 ## The Three Gaps
 
-### 1. Per-node progress is not reported (only a cluster-wide count)
+### 1. Per-node progress is not reported (only a cluster-wide count) — done
 
 `SimWorld` builds every `NodeView` with the same cluster-wide `committed_entries` for both
 `commit_index` and `applied_index` (`crates/hydracache-sim/src/world.rs`, the `node_view` calls;
@@ -34,7 +37,8 @@ Idea: count the write, invalidate and flush operations each node applies in
 carry the count over when `catch_up_node` copies state to a restarted node, and report it in a
 new `NodeView` field (for example `applied_writes`), leaving `commit_index` / `applied_index`
 unchanged. The demo then draws the bar under a node as writes applied on it against the
-leader's, with replica agreement kept as a second signal.
+most up-to-date live node (writes enter through any node a client is attached to, not only
+the leader), with replica agreement kept as a second signal.
 
 ### 2. Messages dropped at send time are invisible
 
@@ -81,8 +85,9 @@ Any of:
 
 ## Definition Of Done
 
-1. `NodeView` carries the writes applied on each node; the demo bar shows them against the
-   leader's; tests cover a crashed node falling behind and catching up after restart.
+1. Done: `NodeView` carries the writes applied on each node; the demo bar shows them against
+   the most up-to-date live node; tests cover a crashed node falling behind and catching up
+   after restart, and a follower falling behind a partition.
 2. `LinkView` carries per-cause drop counters; a partitioned link with traffic shows rising
    send-time drops in the snapshot and a loss marker in the demo; tests cover each cause.
 3. Push flashes follow engine delivery (engine record or per-step settle); a test asserts the

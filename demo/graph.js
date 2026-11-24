@@ -426,6 +426,8 @@ function buildGraphDom(snapshot) {
       const progress = svg("g", { class: "v-progress", transform: "translate(-20 27)", "aria-hidden": "true" });
       progress.append(
         svg("rect", { class: "v-progress-track", width: 40, height: 4, rx: 2 }),
+        // Writes already on their way to this node, then writes applied here.
+        svg("rect", { class: "v-progress-pending", width: 0, height: 4, rx: 2 }),
         svg("rect", { class: "v-progress-fill", width: 0, height: 4, rx: 2 }),
       );
       group.append(
@@ -572,6 +574,36 @@ function reducedMotion() {
   return document.documentElement.dataset.reducedMotion === "true";
 }
 
+// A node's write progress: writes it applied, writes in flight to it, and the
+// reference it is measured against: the most up-to-date live node. (Writes
+// enter through whichever node a client is attached to, not only the leader,
+// and every write reaches every replica, so the furthest node is the target.)
+// Older snapshots without applied_writes fall back to replica agreement.
+export function nodeProgress(snapshot, node) {
+  if (node.applied_writes === undefined) {
+    const { agreeing, sampled } = replicaAgreement(snapshot, node.id);
+    return { applied: agreeing, pending: 0, reference: sampled, missing: sampled - agreeing };
+  }
+  const live = (snapshot.nodes || []).filter((candidate) => !candidate.crashed && !candidate.disabled);
+  const reference = Math.max(0, node.applied_writes, ...live.map((candidate) => candidate.applied_writes ?? 0));
+  // Only writes that will actually be delivered count as arriving: none to a
+  // down node, none over a cut link (the network drops those on delivery).
+  const cut = new Set(
+    (snapshot.links || []).filter((link) => link.state === "partitioned").map((link) => `${link.from}>${link.to}`),
+  );
+  const pending =
+    node.crashed || node.disabled
+      ? 0
+      : (snapshot.in_flight || []).filter(
+          (message) =>
+            message.to === node.id &&
+            String(message.kind).startsWith("replicate_") &&
+            !cut.has(`${message.from}>${message.to}`),
+        ).length;
+  const applied = node.applied_writes;
+  return { applied, pending, reference, missing: Math.max(0, reference - applied - pending) };
+}
+
 // Per-node replica agreement, computed once per snapshot.
 let agreementCache = { snapshot: null, byNode: new Map() };
 
@@ -632,18 +664,34 @@ function applyNodeVisual(item, node, marks, snapshot) {
   const icon = BADGE_ICONS[status];
   item.group.querySelector(".v-badge text").textContent = icon ? "" : ROLE_BADGES[status] ?? "";
   item.group.querySelector(".v-icon").setAttribute("d", icon ?? "");
-  // Replica agreement: on how many sampled keys this node holds the version
-  // the live majority holds. (The simulator reports one cluster-wide commit
-  // index, so per-node lag shows in the stored values, not in commit_index.)
+  // The bar: writes this node applied against the most up-to-date live node
+  // (schema 9 applied_writes), with writes already in flight to it drawn
+  // lighter, so a node one replication step behind is "arriving", not
+  // "behind".
+  // Replica agreement stays a second signal: a dashed red track when the
+  // node's stored values differ from the live majority.
+  const progress = nodeProgress(snapshot, node);
   const { agreeing, sampled } = replicaAgreement(snapshot, node.id);
-  const share = sampled > 0 ? agreeing / sampled : 0;
+  // While writes are still replicating, the writer briefly holds a value the
+  // majority has not received yet; that is normal, so the red track waits
+  // until replication settles (or the node is genuinely behind).
+  const replicating = (snapshot.in_flight || []).some((message) => String(message.kind).startsWith("replicate_"));
+  const differs = sampled > 0 && agreeing < sampled && (!replicating || progress.missing > 0);
   const bar = item.group.querySelector(".v-progress");
-  bar.classList.toggle("empty", sampled === 0);
-  bar.classList.toggle("behind", sampled > 0 && agreeing < sampled);
-  bar.querySelector(".v-progress-fill").setAttribute("width", (40 * share).toFixed(1));
+  const scale = progress.reference > 0 ? 40 / progress.reference : 0;
+  bar.classList.toggle("empty", progress.reference === 0);
+  bar.classList.toggle("behind", progress.missing > 0);
+  bar.classList.toggle("diverged", differs);
+  bar.querySelector(".v-progress-fill").setAttribute("width", Math.min(40, progress.applied * scale).toFixed(1));
+  bar.querySelector(".v-progress-pending").setAttribute(
+    "width",
+    Math.min(40, (progress.applied + progress.pending) * scale).toFixed(1),
+  );
+  bar.dataset.applied = `${progress.applied}/${progress.reference}`;
+  bar.dataset.pending = String(progress.pending);
   bar.dataset.agree = `${agreeing}/${sampled}`;
   item.group.setAttribute("aria-label", `${node.id}, ${status}, term ${node.term}`);
-  markCrashAndRecovery(item.group, node, status, shown, sampled > 0 && agreeing < sampled);
+  markCrashAndRecovery(item.group, node, status, shown, progress.missing > 0 || differs);
   graphSim.nodeShown.set(node.id, { status, term: node.term });
   announceRoleChange(node, status, shown, snapshot);
 }

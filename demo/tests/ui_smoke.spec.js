@@ -986,6 +986,17 @@ test("node_badges_and_replica_agreement", async ({ page }) => {
   await page.getByTestId("step").click();
   await page.getByTestId("step").click();
   await expect(node("node-2").locator(".v-progress")).toHaveClass(/behind/);
+  const applied = async (id) =>
+    (await node(id).locator(".v-progress").getAttribute("data-applied")).split("/").map(Number);
+  const [crashedApplied, reference] = await applied("node-2");
+  expect(crashedApplied).toBeLessThan(reference);
+  // Restarting copies the source's state, and its progress with it.
+  await rows.getByRole("button", { name: "Restart" }).first().click();
+  await expect(node("node-2")).not.toHaveClass(/role-crashed/);
+  await expect.poll(async () => {
+    const [mine, target] = await applied("node-2");
+    return mine === target;
+  }).toBe(true);
 
   await rows.getByRole("button", { name: "Disable" }).nth(1).click();
   await expect(node("node-1")).toHaveClass(/role-disabled/);

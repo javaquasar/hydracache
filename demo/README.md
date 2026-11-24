@@ -84,9 +84,12 @@ guarantee.
   verdict changes) for readability; they add no information of their own. Node
   badges draw a power icon for a disabled node and a slashed circle for an
   isolated one (the engine reports it as `disconnected`). The bar under each
-  node is its replica agreement: on how many sampled keys it holds the live
-  majority's version (the simulator reports one cluster-wide commit index, so
-  per-node lag shows in stored values). Link labels are pills; a delayed link
+  node is the writes that node applied (snapshot `applied_writes`) against
+  the most up-to-date live node; writes already on their way to it are drawn
+  lighter, so a node one replication step behind reads as arriving, and it
+  turns amber only when writes are missing (crashed, isolated, behind a cut).
+  A red dashed track adds the second signal: its stored values differ from
+  the live majority once replication has settled. Link labels are pills; a delayed link
   shows the longest pending delay on the pair, counting down. The legend folds
   into a "Legend" button (open on wide screens, folded on narrow ones, the
   viewer's choice remembered), and the fit keeps the cluster clear of it. The
@@ -127,8 +130,9 @@ guarantee.
   convenience so a paused cluster visibly reacts; the engine has no such
   self-advancing clock.
 
-Three of these gaps have recorded ideas for closing them (writes applied
-per node, send-time drop counters, push flashes timed to engine delivery):
+Two of these gaps have recorded ideas for closing them (send-time drop
+counters, push flashes timed to engine delivery; per-node applied writes is
+done):
 [TD-0015](../docs/technical-debt/TD-0015-demo-fidelity-gaps.md).
 
 ### Not represented at all — the production stack

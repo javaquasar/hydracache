@@ -1627,6 +1627,18 @@ html.graph-dragging * {
   fill: var(--warn);
 }
 
+/* Writes already on their way to the node (replicate_* in flight). */
+.v-progress-pending {
+  fill: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* Second signal: stored values differ from the live majority. */
+.v-progress.diverged .v-progress-track {
+  stroke: var(--danger);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+
 .v-progress.empty,
 .node.crashed .v-progress,
 .node.disabled .v-progress {

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { foldRoutineTraffic, packetFamily, packetFlights, tidyTargets } from "../graph.js";
+import { foldRoutineTraffic, nodeProgress, packetFamily, packetFlights, tidyTargets } from "../graph.js";
 
 const nodes = [
   { id: "node-0", up: true, crashed: false, disabled: false },
@@ -174,5 +174,51 @@ describe("tidyTargets", () => {
     assert.notDeepEqual(targets.get("client:client-a"), targets.get("sub:r@ns"), "fanned out");
     // The same snapshot gives the same picture.
     assert.deepEqual(tidyTargets(nodes), tidyTargets([...nodes].reverse()));
+  });
+});
+
+describe("nodeProgress", () => {
+  const world = (counts, inFlight = [], down = []) => ({
+    nodes: Object.entries(counts).map(([id, applied]) => ({
+      id,
+      applied_writes: applied,
+      crashed: down.includes(id),
+      disabled: false,
+    })),
+    in_flight: inFlight,
+    keys: [],
+  });
+
+  it("measures against the most up-to-date live node, not the leader", () => {
+    const snapshot = world({ "node-0": 4, "node-1": 6, "node-2": 6 });
+    assert.deepEqual(nodeProgress(snapshot, snapshot.nodes[0]), { applied: 4, pending: 0, reference: 6, missing: 2 });
+  });
+
+  it("counts writes already in flight to the node as arriving, not missing", () => {
+    const snapshot = world({ "node-0": 5, "node-1": 6 }, [
+      { from: "node-1", to: "node-0", kind: "replicate_put" },
+      { from: "node-1", to: "node-0", kind: "heartbeat" },
+    ]);
+    assert.deepEqual(nodeProgress(snapshot, snapshot.nodes[0]), { applied: 5, pending: 1, reference: 6, missing: 0 });
+  });
+
+  it("does not count writes a down node or a cut link will never deliver", () => {
+    const toDown = world({ "node-0": 3, "node-1": 6 }, [{ from: "node-1", to: "node-0", kind: "replicate_put" }], ["node-0"]);
+    assert.equal(nodeProgress(toDown, toDown.nodes[0]).pending, 0);
+    const cut = {
+      ...world({ "node-0": 3, "node-1": 6 }, [{ from: "node-1", to: "node-0", kind: "replicate_put" }]),
+      links: [{ from: "node-1", to: "node-0", state: "partitioned" }],
+    };
+    assert.deepEqual(nodeProgress(cut, cut.nodes[0]), { applied: 3, pending: 0, reference: 6, missing: 3 });
+  });
+
+  it("ignores crashed nodes when picking the reference", () => {
+    const snapshot = world({ "node-0": 3, "node-1": 9 }, [], ["node-1"]);
+    assert.equal(nodeProgress(snapshot, snapshot.nodes[0]).reference, 3);
+  });
+
+  it("falls back to replica agreement on snapshots without applied_writes", () => {
+    const progress = nodeProgress({ nodes: [{ id: "node-0" }], keys: [] }, { id: "node-0" });
+    assert.deepEqual(progress, { applied: 0, pending: 0, reference: 0, missing: 0 });
   });
 });
