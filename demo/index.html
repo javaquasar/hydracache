@@ -151,16 +151,16 @@
         </div>
 
         <div class="control-group run-until" role="group" aria-labelledby="group-until">
-          <span id="group-until" class="group-title">Run until</span>
+          <span id="group-until" class="group-title">Run to</span>
           <div class="group-body">
-            <button id="until-leader" type="button" data-until="leader" data-testid="until-leader">
-              Run to leader
+            <button id="until-leader" type="button" data-until="leader" data-testid="until-leader" aria-label="Run to leader">
+              Leader
             </button>
-            <button id="until-agree" type="button" data-until="agree" data-testid="until-agree">
-              Run to replica agreement
+            <button id="until-agree" type="button" data-until="agree" data-testid="until-agree" aria-label="Run to replica agreement">
+              Agreement
             </button>
-            <button id="until-violation" type="button" data-until="violation" data-testid="until-violation">
-              Run to violation
+            <button id="until-violation" type="button" data-until="violation" data-testid="until-violation" aria-label="Run to violation">
+              Violation
             </button>
           </div>
         </div>
@@ -235,6 +235,12 @@
               <button id="zoom-fit" class="icon-button" type="button" data-testid="zoom-fit" aria-label="Fit the cluster" aria-pressed="true" title="Fit the cluster (following)">
                 <span aria-hidden="true">⤢</span>
               </button>
+              <button id="tidy-graph" class="icon-button" type="button" data-testid="tidy-graph" aria-label="Tidy layout" title="Tidy layout: put every node back in its place">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="4" r="2.4"></circle><circle cx="4.6" cy="13.5" r="2.4"></circle><circle cx="15.4" cy="13.5" r="2.4"></circle><circle cx="10" cy="10.5" r="7.2" class="ring"></circle></svg>
+              </button>
+              <button id="present-graph" class="icon-button" type="button" data-testid="present-graph" aria-label="Presentation mode" aria-pressed="false" title="Presentation mode (P); Esc to leave">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7V3h4M13 3h4v4M17 13v4h-4M7 17H3v-4"></path></svg>
+              </button>
             </div>
             <details class="graph-legend" data-testid="graph-legend" open>
               <summary data-testid="legend-toggle">Legend</summary>
@@ -297,8 +303,18 @@
                   value="0"
                   aria-describedby="timeline-help"
                 />
+                <svg
+                  id="timeline-history"
+                  class="timeline-history"
+                  data-testid="timeline-history"
+                  viewBox="0 0 1000 24"
+                  preserveAspectRatio="none"
+                  aria-hidden="true"
+                ></svg>
               </span>
             </label>
+            <p id="history-summary" class="visually-hidden" data-testid="history-summary"></p>
+            <div id="history-legend" class="history-legend" data-testid="history-legend" aria-hidden="true"></div>
             <p id="timeline-help" class="timeline-help" data-testid="timeline-help">
               Drag to rebuild any earlier step of this run from its seed and recorded actions.
             </p>
@@ -503,6 +519,8 @@
         <dd>Ten steps back / forward</dd>
         <dt><kbd>F</kbd></dt>
         <dd>Fit the cluster in view</dd>
+        <dt><kbd>P</kbd></dt>
+        <dd>Presentation mode: the graph fills the screen (Esc leaves)</dd>
         <dt><kbd>?</kbd></dt>
         <dd>Show this list</dd>
         <dt><kbd>Esc</kbd></dt>

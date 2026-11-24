@@ -11,6 +11,7 @@ import { ServerSimSession, WasmSimSession } from "./engine.js";
 import {
   fitGraph,
   refreshGraphFit,
+  tidyGraph,
   initGraph,
   playDataFlowPulse,
   resetGraph,
@@ -35,6 +36,7 @@ import {
   stepChanges,
   timelineEvents,
   timelineMarks,
+  historyStrip,
   tourOutcome,
   verdictView,
   versionHue,
@@ -52,6 +54,7 @@ const MAX_TIMELINE_EVENTS = 40;
 const URL_WRITE_INTERVAL_MS = 1000;
 
 const state = {
+  presentFullscreen: false,
   SimHandle: null,
   activeTab: "cluster",
   // Last view signature each panel was painted from (see paintPanel).
@@ -86,7 +89,7 @@ const state = {
   changes: null,
   freshRun: true,
   // Graph highlights derived from `changes` and the violation detail.
-  marks: { changed: new Set(), implicated: new Set() },
+  marks: { changed: new Set(), notable: new Set(), implicated: new Set() },
   // Violation card: the violation the user closed (so it stays closed).
   violationDismissed: null,
   violationSignature: "",
@@ -107,6 +110,9 @@ const el = {
   scriptStatus: document.querySelector("#script-status"),
   untilButtons: Array.from(document.querySelectorAll("[data-until]")),
   timelineInput: document.querySelector("#timeline-input"),
+  timelineHistory: document.querySelector("#timeline-history"),
+  historySummary: document.querySelector("#history-summary"),
+  historyLegend: document.querySelector("#history-legend"),
   timelineLabel: document.querySelector("#timeline-label"),
   timelineHelp: document.querySelector("#timeline-help"),
   timelineMarks: document.querySelector("#timeline-marks"),
@@ -115,6 +121,8 @@ const el = {
   zoomIn: document.querySelector("#zoom-in"),
   zoomOut: document.querySelector("#zoom-out"),
   zoomFit: document.querySelector("#zoom-fit"),
+  tidyGraph: document.querySelector("#tidy-graph"),
+  present: document.querySelector("#present-graph"),
   events: document.querySelector("#events-panel"),
   verdictPanel: document.querySelector("#verdict-panel"),
   guideTitle: document.querySelector("#guide-title"),
@@ -213,6 +221,7 @@ async function boot() {
   bindTheme();
   bindIntro();
   bindLegend();
+  trackControlBarHeight();
   buildNodePopover();
   bindTabs();
   bindDock();
@@ -388,6 +397,20 @@ function bindEvents() {
   el.zoomIn.addEventListener("click", () => zoomGraph(1.25));
   el.zoomOut.addEventListener("click", () => zoomGraph(1 / 1.25));
   el.zoomFit.addEventListener("click", () => fitGraph());
+  el.tidyGraph.addEventListener("click", () => tidyGraph());
+  el.present.addEventListener("click", () => setPresentation(!presenting()));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && presenting() && !event.defaultPrevented && !el.shortcuts.open) {
+      setPresentation(false);
+    }
+  });
+  // Leaving browser full screen (its own Esc) leaves presentation mode too.
+  document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement && presenting() && state.presentFullscreen) {
+      state.presentFullscreen = false;
+      setPresentation(false);
+    }
+  });
   renderSpeed();
   el.speed.addEventListener("input", () => {
     renderSpeed();
@@ -529,6 +552,12 @@ function render() {
   const focus = violationFocus(snapshot);
   state.marks = {
     changed: new Set(state.changes?.nodes.keys() ?? []),
+    // Role, term or membership changes: what the graph flashes for.
+    notable: new Set(
+      [...(state.changes?.nodes ?? new Map())]
+        .filter(([, fields]) => fields.some((change) => ["status", "term", "added"].includes(change.field)))
+        .map(([id]) => id),
+    ),
     implicated: new Set(focus?.nodes ?? []),
   };
   renderVerdict(snapshot);
@@ -1092,6 +1121,7 @@ function forkTimeline() {
 function recordObservation(snapshot) {
   state.observations.set(snapshot.step, {
     leader: leaderOf(snapshot),
+    committed: snapshot.progress?.committed_entries ?? null,
     verdict: snapshot.verdict.status,
     invariant: snapshot.verdict.invariant ?? null,
   });
@@ -1135,6 +1165,7 @@ function renderTimeline(snapshot) {
     markEvents.push({ step: first, kind: "verdict", text: "first violation reported by the checker" });
   }
   renderTimelineMarks(markEvents, base, max);
+  renderHistoryStrip(snapshot, base, max);
   el.timelineHelp.textContent = rewound
     ? `Rewound to step ${snapshot.step} of a recording that reaches step ${max}. Drag forward to replay it; Step, Play or any action continues from here and drops the later recording.`
     : "Drag to rebuild any earlier step of this run from its seed and recorded actions.";
@@ -1186,6 +1217,49 @@ function renderEventGroups(groups) {
 
 // Event ticks over the scrubber: where the leader changed, the verdict flipped,
 // or a recorded action happened.
+// The strip under the scrubber: leader per observed step (one colour per
+// node, red for no leader, blank where the page did not see the step) and a
+// line of committed entries.
+function renderHistoryStrip(snapshot, base, max) {
+  const strip = historyStrip(state.observations, base, max);
+  const order = (snapshot.nodes || []).map((node) => node.id).sort((a, b) => a.localeCompare(b, "en", { numeric: true }));
+  const hue = (leader) => (Math.max(0, order.indexOf(leader)) * 137.5 + 170) % 360;
+  paintPanel("history", null, JSON.stringify([strip, order]), () => {
+    const NS = "http://www.w3.org/2000/svg";
+    const shapes = strip.segments.map((segment) => {
+      const rect = document.createElementNS(NS, "rect");
+      rect.setAttribute("x", segment.x0.toFixed(1));
+      rect.setAttribute("y", "15");
+      rect.setAttribute("width", Math.max(1, segment.x1 - segment.x0).toFixed(1));
+      rect.setAttribute("height", "9");
+      rect.setAttribute("class", segment.leader ? "history-leader" : "history-none");
+      if (segment.leader) rect.style.fill = `hsl(${hue(segment.leader)} 55% 46%)`;
+      rect.dataset.leader = segment.leader ?? "";
+      rect.dataset.steps = `${segment.from}-${segment.to}`;
+      return rect;
+    });
+    for (const points of strip.lines) {
+      const line = document.createElementNS(NS, "polyline");
+      line.setAttribute("points", points);
+      line.setAttribute("class", "history-committed");
+      shapes.push(line);
+    }
+    el.timelineHistory.replaceChildren(...shapes);
+    el.historySummary.textContent = strip.summary;
+    const chips = strip.leaders.map((leader) => {
+      const chip = document.createElement("span");
+      chip.className = leader ? "history-chip" : "history-chip none";
+      if (leader) chip.style.setProperty("--chip", `hsl(${hue(leader)} 55% 46%)`);
+      chip.textContent = leader ?? "no leader";
+      return chip;
+    });
+    const committed = document.createElement("span");
+    committed.className = "history-chip committed";
+    committed.textContent = "committed";
+    el.historyLegend.replaceChildren(...chips, ...(strip.lines.length ? [committed] : []));
+  });
+}
+
 function renderTimelineMarks(events, base, max) {
   const views = timelineMarks(events, base, max);
   paintPanel("timeline-marks", null, JSON.stringify(views), () => paintTimelineMarks(views));
@@ -2183,6 +2257,15 @@ const INTRO_KEY = "hydracache-demo-intro-seen";
 // per-viewer convenience, so storage failures just fall back to the default).
 const LEGEND_KEY = "hydracache-demo-legend";
 
+// The sticky control bar's height, so the sticky graph sits just below it.
+function trackControlBarHeight() {
+  const bar = document.querySelector(".controls");
+  if (!bar || typeof ResizeObserver !== "function") return;
+  new ResizeObserver(() => {
+    document.documentElement.style.setProperty("--controls-sticky", `${Math.ceil(bar.getBoundingClientRect().height)}px`);
+  }).observe(bar);
+}
+
 function bindLegend() {
   const legend = document.querySelector(".graph-legend");
   if (!legend) return;
@@ -2270,6 +2353,35 @@ function bindTabs() {
       next.focus();
     });
   }
+}
+
+// Presentation mode: the graph fills the screen with only the run controls and
+// the timeline around it (html.presenting), in browser full screen when the
+// browser allows it. Esc, P or the button leave it.
+function presenting() {
+  return document.documentElement.classList.contains("presenting");
+}
+
+function setPresentation(on) {
+  document.documentElement.classList.toggle("presenting", on);
+  el.present.setAttribute("aria-pressed", on ? "true" : "false");
+  el.present.setAttribute("aria-label", on ? "Leave presentation mode" : "Presentation mode");
+  if (on && document.fullscreenEnabled && !document.fullscreenElement) {
+    document.documentElement
+      .requestFullscreen?.()
+      .then(() => {
+        state.presentFullscreen = true;
+      })
+      .catch(() => {
+        // Full screen refused (e.g. not from a user gesture): the page layout
+        // still gives the graph the whole window.
+      });
+  } else if (!on && state.presentFullscreen && document.fullscreenElement) {
+    state.presentFullscreen = false;
+    document.exitFullscreen?.().catch(() => {});
+  }
+  refreshGraphFit();
+  announce(on ? "Presentation mode" : "Left presentation mode");
 }
 
 // The Fit button shows whether the view follows the cluster. After a pan or a
@@ -2478,6 +2590,9 @@ function runShortcut(command) {
       break;
     case "fit":
       fitGraph();
+      break;
+    case "present":
+      setPresentation(!presenting());
       break;
     case "back":
       scrub(-1);

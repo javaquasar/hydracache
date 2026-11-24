@@ -462,6 +462,9 @@ export function shortcutFor(event, target = "page") {
   if (key === "f" || key === "F") {
     return "fit";
   }
+  if (key === "p" || key === "P") {
+    return "present";
+  }
   if (target === "control") {
     return null;
   }
@@ -598,3 +601,60 @@ export function nextFreeName(prefix, taken) {
   }
 }
 
+
+// ---------------------------------------------------------------------------
+// Timeline history strip: who led at each observed step, and how committed
+// entries grew. Only steps the page rendered are known; a jump (run-until,
+// play at speed) leaves a gap instead of a guess.
+// ---------------------------------------------------------------------------
+export const HISTORY_WIDTH = 1000;
+
+export function historyStrip(observations, base, max) {
+  const span = Math.max(max - base, 1);
+  const x = (step) => Math.min(HISTORY_WIDTH, Math.max(0, ((step - base) / span) * HISTORY_WIDTH));
+  const steps = [...observations.keys()].filter((step) => step >= base && step <= max).sort((a, b) => a - b);
+  const runs = [];
+  for (const step of steps) {
+    const leader = observations.get(step).leader ?? null;
+    const last = runs.at(-1);
+    if (last && last.leader === leader && step === last.to + 1) {
+      last.to = step;
+    } else {
+      runs.push({ leader, from: step, to: step });
+    }
+  }
+  const segments = runs.map((run) => ({
+    leader: run.leader,
+    from: run.from,
+    to: run.to,
+    x0: x(run.from - 0.5),
+    x1: x(run.to + 0.5),
+  }));
+  const committed = steps
+    .map((step) => ({ step, value: observations.get(step).committed }))
+    .filter((point) => Number.isFinite(point.value));
+  const top = Math.max(1, ...committed.map((point) => point.value));
+  const lines = [];
+  for (const point of committed) {
+    const coords = `${x(point.step).toFixed(1)},${(12 - (point.value / top) * 10).toFixed(1)}`;
+    const line = lines.at(-1);
+    if (line && point.step === line.last + 1) {
+      line.points.push(coords);
+      line.last = point.step;
+    } else {
+      lines.push({ points: [coords], last: point.step });
+    }
+  }
+  const leaders = [...new Set(runs.map((run) => run.leader))];
+  const range = (run) => (run.from === run.to ? `step ${run.from}` : `steps ${run.from}–${run.to}`);
+  const described = runs.slice(-6).map((run) => `${run.leader ?? "no leader"} at ${range(run)}`);
+  const first = committed[0]?.value;
+  const last = committed.at(-1)?.value;
+  const growth = committed.length ? `; committed entries ${first} → ${last}` : "";
+  return {
+    segments,
+    lines: lines.filter((line) => line.points.length > 1).map((line) => line.points.join(" ")),
+    leaders,
+    summary: runs.length ? `Observed leaders: ${described.join(", ")}${growth}.` : "No steps observed yet.",
+  };
+}

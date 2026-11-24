@@ -25,17 +25,22 @@ const GRAPH = {
   center: { x: 400, y: 260 },
   nodeRadius: 46,
   entityRadius: 20,
-  springNode: 168, // rest length between cluster nodes (more breathing room)
-  springEntity: 132, // rest length node <-> client/subscriber (bigger distance)
-  repulsion: 52000,
-  spring: 0.018,
-  damping: 0.85,
-  centerPull: 0.006,
-  maxVelocity: 26,
+  // Tidy layout: cluster nodes on a ring, writers and subscribers just
+  // outside it next to the node they attach to.
+  ringBase: 128,
+  ringPerNode: 9,
+  ringMax: 196,
+  entityGap: 112,
+  entitySpread: 0.42,
+  ease: 0.2,
 };
 
 const graphSim = {
-  pos: new Map(), // id -> { x, y, vx, vy, fixed, kind }
+  pos: new Map(), // id -> { x, y, fixed, kind }
+  // Tidy-layout slot per vertex, recomputed on every sync; and positions the
+  // user dragged a vertex to, kept until "Tidy" clears them.
+  targets: new Map(),
+  pins: new Map(),
   vertices: [], // [{ id, kind }]
   edges: [], // [{ a, b, kind }]
   dom: null,
@@ -78,6 +83,8 @@ export function resetGraph() {
     graphSim.raf = null;
   }
   graphSim.pos.clear();
+  graphSim.targets = new Map();
+  graphSim.pins = new Map();
   graphSim.topoKey = "";
   graphSim.view = { tx: 0, ty: 0, scale: 1 };
   setAutoFit(true);
@@ -113,17 +120,29 @@ function overlaysOnCanvas() {
 // edge falls in viewBox units (the SVG letterboxes the 800x520 viewBox), so a
 // tall legend or a short canvas still leaves the nodes uncovered. A folded
 // legend is one small button.
-function fitInsets() {
+function fitInsets(view) {
   if (!overlaysOnCanvas()) return FIT_INSETS_COMPACT;
   const legend = host?.svg.parentElement?.querySelector(".graph-legend");
-  const frame = host?.svg.getBoundingClientRect();
-  if (!legend || !frame || frame.height === 0) return FIT_INSETS;
+  if (!legend || !view.frame) return FIT_INSETS;
   const box = legend.getBoundingClientRect();
   if (box.height === 0) return FIT_INSETS;
+  const below = (view.frame.bottom - box.top) / view.k + 10;
+  return { ...FIT_INSETS, bottom: Math.max(36, Math.min(view.height * 0.45, below)) };
+}
+
+// The part of the canvas that is actually visible, in viewBox units. The SVG
+// letterboxes its 800x520 viewBox: a tall canvas (a phone in presentation
+// mode) shows more above and below it, a wide one more to the sides, and the
+// fit uses all of that room.
+function visibleViewBox() {
+  const frame = host?.svg.getBoundingClientRect();
+  if (!frame || frame.width === 0 || frame.height === 0) {
+    return { x: 0, y: 0, width: VIEW_BOX.width, height: VIEW_BOX.height, frame: null, k: 1 };
+  }
   const k = Math.min(frame.width / VIEW_BOX.width, frame.height / VIEW_BOX.height);
-  const top = frame.top + (frame.height - VIEW_BOX.height * k) / 2;
-  const legendTop = (box.top - top) / k;
-  return { ...FIT_INSETS, bottom: Math.max(36, Math.min(VIEW_BOX.height * 0.45, VIEW_BOX.height - legendTop + 10)) };
+  const width = frame.width / k;
+  const height = frame.height / k;
+  return { x: (VIEW_BOX.width - width) / 2, y: (VIEW_BOX.height - height) / 2, width, height, frame, k };
 }
 
 /** Re-run the fit (e.g. after an overlay changed size) without forcing it on. */
@@ -179,13 +198,14 @@ function fitTarget() {
     maxY = Math.max(maxY, p.y + r);
   }
   const overlays = overlaysOnCanvas();
-  const insets = fitInsets();
+  const view = visibleViewBox();
+  const insets = fitInsets(view);
   const maxScale = overlays ? FIT_LIMITS.max : FIT_LIMITS.maxCompact;
   const box = {
-    x: insets.left,
-    y: insets.top,
-    width: VIEW_BOX.width - insets.left - insets.right,
-    height: VIEW_BOX.height - insets.top - insets.bottom,
+    x: view.x + insets.left,
+    y: view.y + insets.top,
+    width: view.width - insets.left - insets.right,
+    height: view.height - insets.top - insets.bottom,
   };
   const width = Math.max(maxX - minX, 1);
   const height = Math.max(maxY - minY, 1);
@@ -262,7 +282,9 @@ export function syncGraph(snapshot) {
   // Persist / initialise positions.
   const liveIds = new Set(vertices.map((v) => v.id));
   for (const id of [...graphSim.pos.keys()]) if (!liveIds.has(id)) graphSim.pos.delete(id);
-  vertices.forEach((v, index) => ensureVertexPosition(v, index, vertices.length));
+  graphSim.targets = tidyTargets(nodes, clients, subscribers);
+  for (const id of [...graphSim.pins.keys()]) if (!liveIds.has(id)) graphSim.pins.delete(id);
+  vertices.forEach((v) => ensureVertexPosition(v));
 
   // Rebuild DOM only when the set of vertices/edges changes.
   const topoKey = vertices.map((v) => v.id).join(",") + "::" + edges.map((e) => `${e.a}>${e.b}`).join(",");
@@ -278,26 +300,63 @@ export function syncGraph(snapshot) {
   startGraphSim();
 }
 
-function ensureVertexPosition(vertex, index, count) {
+// The tidy layout: the same snapshot always gives the same picture. Nodes sit
+// on a ring in id order (starting at the top); each writer and subscriber sits
+// outside the ring, beside the node it is attached to, fanned out when several
+// share a node.
+export function tidyTargets(nodes, clients = [], subscribers = []) {
+  const targets = new Map();
+  const ids = nodes.map((node) => node.id).sort((a, b) => a.localeCompare(b, "en", { numeric: true }));
+  const radius = Math.min(GRAPH.ringMax, GRAPH.ringBase + GRAPH.ringPerNode * ids.length);
+  const angles = new Map();
+  ids.forEach((id, index) => {
+    const angle = -Math.PI / 2 + (index * Math.PI * 2) / Math.max(ids.length, 1);
+    angles.set(id, angle);
+    targets.set(id, {
+      x: GRAPH.center.x + Math.cos(angle) * (ids.length > 1 ? radius : 0),
+      y: GRAPH.center.y + Math.sin(angle) * (ids.length > 1 ? radius : 0),
+    });
+  });
+  const entities = [
+    ...clients.map((client) => ({ id: `client:${client.id}`, node: client.connected_node })),
+    ...subscribers.map((subscriber) => ({ id: `sub:${subscriber.id}`, node: subscriber.connected_node })),
+  ];
+  const byNode = new Map();
+  for (const entity of entities) {
+    const list = byNode.get(entity.node) ?? [];
+    list.push(entity);
+    byNode.set(entity.node, list);
+  }
+  for (const [node, list] of byNode) {
+    // Unattached entities sit below the cluster.
+    const base = angles.get(node) ?? Math.PI / 2;
+    const distance = (angles.has(node) && ids.length > 1 ? radius : 0) + GRAPH.entityGap;
+    list.forEach((entity, index) => {
+      const angle = base + (index - (list.length - 1) / 2) * GRAPH.entitySpread;
+      targets.set(entity.id, {
+        x: GRAPH.center.x + Math.cos(angle) * distance,
+        y: GRAPH.center.y + Math.sin(angle) * distance,
+      });
+    });
+  }
+  return targets;
+}
+
+function ensureVertexPosition(vertex) {
   if (graphSim.pos.has(vertex.id)) {
     graphSim.pos.get(vertex.id).kind = vertex.kind;
     return;
   }
-  let x;
-  let y;
-  if (vertex.kind === "node") {
-    const angle = -Math.PI / 2 + (index * Math.PI * 2) / Math.max(count, 1);
-    x = GRAPH.center.x + Math.cos(angle) * 150;
-    y = GRAPH.center.y + Math.sin(angle) * 150;
-  } else {
-    // Spawn next to the node it connects to, so it eases in instead of flying.
-    const nodeId = vertex.ref?.connected_node;
-    const anchor = nodeId ? graphSim.pos.get(nodeId) : null;
-    const base = anchor || GRAPH.center;
-    x = base.x + (Math.random() - 0.5) * 60;
-    y = base.y + (Math.random() - 0.5) * 60 + 70;
-  }
-  graphSim.pos.set(vertex.id, { x, y, vx: 0, vy: 0, fixed: false, kind: vertex.kind });
+  // A new vertex starts at its slot (an entity at its node, so it slides out).
+  const slot = graphSim.targets.get(vertex.id) ?? GRAPH.center;
+  const anchor = vertex.kind === "node" ? slot : graphSim.pos.get(vertex.ref?.connected_node) ?? slot;
+  graphSim.pos.set(vertex.id, { x: anchor.x, y: anchor.y, fixed: false, kind: vertex.kind });
+}
+
+/** Clear dragged positions and return every vertex to the tidy layout. */
+export function tidyGraph() {
+  graphSim.pins.clear();
+  startGraphSim();
 }
 
 function buildGraphDom(snapshot) {
@@ -553,7 +612,11 @@ function applyNodeVisual(item, node, marks, snapshot) {
       .filter(Boolean)
       .join(" "),
   );
-  if (marks.changed.has(node.id)) {
+  // Flash for what matters on the graph: a role, term or membership change,
+  // or a write a push carried here. Routine commit progress from the
+  // background workload shows on the agreement bar, not as a flash.
+  const notable = marks.notable ? marks.notable.has(node.id) : marks.changed.has(node.id);
+  if (notable || (marks.changed.has(node.id) && graphSim.pulseArrivals.has(node.id))) {
     flashWhenReached(node.id, item.group, "changed");
   }
   if (graphSim.tallies.has(node.id)) item.group.classList.add("campaigning");
@@ -692,7 +755,16 @@ function rebuildPackets(snapshot) {
   graphSim.packetEpoch = performance.now();
   const { flights, totals } = packetFlights(snapshot, graphSim.flightTotals);
   graphSim.flightTotals = totals;
-  for (const { message, start, end, lane, doomed } of flights) {
+  const { shown, folded } = foldRoutineTraffic(flights);
+  graphSim.edgeBadges = [...folded].map(([pair, count]) => {
+    const [a, b] = pair.split("|");
+    const badge = svg("g", { class: "edge-badge" });
+    badge.dataset.pair = pair;
+    badge.append(svg("rect", { x: -15, y: -9, width: 30, height: 18, rx: 9 }), svg("text", { y: 4 }, `+${count}`));
+    graphSim.dom.packetLayer.append(badge);
+    return { a, b, badge };
+  });
+  for (const { message, start, end, lane, doomed } of shown) {
     if (!graphSim.pos.has(message.from) || !graphSim.pos.has(message.to)) continue;
     const family = packetFamily(message.kind);
     const kind = `${packetKind(message.kind)}${doomed ? " doomed" : ""}`;
@@ -713,6 +785,35 @@ function rebuildPackets(snapshot) {
     graphSim.dom.packetLayer.append(dot);
     graphSim.packets.push({ dot, trail, label, family, from: message.from, to: message.to, kind: message.kind, start, end, lane, doomed });
   }
+}
+
+// A busy edge folds its routine traffic: heartbeats and acks that cross in
+// one step and arrive keep one dot per direction, the rest become a "+N"
+// badge. Votes, data, events, delayed and doomed messages always show.
+export function foldRoutineTraffic(flights) {
+  const routine = (flight) =>
+    packetFamily(flight.message.kind) === "control" && flight.start === 0 && flight.end === 1 && !flight.doomed;
+  const perPair = new Map();
+  for (const flight of flights) {
+    const pair = [flight.message.from, flight.message.to].sort().join("|");
+    perPair.set(pair, (perPair.get(pair) ?? 0) + 1);
+  }
+  const keptDirections = new Set();
+  const folded = new Map();
+  const shown = [];
+  for (const flight of flights) {
+    const pair = [flight.message.from, flight.message.to].sort().join("|");
+    const direction = `${flight.message.from}>${flight.message.to}`;
+    if (perPair.get(pair) > 3 && routine(flight)) {
+      if (keptDirections.has(direction)) {
+        folded.set(pair, (folded.get(pair) ?? 0) + 1);
+        continue;
+      }
+      keptDirections.add(direction);
+    }
+    shown.push(flight);
+  }
+  return { shown, folded };
 }
 
 // Shape per message family, so kinds read without relying on colour.
@@ -736,83 +837,21 @@ function shortKey(key) {
   return text.length > 12 ? `${text.slice(0, 11)}…` : text;
 }
 
+// Ease every vertex toward its place: a dragged position if the user moved
+// it, otherwise its tidy slot. Returns the remaining motion, so the animation
+// loop stops once the picture is still.
 function applyGraphForces() {
-  const V = graphSim.vertices;
-  const P = graphSim.pos;
-  for (let i = 0; i < V.length; i += 1) {
-    const pi = P.get(V[i].id);
-    for (let j = i + 1; j < V.length; j += 1) {
-      const pj = P.get(V[j].id);
-      let dx = pi.x - pj.x;
-      let dy = pi.y - pj.y;
-      let d2 = dx * dx + dy * dy;
-      if (d2 < 1) {
-        dx = Math.random() - 0.5;
-        dy = Math.random() - 0.5;
-        d2 = 1;
-      }
-      const f = GRAPH.repulsion / d2;
-      const d = Math.sqrt(d2);
-      const fx = (dx / d) * f;
-      const fy = (dy / d) * f;
-      pi.vx += fx;
-      pi.vy += fy;
-      pj.vx -= fx;
-      pj.vy -= fy;
-    }
-  }
-  for (const e of graphSim.edges) {
-    const pa = P.get(e.a);
-    const pb = P.get(e.b);
-    if (!pa || !pb) continue;
-    let dx = pb.x - pa.x;
-    let dy = pb.y - pa.y;
-    const d = Math.hypot(dx, dy) || 1;
-    const rest = e.kind === "entity" ? GRAPH.springEntity : GRAPH.springNode;
-    const f = (d - rest) * GRAPH.spring;
-    const fx = (dx / d) * f;
-    const fy = (dy / d) * f;
-    pa.vx += fx;
-    pa.vy += fy;
-    pb.vx -= fx;
-    pb.vy -= fy;
-  }
   let energy = 0;
-  const padX = 74;
-  const padY = 54;
-  for (const v of V) {
-    const p = P.get(v.id);
-    // Pull everything gently toward the centre; entities a little less so they
-    // can sit outside the cluster but still drift in-screen when there's room.
-    const pull = v.kind === "node" ? GRAPH.centerPull : GRAPH.centerPull * 0.5;
-    p.vx += (GRAPH.center.x - p.x) * pull;
-    p.vy += (GRAPH.center.y - p.y) * pull;
-    if (p.fixed) {
-      p.vx = 0;
-      p.vy = 0;
-      continue;
-    }
-    p.vx = Math.max(-GRAPH.maxVelocity, Math.min(GRAPH.maxVelocity, p.vx * GRAPH.damping));
-    p.vy = Math.max(-GRAPH.maxVelocity, Math.min(GRAPH.maxVelocity, p.vy * GRAPH.damping));
-    p.x += p.vx;
-    p.y += p.vy;
-    // Keep physics-driven vertices inside the visible viewBox so clients and
-    // subscribers do not drift off-screen (a held drag is exempt above).
-    if (p.x < padX) {
-      p.x = padX;
-      p.vx = 0;
-    } else if (p.x > 800 - padX) {
-      p.x = 800 - padX;
-      p.vx = 0;
-    }
-    if (p.y < padY) {
-      p.y = padY;
-      p.vy = 0;
-    } else if (p.y > 520 - padY) {
-      p.y = 520 - padY;
-      p.vy = 0;
-    }
-    energy += p.vx * p.vx + p.vy * p.vy;
+  for (const v of graphSim.vertices) {
+    const p = graphSim.pos.get(v.id);
+    if (!p || p.fixed) continue;
+    const target = graphSim.pins.get(v.id) ?? graphSim.targets.get(v.id);
+    if (!target) continue;
+    const dx = (target.x - p.x) * GRAPH.ease;
+    const dy = (target.y - p.y) * GRAPH.ease;
+    p.x += dx;
+    p.y += dy;
+    energy += dx * dx + dy * dy;
   }
   return energy;
 }
@@ -876,6 +915,12 @@ function paintGraph(now) {
   const elapsed = now - (graphSim.packetEpoch ?? 0);
   const phase = (elapsed % period) / period;
   const cycle = Math.floor(elapsed / period);
+  // "+N" badges sit a third of the way along their edge, clear of the label.
+  for (const { a, b, badge } of graphSim.edgeBadges ?? []) {
+    const pa = P.get(a);
+    const pb = P.get(b);
+    if (pa && pb) badge.setAttribute("transform", `translate(${pa.x + (pb.x - pa.x) * 0.33} ${pa.y + (pb.y - pa.y) * 0.33})`);
+  }
   for (const packet of graphSim.packets) {
     const pa = P.get(packet.from);
     const pb = P.get(packet.to);
@@ -1232,8 +1277,6 @@ function bindVertexDrag(group, vertex) {
       const g = pointerToGraph(ev);
       p.x = g.x;
       p.y = g.y;
-      p.vx = 0;
-      p.vy = 0;
       startGraphSim();
     };
     // pointerup ends a press (a still press on a client pushes); pointercancel
@@ -1245,6 +1288,8 @@ function bindVertexDrag(group, vertex) {
       p.fixed = false;
       graphSim.drag = null;
       holdTextSelection(false);
+      // A vertex the user moved stays where it was put (until "Tidy").
+      if (graphSim.movedDuringPress) graphSim.pins.set(vertex.id, { x: p.x, y: p.y });
       if (group.hasPointerCapture?.(ev.pointerId)) group.releasePointerCapture(ev.pointerId);
       group.removeEventListener("pointermove", move);
       group.removeEventListener("pointerup", up);

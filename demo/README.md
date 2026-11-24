@@ -66,8 +66,16 @@ guarantee.
 
 ### Visualization only — no engine meaning
 
-- **The force-directed graph layout and physics** (drag, pan, zoom, spacing) are
-  purely presentational; positions carry no engine meaning. The view fits the
+- **The graph layout** (drag, pan, zoom, spacing) is purely presentational;
+  positions carry no engine meaning. It is tidy and deterministic: cluster
+  nodes on a ring in id order, writers and subscribers just outside it beside
+  their node, so the same run draws the same picture. A dragged vertex stays
+  where it is put until the Tidy button puts everything back. The presentation
+  button (or P) lets the graph fill the screen with only the run controls and
+  the timeline around it; Esc leaves. A busy edge folds its routine heartbeats
+  and acks into a "+N" badge (votes, data, delayed and lost messages always
+  show), and nodes flash only for role, term and membership changes or a write
+  a push carried there. The view fits the
   whole cluster automatically until you pan or zoom (Ctrl/Cmd + wheel, pinch,
   or the +/− buttons); the ⤢ button returns to the fitted view. A plain wheel
   scrolls the page.
@@ -202,6 +210,10 @@ shared link cannot make the page render another server's verdict.
   Step dots jump between steps, "Play the tour" runs the rest with pauses,
   "Copy link to this step" shares the run and the step (`?tourStep=N`), and the
   last step offers the next tour and the reproducer.
+- **History strip.** Under the timeline, a lane shows which node led at each
+  step the page observed (red: no leader) and a line shows committed entries.
+  Steps the page did not render (a run-until jump) stay blank rather than
+  guessed; a text summary is available to screen readers.
 - **Timeline.** The slider under the graph rebuilds any earlier step of the
   current run by replaying its script prefix (interventions up to that step,
   resumed exactly there), so a rewound view is the real engine state at that

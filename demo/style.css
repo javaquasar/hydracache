@@ -1151,6 +1151,61 @@ dd {
   margin: 0;
 }
 
+/* History strip under the scrubber (app.js renderHistoryStrip): leader lane
+   and committed-entries line, inset like the range thumb. */
+.timeline-history {
+  display: block;
+  width: calc(100% - 16px);
+  height: 24px;
+  margin: 4px 8px 0;
+  overflow: visible;
+}
+
+.history-none {
+  fill: color-mix(in srgb, var(--danger) 55%, transparent);
+}
+
+.history-committed {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.7;
+}
+
+.history-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: var(--font-xsmall);
+}
+
+.history-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.history-chip::before {
+  content: "";
+  width: 10px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--chip, var(--accent));
+}
+
+.history-chip.none::before {
+  background: color-mix(in srgb, var(--danger) 55%, transparent);
+}
+
+.history-chip.committed::before {
+  height: 0;
+  border-top: 2px solid var(--ink);
+  opacity: 0.7;
+}
+
 /* Event ticks above the scrubber; positions come from insight.timelineMarks.
    The 8px inset matches the range thumb so a tick sits over its step. */
 .timeline-marks {
@@ -1375,6 +1430,71 @@ dd {
   overflow-wrap: anywhere;
 }
 
+/* Drawn icons in the graph tool buttons. */
+.graph-tools svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 0;
+}
+
+.graph-tools svg .ring {
+  fill: none;
+  stroke-width: 1.4;
+  stroke-dasharray: 2 2.4;
+}
+
+.graph-tools svg path {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Presentation mode (app.js setPresentation): the graph takes the screen;
+   only the run controls and the timeline stay around it. */
+html.presenting .topbar,
+html.presenting .side-panel,
+html.presenting .intro-card,
+html.presenting .controls .control-group:not(:first-of-type),
+html.presenting .controls .copy-status,
+html.presenting .timeline-help,
+html.presenting .events,
+html.presenting .step-changes,
+html.presenting .graph-hint,
+html.presenting .run-dock {
+  display: none !important;
+}
+
+html.presenting .controls .group-title {
+  display: none;
+}
+
+html.presenting .controls .group-body {
+  flex-wrap: nowrap;
+}
+
+html.presenting .workspace {
+  grid-template-columns: minmax(0, 1fr);
+  padding-top: 8px;
+}
+
+html.presenting .graph-panel {
+  position: static;
+}
+
+html.presenting #cluster-graph {
+  height: calc(100dvh - 210px);
+  min-height: 260px;
+  aspect-ratio: auto;
+}
+
+html.presenting #present-graph {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
 /* Graph labels are pictures of engine state, not text to select; a drag on
    the graph also suppresses selection on the page (graph.js). */
 #cluster-graph {
@@ -1408,7 +1528,7 @@ html.graph-dragging * {
   fill: var(--node-fill);
   stroke: var(--accent);
   stroke-width: 3;
-  filter: drop-shadow(0 8px 10px rgba(7, 95, 91, 0.14));
+  filter: drop-shadow(0 3px 5px rgba(7, 95, 91, 0.12));
   transition:
     fill 260ms ease,
     stroke 260ms ease,
@@ -1943,6 +2063,20 @@ html.graph-dragging * {
   stroke-width: 3px;
 }
 
+/* "+N": routine heartbeats and acks folded on a busy edge. */
+.edge-badge rect {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+
+.edge-badge text {
+  fill: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
 @keyframes packet-pulse {
   0%,
   100% {
@@ -2248,12 +2382,13 @@ html[data-reduced-transparency="true"] select {
   }
 }
 
+/* A crisp ring, not a glow: the node's outline thickens and settles. */
 @keyframes hc-node-flash {
   from {
-    filter: drop-shadow(0 0 12px var(--accent-alt));
+    stroke-width: 9;
   }
   to {
-    filter: drop-shadow(0 0 0 transparent);
+    stroke-width: 3;
   }
 }
 
@@ -2306,8 +2441,8 @@ dd.changed,
   gap: 6px;
 }
 
-.vertex.node.changed {
-  animation: hc-node-flash 1.4s ease-out;
+.vertex.node.changed .v-body {
+  animation: hc-node-flash 900ms ease-out;
 }
 
 .vertex.node.implicated .v-body {
@@ -2860,4 +2995,117 @@ kbd {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: var(--font-xsmall);
   text-align: center;
+}
+
+/* -------------------------------------------------------------------------
+   Compact control bar: labels beside their fields, 32px controls, the
+   status lines on one row; on wide screens the bar sticks to the top and the
+   graph sticks just under it (app.js sets --controls-sticky).
+   ------------------------------------------------------------------------- */
+.controls {
+  align-items: center;
+  gap: 6px 0;
+  min-height: 0;
+  padding: 6px 10px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 12px;
+}
+
+.controls .group-body {
+  align-items: center;
+  gap: 6px;
+}
+
+.controls label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.controls button,
+.controls select,
+.controls input:not([type="range"]):not([type="checkbox"]) {
+  min-height: 32px;
+  height: 32px;
+}
+
+.controls button {
+  padding: 0 12px;
+}
+
+#seed-input {
+  width: 9ch;
+}
+
+#scenario-select {
+  width: 210px;
+}
+
+#mode-select {
+  width: 108px;
+}
+
+.range input {
+  width: 112px;
+}
+
+.range-row {
+  min-height: 32px;
+}
+
+#speed-value {
+  min-width: 64px;
+}
+
+.toggle {
+  min-height: 32px;
+}
+
+.controls .copy-status {
+  flex: 0 1 auto;
+  margin-right: 14px;
+  font-size: var(--font-xsmall);
+}
+
+@media (min-width: 901px) {
+  .controls {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+
+  .graph-panel {
+    top: calc(var(--controls-sticky, 0px) + 10px);
+  }
+}
+
+@media (max-width: 900px) {
+  .controls {
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .control-group,
+  .control-group:first-child {
+    flex-wrap: wrap;
+    padding: 0;
+  }
+
+  .control-group + .control-group {
+    padding-top: 8px;
+  }
+
+  .controls .group-body {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  #scenario-select {
+    width: min(210px, 100%);
+  }
 }

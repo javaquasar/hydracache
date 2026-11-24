@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { packetFamily, packetFlights } from "../graph.js";
+import { foldRoutineTraffic, packetFamily, packetFlights, tidyTargets } from "../graph.js";
 
 const nodes = [
   { id: "node-0", up: true, crashed: false, disabled: false },
@@ -127,5 +127,52 @@ describe("packetFamily", () => {
       ack: "control",
       something_else: "message",
     });
+  });
+});
+
+describe("foldRoutineTraffic", () => {
+  const flight = (from, to, kind, extra = {}) => ({ message: { from, to, kind }, start: 0, end: 1, doomed: false, ...extra });
+
+  it("keeps one routine dot per direction on a busy edge and counts the rest", () => {
+    const flights = [
+      flight("a", "b", "leader_heartbeat"),
+      flight("a", "b", "heartbeat"),
+      flight("b", "a", "heartbeat_ack"),
+      flight("b", "a", "ack"),
+      flight("a", "b", "vote_request"),
+    ];
+    const { shown, folded } = foldRoutineTraffic(flights);
+    assert.deepEqual(
+      shown.map((item) => item.message.kind),
+      ["leader_heartbeat", "heartbeat_ack", "vote_request"],
+    );
+    assert.deepEqual([...folded], [["a|b", 2]]);
+  });
+
+  it("never folds delayed, doomed or quiet-edge messages", () => {
+    const flights = [
+      flight("a", "b", "heartbeat"),
+      flight("a", "b", "heartbeat", { end: 0.25 }),
+      flight("a", "b", "ack", { doomed: true }),
+      flight("a", "b", "ack"),
+    ];
+    assert.equal(foldRoutineTraffic(flights).shown.length, 3);
+    assert.equal(foldRoutineTraffic(flights.slice(0, 3)).folded.size, 0);
+  });
+});
+
+describe("tidyTargets", () => {
+  it("places nodes on a ring from the top and entities outside their node", () => {
+    const nodes = [{ id: "node-1" }, { id: "node-0" }, { id: "node-2" }];
+    const targets = tidyTargets(nodes, [{ id: "client-a", connected_node: "node-0" }], [{ id: "r@ns", connected_node: "node-0" }]);
+    const top = targets.get("node-0");
+    assert.ok(top.y < targets.get("node-1").y && top.y < targets.get("node-2").y, "node-0 is at the top");
+    assert.equal(Math.round(top.x), 400);
+    for (const id of ["client:client-a", "sub:r@ns"]) {
+      assert.ok(targets.get(id).y < top.y, `${id} sits outside its node`);
+    }
+    assert.notDeepEqual(targets.get("client:client-a"), targets.get("sub:r@ns"), "fanned out");
+    // The same snapshot gives the same picture.
+    assert.deepEqual(tidyTargets(nodes), tidyTargets([...nodes].reverse()));
   });
 });

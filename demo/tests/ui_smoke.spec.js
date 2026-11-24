@@ -1281,3 +1281,101 @@ test("graph_drags_do_not_select_text", async ({ page }) => {
   await page.getByTestId("guide-text").click({ clickCount: 3 });
   expect(await page.evaluate(() => window.getSelection().toString())).toContain("three-node cluster");
 });
+
+// Tidy layout: the same run always draws the same picture; a dragged node
+// stays where it was put until "Tidy".
+test("tidy_layout_is_stable_and_pins_dragged_nodes", async ({ page }) => {
+  // Centres relative to the canvas, so page scroll does not matter.
+  const centres = () =>
+    page.locator(".vertex.node .v-body").evaluateAll((bodies) => {
+      const frame = document.querySelector("#cluster-graph").getBoundingClientRect();
+      return bodies.map((body) => {
+        const rect = body.getBoundingClientRect();
+        return [Math.round(rect.x + rect.width / 2 - frame.x), Math.round(rect.y + rect.height / 2 - frame.y)];
+      });
+    });
+  const near = (a, b) =>
+    a.length === b.length && a.every(([x, y], index) => Math.abs(x - b[index][0]) <= 3 && Math.abs(y - b[index][1]) <= 3);
+  const settled = async () => {
+    // Still across one second: the easing has finished.
+    let previous = await centres();
+    for (;;) {
+      await page.waitForTimeout(500);
+      const now = await centres();
+      if (near(now, previous)) return now;
+      previous = now;
+    }
+  };
+  await page.goto(`${demoUrl}?seed=80&steps=12&scenario=default`);
+  await page.locator("#cluster-graph").scrollIntoViewIfNeeded();
+  const first = await settled();
+  await page.reload();
+  await page.locator("#cluster-graph").scrollIntoViewIfNeeded();
+  await expect.poll(async () => near(await centres(), first), { timeout: 10_000 }).toBe(true);
+
+  // Drag node-0 aside: it stays there; "Tidy" brings everything back.
+  const body = page.locator('.vertex.node[aria-label^="node-0,"] .v-body');
+  const box = await body.boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 90, box.y + box.height / 2 + 40, { steps: 8 });
+  await page.mouse.up();
+  const moved = await settled();
+  expect(near(moved, first)).toBe(false);
+  await page.waitForTimeout(800);
+  expect(near(await centres(), moved)).toBe(true);
+  await page.getByTestId("tidy-graph").click();
+  await expect.poll(async () => near(await centres(), first), { timeout: 10_000 }).toBe(true);
+});
+
+test("presentation_mode_fills_the_screen_and_leaves_on_escape", async ({ page }) => {
+  await openReady(page);
+  await expect(page.locator(".side-panel")).toBeVisible();
+  const normal = (await page.locator("#cluster-graph").boundingBox()).height;
+  await page.getByTestId("present-graph").click();
+  await expect(page.locator("html")).toHaveClass(/presenting/);
+  await expect(page.getByTestId("present-graph")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".side-panel")).toBeHidden();
+  await expect(page.locator(".topbar")).toBeHidden();
+  await expect(page.getByTestId("play")).toBeVisible();
+  await expect(page.getByTestId("timeline-input")).toBeVisible();
+  expect((await page.locator("#cluster-graph").boundingBox()).height).toBeGreaterThan(normal);
+  await page.keyboard.press("Escape");
+  await expect(page.locator("html")).not.toHaveClass(/presenting/);
+  await expect(page.locator(".side-panel")).toBeVisible();
+  // P toggles it from the keyboard.
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.keyboard.press("p");
+  await expect(page.locator("html")).toHaveClass(/presenting/);
+  await page.keyboard.press("p");
+  await expect(page.locator("html")).not.toHaveClass(/presenting/);
+});
+
+test("history_strip_shows_observed_leaders_and_gaps", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=80&steps=0&scenario=default`);
+  await expect(page.getByTestId("timeline-label")).toHaveText("step 0 of 0");
+  for (let index = 0; index < 6; index += 1) {
+    await page.getByTestId("step").click();
+  }
+  await expect(page.getByTestId("timeline-label")).toHaveText("step 6 of 6");
+  await page.getByTestId("until-agree").click();
+  const summary = page.getByTestId("history-summary");
+  await expect(summary).toContainText(/Observed leaders: no leader at steps 0–\d, node-\d at steps \d–6/);
+  await expect(summary).toContainText("committed entries 0 →");
+  await expect(page.locator("#timeline-history rect.history-none")).toHaveCount(1);
+  expect(await page.locator("#timeline-history rect.history-leader").count()).toBeGreaterThanOrEqual(1);
+  await expect(page.getByTestId("history-legend")).toContainText("no leader");
+});
+
+test("busy_edges_fold_routine_traffic_and_the_bar_is_compact", async ({ page }, testInfo) => {
+  await page.goto(`${demoUrl}?seed=80&steps=12&scenario=default`);
+  await expect(page.getByTestId("timeline-label")).toHaveText("step 12 of 12");
+  await expect(page.locator(".edge-badge").first()).toBeAttached();
+  await expect(page.locator(".edge-badge").first()).toHaveText(/^\+\d+$/);
+  if (!testInfo.project.name.startsWith("mobile")) {
+    const bar = page.locator(".controls");
+    expect((await bar.boundingBox()).height).toBeLessThan(130);
+    expect(await bar.evaluate((element) => getComputedStyle(element).position)).toBe("sticky");
+  }
+  await expect(page.getByTestId("until-leader")).toHaveAccessibleName("Run to leader");
+});

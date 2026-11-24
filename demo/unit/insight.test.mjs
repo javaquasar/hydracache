@@ -7,6 +7,7 @@ import {
   eventIcon,
   graphSummary,
   groupEvents,
+  historyStrip,
   keyAgreement,
   leaderOf,
   nodeDetails,
@@ -456,5 +457,29 @@ describe("nextFreeName", () => {
     assert.equal(nextFreeName("client-", []), "client-a");
     assert.equal(nextFreeName("client-", ["client-a", "client-b"]), "client-c");
     assert.equal(nextFreeName("reader-", ["reader-1", "reader-3"]), "reader-2");
+  });
+});
+
+describe("historyStrip", () => {
+  test("merges consecutive observed steps and leaves gaps unguessed", () => {
+    const observations = new Map([
+      [0, { leader: null, committed: 0 }],
+      [1, { leader: "node-0", committed: 1 }],
+      [2, { leader: "node-0", committed: 2 }],
+      [5, { leader: "node-1", committed: 5 }],
+      [6, { leader: "node-1", committed: 6 }],
+    ]);
+    const strip = historyStrip(observations, 0, 10);
+    assert.deepEqual(
+      strip.segments.map((segment) => [segment.leader, segment.from, segment.to]),
+      [[null, 0, 0], ["node-0", 1, 2], ["node-1", 5, 6]],
+    );
+    assert.equal(strip.lines.length, 2, "the committed line breaks at the gap");
+    assert.deepEqual(strip.leaders, [null, "node-0", "node-1"]);
+    assert.equal(
+      strip.summary,
+      "Observed leaders: no leader at step 0, node-0 at steps 1–2, node-1 at steps 5–6; committed entries 0 → 6.",
+    );
+    assert.equal(historyStrip(new Map(), 0, 0).summary, "No steps observed yet.");
   });
 });
