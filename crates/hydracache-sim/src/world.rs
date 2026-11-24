@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 use hydracache::{
     ClientAck, ClientOp, ClusterNode, ClusterNodeConfig, ClusterNodeId, LogicalDuration,
-    LogicalTime, OutboundClusterMessage,
+    LogicalTime, OutboundClusterMessage, StorageOpKind,
 };
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -70,6 +70,11 @@ pub struct SimOutcome {
 struct SimNode {
     node: ClusterNode,
     storage: SimStorage,
+    /// Write, invalidate and flush operations this node has applied to its
+    /// storage (a catch-up copies the source's count with its state). The
+    /// cluster replicates without a log, so this, not a commit index, is the
+    /// node's own progress.
+    applied_writes: u64,
 }
 
 #[derive(Debug, Clone)]
@@ -173,6 +178,7 @@ impl SimWorld {
                 SimNode {
                     node,
                     storage: SimStorage::new(),
+                    applied_writes: 0,
                 },
             );
         }
@@ -722,6 +728,7 @@ impl SimWorld {
             SimNode {
                 node,
                 storage: SimStorage::new(),
+                applied_writes: 0,
             },
         );
         self.cfg.node_count = self.cfg.node_count.saturating_add(1);
@@ -812,6 +819,9 @@ impl SimWorld {
                     node_id.to_string(),
                     committed_entries,
                     committed_entries,
+                    self.nodes
+                        .get(node_id)
+                        .map_or(0, |node| node.applied_writes),
                     self.crashed_nodes.contains(node_id),
                     self.disabled_nodes.contains(node_id),
                     election_nodes.get(node_id.as_str()).copied(),
@@ -1154,6 +1164,9 @@ impl SimWorld {
             }
             outbound.extend(sim_node.node.take_outbound());
             for request in sim_node.node.storage_requests() {
+                if !matches!(request.kind, StorageOpKind::Read { .. }) {
+                    sim_node.applied_writes = sim_node.applied_writes.saturating_add(1);
+                }
                 let applied = sim_node
                     .storage
                     .apply_checked(request)
@@ -1198,7 +1211,10 @@ impl SimWorld {
         else {
             return;
         };
-        let Some(source_storage) = self.nodes.get(&source_id).map(|node| node.storage.clone())
+        let Some((source_storage, source_applied)) = self
+            .nodes
+            .get(&source_id)
+            .map(|node| (node.storage.clone(), node.applied_writes))
         else {
             return;
         };
@@ -1206,6 +1222,9 @@ impl SimWorld {
             target
                 .storage
                 .replace_visible_default_zone_from(&source_storage);
+            // The node now holds the source's state, so it has the source's
+            // progress too.
+            target.applied_writes = source_applied;
         }
         self.rebalance = Some(RebalanceState {
             phase: "complete".to_owned(),

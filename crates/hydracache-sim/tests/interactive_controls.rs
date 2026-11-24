@@ -115,3 +115,106 @@ fn workload_toggle_stops_client_operation_generation() {
     world.run(1);
     assert_eq!(world.outcome().accepted_ops, 1);
 }
+
+fn applied_writes(world: &SimWorld) -> std::collections::BTreeMap<String, u64> {
+    world
+        .snapshot()
+        .nodes
+        .into_iter()
+        .map(|node| (node.id, node.applied_writes))
+        .collect()
+}
+
+// Schema 9: each node reports the writes it applied itself. Live nodes agree;
+// a crashed node falls behind while the cluster writes and catches up when it
+// restarts and copies the leader's state. commit_index stays cluster-wide.
+#[test]
+fn applied_writes_track_each_node_and_catch_up_on_restart() {
+    let mut world = SimWorld::new(80, SimConfig::default());
+    world.run(16);
+    // The writer applies first; followers apply when ReplicatePut arrives on
+    // the next step. Pause the workload and let deliveries finish to compare.
+    let in_flight = applied_writes(&world);
+    let writer = *in_flight.values().max().expect("nodes");
+    assert!(
+        in_flight.values().all(|count| *count + 1 >= writer),
+        "{in_flight:?}"
+    );
+    world.set_workload_enabled(false);
+    world.run(2);
+    let healthy = applied_writes(&world);
+    let first = *healthy.values().next().expect("nodes");
+    assert!(first > 0, "the workload wrote something: {healthy:?}");
+    assert!(
+        healthy.values().all(|count| *count == first),
+        "live nodes agree: {healthy:?}"
+    );
+    world.set_workload_enabled(true);
+
+    assert!(world.crash_node("node-2"));
+    world.run(12);
+    let crashed = applied_writes(&world);
+    assert!(
+        crashed["node-2"] < crashed["node-0"],
+        "a crashed node misses writes: {crashed:?}"
+    );
+    let snapshot = world.snapshot();
+    let commit = |id: &str| {
+        snapshot
+            .nodes
+            .iter()
+            .find(|node| node.id == id)
+            .unwrap()
+            .commit_index
+    };
+    assert_eq!(
+        commit("node-2"),
+        commit("node-0"),
+        "commit_index is still cluster-wide"
+    );
+
+    assert!(world.restart_node("node-2"));
+    let restarted = applied_writes(&world);
+    let source = restarted
+        .iter()
+        .filter(|(id, _)| id.as_str() != "node-2")
+        .map(|(_, count)| *count)
+        .max()
+        .unwrap();
+    assert_eq!(
+        restarted["node-2"], source,
+        "catch-up copies the source's progress"
+    );
+}
+
+// A follower cut off from the writer by partitioned links stops applying
+// replicated writes: the cluster has no log to replay them later.
+#[test]
+fn applied_writes_fall_behind_behind_a_partition() {
+    let mut world = SimWorld::new(80, SimConfig::default());
+    world.run(16);
+    let leader = world
+        .snapshot()
+        .nodes
+        .iter()
+        .find(|node| node.role == "leader")
+        .map(|node| node.id.clone())
+        .expect("leader");
+    let follower = world
+        .snapshot()
+        .nodes
+        .iter()
+        .map(|node| node.id.clone())
+        .find(|id| *id != leader)
+        .expect("follower");
+    assert!(world.partition_link(leader.as_str(), follower.as_str()));
+    assert!(world.partition_link(follower.as_str(), leader.as_str()));
+    world.run(12);
+    let counts = applied_writes(&world);
+    assert!(counts[&follower] < counts[&leader], "{counts:?}");
+    let json = world.snapshot_json();
+    assert!(
+        json.contains("\"applied_writes\""),
+        "the field is in the snapshot JSON"
+    );
+}

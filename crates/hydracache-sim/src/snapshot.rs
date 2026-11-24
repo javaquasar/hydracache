@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Current stable simulator snapshot JSON schema version.
-pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 8;
+pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 9;
 
 /// Region every simulator node reports; the simulator models one region.
 pub(crate) const SIM_REGION: &str = "local";
@@ -174,6 +174,11 @@ pub struct NodeView {
     pub commit_index: u64,
     /// Applied logical operation index visible to the simulator.
     pub applied_index: u64,
+    /// Write, invalidate and flush operations this node itself has applied
+    /// (schema 9). Unlike `commit_index`, which is cluster-wide, this lags on
+    /// a node that missed writes (crashed, isolated, partitioned) and catches
+    /// up when the node copies state on restart or rejoin.
+    pub applied_writes: u64,
     /// Whether the node is currently up.
     pub up: bool,
     /// Whether the node is currently crashed.
@@ -436,6 +441,7 @@ pub(crate) fn node_view(
     id: String,
     committed_entries: u64,
     applied_entries: u64,
+    applied_writes: u64,
     crashed: bool,
     disabled: bool,
     election: Option<&ElectionNodeState>,
@@ -462,6 +468,7 @@ pub(crate) fn node_view(
         votes_received,
         commit_index: committed_entries,
         applied_index: applied_entries,
+        applied_writes,
         up: !crashed && !disabled,
         crashed,
         disabled,
