@@ -218,3 +218,77 @@ fn applied_writes_fall_behind_behind_a_partition() {
         "the field is in the snapshot JSON"
     );
 }
+
+fn drops(world: &SimWorld, from: &str, to: &str) -> hydracache_sim::LinkDropsView {
+    world
+        .snapshot()
+        .links
+        .into_iter()
+        .find(|link| link.from == from && link.to == to)
+        .expect("directed link exists")
+        .drops
+}
+
+// Schema 9: a link reports the messages it dropped, by cause, instead of
+// refusing traffic without a trace.
+#[test]
+fn links_count_dropped_messages_by_cause() {
+    let mut world = SimWorld::new(80, SimConfig::default());
+    world.run(12);
+    assert_eq!(
+        drops(&world, "node-0", "node-1"),
+        Default::default(),
+        "a healthy link drops nothing"
+    );
+
+    // Cut one direction: everything node-0 sends to node-1 is refused at send;
+    // the reverse direction is untouched.
+    assert!(world.partition_link("node-0", "node-1"));
+    world.run(6);
+    let cut = drops(&world, "node-0", "node-1");
+    assert!(cut.cut_at_send > 0, "{cut:?}");
+    assert_eq!(drops(&world, "node-1", "node-0").cut_at_send, 0);
+    assert!(world.heal_link("node-0", "node-1"));
+    let healed = drops(&world, "node-0", "node-1").cut_at_send;
+    world.run(4);
+    assert_eq!(
+        drops(&world, "node-0", "node-1").cut_at_send,
+        healed,
+        "a healed link stops refusing"
+    );
+
+    // An injected drop discards exactly the next message on that link.
+    world
+        .apply_control_action(hydracache_sim::ControlActionV1::DropNext {
+            at_step: world.outcome().steps,
+            from: "node-1".to_owned(),
+            to: "node-2".to_owned(),
+        })
+        .expect("drop_next applies");
+    world.run(2);
+    assert_eq!(drops(&world, "node-1", "node-2").injected, 1);
+
+    // Messages delivered to a crashed node are counted against its links.
+    assert!(world.crash_node("node-2"));
+    world.run(3);
+    assert!(drops(&world, "node-0", "node-2").target_down > 0);
+}
+
+// A message in flight when its link is cut is dropped on delivery.
+#[test]
+fn messages_in_flight_when_a_link_is_cut_count_as_dropped_on_delivery() {
+    let mut world = SimWorld::new(80, SimConfig::default());
+    world.run(12);
+    world
+        .apply_control_action(hydracache_sim::ControlActionV1::DelayNext {
+            at_step: world.outcome().steps,
+            from: "node-0".to_owned(),
+            to: "node-1".to_owned(),
+            millis: 50,
+        })
+        .expect("delay_next applies");
+    world.run(1);
+    assert!(world.partition_link("node-0", "node-1"));
+    world.run(60);
+    assert!(drops(&world, "node-0", "node-1").cut_at_delivery > 0);
+}

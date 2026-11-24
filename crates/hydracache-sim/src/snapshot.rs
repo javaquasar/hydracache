@@ -187,6 +187,20 @@ pub struct NodeView {
     pub disabled: bool,
 }
 
+/// Messages one directed link dropped, by cause (schema 9). Cumulative over
+/// the run; a cut link that keeps refusing traffic shows `cut_at_send` rising.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LinkDropsView {
+    /// Refused at send because the link was partitioned.
+    pub cut_at_send: u64,
+    /// Discarded by an injected link fault (`drop_next` and similar).
+    pub injected: u64,
+    /// In flight when the link was cut; discarded on delivery.
+    pub cut_at_delivery: u64,
+    /// Delivered to a node that was crashed, disabled or isolated.
+    pub target_down: u64,
+}
+
 /// UI directed-link projection.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LinkView {
@@ -198,6 +212,8 @@ pub struct LinkView {
     pub state: LinkStateView,
     /// Delay in milliseconds when [`LinkStateView::Delayed`].
     pub delay_millis: Option<u64>,
+    /// Messages this directed link has dropped so far, by cause (schema 9).
+    pub drops: LinkDropsView,
     /// Packets currently in flight on this directed link.
     pub in_flight: u32,
 }
@@ -481,6 +497,7 @@ pub(crate) fn link_view(
     can_deliver: bool,
     delay: Option<u64>,
     in_flight: usize,
+    drops: crate::network::LinkDrops,
 ) -> LinkView {
     let state = if !can_deliver {
         LinkStateView::Partitioned
@@ -494,6 +511,12 @@ pub(crate) fn link_view(
         to,
         state,
         delay_millis: delay,
+        drops: LinkDropsView {
+            cut_at_send: drops.cut_at_send,
+            injected: drops.injected,
+            cut_at_delivery: drops.cut_at_delivery,
+            target_down: drops.target_down,
+        },
         in_flight: in_flight.min(u32::MAX as usize) as u32,
     }
 }

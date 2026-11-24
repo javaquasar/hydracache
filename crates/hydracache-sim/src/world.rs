@@ -843,6 +843,7 @@ impl SimWorld {
                                 .max_pending_delay(from, to, self.clock.now())
                                 .map(|duration| duration.as_millis()),
                             self.network.in_flight_between(from, to),
+                            self.network.link_drops(from, to),
                         )
                     })
             })
@@ -1000,6 +1001,7 @@ impl SimWorld {
                 || self.disabled_nodes.contains(&to)
                 || self.isolated_nodes.contains(&to)
             {
+                self.network.record_target_down(&from, &to);
                 continue;
             }
             if let Some(target) = self.nodes.get_mut(&to) {

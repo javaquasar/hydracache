@@ -56,7 +56,7 @@ pub use linearizability::{
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use lock_safety::{run_lock_safety, LockSafetyReport, LockSafetyScenario};
-pub use network::{LinkFault, PartitionSymmetry, SimNetwork, TimedMessage};
+pub use network::{LinkDrops, LinkFault, PartitionSymmetry, SimNetwork, TimedMessage};
 #[cfg(not(target_arch = "wasm32"))]
 pub use persistence_recovery::{
     run_persistence_recovery, PersistenceRecoveryFault, PersistenceRecoveryInvariantReport,
@@ -74,8 +74,8 @@ pub use schedule::{
 #[cfg(not(target_arch = "wasm32"))]
 pub use sim_raft::{SimRaftCluster, SimRaftError, SimRaftInFlightKey, SimRaftResult};
 pub use snapshot::{
-    ClientView, ConsistencyLevelView, ConvergenceView, KeyReplicaView, KeyView, LinkStateView,
-    LinkView, MessageView, NodeView, ProgressView, RebalanceView, SimSnapshot,
+    ClientView, ConsistencyLevelView, ConvergenceView, KeyReplicaView, KeyView, LinkDropsView,
+    LinkStateView, LinkView, MessageView, NodeView, ProgressView, RebalanceView, SimSnapshot,
     SimSnapshotDecodeError, SnapshotOverBudgetView, SubscriberEventView, SubscriberView,
     SyncProgressView, VerdictView, MAX_IN_FLIGHT_RENDERED, MAX_SUBSCRIBER_BUFFER,
     SIM_SNAPSHOT_SCHEMA_VERSION,
