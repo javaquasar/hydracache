@@ -11,6 +11,10 @@
 
 HydraCache grows in steps. Each step is opt-in, adds crates rather than changing the ones you already use, and leaves the embedded cache's behavior unchanged. Pick the smallest shape that solves your problem.
 
+<figure class="architecture-diagram">
+  <img src="../assets/diagrams/cluster-topology.svg" alt="Five opt-in steps: embedded cache; embedded caches sharing invalidation through Redis or NATS; client/member cluster with owners and peer fetch; server grid with replicated values; multi-region with bounded staleness.">
+</figure>
+
 | Shape | What is shared | Values cross the network? | Extra infrastructure |
 | --- | --- | --- | --- |
 | **1. Embedded** | nothing | no | none |

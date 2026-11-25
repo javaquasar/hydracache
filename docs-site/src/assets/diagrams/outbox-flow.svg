@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="380" viewBox="0 0 920 380" role="img" aria-labelledby="title desc">
+  <title id="title">Transactional outbox invalidation flow</title>
+  <desc id="desc">One database transaction updates the users row and inserts an outbox row with invalidation intent. On commit both become durable together. An outbox worker claims committed rows, applies the invalidation to the local HydraCache and publishes it to other instances, then marks the rows published. On rollback neither row exists, so nothing is published.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#55606d"/>
+    </marker>
+  </defs>
+  <rect width="920" height="380" rx="10" fill="#fbfcff"/>
+
+  <rect x="28" y="40" width="286" height="196" rx="10" fill="#fff7f0" stroke="#e8731f" stroke-width="2" stroke-dasharray="7 5"/>
+  <g fill="#ffffff" stroke="#bdc6d2" stroke-width="2">
+    <rect x="50" y="76" width="242" height="56" rx="8"/>
+    <rect x="50" y="152" width="242" height="56" rx="8"/>
+    <rect x="356" y="110" width="120" height="64" rx="8"/>
+    <rect x="520" y="96" width="170" height="92" rx="8"/>
+    <rect x="734" y="40" width="160" height="70" rx="8"/>
+    <rect x="734" y="174" width="160" height="70" rx="8"/>
+    <rect x="356" y="286" width="120" height="56" rx="8"/>
+    <rect x="520" y="286" width="170" height="56" rx="8"/>
+  </g>
+
+  <g font-family="Arial, sans-serif" fill="#252525" text-anchor="middle">
+    <text x="171" y="64" font-size="14" font-weight="700" fill="#b85412">one transaction</text>
+    <text x="171" y="102" font-size="15" font-weight="700">UPDATE users</text>
+    <text x="171" y="122" font-size="13">business write</text>
+    <text x="171" y="178" font-size="15" font-weight="700">INSERT outbox row</text>
+    <text x="171" y="198" font-size="13">intent: invalidate user:42</text>
+
+    <text x="416" y="138" font-size="15" font-weight="700">COMMIT</text>
+    <text x="416" y="158" font-size="13">both durable</text>
+
+    <text x="605" y="128" font-size="15" font-weight="700">Outbox worker</text>
+    <text x="605" y="150" font-size="13">claim → apply</text>
+    <text x="605" y="170" font-size="13">→ mark published</text>
+
+    <text x="814" y="70" font-size="15" font-weight="700">Local HydraCache</text>
+    <text x="814" y="92" font-size="13">drops user:42</text>
+
+    <text x="814" y="204" font-size="15" font-weight="700">Other instances</text>
+    <text x="814" y="226" font-size="13">via Redis / NATS</text>
+
+    <text x="416" y="320" font-size="15" font-weight="700">ROLLBACK</text>
+    <text x="605" y="312" font-size="15" font-weight="700">Nothing to publish</text>
+    <text x="605" y="330" font-size="13">cache keeps committed state</text>
+  </g>
+
+  <g stroke="#55606d" stroke-width="2.2" fill="none" marker-end="url(#arrow)">
+    <path d="M314 142 H350"/>
+    <path d="M476 142 H514"/>
+    <path d="M690 124 C712 110 714 86 728 80"/>
+    <path d="M690 160 C712 174 714 200 728 206"/>
+    <path d="M171 236 V314 H350"/>
+    <path d="M476 314 H514"/>
+  </g>
+  <g font-family="Arial, sans-serif" font-size="13" fill="#55606d">
+    <text x="180" y="276">on failure</text>
+    <text x="520" y="212">retries with backoff, then dead-letter</text>
+  </g>
+</svg>

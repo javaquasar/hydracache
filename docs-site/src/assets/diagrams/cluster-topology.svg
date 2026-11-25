@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="330" viewBox="0 0 980 330" role="img" aria-labelledby="title desc">
+  <title id="title">HydraCache topology steps</title>
+  <desc id="desc">Five opt-in steps from left to right. One: an embedded cache in one service. Two: several services with embedded caches sharing invalidation through Redis or NATS. Three: a client and member cluster with key owners and peer fetch. Four: application clients talking to a grid of hydracache-server members with replicated values. Five: members in two regions linked by cross-region replication with bounded staleness.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#55606d"/>
+    </marker>
+  </defs>
+  <rect width="980" height="330" rx="10" fill="#fbfcff"/>
+
+  <!-- step cards -->
+  <g fill="#ffffff" stroke="#bdc6d2" stroke-width="2">
+    <rect x="16" y="24" width="172" height="266" rx="10"/>
+    <rect x="210" y="24" width="172" height="266" rx="10"/>
+    <rect x="404" y="24" width="172" height="266" rx="10"/>
+    <rect x="598" y="24" width="172" height="266" rx="10"/>
+    <rect x="792" y="24" width="172" height="266" rx="10"/>
+  </g>
+
+  <!-- step headers -->
+  <g font-family="Arial, sans-serif" text-anchor="middle" fill="#252525">
+    <text x="102" y="68" font-size="15" font-weight="700">1. Embedded</text>
+    <text x="296" y="68" font-size="15" font-weight="700">2. + Transport</text>
+    <text x="490" y="68" font-size="15" font-weight="700">3. Client/member</text>
+    <text x="684" y="68" font-size="15" font-weight="700">4. Server grid</text>
+    <text x="878" y="68" font-size="15" font-weight="700">5. Multi-region</text>
+  </g>
+
+  <!-- 1. embedded -->
+  <rect x="46" y="100" width="112" height="96" rx="8" fill="#f2f5f9" stroke="#bdc6d2" stroke-width="1.5"/>
+  <rect x="62" y="140" width="80" height="40" rx="6" fill="#fff1e6" stroke="#e8731f" stroke-width="1.8"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle" fill="#252525">
+    <text x="102" y="124" font-size="13">service</text>
+    <text x="102" y="165" font-size="13" font-weight="700">cache</text>
+  </g>
+
+  <!-- 2. transport -->
+  <g stroke="#bdc6d2" stroke-width="1.5" fill="#f2f5f9">
+    <rect x="226" y="96" width="62" height="56" rx="6"/>
+    <rect x="304" y="96" width="62" height="56" rx="6"/>
+  </g>
+  <g fill="#fff1e6" stroke="#e8731f" stroke-width="1.6">
+    <rect x="234" y="120" width="46" height="24" rx="4"/>
+    <rect x="312" y="120" width="46" height="24" rx="4"/>
+  </g>
+  <rect x="246" y="190" width="100" height="36" rx="18" fill="#eef3fb" stroke="#8aa0bd" stroke-width="1.6"/>
+  <g stroke="#55606d" stroke-width="1.6" fill="none" stroke-dasharray="4 4">
+    <path d="M257 152 L280 190"/>
+    <path d="M335 152 L312 190"/>
+  </g>
+  <g font-family="Arial, sans-serif" text-anchor="middle" fill="#252525" font-size="12">
+    <text x="257" y="112">svc</text>
+    <text x="335" y="112">svc</text>
+    <text x="296" y="213" font-weight="700">Redis / NATS</text>
+  </g>
+
+  <!-- 3. client/member -->
+  <g stroke="#bdc6d2" stroke-width="1.5" fill="#f2f5f9">
+    <circle cx="450" cy="130" r="24"/>
+    <circle cx="530" cy="130" r="24"/>
+    <circle cx="490" cy="196" r="24"/>
+  </g>
+  <circle cx="530" cy="130" r="24" fill="#fff1e6" stroke="#e8731f" stroke-width="2"/>
+  <g stroke="#55606d" stroke-width="1.6" fill="none">
+    <path d="M474 130 H506"/>
+    <path d="M462 151 L478 175"/>
+    <path d="M518 151 L502 175"/>
+  </g>
+  <g font-family="Arial, sans-serif" text-anchor="middle" fill="#252525" font-size="12">
+    <text x="450" y="134">member</text>
+    <text x="530" y="134" font-weight="700">owner</text>
+    <text x="490" y="200">client</text>
+  </g>
+
+  <!-- 4. server grid -->
+  <g stroke="#bdc6d2" stroke-width="1.5" fill="#f2f5f9">
+    <rect x="616" y="92" width="44" height="28" rx="5"/>
+    <rect x="664" y="92" width="44" height="28" rx="5"/>
+    <rect x="712" y="92" width="44" height="28" rx="5"/>
+  </g>
+  <rect x="624" y="160" width="120" height="66" rx="8" fill="#fff1e6" stroke="#e8731f" stroke-width="1.8"/>
+  <g stroke="#55606d" stroke-width="1.6" fill="none">
+    <path d="M638 120 L660 160"/>
+    <path d="M686 120 L684 160"/>
+    <path d="M734 120 L708 160"/>
+  </g>
+  <g font-family="Arial, sans-serif" text-anchor="middle" fill="#252525" font-size="12">
+    <text x="638" y="110">app</text>
+    <text x="686" y="110">app</text>
+    <text x="734" y="110">app</text>
+    <text x="684" y="188" font-weight="700">server members</text>
+    <text x="684" y="206">replicated values</text>
+  </g>
+
+  <!-- 5. multi-region -->
+  <g fill="#fff1e6" stroke="#e8731f" stroke-width="1.8">
+    <rect x="806" y="98" width="68" height="70" rx="8"/>
+    <rect x="882" y="98" width="68" height="70" rx="8"/>
+  </g>
+  <g stroke="#55606d" stroke-width="1.8" fill="none" stroke-dasharray="5 4">
+    <path d="M840 168 C840 206 916 206 916 168"/>
+  </g>
+  <g font-family="Arial, sans-serif" text-anchor="middle" fill="#252525" font-size="12">
+    <text x="840" y="130" font-weight="700">region A</text>
+    <text x="840" y="148">members</text>
+    <text x="916" y="130" font-weight="700">region B</text>
+    <text x="916" y="148">members</text>
+    <text x="878" y="222">bounded staleness</text>
+  </g>
+
+  <!-- shared rows -->
+  <g font-family="Arial, sans-serif" text-anchor="middle" font-size="12" fill="#55606d">
+    <text x="102" y="252">shares nothing</text>
+    <text x="102" y="270">no network hop</text>
+    <text x="296" y="252">shares invalidation</text>
+    <text x="296" y="270">values stay local</text>
+    <text x="490" y="252">owners + peer fetch</text>
+    <text x="490" y="270">raft control plane</text>
+    <text x="684" y="252">shared cache tier</text>
+    <text x="684" y="270">consistency levels</text>
+    <text x="878" y="252">cross-region links</text>
+    <text x="878" y="270">never linearizable</text>
+  </g>
+
+  <!-- opt-in arrows -->
+  <g stroke="#55606d" stroke-width="2" fill="none" marker-end="url(#arrow)">
+    <path d="M190 165 H207"/>
+    <path d="M384 165 H401"/>
+    <path d="M578 165 H595"/>
+    <path d="M772 165 H789"/>
+  </g>
+  <g font-family="Arial, sans-serif" font-size="12" fill="#55606d" text-anchor="middle">
+    <text x="490" y="314">each step is opt-in and keeps embedded behavior unchanged</text>
+  </g>
+</svg>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="340" viewBox="0 0 920 340" role="img" aria-labelledby="title desc">
+  <title id="title">Single-flight loading</title>
+  <desc id="desc">Three concurrent requests miss the same key user:42. The first request starts the loader; the other two join the in-flight load. The database is queried once, the value is stored once, and all three callers receive the same result.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#55606d"/>
+    </marker>
+    <marker id="arrow-accent" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#e8731f"/>
+    </marker>
+  </defs>
+  <rect width="920" height="340" rx="10" fill="#fbfcff"/>
+
+  <g fill="#ffffff" stroke="#bdc6d2" stroke-width="2">
+    <rect x="34" y="40" width="150" height="56" rx="8"/>
+    <rect x="34" y="142" width="150" height="56" rx="8"/>
+    <rect x="34" y="244" width="150" height="56" rx="8"/>
+    <rect x="300" y="122" width="180" height="96" rx="8"/>
+    <rect x="590" y="122" width="130" height="96" rx="8"/>
+    <rect x="770" y="122" width="116" height="96" rx="8"/>
+  </g>
+  <rect x="300" y="122" width="180" height="96" rx="8" fill="none" stroke="#e8731f" stroke-width="2.5"/>
+
+  <g font-family="Arial, sans-serif" fill="#252525" text-anchor="middle">
+    <text x="109" y="74" font-size="15" font-weight="700">Request A</text>
+    <text x="109" y="176" font-size="15" font-weight="700">Request B</text>
+    <text x="109" y="278" font-size="15" font-weight="700">Request C</text>
+
+    <text x="390" y="154" font-size="15" font-weight="700">HydraCache</text>
+    <text x="390" y="176" font-size="14">miss on user:42</text>
+    <text x="390" y="198" font-size="14">one in-flight load</text>
+
+    <text x="655" y="164" font-size="15" font-weight="700">Loader</text>
+    <text x="655" y="186" font-size="14">runs once</text>
+
+    <text x="828" y="164" font-size="15" font-weight="700">Database</text>
+    <text x="828" y="186" font-size="14">1 query</text>
+  </g>
+
+  <g stroke="#e8731f" stroke-width="2.4" fill="none" marker-end="url(#arrow-accent)">
+    <path d="M184 68 C240 68 250 140 294 146"/>
+    <path d="M480 170 H584"/>
+    <path d="M720 170 H764"/>
+  </g>
+  <g stroke="#55606d" stroke-width="2.2" fill="none" stroke-dasharray="6 5" marker-end="url(#arrow)">
+    <path d="M184 170 H294"/>
+    <path d="M184 272 C240 272 250 200 294 194"/>
+  </g>
+
+  <g font-family="Arial, sans-serif" font-size="13" fill="#55606d">
+    <text x="214" y="58">starts load</text>
+    <text x="214" y="162">joins</text>
+    <text x="214" y="300">joins</text>
+  </g>
+
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="610" y="270" font-size="15" font-weight="700" fill="#252525">Result: 1 load, 2 single-flight joins</text>
+    <text x="610" y="292" font-size="14" fill="#55606d">all three callers get the same value or the same error</text>
+  </g>
+</svg>

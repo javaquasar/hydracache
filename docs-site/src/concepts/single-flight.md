@@ -15,6 +15,10 @@ The cache key matters here too. If two different queries accidentally share a ke
 
 ## Why It Matters
 
+<figure class="architecture-diagram">
+  <img src="../assets/diagrams/single-flight.svg" alt="Three concurrent requests miss user:42; request A starts the loader, B and C join it; the database is queried once and all three receive the same result.">
+</figure>
+
 Without single-flight, a cache miss can multiply into many concurrent backing calls:
 
 ```text

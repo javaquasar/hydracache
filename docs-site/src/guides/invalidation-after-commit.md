@@ -49,6 +49,10 @@ The plan is database-neutral: the same shape works with Diesel (execute after th
 
 ## Option 2: Transactional Outbox
 
+<figure class="architecture-diagram">
+  <img src="../assets/diagrams/outbox-flow.svg" alt="One transaction updates users and inserts an outbox row; after commit a worker claims, applies, and marks the row published, invalidating the local cache and other instances; on rollback nothing is published.">
+</figure>
+
 The outbox closes the crash window: the invalidation intent is written **in the same transaction** as the data, so it exists if and only if the write committed. A worker drains committed rows and applies them to the cache — and, when you use a distributed transport, to every instance.
 
 The program below is compiled and run from `docs-site/examples/src/bin/outbox.rs`.

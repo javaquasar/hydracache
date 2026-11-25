@@ -43,10 +43,10 @@ Most caches are opaque key→blob stores: they know nothing about the database b
 The cluster layer is developed against a deterministic simulator. The [interactive demo](https://javaquasar.github.io/hydracache/demo/) runs the real `hydracache-sim` engine and invariant checkers in your browser: elect a leader, partition the network, crash a node, and replay any run from its seed.
 
 <figure class="hc-screenshot">
-  <a href="https://javaquasar.github.io/hydracache/demo/?seed=80&amp;steps=60">
-    <img src="assets/screenshots/cluster-simulator.jpg" alt="HydraCache cluster simulator: a three-node cluster with node-0 as leader, messages in flight between nodes, and a verdict panel where every invariant is holding.">
+  <a href="https://javaquasar.github.io/hydracache/demo/?seed=80&amp;steps=0">
+    <img src="assets/screenshots/cluster-simulator.gif" alt="Animated HydraCache cluster simulator: three disconnected nodes form a cluster, node-0 becomes leader, heartbeats and writes flow between nodes, and the verdict badge keeps reporting that invariants hold at seed 80.">
   </a>
-  <figcaption>Three-node cluster at seed 80, step 60: a leader is elected and every invariant holds. Click to open this exact run.</figcaption>
+  <figcaption>Seed 80, steps 0–40: three nodes form a cluster and elect a leader while the live invariant checker keeps reporting green. Click to run it yourself.</figcaption>
 </figure>
 
 ## Choose Your Path
