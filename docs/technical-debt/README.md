@@ -28,3 +28,4 @@ Each item should explain:
 - [TD-0010: Cluster transport has no TLS termination and no peer auth](TD-0010-cluster-transport-tls-and-peer-auth.md)
 - [TD-0011: Static raft voter set and address-derived node identity](TD-0011-dynamic-raft-membership-and-node-identity.md)
 - [TD-0013: Dedicated performance runner and baseline bootstrap](TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md)
+- [TD-0015: Demo fidelity gaps (per-node applied writes, send-time drops, push delivery timing)](TD-0015-demo-fidelity-gaps.md)

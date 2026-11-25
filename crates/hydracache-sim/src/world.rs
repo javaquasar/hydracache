@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 use hydracache::{
     ClientAck, ClientOp, ClusterNode, ClusterNodeConfig, ClusterNodeId, LogicalDuration,
-    LogicalTime, OutboundClusterMessage,
+    LogicalTime, OutboundClusterMessage, StorageOpKind,
 };
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -70,6 +70,14 @@ pub struct SimOutcome {
 struct SimNode {
     node: ClusterNode,
     storage: SimStorage,
+    /// Write, invalidate and flush operations this node has applied to its
+    /// storage (a catch-up copies the source's count with its state). The
+    /// cluster replicates without a log, so this, not a commit index, is the
+    /// node's own progress.
+    applied_writes: u64,
+    /// Step at which this node applied the value it now holds, per key: a
+    /// write or invalidate on the node, or the catch-up that copied it in.
+    applied_at: BTreeMap<String, u64>,
 }
 
 #[derive(Debug, Clone)]
@@ -173,6 +181,8 @@ impl SimWorld {
                 SimNode {
                     node,
                     storage: SimStorage::new(),
+                    applied_writes: 0,
+                    applied_at: BTreeMap::new(),
                 },
             );
         }
@@ -341,6 +351,9 @@ impl SimWorld {
                 self.subscribe(client, ns);
                 Ok(())
             }
+            ControlActionV1::AddClient { client, ns, .. } => self.add_client(client, ns),
+            ControlActionV1::Unsubscribe { client, ns, .. } => self.unsubscribe(client, ns),
+            ControlActionV1::RemoveClient { client, .. } => self.remove_client(client),
             ControlActionV1::ModeChange { mode, .. } => {
                 self.mode = mode;
                 Ok(())
@@ -473,10 +486,13 @@ impl SimWorld {
     }
 
     /// Subscribe a manual-mode client to namespace cache events.
+    ///
+    /// Creates only the subscriber (a reader); a writer with the same name is
+    /// registered by [`Self::add_client`] or by its first push. Subscribing an
+    /// existing subscriber again is a no-op.
     pub fn subscribe(&mut self, client: impl Into<String>, namespace: impl Into<String>) {
         let client = client.into();
         let namespace = namespace.into();
-        self.ensure_client_actor(&client, &namespace);
         let id = subscriber_id(&client, &namespace);
         self.subscribers
             .entry(id.clone())
@@ -488,6 +504,65 @@ impl SimWorld {
                 last_event: None,
                 dropped: 0,
             });
+    }
+
+    /// Register a manual-mode writer client for a namespace without writing.
+    ///
+    /// Fails loud on an empty name or namespace and on a client that already
+    /// exists, rather than silently re-pointing it.
+    pub fn add_client(
+        &mut self,
+        client: impl Into<String>,
+        namespace: impl Into<String>,
+    ) -> Result<(), ControlApplyError> {
+        let client = client.into();
+        let namespace = namespace.into();
+        if client.trim().is_empty() || namespace.trim().is_empty() {
+            return Err(ControlApplyError::InvalidAction(
+                "add_client needs a client name and a namespace".to_owned(),
+            ));
+        }
+        if self.clients.contains_key(&client) {
+            return Err(ControlApplyError::InvalidAction(format!(
+                "client '{client}' already exists"
+            )));
+        }
+        self.ensure_client_actor(&client, &namespace);
+        self.record(format!("manual_add_client:{client}:{namespace}"));
+        Ok(())
+    }
+
+    /// Remove a manual-mode subscriber; its undelivered events are dropped
+    /// with it. Fails loud when the client is not subscribed to `namespace`.
+    pub fn unsubscribe(
+        &mut self,
+        client: impl Into<String>,
+        namespace: impl Into<String>,
+    ) -> Result<(), ControlApplyError> {
+        let client = client.into();
+        let namespace = namespace.into();
+        let id = subscriber_id(&client, &namespace);
+        if self.subscribers.remove(&id).is_none() {
+            return Err(ControlApplyError::InvalidAction(format!(
+                "'{client}' is not subscribed to '{namespace}'"
+            )));
+        }
+        self.record(format!("manual_unsubscribe:{client}:{namespace}"));
+        Ok(())
+    }
+
+    /// Remove a manual-mode writer client. Its operations already recorded in
+    /// the history stay (they happened); a later push under the same name
+    /// registers a new writer. Fails loud when no such writer exists.
+    pub fn remove_client(&mut self, client: impl Into<String>) -> Result<(), ControlApplyError> {
+        let client = client.into();
+        if self.clients.remove(&client).is_none() {
+            return Err(ControlApplyError::InvalidAction(format!(
+                "no writer named '{client}'"
+            )));
+        }
+        self.record(format!("manual_remove_client:{client}"));
+        Ok(())
     }
 
     /// Push a manual-mode cache event into the simulated cluster.
@@ -657,6 +732,8 @@ impl SimWorld {
             SimNode {
                 node,
                 storage: SimStorage::new(),
+                applied_writes: 0,
+                applied_at: BTreeMap::new(),
             },
         );
         self.cfg.node_count = self.cfg.node_count.saturating_add(1);
@@ -747,6 +824,9 @@ impl SimWorld {
                     node_id.to_string(),
                     committed_entries,
                     committed_entries,
+                    self.nodes
+                        .get(node_id)
+                        .map_or(0, |node| node.applied_writes),
                     self.crashed_nodes.contains(node_id),
                     self.disabled_nodes.contains(node_id),
                     election_nodes.get(node_id.as_str()).copied(),
@@ -768,6 +848,7 @@ impl SimWorld {
                                 .max_pending_delay(from, to, self.clock.now())
                                 .map(|duration| duration.as_millis()),
                             self.network.in_flight_between(from, to),
+                            self.network.link_drops(from, to),
                         )
                     })
             })
@@ -777,13 +858,14 @@ impl SimWorld {
             election.signals.iter(),
             self.clock.now(),
         );
-        let mut key_observations = BTreeMap::<String, BTreeMap<String, u64>>::new();
+        let mut key_observations = BTreeMap::<String, BTreeMap<String, (u64, Option<u64>)>>::new();
         for (node_id, sim_node) in &self.nodes {
             for (key, checksum) in sim_node.storage.visible_checksums() {
+                let applied_at = sim_node.applied_at.get(&key).copied();
                 key_observations
                     .entry(key)
                     .or_default()
-                    .insert(node_id.to_string(), checksum);
+                    .insert(node_id.to_string(), (checksum, applied_at));
             }
         }
         for replicas in key_observations.values_mut() {
@@ -925,6 +1007,7 @@ impl SimWorld {
                 || self.disabled_nodes.contains(&to)
                 || self.isolated_nodes.contains(&to)
             {
+                self.network.record_target_down(&from, &to);
                 continue;
             }
             if let Some(target) = self.nodes.get_mut(&to) {
@@ -938,7 +1021,16 @@ impl SimWorld {
         match self.election_backend {
             ElectionBackend::Model => {
                 let previous_trace_len = self.election.trace().len();
-                self.election.step(self.steps, &live_nodes);
+                // The model sees the same partitions the network enforces, so
+                // its signals and quorum never cross a cut link.
+                let blocked = live_nodes
+                    .iter()
+                    .flat_map(|from| live_nodes.iter().map(move |to| (from, to)))
+                    .filter(|(from, to)| from != to && !self.network.can_deliver(from, to))
+                    .map(|(from, to)| (from.clone(), to.clone()))
+                    .collect();
+                self.election
+                    .step_with_partitions(self.steps, &live_nodes, &blocked);
                 let new_events = self.election.trace()[previous_trace_len..].to_vec();
                 for event in new_events {
                     self.record(event);
@@ -1071,6 +1163,7 @@ impl SimWorld {
 
     fn drain_node_effects(&mut self) {
         let mut outbound = Vec::new();
+        let step = self.steps;
         for (node_id, sim_node) in self.nodes.iter_mut() {
             if self.crashed_nodes.contains(node_id)
                 || self.disabled_nodes.contains(node_id)
@@ -1080,6 +1173,19 @@ impl SimWorld {
             }
             outbound.extend(sim_node.node.take_outbound());
             for request in sim_node.node.storage_requests() {
+                match &request.kind {
+                    StorageOpKind::Read { .. } => {}
+                    StorageOpKind::Write { key, .. } | StorageOpKind::Delete { key } => {
+                        sim_node.applied_writes = sim_node.applied_writes.saturating_add(1);
+                        sim_node.applied_at.insert(key.clone(), step);
+                    }
+                    StorageOpKind::Flush => {
+                        sim_node.applied_writes = sim_node.applied_writes.saturating_add(1);
+                        for applied in sim_node.applied_at.values_mut() {
+                            *applied = step;
+                        }
+                    }
+                }
                 let applied = sim_node
                     .storage
                     .apply_checked(request)
@@ -1124,7 +1230,15 @@ impl SimWorld {
         else {
             return;
         };
-        let Some(source_storage) = self.nodes.get(&source_id).map(|node| node.storage.clone())
+        let step = self.steps;
+        let Some((source_storage, source_applied, source_keys)) =
+            self.nodes.get(&source_id).map(|node| {
+                (
+                    node.storage.clone(),
+                    node.applied_writes,
+                    node.applied_at.keys().cloned().collect::<Vec<_>>(),
+                )
+            })
         else {
             return;
         };
@@ -1132,6 +1246,10 @@ impl SimWorld {
             target
                 .storage
                 .replace_visible_default_zone_from(&source_storage);
+            // The node now holds the source's state, so it has the source's
+            // progress too; every copied value arrived now.
+            target.applied_writes = source_applied;
+            target.applied_at = source_keys.into_iter().map(|key| (key, step)).collect();
         }
         self.rebalance = Some(RebalanceState {
             phase: "complete".to_owned(),

@@ -31,9 +31,15 @@ const required = [
   "tests/ui_smoke.spec.js",
   "tests/seed_share.spec.js",
   "tests/server_engine.spec.js",
+  "tests/a11y.spec.js",
+  "tests/visual.spec.js",
+  "tests/support/violation-stub.js",
   "unit/share.test.mjs",
   "unit/insight.test.mjs",
+  "unit/packets.test.mjs",
   "scripts/serve-static.mjs",
+  "scripts/og-image.mjs",
+  "og-image.png",
   "playwright.config.mjs",
 ];
 for (const file of required) {
@@ -91,6 +97,33 @@ for (const module of pageModules) {
     bundled.has(file),
     `${file} is loaded by the page but not bundled by .github/workflows/docs-site.yml`,
   );
+}
+
+// 2b. Link previews: the og:image is an absolute URL under the published demo
+//     path, the file it names exists locally, is a 1200x630 PNG, and is both
+//     bundled and checksummed by the Pages workflow.
+const PAGES_DEMO_URL = "https://javaquasar.github.io/hydracache/demo/";
+for (const property of ["og:title", "og:description", "og:url", "og:image", "og:image:alt"]) {
+  check(html.includes(`property="${property}"`), `missing <meta property="${property}"> in index.html`);
+}
+check(html.includes('name="twitter:card" content="summary_large_image"'), "missing twitter:card summary_large_image");
+check(html.includes(`property="og:url" content="${PAGES_DEMO_URL}"`), `og:url must be ${PAGES_DEMO_URL}`);
+const ogImage = html.match(/property="og:image" content="([^"]+)"/)?.[1] ?? "";
+check(ogImage.startsWith(PAGES_DEMO_URL), `og:image must be an absolute URL under ${PAGES_DEMO_URL}: ${ogImage}`);
+const ogFile = ogImage.slice(PAGES_DEMO_URL.length);
+if (/^[\w.-]+\.png$/.test(ogFile) && existsSync(join(demoRoot, ogFile))) {
+  const png = readFileSync(join(demoRoot, ogFile));
+  const isPng = png.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+  check(isPng && png.readUInt32BE(16) === 1200 && png.readUInt32BE(20) === 630, `${ogFile} must be a 1200x630 PNG`);
+  check(bundled.has(ogFile), `${ogFile} is the og:image but not bundled by .github/workflows/docs-site.yml`);
+  check(
+    docsWorkflow
+      .split(/\r?\n/)
+      .some((line) => line.includes("sha256sum --binary") && line.split(/\s+/).includes(ogFile)),
+    `${ogFile} is bundled but not checksummed by .github/workflows/docs-site.yml`,
+  );
+} else {
+  check(false, `og:image file missing or not a local .png: ${ogFile || "(none)"} (render it with demo/scripts/og-image.mjs)`);
 }
 
 // 3. The demo package version follows the workspace release version.

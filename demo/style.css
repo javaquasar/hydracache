@@ -24,8 +24,72 @@
   --ok-bg: #eef8f1;
   --warn: #8f6200;
   --warn-bg: #fff5cf;
+  /* Surfaces that used to be hard-coded white, so the dark theme can swap them. */
+  --surface: #ffffff;
+  --on-accent: #ffffff;
+  --panel-grad: linear-gradient(155deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.36));
+  --panel-inner-grad: linear-gradient(155deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.48));
+  --shell-wash:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.12));
+  --inset-hi: rgba(255, 255, 255, 0.8);
+  --canvas: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(242, 249, 247, 0.78)), var(--glass-solid);
+  --link: #6d7c78;
+  --node-fill: rgba(255, 255, 255, 0.94);
+  --leader-fill: #d7f1ec;
+  --joining-fill: #eef0ff;
+  --idle-fill: #eef1f3;
+  /* 3:1 against white and the idle fill (WCAG 1.4.11 non-text contrast). */
+  --idle-stroke: #6f807d;
+  --disabled-fill: #ededed;
+  --blob-opacity: 0.6;
+  --font-small: 13px;
+  --font-xsmall: 12px;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Dark theme: app.js sets data-theme from the stored choice or the OS setting. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-start: #0a1716;
+  --bg-mid: #121530;
+  --bg-end: #23170f;
+  --ink: #e3eeeb;
+  --muted: #a3b8b3;
+  --line: rgba(196, 228, 221, 0.18);
+  --glass: rgba(18, 31, 30, 0.55);
+  --glass-strong: rgba(26, 41, 39, 0.9);
+  --glass-solid: #16221f;
+  --glass-edge: rgba(255, 255, 255, 0.09);
+  --shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+  --shadow-soft: 0 10px 26px rgba(0, 0, 0, 0.35);
+  --accent: #3cc2b9;
+  --accent-strong: #67d9d0;
+  --accent-alt: #97a2ff;
+  --data: #e98af8;
+  --event: #f0a861;
+  --danger: #ff8f80;
+  --danger-bg: #3b1a16;
+  --ok: #72d9a1;
+  --ok-bg: #11301f;
+  --warn: #f3c552;
+  --warn-bg: #33290c;
+  --surface: #101917;
+  --on-accent: #06201e;
+  --panel-grad: linear-gradient(155deg, rgba(30, 46, 44, 0.78), rgba(18, 29, 28, 0.62));
+  --panel-inner-grad: linear-gradient(155deg, rgba(36, 54, 51, 0.82), rgba(22, 35, 33, 0.7));
+  --shell-wash: linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.28));
+  --inset-hi: rgba(255, 255, 255, 0.06);
+  --canvas: linear-gradient(180deg, rgba(20, 33, 31, 0.92), rgba(14, 24, 23, 0.92)), var(--glass-solid);
+  --link: #7f938e;
+  --node-fill: #1b2a28;
+  --leader-fill: #15403b;
+  --joining-fill: #232848;
+  --idle-fill: #222c2b;
+  --idle-stroke: #71817e;
+  --disabled-fill: #262626;
+  --blob-opacity: 0.32;
 }
 
 * {
@@ -53,6 +117,7 @@ body::before {
     radial-gradient(46% 44% at 78% 84%, rgba(176, 92, 24, 0.34), transparent 72%),
     radial-gradient(42% 40% at 22% 86%, rgba(23, 108, 67, 0.4), transparent 72%);
   filter: blur(8px);
+  opacity: var(--blob-opacity);
 }
 
 button,
@@ -69,17 +134,54 @@ select {
   border-radius: 8px;
   background: var(--glass-strong);
   color: var(--ink);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 1px 0 var(--inset-hi);
 }
 
 button {
   padding: 0 12px;
   cursor: pointer;
+  font-weight: 600;
 }
 
 button:hover {
   border-color: var(--accent);
   color: var(--accent-strong);
+}
+
+/* Primary action: one per group at most (Play, guide "Do it"). */
+button.primary {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: var(--on-accent);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent-strong) 30%, transparent);
+}
+
+button.primary:hover {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* Secondary actions read as text buttons until hovered. */
+button.ghost {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+}
+
+button.ghost:hover {
+  border-color: var(--line);
+  background: var(--glass-strong);
+  color: var(--accent-strong);
+}
+
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
 }
 
 button:focus-visible,
@@ -89,32 +191,36 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
-button:disabled {
+button:disabled,
+button.primary:disabled {
   cursor: not-allowed;
-  opacity: 0.45;
+  border-style: dashed;
+  border-color: var(--line);
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  opacity: 0.7;
 }
 
 .glass-panel {
   border: 1px solid var(--glass-edge);
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.3));
-  box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  background: var(--panel-grad);
+  box-shadow: var(--shadow), inset 0 1px 0 var(--inset-hi);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
 }
 
 /* Inner panels sit on top of the glass aside; keep them a touch more opaque so
    stacked glass stays legible. */
-.side-panel > section {
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.42));
+.side-panel section.glass-panel {
+  background: var(--panel-inner-grad);
 }
 
 .shell {
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto auto 1fr;
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.12));
+  background: var(--shell-wash);
 }
 
 .topbar {
@@ -148,10 +254,36 @@ p {
   margin: 0;
 }
 
-#engine-banner {
+.tagline {
   margin-top: 6px;
+  max-width: 62ch;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
+}
+
+.run-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  cursor: help;
+}
+
+.run-facts .fact {
+  padding: 2px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--glass-strong);
+  color: var(--ink);
+  font-size: var(--font-xsmall);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .status-cluster {
@@ -162,46 +294,80 @@ p {
 }
 
 .verdict {
-  min-width: 220px;
-  max-width: 420px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 240px;
+  max-width: 460px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-weight: 700;
+  border-left-width: 6px;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 18px;
+  font-weight: 800;
   line-height: 1.25;
   overflow-wrap: anywhere;
   box-shadow: var(--shadow-soft);
 }
 
+.verdict::before {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--on-accent);
+  font-size: 16px;
+}
+
 .verdict.ok {
-  background: color-mix(in srgb, var(--ok-bg) 88%, white);
+  border-color: color-mix(in srgb, var(--ok) 45%, var(--surface));
+  background: color-mix(in srgb, var(--ok-bg) 88%, var(--surface));
   color: var(--ok);
 }
 
+.verdict.ok::before {
+  content: "✓";
+  background: var(--ok);
+}
+
 .verdict.bad {
-  background: color-mix(in srgb, var(--danger-bg) 88%, white);
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--surface));
+  background: color-mix(in srgb, var(--danger-bg) 88%, var(--surface));
   color: var(--danger);
 }
 
+.verdict.bad::before {
+  content: "✕";
+  background: var(--danger);
+}
+
 .verdict.warn {
-  background: color-mix(in srgb, var(--warn-bg) 88%, white);
+  border-color: color-mix(in srgb, var(--warn) 45%, var(--surface));
+  background: color-mix(in srgb, var(--warn-bg) 88%, var(--surface));
   color: var(--warn);
+}
+
+.verdict.warn::before {
+  content: "…";
+  background: var(--warn);
 }
 
 .action-notice {
   margin: 8px 0 0;
   padding: 6px 10px;
-  border: 1px solid color-mix(in srgb, var(--danger) 40%, white);
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--surface));
   border-radius: 10px;
-  background: color-mix(in srgb, var(--danger-bg) 88%, white);
+  background: color-mix(in srgb, var(--danger-bg) 88%, var(--surface));
   color: var(--danger);
   font-size: 0.85rem;
   overflow-wrap: anywhere;
 }
 
 .action-notice.warn {
-  border-color: color-mix(in srgb, var(--warn) 40%, white);
-  background: color-mix(in srgb, var(--warn-bg) 88%, white);
+  border-color: color-mix(in srgb, var(--warn) 40%, var(--surface));
+  background: color-mix(in srgb, var(--warn-bg) 88%, var(--surface));
   color: var(--warn);
 }
 
@@ -225,17 +391,17 @@ input[aria-invalid="true"] {
 .model-tag {
   margin-left: 6px;
   padding: 1px 6px;
-  border: 1px solid color-mix(in srgb, var(--warn) 42%, white);
+  border: 1px solid color-mix(in srgb, var(--warn) 42%, var(--surface));
   border-radius: 999px;
   color: var(--warn);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   vertical-align: middle;
 }
 
 .model-note {
   margin: 0 0 8px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 
 details.panel > summary {
@@ -286,7 +452,7 @@ details.panel > summary:focus-visible,
   gap: 4px;
   margin-bottom: 6px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-small);
 }
 
 .visually-hidden {
@@ -309,9 +475,9 @@ main[aria-busy="true"] .side-panel button {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 5px 10px;
-  background: rgba(255, 255, 255, 0.64);
+  background: var(--glass-strong);
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-xsmall);
   font-weight: 800;
   line-height: 1.1;
   overflow-wrap: anywhere;
@@ -319,35 +485,81 @@ main[aria-busy="true"] .side-panel button {
 }
 
 .source-chip.source-raft {
-  border-color: color-mix(in srgb, var(--ok) 42%, white);
-  background: color-mix(in srgb, var(--ok-bg) 84%, white);
+  border-color: color-mix(in srgb, var(--ok) 42%, var(--surface));
+  background: color-mix(in srgb, var(--ok-bg) 84%, var(--surface));
   color: var(--ok);
 }
 
 .source-chip.source-sim-model {
-  border-color: color-mix(in srgb, var(--accent-alt) 38%, white);
-  background: color-mix(in srgb, var(--bg-mid) 76%, white);
+  border-color: color-mix(in srgb, var(--accent-alt) 38%, var(--surface));
+  background: color-mix(in srgb, var(--bg-mid) 76%, var(--surface));
   color: var(--accent-alt);
 }
 
 .controls {
   display: flex;
   flex-wrap: wrap;
-  align-items: end;
-  gap: 10px;
+  align-items: stretch;
+  gap: 10px 0;
   min-height: 68px;
   margin: 10px 16px 0;
-  padding: 12px;
+  padding: 10px 12px;
   border-radius: 8px;
-  overflow-x: auto;
+}
+
+/* Labelled groups separated by a hairline: run, scenario, run-until, share. */
+.control-group {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 0 14px;
+  border-left: 1px solid var(--line);
+}
+
+.control-group:first-child {
+  padding-left: 2px;
+  border-left: 0;
+}
+
+.group-title {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.group-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
 }
 
 .controls label {
   display: grid;
   gap: 5px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-small);
   white-space: nowrap;
+}
+
+#play-button {
+  min-width: 84px;
+}
+
+.range-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+
+#speed-value {
+  min-width: 78px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
 }
 
 .controls input[type="text"],
@@ -378,8 +590,9 @@ main[aria-busy="true"] .side-panel button {
   flex-basis: 100%;
   min-height: 1rem;
   margin: 0;
+  padding: 0 2px;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: var(--font-small);
   overflow-wrap: anywhere;
 }
 
@@ -391,7 +604,7 @@ main[aria-busy="true"] .side-panel button {
 }
 
 .range input {
-  width: 160px;
+  width: 140px;
 }
 
 .workspace {
@@ -402,41 +615,198 @@ main[aria-busy="true"] .side-panel button {
   padding: 14px 16px 16px;
 }
 
+/* The graph stays in view while the side panels scroll with the page, so the
+   page has a single scrollbar instead of a second one inside the aside. */
 .graph-panel {
-  min-height: 560px;
+  position: sticky;
+  top: 14px;
+  align-self: start;
   padding: 14px;
   border-radius: 8px;
+}
+
+.graph-stage {
+  position: relative;
 }
 
 #cluster-graph {
   display: block;
   width: 100%;
-  height: min(68vh, 680px);
-  min-height: 460px;
+  height: min(60vh, 640px);
+  min-height: 420px;
   touch-action: none;
   cursor: grab;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(242, 249, 247, 0.72)),
-    var(--glass-solid);
+  background: var(--canvas);
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 1px 0 var(--inset-hi);
+}
+
+.graph-tools {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  gap: 6px;
+}
+
+.graph-tools .icon-button {
+  background: var(--glass-strong);
+  box-shadow: var(--shadow-soft);
+}
+
+/* The view was panned or zoomed and no longer follows the cluster: make the
+   Fit button the obvious way back. */
+.graph-tools .icon-button[aria-pressed="false"] {
+  border-color: var(--accent);
+  color: var(--accent-strong, var(--accent));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent), var(--shadow-soft);
+}
+
+.graph-hint {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  color: var(--muted);
+  font-size: var(--font-xsmall);
+  pointer-events: none;
 }
 
 .graph-legend {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  display: grid;
+  gap: 4px;
+  max-width: calc(100% - 20px);
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--glass-strong);
+  box-shadow: var(--shadow-soft);
+  color: var(--muted);
+  font-size: var(--font-xsmall);
+  pointer-events: none;
+}
+
+/* The legend is a <details>: open it from its "Legend" button; the choice is
+   remembered per viewer (app.js). Only the button takes pointer events, so
+   the graph under an open legend stays draggable. */
+.graph-legend summary {
+  pointer-events: auto;
+  cursor: pointer;
+  width: max-content;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.graph-legend:not([open]) {
+  padding: 4px 10px;
+}
+
+.graph-legend[open] summary {
+  margin-bottom: 2px;
+}
+
+.legend-badge {
+  width: 14px;
+  height: 14px;
+}
+
+.legend-badge circle {
+  fill: var(--idle-stroke);
+}
+
+.legend-badge.cut circle {
+  fill: var(--muted);
+}
+
+.legend-badge path {
+  fill: none;
+  stroke: var(--on-accent);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.legend-entity {
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--accent-alt);
+  border-radius: 50%;
+  color: var(--accent-alt);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.legend-entity.subscriber {
+  border-color: var(--event);
+  color: var(--event);
+}
+
+.legend-line.flow {
+  border-top: 2px dotted var(--event);
+}
+
+.legend-progress {
+  display: inline-block;
+  width: 18px;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent) 60%, color-mix(in srgb, var(--ink) 14%, transparent) 60%);
+}
+
+.legend-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 14px;
-  margin-top: 10px;
-  color: var(--muted);
-  font-size: 12px;
+  gap: 4px 12px;
 }
 
 .graph-legend span {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 20px;
+  min-height: 18px;
+}
+
+.legend-node {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: var(--node-fill);
+}
+
+.legend-node.leader {
+  border-width: 3px;
+  border-color: var(--accent-strong);
+  background: var(--leader-fill);
+}
+
+.legend-node.candidate {
+  border-color: var(--warn);
+  background: var(--warn-bg);
+}
+
+.legend-node.crashed {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.legend-line {
+  display: inline-block;
+  width: 22px;
+  height: 0;
+  border-top: 3px dashed var(--danger);
+}
+
+.legend-line.delayed {
+  border-top-style: dotted;
+  border-top-color: var(--warn);
 }
 
 .legend-dot {
@@ -445,6 +815,34 @@ main[aria-busy="true"] .side-panel button {
   height: 10px;
   border-radius: 50%;
   background: var(--accent);
+}
+
+.empty-state {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.legend-dot.vote,
+.legend-dot.data,
+.legend-dot.event {
+  border-radius: 2px;
+}
+
+.legend-dot.vote {
+  width: 9px;
+  height: 9px;
+  transform: rotate(45deg);
+}
+
+.legend-dot.event {
+  border-radius: 0;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.legend-dot.heartbeat {
+  width: 7px;
+  height: 7px;
+  opacity: 0.7;
 }
 
 .legend-dot.vote {
@@ -463,17 +861,19 @@ main[aria-busy="true"] .side-panel button {
   background: var(--event);
 }
 
+.legend-dot.doomed {
+  background: transparent;
+  border: 2px dashed var(--danger);
+}
+
 .side-panel {
   display: grid;
   align-content: start;
   gap: 12px;
-  max-height: calc(100vh - 206px);
-  padding: 12px;
-  border-radius: 8px;
-  overflow: auto;
+  min-width: 0;
 }
 
-.side-panel > section {
+.side-panel section.glass-panel {
   padding: 12px;
   border-radius: 8px;
 }
@@ -511,7 +911,7 @@ main[aria-busy="true"] .side-panel button {
 #nodes-panel .metric button {
   min-width: 0;
   padding: 0 8px;
-  font-size: 13px;
+  font-size: var(--font-small);
 }
 
 /* Colour the node rows by role, matching the graph circles: a thick left bar
@@ -525,39 +925,39 @@ main[aria-busy="true"] .side-panel button {
 
 .node-row.role-leader {
   border-left-color: var(--accent-strong);
-  background: color-mix(in srgb, var(--accent-strong) 16%, white);
+  background: color-mix(in srgb, var(--accent-strong) 16%, var(--surface));
 }
 
 .node-row.role-follower {
   border-left-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 12%, white);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
 }
 
 .node-row.role-candidate {
   border-left-color: var(--warn);
-  background: color-mix(in srgb, var(--warn) 16%, white);
+  background: color-mix(in srgb, var(--warn) 16%, var(--surface));
 }
 
 .node-row.role-joining,
 .node-row.role-catching_up {
   border-left-color: var(--accent-alt);
-  background: color-mix(in srgb, var(--accent-alt) 14%, white);
+  background: color-mix(in srgb, var(--accent-alt) 14%, var(--surface));
 }
 
 .node-row.role-unknown,
 .node-row.role-disconnected {
   border-left-color: #8c9b98;
-  background: color-mix(in srgb, #8c9b98 14%, white);
+  background: color-mix(in srgb, #8c9b98 14%, var(--surface));
 }
 
 .node-row.role-disabled {
   border-left-color: #8c9b98;
-  background: color-mix(in srgb, #8c9b98 12%, white);
+  background: color-mix(in srgb, #8c9b98 12%, var(--surface));
 }
 
 .node-row.role-crashed {
   border-left-color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 12%, white);
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
 }
 
 /* Signals list keeps a stable height so new in-flight rows do not shove the
@@ -602,7 +1002,7 @@ main[aria-busy="true"] .side-panel button {
   margin-top: 10px;
   color: var(--muted);
   font-family: ui-monospace, "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
-  font-size: 12px;
+  font-size: var(--font-xsmall);
   overflow-wrap: anywhere;
 }
 
@@ -659,7 +1059,7 @@ dd {
 }
 
 .key-row.diverged {
-  border-color: color-mix(in srgb, var(--warn) 60%, white);
+  border-color: color-mix(in srgb, var(--warn) 60%, var(--surface));
 }
 
 .key-head {
@@ -680,12 +1080,12 @@ dd {
   border: 1px solid var(--line);
   border-radius: 6px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
 }
 
 .replica.diverged {
   border-color: var(--warn);
-  background: color-mix(in srgb, var(--warn-bg) 88%, white);
+  background: color-mix(in srgb, var(--warn-bg) 88%, var(--surface));
   color: var(--warn);
   font-weight: 700;
 }
@@ -704,7 +1104,7 @@ dd {
 }
 
 .consistency-row.bad {
-  border-color: color-mix(in srgb, var(--danger) 45%, white);
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--surface));
 }
 
 .consistency-row.bad strong {
@@ -714,7 +1114,7 @@ dd {
 .consistency-reason {
   flex-basis: 100%;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.8rem;
 }
 
 .invariant-row.violated {
@@ -729,18 +1129,118 @@ dd {
 .timeline-scrub {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.85rem;
+  gap: 12px;
 }
 
-.timeline-scrub input {
+.timeline-label {
+  min-width: 112px;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.timeline-track {
+  position: relative;
   flex: 1;
+  display: block;
+  padding-top: 12px;
+}
+
+.timeline-track input {
+  width: 100%;
+  margin: 0;
+}
+
+/* History strip under the scrubber (app.js renderHistoryStrip): leader lane
+   and committed-entries line, inset like the range thumb. */
+.timeline-history {
+  display: block;
+  width: calc(100% - 16px);
+  height: 24px;
+  margin: 4px 8px 0;
+  overflow: visible;
+}
+
+.history-none {
+  fill: color-mix(in srgb, var(--danger) 55%, transparent);
+}
+
+.history-committed {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.7;
+}
+
+.history-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: var(--font-xsmall);
+}
+
+.history-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.history-chip::before {
+  content: "";
+  width: 10px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--chip, var(--accent));
+}
+
+.history-chip.none::before {
+  background: color-mix(in srgb, var(--danger) 55%, transparent);
+}
+
+.history-chip.committed::before {
+  height: 0;
+  border-top: 2px solid var(--ink);
+  opacity: 0.7;
+}
+
+/* Event ticks above the scrubber; positions come from insight.timelineMarks.
+   The 8px inset matches the range thumb so a tick sits over its step. */
+.timeline-marks {
+  position: absolute;
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 12px;
+  pointer-events: none;
+}
+
+.timeline-mark {
+  position: absolute;
+  top: 1px;
+  width: 4px;
+  height: 10px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--accent-alt);
+}
+
+.timeline-mark.leader {
+  background: var(--ok);
+}
+
+.timeline-mark.verdict {
+  width: 6px;
+  margin-left: -3px;
+  background: var(--danger);
 }
 
 .timeline-help {
-  margin: 4px 0;
+  margin: 6px 0;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: var(--font-small);
 }
 
 .events {
@@ -755,12 +1255,14 @@ dd {
 }
 
 .event button {
-  padding: 2px 8px;
-  font-size: 0.75rem;
+  min-height: 30px;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .event.leader button {
-  border-color: color-mix(in srgb, var(--ok) 50%, white);
+  border-color: color-mix(in srgb, var(--ok) 50%, var(--surface));
 }
 
 .event.verdict button {
@@ -773,22 +1275,237 @@ dd {
 
 .event.empty {
   color: var(--muted);
-  font-size: 0.78rem;
-}
-
-.controls .run-until {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  font-size: var(--font-small);
 }
 
 .guide p {
-  margin: 0 0 8px;
-  font-size: 0.85rem;
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.guide .button-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Step dots: done (green), did not happen (red), current (ringed). */
+.guide-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: -4px 0 6px -5px;
+  padding: 0;
+  list-style: none;
+}
+
+/* A 24px target (WCAG 2.5.8) around a 14px dot. */
+.guide-dot {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  min-height: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.guide-dot::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--idle-stroke);
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.guide-dot.done::before {
+  border-color: var(--ok);
+  background: var(--ok);
+}
+
+.guide-dot.failed::before {
+  border-color: var(--danger);
+  background: var(--danger);
+}
+
+.guide-dot.current::before {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* A prediction asked before the step runs. */
+.guide-predict {
+  margin: 0 0 10px;
+}
+
+.guide .guide-question {
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.guide-options {
+  display: grid;
+  gap: 6px;
+}
+
+.guide-option {
+  text-align: left;
+}
+
+.guide-option[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.guide-option.actual::after {
+  content: " ← what happened";
+  color: var(--ok);
+  font-weight: 700;
+}
+
+/* What the engine did, read back after "Do it". */
+.guide .guide-outcome {
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.guide-guess {
+  display: block;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.guide-option.wrong::after {
+  content: " ← your guess";
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.guide-option:disabled {
+  opacity: 1;
+  color: var(--muted);
+}
+
+.guide-option.actual:disabled {
+  color: var(--ink);
+}
+
+.guide-outcome.ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.guide-outcome.bad {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.guide-finale {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.guide-finale .button-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.guide-extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.guide-extra button {
+  font-size: var(--font-small);
 }
 
 .key-row strong {
   overflow-wrap: anywhere;
+}
+
+/* Drawn icons in the graph tool buttons. */
+.graph-tools svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 0;
+}
+
+.graph-tools svg .ring {
+  fill: none;
+  stroke-width: 1.4;
+  stroke-dasharray: 2 2.4;
+}
+
+.graph-tools svg path {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Presentation mode (app.js setPresentation): the graph takes the screen;
+   only the run controls and the timeline stay around it. */
+html.presenting .topbar,
+html.presenting .side-panel,
+html.presenting .intro-card,
+html.presenting .controls .control-group:not(:first-of-type),
+html.presenting .controls .copy-status,
+html.presenting .timeline-help,
+html.presenting .events,
+html.presenting .step-changes,
+html.presenting .graph-hint,
+html.presenting .run-dock {
+  display: none !important;
+}
+
+html.presenting .controls .group-title {
+  display: none;
+}
+
+html.presenting .controls .group-body {
+  flex-wrap: nowrap;
+}
+
+html.presenting .workspace {
+  grid-template-columns: minmax(0, 1fr);
+  padding-top: 8px;
+}
+
+html.presenting .graph-panel {
+  position: static;
+}
+
+html.presenting #cluster-graph {
+  height: calc(100dvh - 210px);
+  min-height: 260px;
+  aspect-ratio: auto;
+}
+
+html.presenting #present-graph {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+/* Graph labels are pictures of engine state, not text to select; a drag on
+   the graph also suppresses selection on the page (graph.js). */
+#cluster-graph {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+html.graph-dragging,
+html.graph-dragging * {
+  -webkit-user-select: none !important;
+  user-select: none !important;
 }
 
 .vertex {
@@ -807,11 +1524,11 @@ dd {
   cursor: grab;
 }
 
-.node circle {
-  fill: rgba(255, 255, 255, 0.9);
+.node .v-body {
+  fill: var(--node-fill);
   stroke: var(--accent);
   stroke-width: 3;
-  filter: drop-shadow(0 8px 10px rgba(7, 95, 91, 0.14));
+  filter: drop-shadow(0 3px 5px rgba(7, 95, 91, 0.12));
   transition:
     fill 260ms ease,
     stroke 260ms ease,
@@ -820,50 +1537,342 @@ dd {
 
 /* Role-driven node colour so a node visibly changes as it joins, leads, or
    comes back after a crash/restart (engine reports vote_state). */
-.node.role-leader circle {
-  fill: #d7f1ec;
+.node.role-leader .v-body {
+  fill: var(--leader-fill);
   stroke: var(--accent-strong);
   stroke-width: 5;
 }
 
-.node.role-follower circle {
-  fill: rgba(255, 255, 255, 0.92);
+.node.role-follower .v-body {
+  fill: var(--node-fill);
   stroke: var(--accent);
 }
 
-.node.role-candidate circle {
+.node.role-candidate .v-body {
   fill: var(--warn-bg);
   stroke: var(--warn);
   stroke-width: 4;
 }
 
-.node.role-joining circle,
-.node.role-catching_up circle {
-  fill: #eef0ff;
+.node.role-joining .v-body,
+.node.role-catching_up .v-body {
+  fill: var(--joining-fill);
   stroke: var(--accent-alt);
   stroke-dasharray: 6 5;
 }
 
-.node.role-unknown circle,
-.node.role-disconnected circle {
-  fill: #eef1f3;
-  stroke: #93a3a0;
+.node.role-unknown .v-body,
+.node.role-disconnected .v-body {
+  fill: var(--idle-fill);
+  stroke: var(--idle-stroke);
+  stroke-dasharray: 4 6;
 }
 
-.node.disabled circle {
-  fill: #ededed;
+.node.disabled .v-body {
+  fill: var(--disabled-fill);
   stroke: #9aa0a0;
   stroke-dasharray: 2 5;
 }
 
-.node.crashed circle {
+.node.crashed .v-body {
   fill: var(--danger-bg);
   stroke: var(--danger);
   stroke-dasharray: none;
 }
 
+.node.crashed text {
+  opacity: 0.75;
+}
+
+/* Corner badge: a glyph per role (see ROLE_BADGES in graph.js). */
+.v-badge {
+  display: none;
+  pointer-events: none;
+}
+
+.node.role-leader .v-badge,
+.node.role-candidate .v-badge,
+.node.role-crashed .v-badge,
+.node.role-disabled .v-badge,
+.node.role-joining .v-badge,
+.node.role-catching_up .v-badge,
+.node.role-disconnected .v-badge {
+  display: inline;
+}
+
+.node.role-disconnected .v-badge circle {
+  fill: var(--muted);
+}
+
+/* Drawn badge icons (power for disabled, slashed circle for isolated). */
+.v-icon {
+  fill: none;
+  stroke: var(--on-accent);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+/* Replica agreement: sampled keys on which the node holds the live majority's
+   version (amber while it lags, e.g. after a crash, until it resyncs). */
+.v-progress-track {
+  fill: color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.v-progress-fill {
+  fill: var(--accent);
+  transition: width 260ms ease;
+}
+
+.v-progress.behind .v-progress-fill {
+  fill: var(--warn);
+}
+
+/* Writes already on their way to the node (replicate_* in flight). */
+.v-progress-pending {
+  fill: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* Second signal: stored values differ from the live majority. */
+.v-progress.diverged .v-progress-track {
+  stroke: var(--danger);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+
+.v-progress.empty,
+.node.crashed .v-progress,
+.node.disabled .v-progress {
+  opacity: 0.35;
+}
+
+.v-badge circle {
+  fill: var(--accent-strong);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+.v-badge text {
+  fill: var(--on-accent);
+  font-size: 14px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
+.node.role-candidate .v-badge circle {
+  fill: var(--warn);
+}
+
+.node.role-crashed .v-badge circle {
+  fill: var(--danger);
+}
+
+.node.role-disabled .v-badge circle {
+  fill: var(--idle-stroke);
+}
+
+.node.role-joining .v-badge circle,
+.node.role-catching_up .v-badge circle {
+  fill: var(--accent-alt);
+}
+
 .node.joining {
   animation: node-join 620ms ease-out;
+}
+
+/* Going down: the node greys out with a short shudder and its badge grows in. */
+.node.down-hit {
+  animation: down-shudder 420ms ease-out;
+}
+
+.node.down-hit .v-body {
+  animation: down-grey 700ms ease-out;
+}
+
+.node.down-hit .v-badge > * {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: badge-pop 560ms cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+@keyframes down-shudder {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  25% {
+    translate: -4px 0;
+  }
+
+  50% {
+    translate: 4px 0;
+  }
+
+  75% {
+    translate: -2px 0;
+  }
+}
+
+@keyframes down-grey {
+  from {
+    filter: grayscale(0);
+  }
+
+  40% {
+    filter: grayscale(1) brightness(0.9);
+  }
+
+  to {
+    filter: grayscale(0);
+  }
+}
+
+/* Back from a crash or a disable but still lagging the live majority: a
+   rotating dashed ring until its replicas agree again. */
+.node.recovering .v-ring {
+  opacity: 1;
+  stroke: var(--accent-alt);
+  stroke-dasharray: 10 8;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: resync-spin 2.4s linear infinite;
+}
+
+@keyframes resync-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.node.synced .v-body {
+  animation: synced-flash 900ms ease-out;
+}
+
+@keyframes synced-flash {
+  0% {
+    stroke-width: 9;
+  }
+
+  100% {
+    stroke-width: 3;
+  }
+}
+
+/* The node running the election (sending vote requests): a ring that breathes
+   while its votes come in. Voters that moved to the term do not pulse. */
+.v-ring {
+  fill: none;
+  stroke: var(--warn);
+  stroke-width: 3;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.node.campaigning .v-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: candidate-ring 1.1s ease-out infinite;
+}
+
+@keyframes candidate-ring {
+  from {
+    opacity: 0.85;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+}
+
+/* The leader's star travels from the previous leader (graph.js), and the new
+   leader's own badge appears when it lands; a first leader's badge pops in. */
+.node.baton-incoming .v-badge {
+  visibility: hidden;
+}
+
+.leader-baton {
+  pointer-events: none;
+}
+
+.leader-baton circle {
+  fill: var(--accent-strong);
+  stroke: var(--surface);
+  stroke-width: 2;
+  filter: drop-shadow(0 6px 10px rgba(7, 95, 91, 0.35));
+}
+
+.leader-baton text {
+  fill: var(--on-accent);
+  font-size: 14px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
+/* Animate the badge's parts, not the badge: its own transform attribute
+   places it on the node's rim and a CSS transform would replace it. */
+.node.badge-pop .v-badge > * {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: badge-pop 520ms cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+@keyframes badge-pop {
+  from {
+    transform: scale(0.2);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+/* A delivered message ripples out of its target node; a lost one bursts. */
+.arrival-ripple {
+  fill: none;
+  stroke: var(--accent-alt);
+  stroke-width: 3;
+  pointer-events: none;
+}
+
+.arrival-ripple.data {
+  stroke: var(--data);
+}
+
+.arrival-ripple.event {
+  stroke: var(--event);
+}
+
+.loss-burst line {
+  stroke: var(--danger);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+/* "term N" rises from the node that opened the new term and fades. */
+.term-float {
+  fill: var(--warn);
+  font-size: 13px;
+  font-weight: 800;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+/* The candidate's own vote plus each vote response as it lands. */
+.vote-tally {
+  fill: var(--warn);
+  font-size: 13px;
+  font-weight: 800;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 4px;
+  pointer-events: none;
+}
+
+.vote-tally.won {
+  fill: var(--accent-strong);
 }
 
 @keyframes node-join {
@@ -878,7 +1887,7 @@ dd {
 
 .node text {
   fill: var(--ink);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   text-anchor: middle;
 }
@@ -889,8 +1898,44 @@ dd {
 
 .link {
   cursor: pointer;
-  stroke: #6d7c78;
+  stroke: var(--link);
   stroke-width: 3;
+}
+
+.link-label {
+  pointer-events: none;
+}
+
+.link-label.up {
+  display: none;
+}
+
+.link-text {
+  font-size: 12px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
+.link-pill {
+  fill: var(--surface);
+  stroke-width: 1.5;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12));
+}
+
+.link-label.partitioned .link-text {
+  fill: var(--danger);
+}
+
+.link-label.partitioned .link-pill {
+  stroke: var(--danger);
+}
+
+.link-label.delayed .link-text {
+  fill: var(--warn);
+}
+
+.link-label.delayed .link-pill {
+  stroke: var(--warn);
 }
 
 .link.partitioned {
@@ -901,11 +1946,53 @@ dd {
 .link.delayed {
   stroke: var(--warn);
   stroke-dasharray: 3 6;
+  /* Dashes crawl slowly along a delayed link: traffic is moving, just late. */
+  animation: delay-crawl 2.4s linear infinite;
+}
+
+@keyframes delay-crawl {
+  to {
+    stroke-dashoffset: -36;
+  }
+}
+
+.link {
+  transition: stroke-width 300ms ease;
+}
+
+/* A partitioned link is broken in the middle: a gap and two bars. */
+.link-cut {
+  display: none;
+  pointer-events: none;
+}
+
+.link-cut.shown {
+  display: inline;
+}
+
+.link-cut-gap {
+  stroke: var(--surface);
+  stroke-width: 12;
+}
+
+.link-cut-bar {
+  stroke: var(--danger);
+  stroke-width: 3;
+  stroke-linecap: round;
 }
 
 .link.selected {
   stroke: var(--accent-strong);
   stroke-width: 5;
+}
+
+/* A selected link keeps its fault colour; selection shows as a wider stroke. */
+.link.selected.partitioned {
+  stroke: var(--danger);
+}
+
+.link.selected.delayed {
+  stroke: var(--warn);
 }
 
 .link-hit {
@@ -928,8 +2015,8 @@ dd {
 
 .packet {
   fill: var(--accent-alt);
-  stroke: rgba(255, 255, 255, 0.92);
-  stroke-width: 2;
+  stroke: var(--surface);
+  stroke-width: 2.5;
   filter: drop-shadow(0 5px 8px rgba(76, 91, 213, 0.3));
   animation: packet-pulse 1.6s ease-in-out infinite;
 }
@@ -952,6 +2039,54 @@ dd {
 .packet.vote-request,
 .packet.vote-response {
   fill: var(--accent-alt);
+}
+
+/* A message the engine will drop on delivery (cut link or target down): no
+   pulse, a dashed danger ring, and an inline opacity fade set by graph.js. */
+.packet.doomed {
+  stroke: var(--danger);
+  stroke-width: 3;
+  stroke-dasharray: 4 3;
+  animation: none;
+}
+
+.packet-trail.doomed {
+  stroke: color-mix(in srgb, var(--danger) 45%, transparent);
+  animation: none;
+}
+
+/* Control traffic (heartbeats, acks) is small and faint so votes and data
+   stand out; shapes come from packetShape() in graph.js. */
+/* Quiet by size, not by fading: a faded dot fell below 3:1 against the
+   canvas (WCAG 1.4.11), so control dots stay solid and do not pulse. */
+.packet.control {
+  filter: none;
+  stroke-width: 1.5;
+  animation: none;
+}
+
+.packet-key {
+  fill: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
+}
+
+/* "+N": routine heartbeats and acks folded on a busy edge. */
+.edge-badge rect {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+
+.edge-badge text {
+  fill: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 800;
+  text-anchor: middle;
 }
 
 @keyframes packet-pulse {
@@ -978,6 +2113,40 @@ dd {
 
 /* Manual clients / subscribers drawn just outside the cluster ring, linked to the
    node they are routed to. The link "flows" while data is moving. */
+/* Writer -> subscriber of the same namespace (where its events go). */
+.namespace-flow {
+  stroke: var(--event);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 6;
+  stroke-linecap: round;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Writer and subscriber rows: name, where, last activity, and an action. */
+.entity-row {
+  align-items: center;
+}
+
+.entity-row > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.entity-meta,
+.entity-detail {
+  color: var(--muted);
+  font-size: var(--font-small);
+  overflow-wrap: anywhere;
+}
+
+.panel-note {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: var(--font-small);
+}
+
 .entity-links {
   pointer-events: none;
 }
@@ -1008,7 +2177,7 @@ dd {
 /* Choreographed data-flow pulse fired on a client push (bigger/brighter than the
    ambient signal packets so the sent data reads clearly). */
 .pulse {
-  stroke: rgba(255, 255, 255, 0.95);
+  stroke: var(--surface);
   stroke-width: 2;
 }
 
@@ -1027,7 +2196,7 @@ html[data-reduced-motion="true"] .pulse-layer {
 }
 
 .entity circle {
-  fill: rgba(255, 255, 255, 0.96);
+  fill: var(--node-fill);
   stroke: var(--accent-alt);
   stroke-width: 2.5;
   filter: drop-shadow(0 4px 6px rgba(76, 91, 213, 0.18));
@@ -1041,18 +2210,36 @@ html[data-reduced-motion="true"] .pulse-layer {
   stroke-width: 3.5;
 }
 
+.entity .entity-glyph {
+  fill: var(--accent-alt);
+  font-size: 16px;
+  font-weight: 800;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.entity.subscriber .entity-glyph {
+  fill: var(--event);
+}
+
 .entity .entity-id {
   fill: var(--ink);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
 }
 
 .entity .entity-sub {
   fill: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
 }
 
 .entity.clickable {
@@ -1060,11 +2247,11 @@ html[data-reduced-motion="true"] .pulse-layer {
 }
 
 .entity.clickable:hover circle {
-  fill: color-mix(in srgb, var(--accent-alt) 16%, white);
+  fill: color-mix(in srgb, var(--accent-alt) 16%, var(--surface));
 }
 
 .entity.subscriber.clickable:hover circle {
-  fill: color-mix(in srgb, var(--event) 16%, white);
+  fill: color-mix(in srgb, var(--event) 16%, var(--surface));
 }
 
 html[data-reduced-motion="true"] .entity-link.active {
@@ -1090,7 +2277,7 @@ html[data-reduced-motion="true"] .entity-link.active {
 html[data-reduced-motion="true"] .packet,
 html[data-reduced-motion="true"] .packet-trail,
 html[data-reduced-motion="true"] .node.joining,
-html[data-reduced-motion="true"] .node circle {
+html[data-reduced-motion="true"] .node .v-body {
   animation: none;
   transition: none;
 }
@@ -1139,19 +2326,874 @@ html[data-reduced-transparency="true"] select {
   }
 
   .controls {
-    align-items: stretch;
-    flex-wrap: wrap;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 12px;
+  }
+
+  /* In a column, a 100% flex-basis is a height and would wrap the status
+     lines into a second column off-screen. */
+  .copy-status {
+    flex-basis: auto;
+  }
+
+  .control-group,
+  .control-group:first-child {
+    padding: 0;
+    border-left: 0;
+  }
+
+  .control-group + .control-group {
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
   }
 
   .workspace {
     grid-template-columns: 1fr;
   }
 
-  .side-panel {
-    max-height: none;
+  .graph-panel {
+    position: static;
   }
 
+  /* Match the viewBox aspect so a narrow screen does not letterbox the
+     cluster into a thin band of a tall canvas. */
   #cluster-graph {
-    height: 520px;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 800 / 520;
   }
+
+  .run-until .group-body button {
+    flex: 1 1 auto;
+  }
+
+  /* On a phone the legend would cover the cluster: show it under the graph. */
+  .graph-legend {
+    position: static;
+    margin-top: 8px;
+    box-shadow: none;
+  }
+
+  .graph-hint {
+    display: none;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Step changes, violation story, node popover, first-visit intro.
+   ------------------------------------------------------------------------- */
+@keyframes hc-flash {
+  from {
+    background-color: color-mix(in srgb, var(--accent-alt) 30%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-alt) 55%, transparent);
+  }
+  to {
+    background-color: transparent;
+    box-shadow: 0 0 0 2px transparent;
+  }
+}
+
+/* A crisp ring, not a glow: the node's outline thickens and settles. */
+@keyframes hc-node-flash {
+  from {
+    stroke-width: 9;
+  }
+  to {
+    stroke-width: 3;
+  }
+}
+
+@keyframes hc-implicated {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px var(--danger));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px var(--danger));
+  }
+}
+
+@keyframes hc-spotlight {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  30%,
+  70% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-alt) 70%, transparent);
+  }
+}
+
+.node-row.changed,
+dd.changed,
+.replica.changed {
+  animation: hc-flash 1.4s ease-out;
+  border-radius: 6px;
+}
+
+/* A subscriber flashes when the pushed event reaches it. */
+.vertex.entity.received circle {
+  animation: entity-received 900ms ease-out;
+}
+
+@keyframes entity-received {
+  0% {
+    stroke-width: 7;
+    fill: color-mix(in srgb, var(--event) 30%, var(--surface));
+  }
+
+  100% {
+    stroke-width: 2.5;
+  }
+}
+
+.entity-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.vertex.node.changed .v-body {
+  animation: hc-node-flash 900ms ease-out;
+}
+
+.vertex.node.implicated .v-body {
+  stroke: var(--danger);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+.vertex.node.implicated {
+  animation: hc-implicated 1.6s ease-in-out infinite;
+}
+
+.vertex.node {
+  cursor: pointer;
+}
+
+.vertex.node:focus-visible {
+  outline: none;
+}
+
+.vertex.node:focus-visible .v-body {
+  stroke: var(--accent-alt);
+  stroke-width: 5;
+}
+
+.spotlight {
+  animation: hc-spotlight 1.8s ease-in-out;
+  border-radius: 8px;
+}
+
+.step-changes {
+  margin: 10px 2px 0;
+  font-size: var(--font-small);
+  line-height: 1.45;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.step-changes strong {
+  color: var(--accent-alt);
+}
+
+.step-changes.quiet {
+  color: var(--muted);
+}
+
+/* Violation card: the strongest moment of the lab, shown above the workspace. */
+.violation-card {
+  /* Same inset as the top bar and controls, which also sit in .shell. */
+  margin: 10px 16px 0;
+  padding: 16px 18px;
+  border-radius: 8px;
+  border-left: 6px solid var(--danger);
+  background: color-mix(in srgb, var(--danger-bg) 88%, transparent);
+}
+
+.violation-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.violation-head h2 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--danger);
+}
+
+.violation-head h2::before {
+  content: "✕ ";
+}
+
+.violation-detail {
+  margin: 8px 0 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.violation-meta {
+  margin: 0 0 10px;
+  font-size: var(--font-small);
+  color: var(--ink);
+}
+
+.violation-card .button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Node popover, positioned next to its node inside the graph stage. */
+.node-popover {
+  position: absolute;
+  z-index: 5;
+  width: min(280px, calc(100% - 16px));
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--glass-solid);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+}
+
+.popover-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.popover-head h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.popover-head .icon-button {
+  margin-left: auto;
+}
+
+.popover-status {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: var(--font-xsmall);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent-strong);
+}
+
+.popover-status.role-leader {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.popover-status.role-crashed,
+.popover-status.role-disabled {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.popover-rows {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 12px;
+  margin: 10px 0;
+  font-size: var(--font-small);
+}
+
+.popover-rows dt {
+  color: var(--muted);
+}
+
+.popover-rows dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.node-popover .button-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+/* First-visit intro. */
+.intro-card {
+  /* Same inset as the top bar and controls, which also sit in .shell. */
+  margin: 10px 16px 0;
+  padding: 14px 18px;
+  border-radius: 8px;
+}
+
+.intro-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.intro-head h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.intro-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 10px 0 0;
+  padding-left: 20px;
+  font-size: var(--font-small);
+  line-height: 1.45;
+}
+
+.intro-steps strong {
+  display: block;
+}
+
+.link-button {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--accent-strong);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+html[data-reduced-motion="true"] .node-row.changed,
+html[data-reduced-motion="true"] dd.changed,
+html[data-reduced-motion="true"] .replica.changed {
+  animation: none;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent-alt) 60%, transparent);
+}
+
+html[data-reduced-motion="true"] .vertex.node.changed,
+html[data-reduced-motion="true"] .vertex.node.implicated,
+html[data-reduced-motion="true"] .spotlight {
+  animation: none;
+}
+
+html[data-reduced-motion="true"] .spotlight {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-alt) 70%, transparent);
+}
+
+@media (max-width: 900px) {
+  .intro-steps {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .violation-card .button-row button {
+    flex: 1 1 auto;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Side-panel tabs, keys heatmap, grouped events, mobile run dock, shortcuts.
+   ------------------------------------------------------------------------- */
+.tab-panel {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.tab-panel[hidden],
+.run-dock[hidden] {
+  display: none;
+}
+
+.panel-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--glass-strong);
+}
+
+.panel-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.panel-tab[aria-selected="true"] {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-soft);
+}
+
+.panel-tab:focus-visible,
+.link-button:focus-visible {
+  outline: 3px solid rgba(76, 91, 213, 0.45);
+  outline-offset: 2px;
+}
+
+.tab-badge {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: var(--font-xsmall);
+  line-height: 18px;
+  text-align: center;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent-strong);
+}
+
+.tab-badge[hidden] {
+  display: none;
+}
+
+.tab-badge.ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.tab-badge.bad {
+  background: var(--danger);
+  color: var(--on-accent);
+}
+
+.tab-badge.warn {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+
+/* Keys heatmap. */
+.key-grid-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.key-grid {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-size: var(--font-xsmall);
+}
+
+.key-grid th {
+  padding: 2px 4px;
+  color: var(--muted);
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.key-grid tbody th {
+  max-width: 120px;
+  overflow: hidden;
+  color: var(--ink);
+  text-align: left;
+  text-overflow: ellipsis;
+}
+
+.key-grid td {
+  padding: 0;
+  text-align: center;
+}
+
+.key-grid .replica {
+  display: block;
+  min-width: 44px;
+  padding: 5px 4px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: hsl(var(--hue, 0) 70% 86%);
+  color: #13201f;
+  font-size: var(--font-xsmall);
+  font-weight: 600;
+}
+
+:root[data-theme="dark"] .key-grid .replica {
+  background: hsl(var(--hue, 0) 42% 34%);
+  color: #eef6f4;
+}
+
+.key-grid .replica.missing {
+  background: transparent;
+  color: var(--muted);
+}
+
+.key-grid .replica.diverged {
+  border: 2px solid var(--danger);
+  color: inherit;
+}
+
+.key-grid .replica.down {
+  text-decoration: none;
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 5px,
+    color-mix(in srgb, var(--ink) 22%, transparent) 5px 7px
+  );
+}
+
+.key-grid .key-state {
+  padding-left: 4px;
+  color: var(--muted);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.key-grid .key-line.diverged .key-state {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* Timeline events grouped by step. */
+.event-group button {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 3px 10px;
+  text-align: left;
+}
+
+.event-group.current button {
+  border-color: var(--accent-alt);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-alt) 30%, transparent);
+}
+
+.event-step {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.event-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 500;
+}
+
+.event-icon {
+  font-weight: 700;
+}
+
+.event-item.action .event-icon {
+  color: var(--accent-alt);
+}
+
+.event-item.leader .event-icon {
+  color: var(--ok);
+}
+
+.event-item.verdict .event-icon {
+  color: var(--danger);
+}
+
+.events {
+  max-height: 160px;
+}
+
+/* Mobile run dock. */
+.run-dock {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--glass-solid);
+  box-shadow: var(--shadow);
+}
+
+.dock-verdict {
+  font-size: var(--font-small);
+  font-weight: 700;
+}
+
+.dock-verdict.ok {
+  color: var(--ok);
+}
+
+.dock-verdict.bad {
+  color: var(--danger);
+}
+
+.dock-verdict.warn {
+  color: var(--warn);
+}
+
+.dock-step-label {
+  margin-right: auto;
+  font-size: var(--font-small);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+html.dock-open {
+  scroll-padding-bottom: 84px;
+}
+
+html.dock-open body {
+  padding-bottom: 76px;
+}
+
+/* Shortcuts dialog. */
+.shortcuts-dialog {
+  width: min(420px, calc(100vw - 32px));
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--glass-solid);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.shortcuts-dialog::backdrop {
+  background: rgba(10, 20, 20, 0.35);
+}
+
+.dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dialog-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.shortcut-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  margin: 14px 0;
+  font-size: var(--font-small);
+}
+
+.shortcut-list dt {
+  white-space: nowrap;
+}
+
+.shortcut-list dd {
+  margin: 0;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 22px;
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--surface);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--font-xsmall);
+  text-align: center;
+}
+
+/* -------------------------------------------------------------------------
+   Compact control bar: labels beside their fields, 32px controls, the
+   status lines on one row; on wide screens the bar sticks to the top and the
+   graph sticks just under it (app.js sets --controls-sticky).
+   ------------------------------------------------------------------------- */
+.controls {
+  align-items: center;
+  gap: 6px 0;
+  min-height: 0;
+  padding: 6px 10px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 12px;
+}
+
+.controls .group-body {
+  align-items: center;
+  gap: 6px;
+}
+
+.controls label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.controls button,
+.controls select,
+.controls input:not([type="range"]):not([type="checkbox"]) {
+  min-height: 32px;
+  height: 32px;
+}
+
+.controls button {
+  padding: 0 12px;
+}
+
+#seed-input {
+  width: 9ch;
+}
+
+#scenario-select {
+  width: 210px;
+}
+
+#mode-select {
+  width: 108px;
+}
+
+.range input {
+  width: 112px;
+}
+
+.range-row {
+  min-height: 32px;
+}
+
+#speed-value {
+  min-width: 64px;
+}
+
+.toggle {
+  min-height: 32px;
+}
+
+.controls .copy-status {
+  flex: 0 1 auto;
+  margin-right: 14px;
+  font-size: var(--font-xsmall);
+}
+
+@media (min-width: 901px) {
+  .controls {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+
+  .graph-panel {
+    top: calc(var(--controls-sticky, 0px) + 10px);
+  }
+}
+
+@media (max-width: 900px) {
+  .controls {
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .control-group,
+  .control-group:first-child {
+    flex-wrap: wrap;
+    padding: 0;
+  }
+
+  .control-group + .control-group {
+    padding-top: 8px;
+  }
+
+  .controls .group-body {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  #scenario-select {
+    width: min(210px, 100%);
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Numbers, heatmap recolour, expandable changes, empty states.
+   ------------------------------------------------------------------------- */
+/* Equal-width digits everywhere, so counters, steps and delays do not
+   jitter while the run plays. */
+body {
+  font-variant-numeric: tabular-nums;
+}
+
+/* A replica that took a new value fades from its old colour to the new. */
+.key-grid .replica.recolour {
+  animation: replica-recolour 800ms ease-out;
+}
+
+@keyframes replica-recolour {
+  from {
+    background: hsl(var(--from-hue, 0) 70% 86%);
+    transform: scale(1.12);
+  }
+  to {
+    background: hsl(var(--hue, 0) 70% 86%);
+    transform: scale(1);
+  }
+}
+
+:root[data-theme="dark"] .key-grid .replica.recolour {
+  animation-name: replica-recolour-dark;
+}
+
+@keyframes replica-recolour-dark {
+  from {
+    background: hsl(var(--from-hue, 0) 42% 34%);
+    transform: scale(1.12);
+  }
+  to {
+    background: hsl(var(--hue, 0) 42% 34%);
+    transform: scale(1);
+  }
+}
+
+.key-grid .replica {
+  cursor: help;
+}
+
+.link-button {
+  min-height: 24px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--accent-strong);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.empty-action {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+.empty-action p {
+  margin: 0;
+}
+
+.empty-action,
+.empty-action p {
+  font-style: normal;
 }

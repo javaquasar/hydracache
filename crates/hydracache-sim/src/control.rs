@@ -132,12 +132,27 @@ pub enum ControlActionV1 {
         key: String,
         value: String,
     },
-    /// Subscribe a client to namespace cache events.
+    /// Subscribe a client to namespace cache events. Since 0.74 this creates
+    /// only the subscriber, not a writer with the same name.
     Subscribe {
         at_step: u64,
         client: String,
         ns: String,
     },
+    /// Register a writer client for a namespace without writing (0.74).
+    AddClient {
+        at_step: u64,
+        client: String,
+        ns: String,
+    },
+    /// Remove a subscriber and drop its undelivered events (0.74).
+    Unsubscribe {
+        at_step: u64,
+        client: String,
+        ns: String,
+    },
+    /// Remove a writer client; its recorded history stays (0.74).
+    RemoveClient { at_step: u64, client: String },
     /// Change the UI/lab mode.
     ModeChange { at_step: u64, mode: SimMode },
     /// Crash a node.
@@ -185,6 +200,9 @@ impl ControlActionV1 {
             | Self::AddNode { at_step }
             | Self::PushEvent { at_step, .. }
             | Self::Subscribe { at_step, .. }
+            | Self::AddClient { at_step, .. }
+            | Self::Unsubscribe { at_step, .. }
+            | Self::RemoveClient { at_step, .. }
             | Self::ModeChange { at_step, .. }
             | Self::Crash { at_step, .. }
             | Self::Restart { at_step, .. }
