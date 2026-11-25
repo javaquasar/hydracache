@@ -19,7 +19,7 @@ use hydracache_client_protocol::{
     Namespace, StructuredKey, TtlState,
 };
 use hydracache_client_transport_axum::{
-    ClientIdentity, ClientSurfaceMutationEvent, ClientSurfaceMutationKind,
+    ClientIdentity, ClientSurfaceDispatcher, ClientSurfaceMutationEvent, ClientSurfaceMutationKind,
     ClientSurfaceMutationRecvError, ClientSurfaceMutationSubscriber, ClientSurfaceState,
 };
 use redis_protocol::resp2::{
@@ -757,6 +757,7 @@ pub enum RedisServeError {
 #[derive(Debug)]
 pub struct RedisRespServer {
     state: Arc<ClientSurfaceState>,
+    dispatcher: Arc<ClientSurfaceDispatcher>,
     native_cache_events: Option<HydraCache>,
     identity: ClientIdentity,
     config: RedisListenerConfig,
@@ -868,6 +869,7 @@ impl RedisRespServer {
         let identity = ClientIdentity::new(config.client_id.clone(), config.tenant.clone())
             .map_err(|error| RedisServeError::Identity(error.to_string()))?;
         Ok(Self {
+            dispatcher: state.dispatcher(),
             state,
             native_cache_events: None,
             identity,
@@ -1072,10 +1074,14 @@ impl RedisRespServer {
                     {
                         match command {
                             RedisCommand::Ping { message } => subscription_ping(message),
-                            command => self.execute_connection_command(command, &mut connection),
+                            command => {
+                                self.execute_connection_command(command, &mut connection)
+                                    .await
+                            }
                         }
                     } else {
                         self.execute_connection_command(command, &mut connection)
+                            .await
                     };
                     self.write_response(&mut stream, connection.dialect, response)
                         .await?;
@@ -1088,10 +1094,29 @@ impl RedisRespServer {
         }
     }
 
-    /// Execute one parsed Redis command through the configured client-surface state.
+    /// Execute one command through the immediately-ready local backend.
+    /// Network listeners use `execute_command_async` and never synchronously drive a backend.
     pub fn execute_command(&self, command: RedisCommand) -> RespValue {
+        use std::future::Future;
+        use std::task::{Context, Poll, Waker};
+
+        let mut future = std::pin::pin!(self.execute_command_async(command));
+        match future
+            .as_mut()
+            .poll(&mut Context::from_waker(Waker::noop()))
+        {
+            Poll::Ready(response) => response,
+            Poll::Pending => {
+                RespValue::Error("ERR asynchronous backend requires async dispatch".to_owned())
+            }
+        }
+    }
+
+    /// Execute one parsed Redis command through the shared asynchronous dispatcher.
+    pub async fn execute_command_async(&self, command: RedisCommand) -> RespValue {
         let mut connection = RedisConnectionState::trusted(&self.identity);
         self.execute_connection_command(command, &mut connection)
+            .await
     }
 
     async fn handle_subscription_command<S>(
@@ -1266,7 +1291,7 @@ impl RedisRespServer {
         Ok(())
     }
 
-    fn execute_connection_command(
+    async fn execute_connection_command(
         &self,
         command: RedisCommand,
         connection: &mut RedisConnectionState,
@@ -1294,11 +1319,14 @@ impl RedisRespServer {
                 self.errors.fetch_add(1, Ordering::SeqCst);
                 RespValue::Error(REDIS_NOAUTH_MESSAGE.to_owned())
             }
-            command => self.execute_authenticated_command(command, &connection.identity),
+            command => {
+                self.execute_authenticated_command(command, &connection.identity)
+                    .await
+            }
         }
     }
 
-    fn execute_authenticated_command(
+    async fn execute_authenticated_command(
         &self,
         command: RedisCommand,
         identity: &ClientIdentity,
@@ -1311,11 +1339,12 @@ impl RedisRespServer {
                     return info_response(self.metrics());
                 }
                 self.execute_translatable_authenticated_command(command, identity)
+                    .await
             }
         }
     }
 
-    fn execute_translatable_authenticated_command(
+    async fn execute_translatable_authenticated_command(
         &self,
         command: RedisCommand,
         identity: &ClientIdentity,
@@ -1338,7 +1367,7 @@ impl RedisRespServer {
                 return error.into_resp_value();
             }
         };
-        let response = self.execute_translated(translated, identity);
+        let response = self.execute_translated(translated, identity).await;
         cleanup.apply_if_success(&self.tag_index, &response);
         response
     }
@@ -1370,27 +1399,29 @@ impl RedisRespServer {
         )
     }
 
-    fn execute_translated(
+    async fn execute_translated(
         &self,
         translated: RedisTranslatedCommand,
         identity: &ClientIdentity,
     ) -> RespValue {
         match translated {
             RedisTranslatedCommand::Immediate(value) => value,
-            RedisTranslatedCommand::Execute(plan) => self.execute_plan(plan, identity),
+            RedisTranslatedCommand::Execute(plan) => self.execute_plan(plan, identity).await,
             RedisTranslatedCommand::Extension(extension) => {
-                self.extension_response(extension, identity)
+                self.extension_response(extension, identity).await
             }
         }
     }
 
-    fn execute_plan(&self, plan: RedisExecutionPlan, identity: &ClientIdentity) -> RespValue {
-        let mut responses = plan
-            .initial_requests()
-            .iter()
-            .cloned()
-            .map(|request| self.state.dispatch_verified_request(identity, request))
-            .collect::<Vec<_>>();
+    async fn execute_plan(&self, plan: RedisExecutionPlan, identity: &ClientIdentity) -> RespValue {
+        let mut responses = Vec::with_capacity(plan.initial_requests().len());
+        for request in plan.initial_requests().iter().cloned() {
+            responses.push(
+                self.dispatcher
+                    .dispatch_verified_request(identity, request)
+                    .await,
+            );
+        }
         let followups = match plan.followup_requests(&responses) {
             Ok(followups) => followups,
             Err(error) => {
@@ -1398,11 +1429,13 @@ impl RedisRespServer {
                 return error.into_resp_value();
             }
         };
-        responses.extend(
-            followups
-                .into_iter()
-                .map(|request| self.state.dispatch_verified_request(identity, request)),
-        );
+        for request in followups {
+            responses.push(
+                self.dispatcher
+                    .dispatch_verified_request(identity, request)
+                    .await,
+            );
+        }
         match plan.reduce(&responses) {
             Ok(value) => value,
             Err(error) => {
@@ -1412,12 +1445,12 @@ impl RedisRespServer {
         }
     }
 
-    fn extension_response(
+    async fn extension_response(
         &self,
         extension: RedisExtensionRequest,
         identity: &ClientIdentity,
     ) -> RespValue {
-        match self.extension_response_result(extension, identity) {
+        match self.extension_response_result(extension, identity).await {
             Ok(value) => value,
             Err(error) => {
                 self.errors.fetch_add(1, Ordering::SeqCst);
@@ -1426,7 +1459,7 @@ impl RedisRespServer {
         }
     }
 
-    fn extension_response_result(
+    async fn extension_response_result(
         &self,
         extension: RedisExtensionRequest,
         identity: &ClientIdentity,
@@ -1469,12 +1502,14 @@ impl RedisRespServer {
             }
             RedisExtensionRequest::Tag { key, tags } => {
                 self.tag_extension_response(identity, key, tags, RedisTagMode::Add)
+                    .await
             }
             RedisExtensionRequest::SetTags { key, tags } => {
                 self.tag_extension_response(identity, key, tags, RedisTagMode::Replace)
+                    .await
             }
             RedisExtensionRequest::InvalidateTag { tag } => {
-                self.invalidate_tag_extension_response(identity, tag)
+                self.invalidate_tag_extension_response(identity, tag).await
             }
         }
     }
@@ -1496,7 +1531,7 @@ impl RedisRespServer {
         }
     }
 
-    fn tag_extension_response(
+    async fn tag_extension_response(
         &self,
         identity: &ClientIdentity,
         key: Vec<u8>,
@@ -1504,7 +1539,7 @@ impl RedisRespServer {
         mode: RedisTagMode,
     ) -> Result<RespValue, RedisTranslationError> {
         let namespace = self.configured_namespace()?;
-        if !self.live_key_exists(identity, &namespace, &key)? {
+        if !self.live_key_exists(identity, &namespace, &key).await? {
             self.tag_index
                 .lock()
                 .expect("redis tag index mutex")
@@ -1522,7 +1557,7 @@ impl RedisRespServer {
         Ok(RespValue::Integer(changed.min(i64::MAX as usize) as i64))
     }
 
-    fn invalidate_tag_extension_response(
+    async fn invalidate_tag_extension_response(
         &self,
         identity: &ClientIdentity,
         tag: String,
@@ -1541,16 +1576,19 @@ impl RedisRespServer {
             .iter()
             .map(|key| redis_key_to_structured_key(key))
             .collect::<Result<Vec<_>, _>>()?;
-        let lookup = self.state.dispatch_verified_request(
-            identity,
-            ClientRequestEnvelope::new(
-                self.next_internal_request_id("hc-invalidate-tag-lookup"),
-                ClientRequest::BatchGet {
-                    ns: namespace.clone(),
-                    keys: structured_keys.clone(),
-                },
-            ),
-        );
+        let lookup = self
+            .dispatcher
+            .dispatch_verified_request(
+                identity,
+                ClientRequestEnvelope::new(
+                    self.next_internal_request_id("hc-invalidate-tag-lookup"),
+                    ClientRequest::BatchGet {
+                        ns: namespace.clone(),
+                        keys: structured_keys.clone(),
+                    },
+                ),
+            )
+            .await;
         if let Err(error) = &lookup.result {
             return Ok(client_error_to_resp(error));
         }
@@ -1566,16 +1604,19 @@ impl RedisRespServer {
                 continue;
             }
 
-            let response = self.state.dispatch_verified_request(
-                identity,
-                ClientRequestEnvelope::new(
-                    self.next_internal_request_id(format!("hc-invalidate-tag-{index}")),
-                    ClientRequest::Invalidate {
-                        ns: namespace.clone(),
-                        key: structured_keys[index].clone(),
-                    },
-                ),
-            );
+            let response = self
+                .dispatcher
+                .dispatch_verified_request(
+                    identity,
+                    ClientRequestEnvelope::new(
+                        self.next_internal_request_id(format!("hc-invalidate-tag-{index}")),
+                        ClientRequest::Invalidate {
+                            ns: namespace.clone(),
+                            key: structured_keys[index].clone(),
+                        },
+                    ),
+                )
+                .await;
             match &response.result {
                 Ok(ClientResponse::Invalidated) => {
                     invalidated += 1;
@@ -1592,22 +1633,25 @@ impl RedisRespServer {
         Ok(RespValue::Integer(invalidated.min(i64::MAX as usize) as i64))
     }
 
-    fn live_key_exists(
+    async fn live_key_exists(
         &self,
         identity: &ClientIdentity,
         namespace: &Namespace,
         key: &[u8],
     ) -> Result<bool, RedisTranslationError> {
-        let response = self.state.dispatch_verified_request(
-            identity,
-            ClientRequestEnvelope::new(
-                self.next_internal_request_id("hc-tag-lookup"),
-                ClientRequest::Get {
-                    ns: namespace.clone(),
-                    key: redis_key_to_structured_key(key)?,
-                },
-            ),
-        );
+        let response = self
+            .dispatcher
+            .dispatch_verified_request(
+                identity,
+                ClientRequestEnvelope::new(
+                    self.next_internal_request_id("hc-tag-lookup"),
+                    ClientRequest::Get {
+                        ns: namespace.clone(),
+                        key: redis_key_to_structured_key(key)?,
+                    },
+                ),
+            )
+            .await;
         match &response.result {
             Ok(ClientResponse::Value { value }) => Ok(value.is_some()),
             Err(error) => Err(client_error_to_unexpected(error)),
@@ -6505,6 +6549,92 @@ mod tests {
                 lagged_event_subscribers: 0,
             }
         );
+    }
+
+    #[tokio::test]
+    async fn both_backend_candidates_preserve_binary_ttl_tags_and_pipeline_order() {
+        use hydracache_client_transport_axum::LocalDispatchVariant;
+        for variant in [
+            LocalDispatchVariant::Static,
+            LocalDispatchVariant::BoxedFuture,
+        ] {
+            let state = Arc::new(
+                ClientSurfaceState::with_dispatch_variant(Default::default(), variant).unwrap(),
+            );
+            state.set_cache_time_for_tests(Some(1_000));
+            let server = RedisRespServer::new(state.clone(), Default::default()).unwrap();
+            let key = vec![0, 255, 1];
+            let value = vec![254, 0, 2];
+            assert_eq!(
+                server
+                    .execute_command_async(RedisCommand::Set {
+                        key: key.clone(),
+                        value: value.clone(),
+                        options: vec![b"PX".to_vec(), b"10".to_vec()]
+                    })
+                    .await,
+                RespValue::SimpleString("OK")
+            );
+            let response = state
+                .dispatcher()
+                .dispatch_verified_request(
+                    &server.identity,
+                    ClientRequestEnvelope::new(
+                        "cross-adapter",
+                        ClientRequest::Get {
+                            ns: server.configured_namespace().unwrap(),
+                            key: redis_key_to_structured_key(&key).unwrap(),
+                        },
+                    ),
+                )
+                .await;
+            assert_eq!(
+                response.result.unwrap(),
+                ClientResponse::Value {
+                    value: Some(value.clone())
+                }
+            );
+            assert_eq!(
+                server
+                    .execute_command_async(RedisCommand::HcTag {
+                        key: key.clone(),
+                        tags: vec![b"tag".to_vec()]
+                    })
+                    .await,
+                RespValue::Integer(1)
+            );
+            assert_eq!(
+                server
+                    .execute_command_async(RedisCommand::HcInvalidateTag {
+                        tag: b"tag".to_vec()
+                    })
+                    .await,
+                RespValue::Integer(1)
+            );
+            assert_eq!(
+                server.execute_command(RedisCommand::Get { key: key.clone() }),
+                RespValue::Null
+            );
+            assert_eq!(
+                server
+                    .execute_command_async(RedisCommand::Set {
+                        key: key.clone(),
+                        value,
+                        options: vec![b"PX".to_vec(), b"10".to_vec()]
+                    })
+                    .await,
+                RespValue::SimpleString("OK")
+            );
+            state.advance_cache_time_for_tests(10);
+            assert_eq!(
+                server
+                    .execute_command_async(RedisCommand::Get { key })
+                    .await,
+                RespValue::Null
+            );
+            let output = exchange(&server, b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n*2\r\n$3\r\nGET\r\n$1\r\nk\r\n*1\r\n$4\r\nQUIT\r\n").await;
+            assert_eq!(output, b"+OK\r\n$1\r\nv\r\n+OK\r\n");
+        }
     }
 
     #[tokio::test]

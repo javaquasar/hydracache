@@ -38,7 +38,11 @@ impl ClientSurfaceBackend for LocalBackend {
         request: hydracache_client_protocol::ClientRequestEnvelope,
     ) -> ConformanceResult<hydracache_client_protocol::ClientResponseEnvelope> {
         let identity = ClientIdentity::new(&identity.client_id, &identity.tenant_id)?;
-        Ok(self.state.dispatch_verified_request(&identity, request))
+        Ok(self
+            .state
+            .dispatcher()
+            .dispatch_verified_request(&identity, request)
+            .await)
     }
 
     async fn freeze_time(&self, now_ms: u64) -> ConformanceResult<()> {
@@ -54,6 +58,16 @@ impl ClientSurfaceBackend for LocalBackend {
 
 fn local_state(
     config: ClientSurfaceConformanceConfig,
+) -> ConformanceResult<Arc<ClientSurfaceState>> {
+    local_state_variant(
+        config,
+        hydracache_client_transport_axum::LocalDispatchVariant::Static,
+    )
+}
+
+fn local_state_variant(
+    config: ClientSurfaceConformanceConfig,
+    variant: hydracache_client_transport_axum::LocalDispatchVariant,
 ) -> ConformanceResult<Arc<ClientSurfaceState>> {
     let ClientSurfaceConformanceConfig {
         limits,
@@ -84,7 +98,7 @@ fn local_state(
             max_batch_items: limits.max_batch_entries,
         },
     );
-    let state = Arc::new(ClientSurfaceState::with_isolation(
+    let state = Arc::new(ClientSurfaceState::with_isolation_and_dispatch(
         ClientSurfaceLimits {
             max_value_bytes: limits.max_value_bytes,
             max_batch_entries: limits.max_batch_entries,
@@ -92,6 +106,7 @@ fn local_state(
             ..ClientSurfaceLimits::default()
         },
         isolation,
+        variant,
     )?);
     state.set_cache_time_for_tests(Some(now_ms));
     Ok(state)
@@ -842,4 +857,73 @@ async fn http_tenant_binding_rejection_records_exactly_one_auth_failure() {
             request_id: None,
         }
     );
+}
+
+#[derive(Debug)]
+struct BoxedFactory;
+
+#[async_trait]
+impl ClientSurfaceBackendFactory for BoxedFactory {
+    async fn create(
+        &self,
+        config: ClientSurfaceConformanceConfig,
+    ) -> ConformanceResult<Arc<dyn ClientSurfaceBackend>> {
+        let state = local_state_variant(
+            config,
+            hydracache_client_transport_axum::LocalDispatchVariant::BoxedFuture,
+        )?;
+        Ok(Arc::new(LocalBackend { state }))
+    }
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn boxed_production_backend_passes_the_unchanged_conformance_contract() {
+    conformance::assert_conditional_put_if_absent_is_atomic_under_n_concurrent_acquirers(
+        &BoxedFactory,
+    )
+    .await
+    .unwrap();
+    conformance::assert_conditional_put_treats_expired_key_as_absent(&BoxedFactory)
+        .await
+        .unwrap();
+    conformance::assert_compare_value_invalidate_is_token_safe_and_returns_applied_count(
+        &BoxedFactory,
+    )
+    .await
+    .unwrap();
+    conformance::assert_compare_value_expire_add_to_remaining_and_replace_if_expiring_and_persistent_guard(&BoxedFactory).await.unwrap();
+    conformance::assert_batch_put_is_all_or_nothing_under_prevalidation_failure(&BoxedFactory)
+        .await
+        .unwrap();
+    conformance::assert_ttl_states_missing_persistent_expiring_round_trip(&BoxedFactory)
+        .await
+        .unwrap();
+    conformance::assert_local_ttl_and_lock_contracts_survive_backward_wall_clock_step(
+        &BoxedFactory,
+    )
+    .await
+    .unwrap();
+    conformance::assert_expired_key_absent_for_get_and_batch_get(&BoxedFactory)
+        .await
+        .unwrap();
+    conformance::assert_enforces_value_bytes_batch_and_tenant_quota_limits(&BoxedFactory)
+        .await
+        .unwrap();
+    conformance::assert_rejected_conditionals_and_batches_do_not_reserve_quota(&BoxedFactory)
+        .await
+        .unwrap();
+    conformance::assert_delete_and_expiry_release_tenant_quota(&BoxedFactory)
+        .await
+        .unwrap();
+    conformance::assert_duplicate_batch_keys_account_last_write_only(&BoxedFactory)
+        .await
+        .unwrap();
+    conformance::assert_tenant_binding_and_same_namespace_keys_are_isolated(&BoxedFactory)
+        .await
+        .unwrap();
+    conformance::assert_batch_entry_and_byte_limits_reject_at_boundary_plus_one_without_mutation(
+        &BoxedFactory,
+    )
+    .await
+    .unwrap();
 }

@@ -24,6 +24,8 @@
 > - **Status:** planned. Production integration is being prepared on the published 0.74 source.
 >   W0 and the D1 gate are open.
 >   [Main integration record](../testing/imap/0.75/main-integration.md).
+>   [D1 local-backend extraction](../testing/imap/0.75/d1-local-backend.md) is in progress;
+>   paired B74 performance admission remains open. The owner left W0 public scope open.
 
 Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) · gates:
 [`../GATES.md`](../GATES.md) · original facade plan:

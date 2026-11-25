@@ -32,6 +32,16 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tokio::sync::broadcast;
 
+mod backend;
+mod edge_state;
+mod local_backend;
+pub use backend::{
+    ClientBackendFuture, ClientBackendOutcome, ClientDataBackend, ClientSurfaceDispatcher,
+    LocalDispatchVariant, VerifiedClientRequest,
+};
+use edge_state::ClientSurfaceEdgeState;
+use local_backend::LocalBackendExecution;
+pub use local_backend::LocalClientDataBackend;
 /// Stable external client API prefix.
 pub const CLIENT_API_PREFIX: &str = "/client/v1";
 
@@ -906,6 +916,7 @@ pub mod performance_profile {
             return Err("ownership PUT was not stored".to_owned());
         }
         let stored_pointer = state
+            .local_execution()
             .lock_store()
             .get(&map_key)
             .map(|stored| stored.value.as_ptr())
@@ -1029,1990 +1040,170 @@ pub mod performance_profile {
 /// Shared state for the public client surface.
 #[derive(Debug)]
 pub struct ClientSurfaceState {
-    limits: ClientSurfaceLimits,
-    dispatch_attempts: AtomicU64,
-    state_mutations: AtomicU64,
-    rejected_anonymous: AtomicU64,
-    rejected_oversized: AtomicU64,
-    active_subscriptions: AtomicU64,
-    next_message_id: AtomicU64,
-    mutation_events: broadcast::Sender<ClientSurfaceMutationEvent>,
-    store: Mutex<BTreeMap<StoreKey, StoredValue>>,
-    cache_now_ms_for_tests: Mutex<Option<u64>>,
-    cache_time_floor_ms: AtomicU64,
-    next_expiry_sweep_ms: AtomicU64,
-    expiry_sweep_cursor: Mutex<Option<StoreKey>>,
-    idempotency_keys: Mutex<BTreeMap<IdempotencyKey, IdempotencyRecord>>,
-    lock_service: Mutex<ClientLockService>,
-    audit_sink: Arc<InMemoryAuditSink>,
-    audit: Mutex<AuditRecorder<Arc<InMemoryAuditSink>>>,
-    isolation: Option<Mutex<ConsumerIsolation>>,
-    profile_instrumentation: ClientSurfaceProfileInstrumentation,
+    dispatcher: Arc<ClientSurfaceDispatcher>,
+    local_backend: Arc<LocalClientDataBackend>,
 }
 
 impl ClientSurfaceState {
-    /// Create state with validated limits.
+    /// Create local state with validated limits and static dispatch.
     pub fn new(limits: ClientSurfaceLimits) -> Result<Self, ClientSurfaceError> {
-        limits.validate()?;
-        let audit_sink = Arc::new(InMemoryAuditSink::new());
-        let (mutation_events, _) = broadcast::channel(CLIENT_SURFACE_MUTATION_EVENT_CAPACITY);
-        Ok(Self {
-            limits,
-            dispatch_attempts: AtomicU64::new(0),
-            state_mutations: AtomicU64::new(0),
-            rejected_anonymous: AtomicU64::new(0),
-            rejected_oversized: AtomicU64::new(0),
-            active_subscriptions: AtomicU64::new(0),
-            next_message_id: AtomicU64::new(1),
-            mutation_events,
-            store: Mutex::new(BTreeMap::new()),
-            cache_now_ms_for_tests: Mutex::new(None),
-            cache_time_floor_ms: AtomicU64::new(0),
-            next_expiry_sweep_ms: AtomicU64::new(0),
-            expiry_sweep_cursor: Mutex::new(None),
-            idempotency_keys: Mutex::new(BTreeMap::new()),
-            lock_service: Mutex::new(ClientLockService::new()),
-            audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
-            audit_sink,
-            isolation: None,
-            profile_instrumentation: ClientSurfaceProfileInstrumentation::default(),
-        })
+        Self::assemble(limits, None, LocalDispatchVariant::Static)
     }
-
-    /// Create state with tenant isolation.
+    /// Create local state with tenant isolation and static dispatch.
     pub fn with_isolation(
         limits: ClientSurfaceLimits,
         isolation: ConsumerIsolation,
     ) -> Result<Self, ClientSurfaceError> {
-        limits.validate()?;
-        let audit_sink = Arc::new(InMemoryAuditSink::new());
-        let (mutation_events, _) = broadcast::channel(CLIENT_SURFACE_MUTATION_EVENT_CAPACITY);
+        Self::assemble(limits, Some(isolation), LocalDispatchVariant::Static)
+    }
+    /// Select one of D1's two local dispatch candidates without creating another map.
+    pub fn with_dispatch_variant(
+        limits: ClientSurfaceLimits,
+        variant: LocalDispatchVariant,
+    ) -> Result<Self, ClientSurfaceError> {
+        Self::assemble(limits, None, variant)
+    }
+    /// Select a local dispatch candidate with the existing tenant admission policy.
+    pub fn with_isolation_and_dispatch(
+        limits: ClientSurfaceLimits,
+        isolation: ConsumerIsolation,
+        variant: LocalDispatchVariant,
+    ) -> Result<Self, ClientSurfaceError> {
+        Self::assemble(limits, Some(isolation), variant)
+    }
+    fn assemble(
+        limits: ClientSurfaceLimits,
+        isolation: Option<ConsumerIsolation>,
+        variant: LocalDispatchVariant,
+    ) -> Result<Self, ClientSurfaceError> {
+        let edge = ClientSurfaceEdgeState::new(limits, isolation)?;
+        let local_backend = Arc::new(LocalClientDataBackend::new());
+        let dispatcher = Arc::new(ClientSurfaceDispatcher::local(
+            edge,
+            Arc::clone(&local_backend),
+            variant,
+        ));
         Ok(Self {
-            limits,
-            dispatch_attempts: AtomicU64::new(0),
-            state_mutations: AtomicU64::new(0),
-            rejected_anonymous: AtomicU64::new(0),
-            rejected_oversized: AtomicU64::new(0),
-            active_subscriptions: AtomicU64::new(0),
-            next_message_id: AtomicU64::new(1),
-            mutation_events,
-            store: Mutex::new(BTreeMap::new()),
-            cache_now_ms_for_tests: Mutex::new(None),
-            cache_time_floor_ms: AtomicU64::new(0),
-            next_expiry_sweep_ms: AtomicU64::new(0),
-            expiry_sweep_cursor: Mutex::new(None),
-            idempotency_keys: Mutex::new(BTreeMap::new()),
-            lock_service: Mutex::new(ClientLockService::new()),
-            audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
-            audit_sink,
-            isolation: Some(Mutex::new(isolation)),
-            profile_instrumentation: ClientSurfaceProfileInstrumentation::default(),
+            dispatcher,
+            local_backend,
         })
     }
-
-    /// Return configured limits.
-    pub fn limits(&self) -> ClientSurfaceLimits {
-        self.limits
+    /// Return the shared asynchronous edge dispatcher used by every production adapter.
+    pub fn dispatcher(&self) -> Arc<ClientSurfaceDispatcher> {
+        Arc::clone(&self.dispatcher)
     }
-
-    /// Count of requests that reached protocol dispatch.
-    pub fn dispatch_attempts(&self) -> u64 {
-        self.dispatch_attempts.load(Ordering::SeqCst)
+    /// Return the actual local data owner for contract checks and local diagnostics.
+    pub fn local_backend(&self) -> Arc<LocalClientDataBackend> {
+        Arc::clone(&self.local_backend)
     }
-
-    /// Count of modeled cache mutations.
-    pub fn state_mutations(&self) -> u64 {
-        self.state_mutations.load(Ordering::SeqCst)
+    fn local_execution(&self) -> LocalBackendExecution<'_> {
+        LocalBackendExecution::new(&self.local_backend, &self.dispatcher.edge)
     }
-
-    /// Count of anonymous requests rejected before dispatch.
-    pub fn rejected_anonymous(&self) -> u64 {
-        self.rejected_anonymous.load(Ordering::SeqCst)
-    }
-
-    /// Count of oversized frames rejected before mutation.
-    pub fn rejected_oversized(&self) -> u64 {
-        self.rejected_oversized.load(Ordering::SeqCst)
-    }
-
-    /// Count of active subscription streams.
-    pub fn active_subscriptions(&self) -> u64 {
-        self.active_subscriptions.load(Ordering::SeqCst)
-    }
-
-    /// Enable or disable W1 direct client-surface attribution.
-    ///
-    /// Call this only at a quiescent profiling boundary. It does not alter
-    /// request semantics or expose unbounded metric labels.
-    pub fn set_profile_instrumentation_enabled(&self, enabled: bool) {
-        self.profile_instrumentation
-            .enabled
-            .store(enabled, Ordering::Release);
-    }
-
-    /// Reset W1 client-surface counters at a quiescent profiling boundary.
-    pub fn reset_profile_metrics(&self) {
-        self.profile_instrumentation.reset();
-    }
-
-    /// Snapshot W1 client-surface attribution counters.
-    pub fn profile_metrics(&self) -> ClientSurfaceProfileMetrics {
-        self.profile_instrumentation.snapshot()
-    }
-
-    /// Subscribe to metadata-only mutations for one verified tenant.
-    ///
-    /// Publication is non-blocking and bounded. A slow receiver observes
-    /// [`ClientSurfaceMutationRecvError::Lagged`] instead of delaying writes.
-    pub fn subscribe_mutations(
-        &self,
-        identity: &ClientIdentity,
-    ) -> Result<ClientSurfaceMutationSubscriber, ClientSurfaceError> {
-        self.validate_tenant_identity(identity, CLIENT_SUBSCRIPTIONS_PATH, None)?;
-        Ok(ClientSurfaceMutationSubscriber {
-            tenant: identity.tenant().to_owned(),
-            receiver: self.mutation_events.subscribe(),
-        })
-    }
-
-    /// Configure the modeled lock leader for integration tests.
-    pub fn set_lock_leader_for_tests(&self, local_node_id: u64, leader_node_id: u64) {
-        self.lock_service
-            .lock()
-            .expect("lock service mutex")
-            .set_leader_for_tests(local_node_id, leader_node_id);
-    }
-
-    /// Advance the modeled logical lock time for integration tests.
-    pub fn advance_lock_logical_time_for_tests(&self, millis: u64) {
-        self.lock_service
-            .lock()
-            .expect("lock service mutex")
-            .advance_time_for_tests(millis);
-    }
-
-    /// Override the modeled cache wall clock for deterministic expiry tests.
-    pub fn set_cache_time_for_tests(&self, now_ms: Option<u64>) {
-        let now_ms =
-            now_ms.map(|candidate| candidate.max(self.cache_time_floor_ms.load(Ordering::SeqCst)));
-        *self
-            .cache_now_ms_for_tests
-            .lock()
-            .expect("cache clock mutex") = now_ms;
-    }
-
-    /// Advance the modeled cache wall clock for deterministic expiry tests.
-    pub fn advance_cache_time_for_tests(&self, millis: u64) {
-        let mut now = self
-            .cache_now_ms_for_tests
-            .lock()
-            .expect("cache clock mutex");
-        let base = now.unwrap_or_else(system_time_millis);
-        *now = Some(base.saturating_add(millis));
-    }
-
-    /// Return recorded consumer audit events for integration tests.
-    pub fn audit_events_for_tests(&self) -> Vec<AuditEvent> {
-        self.audit_sink.events()
-    }
-
-    /// Return aggregate owner counts for a quiescent diagnostic checkpoint.
-    ///
-    /// The snapshot never includes tenant ids, keys, request ids, values, or
-    /// metric labels. Concurrent mutations may make independently locked
-    /// fields momentarily non-atomic, so release evidence must quiesce clients
-    /// before calling this method.
-    pub fn retained_state_for_diagnostics(&self) -> ClientSurfaceRetainedState {
-        self.sweep_expired_entries(self.now_ms(), true);
-        let idempotency = self.idempotency_keys.lock().expect("idempotency mutex");
-        let store = self.lock_store();
-        let lock_service = self.lock_service.lock().expect("lock service mutex");
-        self.retained_state_locked(&idempotency, &store, &lock_service)
-    }
-
-    /// Run one bounded active-expiry maintenance tick.
-    ///
-    /// Daemon runtimes call this even when no client reads the expired keys.
-    /// At most [`CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT`] entries are examined.
-    pub fn reap_expired_entries_for_maintenance(&self) -> usize {
-        self.sweep_expired_entries(self.now_ms(), false)
-    }
-
-    /// Clear cache, idempotency, conditional, lock, and session owners for an
-    /// explicitly enabled, quiescent diagnostic run.
-    ///
-    /// Mandatory audit history and aggregate counters are deliberately not
-    /// erased. Tenant-isolated production state rejects this operation because
-    /// clearing entries without resetting its quota ledger would be unsafe.
-    pub fn reset_retained_state_for_diagnostics(
-        &self,
-    ) -> Result<ClientSurfaceDiagnosticReset, ClientSurfaceError> {
-        if self.isolation.is_some() {
-            return Err(ClientSurfaceError::DiagnosticResetUnavailable);
-        }
-        let mut idempotency = self.idempotency_keys.lock().expect("idempotency mutex");
-        let mut store = self.lock_store();
-        let mut lock_service = self.lock_service.lock().expect("lock service mutex");
-        let before = self.retained_state_locked(&idempotency, &store, &lock_service);
-        idempotency.clear();
-        store.clear();
-        lock_service.store.clear_for_diagnostic_reset();
-        let after = self.retained_state_locked(&idempotency, &store, &lock_service);
-        Ok(ClientSurfaceDiagnosticReset { before, after })
-    }
-
-    fn retained_state_locked(
-        &self,
-        idempotency: &BTreeMap<IdempotencyKey, IdempotencyRecord>,
-        store: &BTreeMap<StoreKey, StoredValue>,
-        lock_service: &ClientLockService,
-    ) -> ClientSurfaceRetainedState {
-        ClientSurfaceRetainedState {
-            store_entries: store.len(),
-            value_bytes: store.values().map(|entry| entry.value.len()).sum(),
-            store_identity_bytes: store
-                .keys()
-                .map(|(tenant, namespace, key)| tenant.len() + namespace.len() + key.len())
-                .sum(),
-            idempotency_outcomes: idempotency.len(),
-            idempotency_identity_bytes: idempotency
-                .keys()
-                .map(|(tenant, key)| tenant.len() + key.len())
-                .sum(),
-            audit_events: self.audit_sink.len(),
-            conditional: lock_service.store.retained_state(),
-        }
-    }
-
-    /// Return a tenant-scoped consumer status.
-    pub fn tenant_status(
-        &self,
-        identity: &ClientIdentity,
-    ) -> Result<TenantStatus, ClientSurfaceError> {
-        self.validate_tenant_identity(identity, CLIENT_STATUS_PATH, None)?;
-        let metrics = if let Some(isolation) = &self.isolation {
-            let tenant_id =
-                TenantId::new(identity.tenant()).map_err(|_| ClientSurfaceError::Unauthorized)?;
-            isolation
-                .lock()
-                .expect("isolation mutex")
-                .metrics_snapshot_for_tenant(&tenant_id)
-                .ok_or(ClientSurfaceError::Unauthorized)?
-        } else {
-            TenantMetricsSnapshot::default()
-        };
-        let active_subscriptions = if self.isolation.is_some() {
-            metrics
-                .tenant_subscriptions
-                .get(identity.tenant())
-                .copied()
-                .unwrap_or_default()
-        } else {
-            self.active_subscriptions()
-        };
-        Ok(TenantStatus::from_metrics(
-            identity.tenant(),
-            &metrics,
-            active_subscriptions,
-            0,
-        ))
-    }
-
-    /// Dispatch one verified client request from an alternate edge transport.
-    ///
-    /// This is the supported in-process seam for compatibility facades such as
-    /// the Redis RESP listener. It preserves the same dispatch accounting,
-    /// tenancy, limits, and consistency checks as `/client/v1/data` without
-    /// asking the edge listener to call the cache store directly.
+    /// Local-only synchronous compatibility helper. Transport handlers use the dispatcher.
     pub fn dispatch_verified_request(
         &self,
         identity: &ClientIdentity,
         envelope: ClientRequestEnvelope,
     ) -> ClientResponseEnvelope {
-        let profiling = self.profile_instrumentation.enabled();
-        let validation_started = profiling.then(Instant::now);
-        let identity_validation = self.validate_tenant_identity(
-            identity,
-            CLIENT_DATA_PATH,
-            Some(envelope.request_id.as_str()),
-        );
-        if let Some(started) = validation_started {
-            self.profile_instrumentation
-                .identity_validations
-                .fetch_add(1, Ordering::Relaxed);
-            self.profile_instrumentation
-                .identity_validation_nanoseconds
-                .fetch_add(elapsed_nanoseconds(started), Ordering::Relaxed);
-        }
-        if identity_validation.is_err() {
-            let response_protocol_version = if protocol_version_supported(envelope.protocol_version)
-            {
-                envelope.protocol_version
-            } else {
-                PROTOCOL_VERSION
-            };
-            return ClientResponseEnvelope::error(
-                envelope.request_id,
-                ClientErrorEnvelope::new(
-                    ClientErrorCode::Unauthorized,
-                    false,
-                    "client identity is not authorized for this tenant",
-                ),
-            )
-            .with_protocol_version(response_protocol_version);
-        }
-        self.record_dispatch();
-        self.handle_request(identity, envelope)
+        self.dispatcher.dispatch_local_request(identity, envelope)
     }
-
-    fn validate_tenant_identity(
+    /// Configured edge limits.
+    pub fn limits(&self) -> ClientSurfaceLimits {
+        self.dispatcher.limits()
+    }
+    /// Requests reaching canonical dispatch.
+    pub fn dispatch_attempts(&self) -> u64 {
+        self.dispatcher.edge.dispatch_attempts()
+    }
+    /// Successful state transitions.
+    pub fn state_mutations(&self) -> u64 {
+        self.dispatcher.edge.state_mutations()
+    }
+    /// Anonymous admission refusals.
+    pub fn rejected_anonymous(&self) -> u64 {
+        self.dispatcher.edge.rejected_anonymous()
+    }
+    /// Oversized admission refusals.
+    pub fn rejected_oversized(&self) -> u64 {
+        self.dispatcher.edge.rejected_oversized()
+    }
+    /// Active subscription reservations.
+    pub fn active_subscriptions(&self) -> u64 {
+        self.dispatcher.edge.active_subscriptions()
+    }
+    /// Enable the existing optional performance instrumentation.
+    pub fn set_profile_instrumentation_enabled(&self, enabled: bool) {
+        self.dispatcher
+            .edge
+            .set_profile_instrumentation_enabled(enabled);
+    }
+    /// Reset aggregate instrumentation at a quiescent boundary.
+    pub fn reset_profile_metrics(&self) {
+        self.dispatcher.edge.reset_profile_metrics();
+    }
+    /// Snapshot the existing instrumentation counters.
+    pub fn profile_metrics(&self) -> ClientSurfaceProfileMetrics {
+        self.dispatcher.edge.profile_metrics()
+    }
+    /// Subscribe to this edge's bounded tenant-scoped mutation stream.
+    pub fn subscribe_mutations(
         &self,
         identity: &ClientIdentity,
-        route: &str,
-        request_id: Option<&str>,
-    ) -> Result<(), ClientSurfaceError> {
-        if let Some(isolation) = &self.isolation {
-            let tenant = isolation
-                .lock()
-                .expect("isolation mutex")
-                .resolve_tenant(identity.client_id())
-                .map_err(|_| ClientSurfaceError::Unauthorized);
-            let authorized = tenant
-                .as_ref()
-                .is_ok_and(|tenant| tenant.as_str() == identity.tenant());
-            if !authorized {
-                let _ = self.record_audit(AuditEvent::AuthFailure {
-                    tenant: Some(identity.tenant().to_owned()),
-                    route: route.to_owned(),
-                    request_id: request_id.map(ToOwned::to_owned),
-                });
-                return Err(ClientSurfaceError::Unauthorized);
-            }
-        }
-        Ok(())
+    ) -> Result<ClientSurfaceMutationSubscriber, ClientSurfaceError> {
+        self.dispatcher.edge.subscribe_mutations(identity)
     }
-
-    fn reject_anonymous(&self) {
-        self.rejected_anonymous.fetch_add(1, Ordering::SeqCst);
+    /// Configure the separate modeled CP lock leader for tests.
+    pub fn set_lock_leader_for_tests(&self, local: u64, leader: u64) {
+        self.dispatcher
+            .edge
+            .set_lock_leader_for_tests(local, leader);
     }
-
-    fn reject_oversized(&self) {
-        self.rejected_oversized.fetch_add(1, Ordering::SeqCst);
+    /// Advance the separate modeled CP lock clock for tests.
+    pub fn advance_lock_logical_time_for_tests(&self, millis: u64) {
+        self.dispatcher
+            .edge
+            .advance_lock_logical_time_for_tests(millis);
     }
-
-    fn record_dispatch(&self) {
-        if self.profile_instrumentation.enabled() {
-            self.profile_instrumentation
-                .dispatch_counter_seqcst_operations
-                .fetch_add(1, Ordering::Relaxed);
-        }
-        self.dispatch_attempts.fetch_add(1, Ordering::SeqCst);
-        if self.profile_instrumentation.enabled() {
-            self.profile_instrumentation
-                .dispatches
-                .fetch_add(1, Ordering::Relaxed);
-        }
+    /// Override this local owner's cache clock for deterministic tests.
+    pub fn set_cache_time_for_tests(&self, now: Option<u64>) {
+        self.local_execution().set_cache_time_for_tests(now);
     }
-
-    fn now_ms(&self) -> u64 {
-        let profiling = self.profile_instrumentation.enabled();
-        let started = profiling.then(Instant::now);
-        if profiling {
-            self.profile_instrumentation
-                .clock_reads
-                .fetch_add(1, Ordering::Relaxed);
-        }
-        let candidate = self
-            .cache_now_ms_for_tests
-            .lock()
-            .expect("cache clock mutex")
-            .unwrap_or_else(system_time_millis);
-        if profiling {
-            self.profile_instrumentation
-                .clock_floor_seqcst_operations
-                .fetch_add(1, Ordering::Relaxed);
-        }
-        let previous = self
-            .cache_time_floor_ms
-            .fetch_max(candidate, Ordering::SeqCst);
-        let now_ms = candidate.max(previous);
-        if let Some(started) = started {
-            self.profile_instrumentation
-                .clock_nanoseconds
-                .fetch_add(elapsed_nanoseconds(started), Ordering::Relaxed);
-        }
-        now_ms
+    /// Advance this local owner's cache clock for deterministic tests.
+    pub fn advance_cache_time_for_tests(&self, millis: u64) {
+        self.local_execution().advance_cache_time_for_tests(millis);
     }
-
-    fn materialize_store_key(
+    /// Return the retained consumer audit history.
+    pub fn audit_events_for_tests(&self) -> Vec<AuditEvent> {
+        self.dispatcher.edge.audit_events_for_tests()
+    }
+    /// Snapshot local owners at an explicitly quiescent diagnostic checkpoint.
+    pub fn retained_state_for_diagnostics(&self) -> ClientSurfaceRetainedState {
+        self.local_execution().retained_state_for_diagnostics()
+    }
+    /// Run the unchanged bounded local expiry maintenance tick.
+    pub fn reap_expired_entries_for_maintenance(&self) -> usize {
+        self.local_execution()
+            .reap_expired_entries_for_maintenance()
+    }
+    /// Reset the explicitly enabled local diagnostic owners; tenant-isolated state refuses.
+    pub fn reset_retained_state_for_diagnostics(
+        &self,
+    ) -> Result<ClientSurfaceDiagnosticReset, ClientSurfaceError> {
+        self.local_execution()
+            .reset_retained_state_for_diagnostics()
+    }
+    /// Return tenant-scoped admission and subscription status.
+    pub fn tenant_status(
         &self,
         identity: &ClientIdentity,
-        ns: &Namespace,
-        key: &StructuredKey,
-    ) -> StoreKey {
-        let stable_key = key.stable_key();
-        if self.profile_instrumentation.enabled() {
-            self.profile_instrumentation
-                .structured_key_materializations
-                .fetch_add(1, Ordering::Relaxed);
-            self.profile_instrumentation
-                .structured_key_bytes_copied
-                .fetch_add(
-                    identity
-                        .tenant()
-                        .len()
-                        .saturating_add(ns.as_str().len())
-                        .saturating_add(stable_key.len()) as u64,
-                    Ordering::Relaxed,
-                );
-        }
-        (
-            identity.tenant().to_owned(),
-            ns.as_str().to_owned(),
-            stable_key,
-        )
+    ) -> Result<TenantStatus, ClientSurfaceError> {
+        self.dispatcher.edge.tenant_status(identity)
     }
-
-    fn record_batch_shape(&self, items: usize) {
-        if self.profile_instrumentation.enabled() {
-            self.profile_instrumentation
-                .batch_operations
-                .fetch_add(1, Ordering::Relaxed);
-            self.profile_instrumentation
-                .batch_items
-                .fetch_add(items as u64, Ordering::Relaxed);
-        }
-    }
-
-    fn record_state_mutations(&self, mutations: u64) {
-        if self.profile_instrumentation.enabled() {
-            self.profile_instrumentation
-                .mutation_counter_seqcst_operations
-                .fetch_add(1, Ordering::Relaxed);
-        }
-        self.state_mutations.fetch_add(mutations, Ordering::SeqCst);
-    }
-
-    fn sweep_expired_entries(&self, now_ms: u64, force: bool) -> usize {
-        let profiling = self.profile_instrumentation.enabled();
-        if profiling {
-            self.profile_instrumentation
-                .expiry_sweep_checks
-                .fetch_add(1, Ordering::Relaxed);
-        }
-        if profiling {
-            self.profile_instrumentation
-                .expiry_gate_seqcst_operations
-                .fetch_add(1, Ordering::Relaxed);
-        }
-        let next = self.next_expiry_sweep_ms.load(Ordering::SeqCst);
-        if !force && now_ms < next {
-            return 0;
-        }
-        if profiling && !force {
-            self.profile_instrumentation
-                .expiry_gate_seqcst_operations
-                .fetch_add(1, Ordering::Relaxed);
-        }
-        if !force
-            && self
-                .next_expiry_sweep_ms
-                .compare_exchange(
-                    next,
-                    now_ms.saturating_add(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS),
-                    Ordering::SeqCst,
-                    Ordering::SeqCst,
-                )
-                .is_err()
-        {
-            return 0;
-        }
-        if force {
-            if profiling {
-                self.profile_instrumentation
-                    .expiry_gate_seqcst_operations
-                    .fetch_add(1, Ordering::Relaxed);
-            }
-            self.next_expiry_sweep_ms.store(
-                now_ms.saturating_add(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS),
-                Ordering::SeqCst,
-            );
-        }
-        if profiling {
-            self.profile_instrumentation
-                .expiry_sweeps_claimed
-                .fetch_add(1, Ordering::Relaxed);
-        }
-
-        let mut cursor = self
-            .expiry_sweep_cursor
-            .lock()
-            .expect("expiry cursor mutex");
-        let removed = if let Some(isolation) = &self.isolation {
-            let mut isolation = isolation.lock().expect("isolation mutex");
-            let mut store = self.lock_store();
-            let candidates = expiry_sweep_candidates(
-                &store,
-                now_ms,
-                if force { None } else { cursor.as_ref() },
-                if force {
-                    usize::MAX
-                } else {
-                    CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT
-                },
-                !force,
-            );
-            if profiling {
-                self.profile_instrumentation
-                    .expiry_sweep_entries_examined
-                    .fetch_add(candidates.examined as u64, Ordering::Relaxed);
-                self.profile_instrumentation
-                    .expiry_sweep_entries_removed
-                    .fetch_add(candidates.expired.len() as u64, Ordering::Relaxed);
-            }
-            for expired_key @ (tenant, namespace, key) in &candidates.expired {
-                let tenant_id =
-                    TenantId::new(tenant).expect("stored tenant identity was validated");
-                isolation.remove_entry_for_tenant(&tenant_id, namespace, key);
-                store.remove(expired_key);
-            }
-            *cursor = candidates.next_cursor;
-            candidates.expired.len()
-        } else {
-            let mut store = self.lock_store();
-            let candidates = expiry_sweep_candidates(
-                &store,
-                now_ms,
-                if force { None } else { cursor.as_ref() },
-                if force {
-                    usize::MAX
-                } else {
-                    CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT
-                },
-                !force,
-            );
-            if profiling {
-                self.profile_instrumentation
-                    .expiry_sweep_entries_examined
-                    .fetch_add(candidates.examined as u64, Ordering::Relaxed);
-                self.profile_instrumentation
-                    .expiry_sweep_entries_removed
-                    .fetch_add(candidates.expired.len() as u64, Ordering::Relaxed);
-            }
-            for key in &candidates.expired {
-                store.remove(key);
-            }
-            *cursor = candidates.next_cursor;
-            candidates.expired.len()
-        };
-        if removed != 0 {
-            self.record_state_mutations(removed as u64);
-        }
-        removed
-    }
-
-    fn lock_store(&self) -> ProfiledStoreGuard<'_> {
-        let profiling = self.profile_instrumentation.enabled();
-        let wait_started = profiling.then(Instant::now);
-        let guard = self.store.lock().expect("store mutex");
-        if let Some(started) = wait_started {
-            self.profile_instrumentation
-                .store_lock_acquisitions
-                .fetch_add(1, Ordering::Relaxed);
-            self.profile_instrumentation
-                .store_lock_wait_nanoseconds
-                .fetch_add(elapsed_nanoseconds(started), Ordering::Relaxed);
-        }
-        ProfiledStoreGuard {
-            guard,
-            hold_started: profiling.then(Instant::now),
-            instrumentation: &self.profile_instrumentation,
-        }
-    }
-
     fn begin_subscription(&self) {
-        self.active_subscriptions.fetch_add(1, Ordering::SeqCst);
+        self.dispatcher.edge.begin_subscription();
     }
-
     fn drain_subscriptions(&self) -> u64 {
-        self.active_subscriptions.swap(0, Ordering::SeqCst)
-    }
-
-    fn handle_wire_message(
-        &self,
-        identity: &ClientIdentity,
-        message: ClientWireMessage,
-    ) -> Result<ClientWireMessage, ClientSurfaceError> {
-        match message {
-            ClientWireMessage::Handshake(client) => {
-                let version = client
-                    .negotiate(VersionHandshake::default())
-                    .map_err(ClientSurfaceError::Protocol)?;
-                Ok(ClientWireMessage::Handshake(VersionHandshake::new(
-                    version, version,
-                )))
-            }
-            ClientWireMessage::Request(envelope) => {
-                let response = self.handle_request(identity, envelope);
-                Ok(ClientWireMessage::Response(response))
-            }
-            ClientWireMessage::Response(_)
-            | ClientWireMessage::Invalidation(_)
-            | ClientWireMessage::Heartbeat(_) => Err(ClientSurfaceError::MalformedFrame(
-                "client data route accepts handshake or request frames".to_owned(),
-            )),
-        }
-    }
-
-    fn handle_request(
-        &self,
-        identity: &ClientIdentity,
-        envelope: ClientRequestEnvelope,
-    ) -> ClientResponseEnvelope {
-        let profiling = self.profile_instrumentation.enabled();
-        if profiling {
-            self.profile_instrumentation
-                .audit_context_bytes_cloned
-                .fetch_add(
-                    envelope
-                        .request_id
-                        .len()
-                        .saturating_add(request_namespace(&envelope.request).as_str().len())
-                        as u64,
-                    Ordering::Relaxed,
-                );
-        }
-        let audit_request_id = envelope.request_id.clone();
-        let audit_namespace = request_namespace(&envelope.request).as_str().to_owned();
-        let audit_auth_failure = !matches!(&envelope.request, ClientRequest::ForceUnlock { .. });
-        let request_protocol_version = envelope.protocol_version;
-        let response_protocol_version = if protocol_version_supported(request_protocol_version) {
-            request_protocol_version
-        } else {
-            PROTOCOL_VERSION
-        };
-        let validation_started = profiling.then(Instant::now);
-        let protocol_validation = envelope.validate_protocol();
-        if let Some(started) = validation_started {
-            self.profile_instrumentation
-                .protocol_validations
-                .fetch_add(1, Ordering::Relaxed);
-            self.profile_instrumentation
-                .protocol_validation_nanoseconds
-                .fetch_add(elapsed_nanoseconds(started), Ordering::Relaxed);
-        }
-        if let Err(error) = protocol_validation {
-            return ClientResponseEnvelope::error(envelope.request_id, error)
-                .with_protocol_version(response_protocol_version);
-        }
-        if envelope.deadline_expired(0) {
-            return ClientResponseEnvelope::error(
-                envelope.request_id,
-                ClientErrorEnvelope::new(
-                    ClientErrorCode::DeadlineExceeded,
-                    true,
-                    "request deadline expired",
-                )
-                .with_retry_after_ms(1),
-            )
-            .with_protocol_version(response_protocol_version);
-        }
-        self.sweep_expired_entries(self.now_ms(), false);
-
-        let response = match envelope.request {
-            ClientRequest::Get { ns, key } => {
-                let now_ms = self.now_ms();
-                match self.with_admitted_store(identity, |store, isolation| {
-                    let (value, expired) = live_value(
-                        store,
-                        &self.materialize_store_key(identity, &ns, &key),
-                        now_ms,
-                    );
-                    if expired {
-                        if let Some(isolation) = isolation {
-                            let _ = isolation.remove_entry(
-                                identity.client_id(),
-                                ns.as_str(),
-                                &key.stable_key(),
-                            );
-                        }
-                    }
-                    (value, expired)
-                }) {
-                    Ok((value, expired)) => {
-                        if profiling {
-                            let counter = if expired {
-                                &self.profile_instrumentation.expired_get_removals
-                            } else if value.is_some() {
-                                &self.profile_instrumentation.live_get_hits
-                            } else {
-                                &self.profile_instrumentation.missing_gets
-                            };
-                            counter.fetch_add(1, Ordering::Relaxed);
-                            self.profile_instrumentation
-                                .get_value_bytes_cloned
-                                .fetch_add(
-                                    value.as_ref().map_or(0, Vec::len) as u64,
-                                    Ordering::Relaxed,
-                                );
-                        }
-                        ClientResponseEnvelope::ok(
-                            envelope.request_id,
-                            ClientResponse::Value { value },
-                        )
-                    }
-                    Err(error) => ClientResponseEnvelope::error(envelope.request_id, error),
-                }
-            }
-            ClientRequest::Put {
-                ns,
-                key,
-                value,
-                ttl_ms,
-                dimensions: _,
-            } => self.handle_put(
-                identity,
-                PutCommand {
-                    request_id: envelope.request_id,
-                    idempotency_key: envelope.idempotency_key,
-                    ns,
-                    key,
-                    value,
-                    ttl_ms,
-                },
-            ),
-            ClientRequest::Invalidate { ns, key } => {
-                match self.with_admitted_store(identity, |store, isolation| {
-                    let removed = store
-                        .remove(&self.materialize_store_key(identity, &ns, &key))
-                        .is_some();
-                    if removed {
-                        if let Some(isolation) = isolation {
-                            let _ = isolation.remove_entry(
-                                identity.client_id(),
-                                ns.as_str(),
-                                &key.stable_key(),
-                            );
-                        }
-                    }
-                }) {
-                    Err(error) => ClientResponseEnvelope::error(envelope.request_id, error),
-                    Ok(()) => {
-                        self.record_state_mutations(1);
-                        self.record_invalidation(
-                            identity,
-                            ns,
-                            key,
-                            ClientSurfaceMutationKind::Invalidated,
-                        );
-                        ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Invalidated)
-                    }
-                }
-            }
-            ClientRequest::BatchGet { ns, keys } => {
-                self.record_batch_shape(keys.len());
-                let batch_bytes = keys.iter().fold(0usize, |total, key| {
-                    total.saturating_add(key.stable_key().len())
-                });
-                if keys.len() > self.limits.max_batch_entries {
-                    ClientResponseEnvelope::error(
-                        envelope.request_id,
-                        ClientErrorEnvelope::new(
-                            ClientErrorCode::TooLarge,
-                            false,
-                            "batch contains too many entries",
-                        ),
-                    )
-                } else if batch_bytes > self.limits.max_batch_bytes {
-                    ClientResponseEnvelope::error(
-                        envelope.request_id,
-                        ClientErrorEnvelope::new(
-                            ClientErrorCode::TooLarge,
-                            false,
-                            "batch exceeds max_batch_bytes",
-                        ),
-                    )
-                } else {
-                    let now_ms = self.now_ms();
-                    match self.with_admitted_store(identity, |store, isolation| {
-                        let mut expired_keys = Vec::new();
-                        let mut items = Vec::with_capacity(keys.len());
-                        for (index, key) in keys.iter().enumerate() {
-                            let (value, expired) = live_value(
-                                store,
-                                &self.materialize_store_key(identity, &ns, key),
-                                now_ms,
-                            );
-                            if expired {
-                                expired_keys.push(key);
-                            }
-                            items.push(BatchItemStatus {
-                                index,
-                                result: Ok(value),
-                            });
-                        }
-                        if let Some(isolation) = isolation {
-                            for key in expired_keys {
-                                let _ = isolation.remove_entry(
-                                    identity.client_id(),
-                                    ns.as_str(),
-                                    &key.stable_key(),
-                                );
-                            }
-                        }
-                        items
-                    }) {
-                        Ok(items) => ClientResponseEnvelope::ok(
-                            envelope.request_id,
-                            ClientResponse::Batch { items },
-                        ),
-                        Err(error) => ClientResponseEnvelope::error(envelope.request_id, error),
-                    }
-                }
-            }
-            ClientRequest::BatchPut { ns, entries } => {
-                self.record_batch_shape(entries.len());
-                let batch_bytes = entries.iter().fold(0usize, |total, entry| {
-                    total
-                        .saturating_add(entry.key.stable_key().len())
-                        .saturating_add(entry.value.len())
-                });
-                if entries.len() > self.limits.max_batch_entries {
-                    ClientResponseEnvelope::error(
-                        envelope.request_id,
-                        ClientErrorEnvelope::new(
-                            ClientErrorCode::TooLarge,
-                            false,
-                            "batch contains too many entries",
-                        ),
-                    )
-                } else if batch_bytes > self.limits.max_batch_bytes {
-                    ClientResponseEnvelope::error(
-                        envelope.request_id,
-                        ClientErrorEnvelope::new(
-                            ClientErrorCode::TooLarge,
-                            false,
-                            "batch exceeds max_batch_bytes",
-                        ),
-                    )
-                } else if entries
-                    .iter()
-                    .any(|entry| entry.value.len() > self.limits.max_value_bytes)
-                {
-                    ClientResponseEnvelope::error(
-                        envelope.request_id,
-                        ClientErrorEnvelope::new(
-                            ClientErrorCode::TooLarge,
-                            false,
-                            "batch item value too large",
-                        ),
-                    )
-                } else {
-                    let quota_entries = entries
-                        .iter()
-                        .map(|entry| (entry.key.stable_key(), entry.value.len() as u64))
-                        .collect::<Vec<_>>();
-                    let commit = || {
-                        let mut store = self.lock_store();
-                        for entry in &entries {
-                            store.insert(
-                                self.materialize_store_key(identity, &ns, &entry.key),
-                                StoredValue::persistent(entry.value.clone()),
-                            );
-                        }
-                        true
-                    };
-                    let admitted = if let Some(isolation) = &self.isolation {
-                        isolation
-                            .lock()
-                            .expect("isolation mutex")
-                            .admit_batch_put_if_committed(
-                                identity.client_id(),
-                                ns.as_str(),
-                                &quota_entries,
-                                commit,
-                            )
-                            .map_err(admission_error)
-                    } else {
-                        Ok(commit())
-                    };
-                    match admitted {
-                        Err(error) => ClientResponseEnvelope::error(envelope.request_id, error),
-                        Ok(_) => {
-                            self.record_state_mutations(entries.len() as u64);
-                            for entry in &entries {
-                                self.record_mutation(
-                                    identity,
-                                    ns.clone(),
-                                    Some(entry.key.clone()),
-                                    ClientSurfaceMutationKind::Stored,
-                                );
-                            }
-                            let items = (0..entries.len())
-                                .map(|index| BatchItemStatus {
-                                    index,
-                                    result: Ok(None),
-                                })
-                                .collect();
-                            ClientResponseEnvelope::ok(
-                                envelope.request_id,
-                                ClientResponse::Batch { items },
-                            )
-                        }
-                    }
-                }
-            }
-            ClientRequest::Expire { ns, key, ttl_ms } => {
-                self.handle_expire(identity, envelope.request_id, ns, key, ttl_ms)
-            }
-            ClientRequest::Persist { ns, key } => {
-                self.handle_persist(identity, envelope.request_id, ns, key)
-            }
-            ClientRequest::GetTtl { ns, key } => {
-                self.handle_get_ttl(identity, envelope.request_id, ns, key)
-            }
-            ClientRequest::ConditionalPut {
-                ns,
-                key,
-                value,
-                ttl_ms,
-                condition,
-            } => self.handle_conditional_put(
-                identity,
-                ConditionalPutArgs {
-                    request_id: envelope.request_id,
-                    ns,
-                    key,
-                    value,
-                    ttl_ms,
-                    condition,
-                },
-            ),
-            ClientRequest::CompareValueAndInvalidate {
-                ns,
-                key,
-                expected_value,
-            } => self.handle_compare_value_invalidate(
-                identity,
-                envelope.request_id,
-                ns,
-                key,
-                expected_value,
-            ),
-            ClientRequest::CompareValueAndExpire {
-                ns,
-                key,
-                expected_value,
-                ttl_ms,
-                mode,
-            } => self.handle_compare_value_expire(
-                identity,
-                CompareValueExpireArgs {
-                    request_id: envelope.request_id,
-                    ns,
-                    key,
-                    expected_value,
-                    ttl_ms,
-                    mode,
-                },
-            ),
-            ClientRequest::EvictRegion { ns } => {
-                let evict_store = |store: &mut BTreeMap<StoreKey, StoredValue>| {
-                    store.retain(|(tenant, stored_ns, _), _| {
-                        tenant != identity.tenant() || stored_ns != ns.as_str()
-                    });
-                };
-                let admitted = if let Some(isolation) = &self.isolation {
-                    let mut isolation = isolation.lock().expect("isolation mutex");
-                    isolation
-                        .evict_namespace(identity.client_id(), ns.as_str())
-                        .map_err(admission_error)
-                        .map(|_| {
-                            let mut store = self.lock_store();
-                            evict_store(&mut store);
-                        })
-                } else {
-                    let mut store = self.lock_store();
-                    evict_store(&mut store);
-                    Ok(())
-                };
-                if let Err(error) = admitted {
-                    ClientResponseEnvelope::error(envelope.request_id, error)
-                } else {
-                    self.record_state_mutations(1);
-                    self.record_namespace_mutation(
-                        identity,
-                        ns,
-                        ClientSurfaceMutationKind::NamespaceEvicted,
-                    );
-                    ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Evicted)
-                }
-            }
-            ClientRequest::SubscribeInvalidations {
-                ns: _,
-                region: _,
-                from,
-                include_value: _,
-            } => {
-                if let Err(error) = self.begin_tenant_subscription(identity) {
-                    ClientResponseEnvelope::error(envelope.request_id, error)
-                } else {
-                    ClientResponseEnvelope::ok(
-                        envelope.request_id,
-                        ClientResponse::Subscribed { from },
-                    )
-                }
-            }
-            ClientRequest::SubscribeEntryEvents {
-                ns: _,
-                region: _,
-                from,
-                include_value: _,
-                projection: _,
-            } => {
-                if let Err(error) = self.begin_tenant_subscription(identity) {
-                    ClientResponseEnvelope::error(envelope.request_id, error)
-                } else {
-                    ClientResponseEnvelope::ok(
-                        envelope.request_id,
-                        ClientResponse::Subscribed { from },
-                    )
-                }
-            }
-            ClientRequest::TryLock {
-                ns,
-                key,
-                lease_ms,
-                wait_ms: _,
-                level,
-            } => self.handle_try_lock(identity, envelope.request_id, ns, key, lease_ms, level),
-            ClientRequest::Unlock { ns, key, fence } => {
-                self.handle_unlock(identity, envelope.request_id, ns, key, fence)
-            }
-            ClientRequest::RenewLockLease {
-                ns,
-                key,
-                fence,
-                lease_ms,
-            } => self.handle_renew_lock(identity, envelope.request_id, ns, key, fence, lease_ms),
-            ClientRequest::ForceUnlock { ns, key } => {
-                self.handle_force_unlock(identity, envelope.request_id, ns, key)
-            }
-            ClientRequest::GetLockOwnership { ns, key } => {
-                self.handle_lock_ownership(identity, envelope.request_id, ns, key)
-            }
-            ClientRequest::CompareAndSet {
-                ns,
-                key,
-                expected,
-                new_value,
-                level,
-            } => self.handle_compare_and_set(
-                identity,
-                envelope.request_id,
-                CompareAndSetCommand {
-                    ns,
-                    key,
-                    expected,
-                    new_value,
-                    level,
-                },
-            ),
-            ClientRequest::RemoveIfValue {
-                ns,
-                key,
-                expected,
-                level,
-            } => {
-                self.handle_remove_if_value(identity, envelope.request_id, ns, key, expected, level)
-            }
-        };
-        self.record_rejection_audit(
-            identity,
-            &audit_namespace,
-            &audit_request_id,
-            &response,
-            audit_auth_failure,
-        );
-        response.with_protocol_version(response_protocol_version)
-    }
-
-    fn handle_try_lock(
-        &self,
-        identity: &ClientIdentity,
-        request_id: String,
-        ns: Namespace,
-        key: StructuredKey,
-        lease_ms: u64,
-        level: LockConsistency,
-    ) -> ClientResponseEnvelope {
-        let lock_key = lock_key(identity, &ns, &key);
-        let owner = lock_owner(identity);
-        let lease = LogicalDuration::from_millis(lease_ms.max(1));
-        let level = lock_consistency(level);
-        let result = self
-            .lock_service
-            .lock()
-            .expect("lock service mutex")
-            .apply_lock_command(|store, now| {
-                let acquired = store.try_acquire_lock(&lock_key, level, owner, lease, now)?;
-                Ok(match acquired {
-                    Some(fence) => ClientResponse::LockAcquired {
-                        fence: fence.value(),
-                    },
-                    None => ClientResponse::LockBusy,
-                })
-            });
-        lock_response(request_id, result)
-    }
-
-    fn handle_unlock(
-        &self,
-        identity: &ClientIdentity,
-        request_id: String,
-        ns: Namespace,
-        key: StructuredKey,
-        fence: u64,
-    ) -> ClientResponseEnvelope {
-        let lock_key = lock_key(identity, &ns, &key);
-        let owner = lock_owner(identity);
-        let result = self
-            .lock_service
-            .lock()
-            .expect("lock service mutex")
-            .apply_lock_command(|store, _now| {
-                store.release_lock(&lock_key, &owner, FenceToken::new(fence))?;
-                Ok(ClientResponse::LockReleased)
-            });
-        lock_response(request_id, result)
-    }
-
-    fn handle_renew_lock(
-        &self,
-        identity: &ClientIdentity,
-        request_id: String,
-        ns: Namespace,
-        key: StructuredKey,
-        fence: u64,
-        lease_ms: u64,
-    ) -> ClientResponseEnvelope {
-        let lock_key = lock_key(identity, &ns, &key);
-        let owner = lock_owner(identity);
-        let lease = LogicalDuration::from_millis(lease_ms.max(1));
-        let result = self
-            .lock_service
-            .lock()
-            .expect("lock service mutex")
-            .apply_lock_command(|store, now| {
-                store.renew_lease(
-                    &lock_key,
-                    &owner,
-                    FenceToken::new(fence),
-                    now.saturating_add(lease),
-                )?;
-                Ok(ClientResponse::LockLeaseRenewed)
-            });
-        lock_response(request_id, result)
-    }
-
-    fn handle_force_unlock(
-        &self,
-        identity: &ClientIdentity,
-        request_id: String,
-        ns: Namespace,
-        key: StructuredKey,
-    ) -> ClientResponseEnvelope {
-        if !identity.is_admin() {
-            let _ = self.record_audit(AuditEvent::AuthFailure {
-                tenant: Some(identity.tenant().to_owned()),
-                route: CLIENT_DATA_PATH.to_owned(),
-                request_id: Some(request_id.clone()),
-            });
-            return ClientResponseEnvelope::error(
-                request_id,
-                ClientErrorEnvelope::new(
-                    ClientErrorCode::Unauthorized,
-                    false,
-                    "force_unlock requires admin privileges",
-                ),
-            );
-        }
-        if let Err(error) = self.record_audit(AuditEvent::PolicyChanged {
-            namespace: ns.as_str().to_owned(),
-            policy_epoch: ClusterEpoch::new(1),
-            summary: "force_unlock".to_owned(),
-        }) {
-            return ClientResponseEnvelope::error(request_id, error);
-        }
-        let lock_key = lock_key(identity, &ns, &key);
-        let result = self
-            .lock_service
-            .lock()
-            .expect("lock service mutex")
-            .apply_lock_command(|store, _now| {
-                store.force_unlock(&lock_key);
-                Ok(ClientResponse::LockReleased)
-            });
-        lock_response(request_id, result)
-    }
-
-    fn handle_lock_ownership(
-        &self,
-        identity: &ClientIdentity,
-        request_id: String,
-        ns: Namespace,
-        key: StructuredKey,
-    ) -> ClientResponseEnvelope {
-        let lock_key = lock_key(identity, &ns, &key);
-        let mut service = self.lock_service.lock().expect("lock service mutex");
-        if !service.is_leader() {
-            return ClientResponseEnvelope::error(
-                request_id,
-                ClientErrorEnvelope::new(
-                    ClientErrorCode::BackendUnavailable,
-                    true,
-                    format!(
-                        "not leader for lock partition; leader={}",
-                        service.leader_node_id
-                    ),
-                )
-                .with_retry_after_ms(1),
-            );
-        }
-        ClientResponseEnvelope::ok(request_id, service.current_ownership(&lock_key))
-    }
-
-    fn handle_compare_and_set(
-        &self,
-        identity: &ClientIdentity,
-        request_id: String,
-        command: CompareAndSetCommand,
-    ) -> ClientResponseEnvelope {
-        let CompareAndSetCommand {
-            ns,
-            key,
-            expected,
-            new_value,
-            level,
-        } = command;
-        if new_value.len() > self.limits.max_value_bytes {
-            return ClientResponseEnvelope::error(
-                request_id,
-                ClientErrorEnvelope::new(ClientErrorCode::TooLarge, false, "value too large"),
-            );
-        }
-        let value_bytes = new_value.len() as u64;
-        let map_key = self.materialize_store_key(identity, &ns, &key);
-        let cas_key = lock_key(identity, &ns, &key);
-        let stable_key = key.stable_key();
-        let now_ms = self.now_ms();
-        let level = lock_consistency(level);
-        let result = if let Some(isolation) = &self.isolation {
-            let mut isolation = isolation.lock().expect("isolation mutex");
-            let mut store = self.lock_store();
-            let (live_value, expired) = live_value(&mut store, &map_key, now_ms);
-            let condition_holds = match &expected {
-                CasExpectation::Exact(expected) => {
-                    live_value.as_deref() == Some(expected.as_slice())
-                }
-                CasExpectation::Present => live_value.is_some(),
-            };
-
-            if condition_holds {
-                let value_for_store = new_value.clone();
-                let mut command_result = None;
-                let admitted = isolation
-                    .admit_put_if_committed(
-                        identity.client_id(),
-                        ns.as_str(),
-                        &stable_key,
-                        value_bytes,
-                        true,
-                        || {
-                            let result = apply_compare_and_set(
-                                &mut self.lock_service.lock().expect("lock service mutex"),
-                                &cas_key,
-                                live_value.as_deref(),
-                                &expected,
-                                new_value,
-                                level,
-                            );
-                            let applied = matches!(&result, Ok(ClientResponse::CasApplied { .. }));
-                            if applied {
-                                store.insert(map_key, StoredValue::persistent(value_for_store));
-                            }
-                            command_result = Some(result);
-                            applied
-                        },
-                    )
-                    .map_err(admission_error);
-                let committed = matches!(admitted, Ok(true));
-                if expired && !committed {
-                    let _ = isolation.remove_entry(identity.client_id(), ns.as_str(), &stable_key);
-                }
-                match admitted {
-                    Err(error) => Err(error),
-                    Ok(_) => command_result.expect("true CAS condition executes command"),
-                }
-            } else {
-                let admitted = isolation
-                    .admit_put_if_committed(
-                        identity.client_id(),
-                        ns.as_str(),
-                        &stable_key,
-                        value_bytes,
-                        false,
-                        || unreachable!("false CAS condition skips commit callback"),
-                    )
-                    .map_err(admission_error);
-                if expired {
-                    let _ = isolation.remove_entry(identity.client_id(), ns.as_str(), &stable_key);
-                }
-                match admitted {
-                    Err(error) => Err(error),
-                    Ok(false) => apply_compare_and_set(
-                        &mut self.lock_service.lock().expect("lock service mutex"),
-                        &cas_key,
-                        live_value.as_deref(),
-                        &expected,
-                        new_value,
-                        level,
-                    ),
-                    Ok(true) => unreachable!("false CAS condition cannot commit"),
-                }
-            }
-        } else {
-            let mut store = self.lock_store();
-            let (live_value, _) = live_value(&mut store, &map_key, now_ms);
-            let value_for_store = new_value.clone();
-            let result = apply_compare_and_set(
-                &mut self.lock_service.lock().expect("lock service mutex"),
-                &cas_key,
-                live_value.as_deref(),
-                &expected,
-                new_value,
-                level,
-            );
-            if matches!(&result, Ok(ClientResponse::CasApplied { .. })) {
-                store.insert(map_key, StoredValue::persistent(value_for_store));
-            }
-            result
-        };
-
-        let applied = matches!(&result, Ok(ClientResponse::CasApplied { .. }));
-        if applied {
-            self.record_state_mutations(1);
-            self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Stored);
-        }
-        lock_response(request_id, result)
-    }
-
-    fn handle_remove_if_value(
-        &self,
-        identity: &ClientIdentity,
-        request_id: String,
-        ns: Namespace,
-        key: StructuredKey,
-        expected: Vec<u8>,
-        level: LockConsistency,
-    ) -> ClientResponseEnvelope {
-        let map_key = self.materialize_store_key(identity, &ns, &key);
-        let cas_key = lock_key(identity, &ns, &key);
-        let level = lock_consistency(level);
-        let now_ms = self.now_ms();
-        let result = match self.with_admitted_store(identity, |value_store, isolation| {
-            let (live_value, expired) = live_value(value_store, &map_key, now_ms);
-            let result = self
-                .lock_service
-                .lock()
-                .expect("lock service mutex")
-                .apply_lock_command(|store, _now| {
-                    sync_conditional_record(store, &cas_key, live_value.as_deref())?;
-                    let result = store.remove_if_value(&cas_key, &expected, level)?;
-                    Ok(cas_response(result))
-                });
-            let applied = matches!(&result, Ok(ClientResponse::CasApplied { .. }));
-            if applied {
-                value_store.remove(&map_key);
-            }
-            if applied || expired {
-                if let Some(isolation) = isolation {
-                    let _ = isolation.remove_entry(
-                        identity.client_id(),
-                        ns.as_str(),
-                        &key.stable_key(),
-                    );
-                }
-            }
-            result
-        }) {
-            Ok(result) => result,
-            Err(error) => Err(error),
-        };
-
-        let applied = matches!(&result, Ok(ClientResponse::CasApplied { .. }));
-        if applied {
-            self.record_state_mutations(1);
-            self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Removed);
-        }
-        lock_response(request_id, result)
-    }
-
-    fn record_audit(&self, event: AuditEvent) -> Result<(), ClientErrorEnvelope> {
-        self.audit
-            .lock()
-            .expect("audit mutex")
-            .record(&event)
-            .map(|_| ())
-            .map_err(|error| {
-                ClientErrorEnvelope::new(
-                    ClientErrorCode::BackendUnavailable,
-                    false,
-                    format!("mandatory audit unavailable: {error}"),
-                )
-            })
-    }
-
-    fn record_rejection_audit(
-        &self,
-        identity: &ClientIdentity,
-        namespace: &str,
-        request_id: &str,
-        response: &ClientResponseEnvelope,
-        audit_auth_failure: bool,
-    ) {
-        let Err(error) = &response.result else {
-            return;
-        };
-        match error.code {
-            ClientErrorCode::TenantQuota | ClientErrorCode::RateLimited => {
-                let _ = self.record_audit(AuditEvent::QuotaRejected {
-                    tenant: identity.tenant().to_owned(),
-                    namespace: namespace.to_owned(),
-                    request_id: Some(request_id.to_owned()),
-                });
-            }
-            ClientErrorCode::Unauthorized if audit_auth_failure => {
-                let _ = self.record_audit(AuditEvent::AuthFailure {
-                    tenant: Some(identity.tenant().to_owned()),
-                    route: CLIENT_DATA_PATH.to_owned(),
-                    request_id: Some(request_id.to_owned()),
-                });
-            }
-            _ => {}
-        }
-    }
-
-    fn handle_put(&self, identity: &ClientIdentity, command: PutCommand) -> ClientResponseEnvelope {
-        let PutCommand {
-            request_id,
-            idempotency_key,
-            ns,
-            key,
-            value,
-            ttl_ms,
-        } = command;
-        if value.len() > self.limits.max_value_bytes {
-            return ClientResponseEnvelope::error(
-                request_id,
-                ClientErrorEnvelope::new(ClientErrorCode::TooLarge, false, "value too large"),
-            );
-        }
-        let now_ms = self.now_ms();
-        let scoped_idempotency_key =
-            idempotency_key.map(|idempotency_key| (identity.tenant().to_owned(), idempotency_key));
-        let mut idempotency_keys = scoped_idempotency_key
-            .as_ref()
-            .map(|_| self.idempotency_keys.lock().expect("idempotency mutex"));
-        if let (Some(idempotency_key), Some(keys)) =
-            (scoped_idempotency_key.as_ref(), idempotency_keys.as_mut())
-        {
-            keys.retain(|_, record| record.expires_at_ms > now_ms);
-            if keys.contains_key(idempotency_key) {
-                return ClientResponseEnvelope::ok(request_id, ClientResponse::Stored);
-            }
-            if keys.len() >= CLIENT_SURFACE_IDEMPOTENCY_CAPACITY {
-                let retry_after_ms = keys
-                    .values()
-                    .map(|record| record.expires_at_ms.saturating_sub(now_ms).max(1))
-                    .min()
-                    .unwrap_or(1);
-                return ClientResponseEnvelope::error(
-                    request_id,
-                    ClientErrorEnvelope::new(
-                        ClientErrorCode::RateLimited,
-                        true,
-                        "idempotency outcome capacity exhausted",
-                    )
-                    .with_retry_after_ms(retry_after_ms),
-                );
-            }
-        }
-        let value_bytes = value.len() as u64;
-        if self.profile_instrumentation.enabled() {
-            self.profile_instrumentation
-                .put_value_bytes_moved
-                .fetch_add(value_bytes, Ordering::Relaxed);
-        }
-        let stored = match ttl_ms {
-            Some(ttl_ms) => StoredValue::with_ttl(value, now_ms, ttl_ms),
-            None => StoredValue::persistent(value),
-        };
-        let map_key = self.materialize_store_key(identity, &ns, &key);
-        let admitted = if let Some(isolation) = &self.isolation {
-            let mut isolation = isolation.lock().expect("isolation mutex");
-            let mut store = self.lock_store();
-            isolation
-                .admit_put_if_committed(
-                    identity.client_id(),
-                    ns.as_str(),
-                    &key.stable_key(),
-                    value_bytes,
-                    true,
-                    || {
-                        store.insert(map_key, stored);
-                        true
-                    },
-                )
-                .map_err(admission_error)
-        } else {
-            self.lock_store().insert(map_key, stored);
-            Ok(true)
-        };
-        if let Err(error) = admitted {
-            return ClientResponseEnvelope::error(request_id, error);
-        }
-        if let (Some(idempotency_key), Some(keys)) =
-            (scoped_idempotency_key, idempotency_keys.as_mut())
-        {
-            keys.insert(
-                idempotency_key,
-                IdempotencyRecord {
-                    expires_at_ms: now_ms.saturating_add(CLIENT_SURFACE_IDEMPOTENCY_TTL_MS),
-                },
-            );
-        }
-        drop(idempotency_keys);
-        self.record_state_mutations(1);
-        self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Stored);
-        ClientResponseEnvelope::ok(request_id, ClientResponse::Stored)
-    }
-
-    fn handle_expire(
-        &self,
-        identity: &ClientIdentity,
-        request_id: String,
-        ns: Namespace,
-        key: StructuredKey,
-        ttl_ms: u64,
-    ) -> ClientResponseEnvelope {
-        let now_ms = self.now_ms();
-        let applied = match self.with_admitted_store(identity, |store, isolation| {
-            let (entry, expired) = live_entry_mut(
-                store,
-                &self.materialize_store_key(identity, &ns, &key),
-                now_ms,
-            );
-            let applied = entry
-                .map(|entry| {
-                    entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
-                    true
-                })
-                .unwrap_or(false);
-            if expired {
-                if let Some(isolation) = isolation {
-                    let _ = isolation.remove_entry(
-                        identity.client_id(),
-                        ns.as_str(),
-                        &key.stable_key(),
-                    );
-                }
-            }
-            applied
-        }) {
-            Ok(applied) => applied,
-            Err(error) => return ClientResponseEnvelope::error(request_id, error),
-        };
-        if applied {
-            self.record_state_mutations(1);
-            self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Expire);
-        }
-        ClientResponseEnvelope::ok(request_id, ClientResponse::Expiry { applied })
-    }
-
-    fn handle_persist(
-        &self,
-        identity: &ClientIdentity,
-        request_id: String,
-        ns: Namespace,
-        key: StructuredKey,
-    ) -> ClientResponseEnvelope {
-        let now_ms = self.now_ms();
-        let applied = match self.with_admitted_store(identity, |store, isolation| {
-            let (entry, expired) = live_entry_mut(
-                store,
-                &self.materialize_store_key(identity, &ns, &key),
-                now_ms,
-            );
-            let applied = entry
-                .map(|entry| entry.expires_at_ms.take().is_some())
-                .unwrap_or(false);
-            if expired {
-                if let Some(isolation) = isolation {
-                    let _ = isolation.remove_entry(
-                        identity.client_id(),
-                        ns.as_str(),
-                        &key.stable_key(),
-                    );
-                }
-            }
-            applied
-        }) {
-            Ok(applied) => applied,
-            Err(error) => return ClientResponseEnvelope::error(request_id, error),
-        };
-        if applied {
-            self.record_state_mutations(1);
-            self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Persist);
-        }
-        ClientResponseEnvelope::ok(request_id, ClientResponse::Expiry { applied })
-    }
-
-    fn handle_get_ttl(
-        &self,
-        identity: &ClientIdentity,
-        request_id: String,
-        ns: Namespace,
-        key: StructuredKey,
-    ) -> ClientResponseEnvelope {
-        let now_ms = self.now_ms();
-        let state = match self.with_admitted_store(identity, |store, isolation| {
-            let (state, expired) = ttl_state(
-                store,
-                &self.materialize_store_key(identity, &ns, &key),
-                now_ms,
-            );
-            if expired {
-                if let Some(isolation) = isolation {
-                    let _ = isolation.remove_entry(
-                        identity.client_id(),
-                        ns.as_str(),
-                        &key.stable_key(),
-                    );
-                }
-            }
-            state
-        }) {
-            Ok(state) => state,
-            Err(error) => return ClientResponseEnvelope::error(request_id, error),
-        };
-        ClientResponseEnvelope::ok(request_id, ClientResponse::Ttl { state })
-    }
-
-    fn handle_conditional_put(
-        &self,
-        identity: &ClientIdentity,
-        args: ConditionalPutArgs,
-    ) -> ClientResponseEnvelope {
-        let ConditionalPutArgs {
-            request_id,
-            ns,
-            key,
-            value,
-            ttl_ms,
-            condition,
-        } = args;
-        if value.len() > self.limits.max_value_bytes {
-            return ClientResponseEnvelope::error(
-                request_id,
-                ClientErrorEnvelope::new(ClientErrorCode::TooLarge, false, "value too large"),
-            );
-        }
-        if let ConditionalPutCondition::IfPresentValue(expected) = &condition {
-            if expected.len() > self.limits.max_value_bytes {
-                return ClientResponseEnvelope::error(
-                    request_id,
-                    ClientErrorEnvelope::new(
-                        ClientErrorCode::TooLarge,
-                        false,
-                        "expected value too large",
-                    ),
-                );
-            }
-        }
-        let now_ms = self.now_ms();
-        let map_key = self.materialize_store_key(identity, &ns, &key);
-        let stable_key = key.stable_key();
-        let value_bytes = value.len() as u64;
-        let stored = if let Some(isolation) = &self.isolation {
-            let mut isolation = isolation.lock().expect("isolation mutex");
-            let mut store = self.lock_store();
-            let (entry, expired) = live_entry_mut(&mut store, &map_key, now_ms);
-            let condition_holds = match &condition {
-                ConditionalPutCondition::IfAbsent => entry.is_none(),
-                ConditionalPutCondition::IfPresentValue(expected) => {
-                    entry.is_some_and(|entry| entry.value == *expected)
-                }
-            };
-            let admitted = isolation
-                .admit_put_if_committed(
-                    identity.client_id(),
-                    ns.as_str(),
-                    &stable_key,
-                    value_bytes,
-                    condition_holds,
-                    || {
-                        store.insert(map_key, stored_value(value, now_ms, ttl_ms));
-                        true
-                    },
-                )
-                .map_err(admission_error);
-            let stored = matches!(admitted, Ok(true));
-            if expired && !stored {
-                let _ = isolation.remove_entry(identity.client_id(), ns.as_str(), &stable_key);
-            }
-            if let Err(error) = admitted {
-                return ClientResponseEnvelope::error(request_id, error);
-            }
-            stored
-        } else {
-            let mut store = self.lock_store();
-            let (entry, _) = live_entry_mut(&mut store, &map_key, now_ms);
-            let condition_holds = match &condition {
-                ConditionalPutCondition::IfAbsent => entry.is_none(),
-                ConditionalPutCondition::IfPresentValue(expected) => {
-                    entry.is_some_and(|entry| entry.value == *expected)
-                }
-            };
-            if condition_holds {
-                store.insert(map_key, stored_value(value, now_ms, ttl_ms));
-            }
-            condition_holds
-        };
-        if stored {
-            self.record_state_mutations(1);
-            self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Stored);
-        }
-        ClientResponseEnvelope::ok(request_id, ClientResponse::ConditionalStored { stored })
-    }
-
-    fn handle_compare_value_invalidate(
-        &self,
-        identity: &ClientIdentity,
-        request_id: String,
-        ns: Namespace,
-        key: StructuredKey,
-        expected_value: Vec<u8>,
-    ) -> ClientResponseEnvelope {
-        if expected_value.len() > self.limits.max_value_bytes {
-            return ClientResponseEnvelope::error(
-                request_id,
-                ClientErrorEnvelope::new(
-                    ClientErrorCode::TooLarge,
-                    false,
-                    "expected value too large",
-                ),
-            );
-        }
-        let now_ms = self.now_ms();
-        let map_key = self.materialize_store_key(identity, &ns, &key);
-        let applied = match self.with_admitted_store(identity, |store, isolation| {
-            let (entry, expired) = live_entry_mut(store, &map_key, now_ms);
-            let applied = entry.is_some_and(|entry| entry.value == expected_value);
-            if applied {
-                store.remove(&map_key);
-            }
-            if expired || applied {
-                if let Some(isolation) = isolation {
-                    let _ = isolation.remove_entry(
-                        identity.client_id(),
-                        ns.as_str(),
-                        &key.stable_key(),
-                    );
-                }
-            }
-            applied
-        }) {
-            Ok(applied) => applied,
-            Err(error) => return ClientResponseEnvelope::error(request_id, error),
-        };
-        if applied {
-            self.record_state_mutations(1);
-            self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Removed);
-        }
-        ClientResponseEnvelope::ok(request_id, ClientResponse::CompareValueApplied { applied })
-    }
-
-    fn handle_compare_value_expire(
-        &self,
-        identity: &ClientIdentity,
-        args: CompareValueExpireArgs,
-    ) -> ClientResponseEnvelope {
-        let CompareValueExpireArgs {
-            request_id,
-            ns,
-            key,
-            expected_value,
-            ttl_ms,
-            mode,
-        } = args;
-        if expected_value.len() > self.limits.max_value_bytes {
-            return ClientResponseEnvelope::error(
-                request_id,
-                ClientErrorEnvelope::new(
-                    ClientErrorCode::TooLarge,
-                    false,
-                    "expected value too large",
-                ),
-            );
-        }
-        let now_ms = self.now_ms();
-        let applied = match self.with_admitted_store(identity, |store, isolation| {
-            let (entry, expired) = live_entry_mut(
-                store,
-                &self.materialize_store_key(identity, &ns, &key),
-                now_ms,
-            );
-            let applied = entry
-                .map(|entry| {
-                    if entry.value == expected_value {
-                        match mode {
-                            CompareValueExpireMode::Replace => {
-                                entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
-                                true
-                            }
-                            CompareValueExpireMode::ReplaceIfExpiring => {
-                                if entry.expires_at_ms.is_some() {
-                                    entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
-                                    true
-                                } else {
-                                    false
-                                }
-                            }
-                            CompareValueExpireMode::AddToRemaining => {
-                                if let Some(expires_at_ms) = entry.expires_at_ms {
-                                    entry.expires_at_ms =
-                                        Some(expires_at_ms.saturating_add(ttl_ms));
-                                    true
-                                } else {
-                                    false
-                                }
-                            }
-                        }
-                    } else {
-                        false
-                    }
-                })
-                .unwrap_or(false);
-            if expired {
-                if let Some(isolation) = isolation {
-                    let _ = isolation.remove_entry(
-                        identity.client_id(),
-                        ns.as_str(),
-                        &key.stable_key(),
-                    );
-                }
-            }
-            applied
-        }) {
-            Ok(applied) => applied,
-            Err(error) => return ClientResponseEnvelope::error(request_id, error),
-        };
-        if applied {
-            self.record_state_mutations(1);
-            self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Expire);
-        }
-        ClientResponseEnvelope::ok(request_id, ClientResponse::CompareValueApplied { applied })
-    }
-
-    fn with_admitted_store<T>(
-        &self,
-        identity: &ClientIdentity,
-        apply: impl FnOnce(&mut BTreeMap<StoreKey, StoredValue>, Option<&mut ConsumerIsolation>) -> T,
-    ) -> Result<T, ClientErrorEnvelope> {
-        if let Some(isolation) = &self.isolation {
-            let mut isolation = isolation.lock().expect("isolation mutex");
-            isolation
-                .admit_request(identity.client_id())
-                .map_err(admission_error)?;
-            let mut store = self.lock_store();
-            Ok(apply(&mut store, Some(&mut isolation)))
-        } else {
-            let mut store = self.lock_store();
-            Ok(apply(&mut store, None))
-        }
-    }
-
-    fn begin_tenant_subscription(
-        &self,
-        identity: &ClientIdentity,
-    ) -> Result<(), ClientErrorEnvelope> {
-        if let Some(isolation) = &self.isolation {
-            isolation
-                .lock()
-                .expect("isolation mutex")
-                .begin_subscription(identity.client_id())
-                .map_err(admission_error)
-        } else {
-            Ok(())
-        }
-    }
-
-    fn record_invalidation(
-        &self,
-        identity: &ClientIdentity,
-        ns: Namespace,
-        key: StructuredKey,
-        kind: ClientSurfaceMutationKind,
-    ) {
-        self.record_mutation(identity, ns, Some(key), kind);
-    }
-
-    fn record_mutation(
-        &self,
-        identity: &ClientIdentity,
-        namespace: Namespace,
-        key: Option<StructuredKey>,
-        kind: ClientSurfaceMutationKind,
-    ) {
-        if self.mutation_events.receiver_count() == 0 {
-            return;
-        }
-        if self.profile_instrumentation.enabled() {
-            self.profile_instrumentation
-                .message_id_seqcst_operations
-                .fetch_add(1, Ordering::Relaxed);
-        }
-        let message_id = self.next_message_id.fetch_add(1, Ordering::SeqCst);
-        self.publish_mutation(identity, namespace, key, kind, message_id);
-    }
-
-    fn publish_mutation(
-        &self,
-        identity: &ClientIdentity,
-        namespace: Namespace,
-        key: Option<StructuredKey>,
-        kind: ClientSurfaceMutationKind,
-        message_id: u64,
-    ) {
-        if self.mutation_events.receiver_count() > 0 {
-            let _ = self.mutation_events.send(ClientSurfaceMutationEvent {
-                tenant: identity.tenant().to_owned(),
-                namespace,
-                key,
-                kind,
-                message_id,
-            });
-        }
-    }
-
-    fn record_namespace_mutation(
-        &self,
-        identity: &ClientIdentity,
-        namespace: Namespace,
-        kind: ClientSurfaceMutationKind,
-    ) {
-        self.record_mutation(identity, namespace, None, kind);
+        self.dispatcher.edge.drain_subscriptions()
     }
 }
 
@@ -3052,28 +1243,29 @@ impl AxumClientSurface {
 
     /// Return the axum router for `/client/v1/*`.
     pub fn routes(&self) -> Router {
-        Router::new()
-            .route("/client/v1/data", post(client_data))
-            .route("/client/v1/status", get(client_status))
-            .route("/client/v1/subscriptions", post(client_subscription))
-            .with_state(Arc::clone(&self.state))
+        self.state.dispatcher.routes()
     }
 }
 
 async fn client_data(
-    State(state): State<Arc<ClientSurfaceState>>,
+    State(state): State<Arc<ClientSurfaceDispatcher>>,
     headers: HeaderMap,
     body: Bytes,
 ) -> Response {
     match validate_before_dispatch(&state, &headers, body.len(), CLIENT_DATA_PATH) {
         Ok(identity) => {
-            state.record_dispatch();
-            match ClientFrame::decode(&body, state.limits().max_frame_bytes)
+            state.edge.record_dispatch();
+            let decoded = ClientFrame::decode(&body, state.limits().max_frame_bytes)
                 .and_then(|frame| frame.decode_message())
-                .map_err(|error| ClientSurfaceError::MalformedFrame(error.to_string()))
-                .and_then(|message| state.handle_wire_message(&identity, message))
-                .and_then(|response| encode_wire_message(&response))
-            {
+                .map_err(|error| ClientSurfaceError::MalformedFrame(error.to_string()));
+            let result = match decoded {
+                Ok(message) => state
+                    .handle_wire_message(&identity, message)
+                    .await
+                    .and_then(|response| encode_wire_message(&response)),
+                Err(error) => Err(error),
+            };
+            match result {
                 Ok(bytes) => (StatusCode::OK, bytes).into_response(),
                 Err(error) => (
                     StatusCode::BAD_REQUEST,
@@ -3087,11 +1279,11 @@ async fn client_data(
 }
 
 async fn client_status(
-    State(state): State<Arc<ClientSurfaceState>>,
+    State(state): State<Arc<ClientSurfaceDispatcher>>,
     headers: HeaderMap,
 ) -> Response {
     match ClientIdentity::from_headers(&headers) {
-        Ok(identity) => match state.tenant_status(&identity) {
+        Ok(identity) => match state.edge.tenant_status(&identity) {
             Ok(tenant_status) => (
                 StatusCode::OK,
                 Json(ClientStatusReply::from_identity(identity, tenant_status)),
@@ -3104,17 +1296,19 @@ async fn client_status(
 }
 
 async fn client_subscription(
-    State(state): State<Arc<ClientSurfaceState>>,
+    State(state): State<Arc<ClientSurfaceDispatcher>>,
     headers: HeaderMap,
     body: Bytes,
 ) -> Response {
     match validate_before_dispatch(&state, &headers, body.len(), CLIENT_SUBSCRIPTIONS_PATH) {
         Ok(_identity) => {
-            if state.active_subscriptions() as usize >= state.limits().max_streams_per_connection {
+            if state.edge.active_subscriptions() as usize
+                >= state.limits().max_streams_per_connection
+            {
                 return ClientSurfaceError::TooManyStreams.into_response();
             }
-            state.begin_subscription();
-            state.record_dispatch();
+            state.edge.begin_subscription();
+            state.edge.record_dispatch();
             (
                 StatusCode::ACCEPTED,
                 Json(ClientSurfaceReply::accepted("subscription_reserved")),
@@ -3126,7 +1320,7 @@ async fn client_subscription(
 }
 
 fn validate_before_dispatch(
-    state: &ClientSurfaceState,
+    state: &ClientSurfaceDispatcher,
     headers: &HeaderMap,
     body_len: usize,
     route: &str,
@@ -3134,18 +1328,20 @@ fn validate_before_dispatch(
     let identity = match ClientIdentity::from_headers(headers) {
         Ok(identity) => identity,
         Err(error) => {
-            state.reject_anonymous();
+            state.edge.reject_anonymous();
             return Err(error);
         }
     };
     if body_len > state.limits().max_frame_bytes {
-        state.reject_oversized();
+        state.edge.reject_oversized();
         return Err(ClientSurfaceError::FrameTooLarge {
             actual: body_len,
             max: state.limits().max_frame_bytes,
         });
     }
-    state.validate_tenant_identity(&identity, route, None)?;
+    state
+        .edge
+        .validate_tenant_identity(&identity, route, None)?;
     Ok(identity)
 }
 
@@ -3749,15 +1945,24 @@ mod retention_tests {
             state.reap_expired_entries_for_maintenance(),
             CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT
         );
-        assert_eq!(state.store.lock().expect("store mutex").len(), 44);
+        assert_eq!(
+            state.local_backend.store.lock().expect("store mutex").len(),
+            44
+        );
 
         state.advance_cache_time_for_tests(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS);
         assert_eq!(state.reap_expired_entries_for_maintenance(), 44);
-        assert!(state.store.lock().expect("store mutex").is_empty());
+        assert!(state
+            .local_backend
+            .store
+            .lock()
+            .expect("store mutex")
+            .is_empty());
 
         state.advance_cache_time_for_tests(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS);
         assert_eq!(state.reap_expired_entries_for_maintenance(), 0);
         assert!(state
+            .local_backend
             .expiry_sweep_cursor
             .lock()
             .expect("expiry cursor mutex")
@@ -3838,7 +2043,10 @@ mod retention_tests {
             .result
             .is_ok());
 
-        assert_eq!(state.next_message_id.load(Ordering::SeqCst), 1);
+        assert_eq!(
+            state.dispatcher.edge.next_message_id.load(Ordering::SeqCst),
+            1
+        );
     }
 
     #[test]
@@ -3858,6 +2066,7 @@ mod retention_tests {
         }
         assert_eq!(
             state
+                .local_backend
                 .idempotency_keys
                 .lock()
                 .expect("idempotency mutex")
@@ -3890,6 +2099,7 @@ mod retention_tests {
         assert!(after_expiry.result.is_ok());
         assert_eq!(
             state
+                .local_backend
                 .idempotency_keys
                 .lock()
                 .expect("idempotency mutex")
@@ -3903,6 +2113,8 @@ mod retention_tests {
         let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
         for index in 0..hydracache_observability::IN_MEMORY_AUDIT_CAPACITY {
             state
+                .dispatcher
+                .edge
                 .record_audit(AuditEvent::AuthFailure {
                     tenant: Some("tenant".to_owned()),
                     route: CLIENT_DATA_PATH.to_owned(),
@@ -3917,7 +2129,7 @@ mod retention_tests {
 
         let mut admin = ClientIdentity::new("admin", "tenant").unwrap();
         admin.admin = true;
-        let response = state.handle_force_unlock(
+        let response = state.dispatcher.edge.handle_force_unlock(
             &admin,
             "force-unlock".to_owned(),
             Namespace::new("retention").unwrap(),
@@ -3929,6 +2141,8 @@ mod retention_tests {
         assert!(!error.retryable);
         assert_eq!(
             state
+                .dispatcher
+                .edge
                 .lock_service
                 .lock()
                 .expect("lock service mutex")
@@ -3954,7 +2168,12 @@ mod retention_tests {
         .result
         .is_ok());
         {
-            let mut locks = state.lock_service.lock().expect("lock service mutex");
+            let mut locks = state
+                .dispatcher
+                .edge
+                .lock_service
+                .lock()
+                .expect("lock service mutex");
             let owner = LockOwner::new("session", 1);
             locks
                 .store
@@ -3969,6 +2188,8 @@ mod retention_tests {
                 .expect("lock acquired");
         }
         state
+            .dispatcher
+            .edge
             .record_audit(AuditEvent::AuthFailure {
                 tenant: Some("tenant".to_owned()),
                 route: CLIENT_DATA_PATH.to_owned(),
@@ -4019,7 +2240,10 @@ mod retention_tests {
             if index > 0 && index % 100_000 == 0 {
                 let retained = state.retained_state_for_diagnostics();
                 assert!(retained.store_entries <= 64);
-                assert_eq!(state.next_message_id.load(Ordering::SeqCst), 1);
+                assert_eq!(
+                    state.dispatcher.edge.next_message_id.load(Ordering::SeqCst),
+                    1
+                );
             }
         }
 
@@ -4031,7 +2255,10 @@ mod retention_tests {
         );
         assert_eq!(plateau.idempotency_outcomes, 0);
         assert_eq!(plateau.audit_events, 0);
-        assert_eq!(state.next_message_id.load(Ordering::SeqCst), 1);
+        assert_eq!(
+            state.dispatcher.edge.next_message_id.load(Ordering::SeqCst),
+            1
+        );
 
         let reset = state.reset_retained_state_for_diagnostics().unwrap();
         assert_eq!(reset.after.store_entries, 0);
@@ -4115,8 +2342,8 @@ mod profiled_store_guard_tests {
 
             state.set_profile_instrumentation_enabled(false);
             state.reset_profile_metrics();
-            drop(state.lock_store());
-            state.now_ms();
+            drop(state.local_execution().lock_store());
+            state.local_execution().now_ms();
             assert_eq!(
                 state.profile_metrics(),
                 ClientSurfaceProfileMetrics::default()

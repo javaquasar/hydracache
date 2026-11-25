@@ -1,5 +1,12 @@
 # Main integration for release 0.75
 
+The latest integration on 25 November 2026 merges main
+`3453c2e7b1b2b1e7806d7b689a08b3f51275f614` at
+`87309fb4483c19dfa701882446453dabbc02d1d4`. It imports the Rust 1.88-compatible
+`kube-client` OpenSSL CA backport while retaining the admitted supervisor dependency graph.
+The [D1 production extraction record](d1-local-backend.md) describes the continuing work.
+The earlier integration history and its test results below remain tied to their original source.
+
 The release owner requested integration of current main on 25 November 2026.
 The integration combines the 0.75 branch at
 `c8109470ce860179a955a6fd02f55e25e3108370` with main at

@@ -16,7 +16,7 @@ use hydracache_client_hc2::wire::invocation_response;
 use hydracache_client_hc2::wire::server_envelope;
 use hydracache_client_hc2::wire::{
     BatchResult, CacheEvent, ClientEnvelope, EventGap, HandshakeAck, InvocationRequest,
-    InvocationResponse, LockOwnershipResult, LockResult, MutationResult, ResponseMeta,
+    InvocationResponse, LockOwnershipResult, LockResult, MutationResult, RequestMeta, ResponseMeta,
     ServerEnvelope, SessionHeartbeat, SessionLost, StableErrorCode, SubscriptionAck, ValueResult,
 };
 use hydracache_client_hc2::{is_supported_hc2_generation, HC2_GENERATION, HC2_MINIMUM_GENERATION};
@@ -24,7 +24,9 @@ use hydracache_client_protocol::{
     CasExpectation, ClientErrorCode, ClientRequest, ClientRequestEnvelope, ClientResponse,
     ClientResponseEnvelope, LockConsistency, Namespace, StructuredKey,
 };
-use hydracache_client_transport_axum::{ClientIdentity, ClientSurfaceState};
+use hydracache_client_transport_axum::{
+    ClientIdentity, ClientSurfaceDispatcher, ClientSurfaceState,
+};
 use prost::Message;
 use sha2::{Digest, Sha256};
 use thiserror::Error;
@@ -113,7 +115,7 @@ struct Accounting {
 /// Production gRPC service. Construction requires existing verified dispatch state.
 #[derive(Debug, Clone)]
 pub struct Hc2ClientPlaneService {
-    state: Arc<ClientSurfaceState>,
+    state: Arc<ClientSurfaceDispatcher>,
     cluster_id: Arc<str>,
     accounting: Arc<Accounting>,
 }
@@ -121,6 +123,14 @@ pub struct Hc2ClientPlaneService {
 impl Hc2ClientPlaneService {
     /// Construct a service over the shared HC/1/RESP dispatch state.
     pub fn new(state: Arc<ClientSurfaceState>, cluster_id: impl Into<String>) -> Self {
+        Self::from_dispatcher(state.dispatcher(), cluster_id)
+    }
+
+    /// Attach the canonical asynchronous dispatcher without constructing another local map.
+    pub fn from_dispatcher(
+        state: Arc<ClientSurfaceDispatcher>,
+        cluster_id: impl Into<String>,
+    ) -> Self {
         Self {
             state,
             cluster_id: Arc::from(cluster_id.into()),
@@ -398,8 +408,14 @@ async fn serve_connection(
         match envelope.message {
             Some(client_envelope::Message::Invocation(invocation)) => {
                 let event = mutation_event(&invocation);
-                let response =
-                    dispatch_invocation(service, peer_id, envelope.correlation_id, invocation);
+                let response = dispatch_invocation_until_closed(
+                    service,
+                    peer_id,
+                    envelope.correlation_id,
+                    invocation,
+                    outbound,
+                )
+                .await?;
                 let mutation_applied = matches!(
                     response.result.as_ref(),
                     Some(invocation_response::Result::Mutation(MutationResult {
@@ -508,79 +524,112 @@ async fn serve_connection(
     Ok(())
 }
 
-fn dispatch_invocation(
-    service: &Hc2ClientPlaneService,
-    peer_id: &str,
-    correlation_id: u64,
-    invocation: InvocationRequest,
-) -> InvocationResponse {
-    service
-        .accounting
-        .pending_invocations
-        .fetch_add(1, Ordering::AcqRel);
-    let response = dispatch_invocation_inner(service, peer_id, correlation_id, invocation);
-    service
-        .accounting
-        .pending_invocations
-        .fetch_sub(1, Ordering::AcqRel);
-    response
+struct PendingInvocationGuard<'a>(&'a AtomicU64);
+
+impl<'a> PendingInvocationGuard<'a> {
+    fn new(counter: &'a AtomicU64) -> Self {
+        counter.fetch_add(1, Ordering::AcqRel);
+        Self(counter)
+    }
 }
 
-fn dispatch_invocation_inner(
+impl Drop for PendingInvocationGuard<'_> {
+    fn drop(&mut self) {
+        self.0.fetch_sub(1, Ordering::AcqRel);
+    }
+}
+
+async fn dispatch_invocation_until_closed(
+    service: &Hc2ClientPlaneService,
+    peer_id: &str,
+    correlation_id: u64,
+    invocation: InvocationRequest,
+    outbound: &OutboundQueue,
+) -> Result<InvocationResponse, Status> {
+    tokio::select! {
+        biased;
+        _ = outbound.sender.closed() => Err(Status::cancelled("HC/2 response stream closed")),
+        response = dispatch_invocation_async(service, peer_id, correlation_id, invocation) => Ok(response),
+    }
+}
+
+async fn dispatch_invocation_async(
     service: &Hc2ClientPlaneService,
     peer_id: &str,
     correlation_id: u64,
     invocation: InvocationRequest,
 ) -> InvocationResponse {
-    let Some(meta) = invocation.meta else {
-        return wire_error(
-            StableErrorCode::StableErrorInvalidRequest,
-            "request metadata is required",
-        );
-    };
-    if meta.tenant.trim().is_empty() {
-        return wire_error(
-            StableErrorCode::StableErrorUnauthenticated,
-            "tenant is required",
-        );
-    }
-    if meta.deadline_unix_ms != 0 && meta.deadline_unix_ms <= unix_time_ms() {
-        return wire_error(
-            StableErrorCode::StableErrorDeadlineExceeded,
-            "deadline expired",
-        );
-    }
-    let identity = match ClientIdentity::new(peer_id, meta.tenant.clone()) {
-        Ok(identity) => identity,
-        Err(_) => {
-            return wire_error(
-                StableErrorCode::StableErrorUnauthenticated,
-                "invalid identity",
-            )
-        }
-    };
-    let Some(operation) = invocation.operation else {
-        return wire_error(
-            StableErrorCode::StableErrorInvalidRequest,
-            "operation is required",
-        );
+    let _pending = PendingInvocationGuard::new(&service.accounting.pending_invocations);
+    let (meta, identity, operation) = match prepare_invocation(peer_id, invocation) {
+        Ok(prepared) => prepared,
+        Err(response) => return response,
     };
     if let invocation_request::Operation::Batch(batch) = operation {
-        let items = batch
-            .items
-            .into_iter()
-            .map(|item| {
-                let nested = InvocationRequest {
-                    meta: Some(meta.clone()),
-                    operation: item.operation.map(batch_operation),
-                };
-                dispatch_invocation_inner(service, peer_id, correlation_id, nested)
-            })
-            .collect();
+        let mut items = Vec::with_capacity(batch.items.len());
+        for item in batch.items {
+            let nested = InvocationRequest {
+                meta: Some(meta.clone()),
+                operation: item.operation.map(batch_operation),
+            };
+            let response = match prepare_invocation(peer_id, nested) {
+                Ok((meta, identity, operation)) => {
+                    execute_invocation(service, correlation_id, meta, identity, operation).await
+                }
+                Err(response) => response,
+            };
+            items.push(response);
+        }
         return wire_success(Some(invocation_response::Result::Batch(BatchResult {
             items,
         })));
     }
+    execute_invocation(service, correlation_id, meta, identity, operation).await
+}
+
+fn prepare_invocation(
+    peer_id: &str,
+    invocation: InvocationRequest,
+) -> Result<(RequestMeta, ClientIdentity, invocation_request::Operation), InvocationResponse> {
+    let Some(meta) = invocation.meta else {
+        return Err(wire_error(
+            StableErrorCode::StableErrorInvalidRequest,
+            "request metadata is required",
+        ));
+    };
+    if meta.tenant.trim().is_empty() {
+        return Err(wire_error(
+            StableErrorCode::StableErrorUnauthenticated,
+            "tenant is required",
+        ));
+    }
+    if meta.deadline_unix_ms != 0 && meta.deadline_unix_ms <= unix_time_ms() {
+        return Err(wire_error(
+            StableErrorCode::StableErrorDeadlineExceeded,
+            "deadline expired",
+        ));
+    }
+    let identity = ClientIdentity::new(peer_id, meta.tenant.clone()).map_err(|_| {
+        wire_error(
+            StableErrorCode::StableErrorUnauthenticated,
+            "invalid identity",
+        )
+    })?;
+    let operation = invocation.operation.ok_or_else(|| {
+        wire_error(
+            StableErrorCode::StableErrorInvalidRequest,
+            "operation is required",
+        )
+    })?;
+    Ok((meta, identity, operation))
+}
+
+async fn execute_invocation(
+    service: &Hc2ClientPlaneService,
+    correlation_id: u64,
+    meta: RequestMeta,
+    identity: ClientIdentity,
+    operation: invocation_request::Operation,
+) -> InvocationResponse {
     let request = match to_client_request(operation) {
         Ok(request) => request,
         Err(detail) => return wire_error(StableErrorCode::StableErrorInvalidRequest, detail),
@@ -592,7 +641,26 @@ fn dispatch_invocation_inner(
     if !meta.idempotency_key.is_empty() {
         envelope = envelope.with_idempotency_key(hex(&meta.idempotency_key));
     }
-    from_dispatch_response(service.state.dispatch_verified_request(&identity, envelope))
+    from_dispatch_response(
+        service
+            .state
+            .dispatch_verified_request(&identity, envelope)
+            .await,
+    )
+}
+
+// Existing synchronous characterization cases exercise only the immediately-ready local backend.
+#[cfg(test)]
+fn dispatch_invocation(
+    service: &Hc2ClientPlaneService,
+    peer_id: &str,
+    correlation_id: u64,
+    invocation: InvocationRequest,
+) -> InvocationResponse {
+    use futures_util::FutureExt;
+    dispatch_invocation_async(service, peer_id, correlation_id, invocation)
+        .now_or_never()
+        .expect("local characterization dispatcher must complete in one poll")
 }
 
 fn batch_operation(
@@ -962,6 +1030,84 @@ mod tests {
             tenant: "tenant-a".to_owned(),
             topology_epoch: 1,
         }
+    }
+
+    #[derive(Debug)]
+    struct SuspendedBackend {
+        entered: AtomicU64,
+        completed: AtomicU64,
+        release: Semaphore,
+    }
+
+    impl hydracache_client_transport_axum::ClientDataBackend for SuspendedBackend {
+        fn execute<'a>(
+            &'a self,
+            _request: hydracache_client_transport_axum::VerifiedClientRequest<'a>,
+        ) -> hydracache_client_transport_axum::ClientBackendFuture<'a> {
+            Box::pin(async move {
+                self.entered.fetch_add(1, Ordering::AcqRel);
+                self.release.acquire().await.unwrap().forget();
+                self.completed.fetch_add(1, Ordering::AcqRel);
+                Ok(ClientResponse::Value { value: None })
+            })
+        }
+    }
+
+    #[tokio::test]
+    async fn asynchronous_invocation_releases_pending_accounting_on_completion_and_disconnect() {
+        use futures_util::FutureExt;
+        let backend = Arc::new(SuspendedBackend {
+            entered: AtomicU64::new(0),
+            completed: AtomicU64::new(0),
+            release: Semaphore::new(0),
+        });
+        let dispatcher = Arc::new(
+            ClientSurfaceDispatcher::from_backend(Default::default(), backend.clone()).unwrap(),
+        );
+        let service = Hc2ClientPlaneService::from_dispatcher(dispatcher, "test-cluster");
+        let invocation = || InvocationRequest {
+            meta: Some(meta()),
+            operation: Some(invocation_request::Operation::Get(GetRequest {
+                key: Bytes::from_static(b"key"),
+            })),
+        };
+        let (outbound, receiver) = OutboundQueue::new(1);
+        let mut request = Box::pin(dispatch_invocation_until_closed(
+            &service,
+            "peer",
+            1,
+            invocation(),
+            &outbound,
+        ));
+        assert!(request.as_mut().now_or_never().is_none());
+        assert_eq!(service.accounting().pending_invocations, 1);
+        assert_eq!(backend.entered.load(Ordering::Acquire), 1);
+        drop(receiver);
+        assert_eq!(request.await.unwrap_err().code(), tonic::Code::Cancelled);
+        assert_eq!(service.accounting().pending_invocations, 0);
+        assert_eq!(backend.completed.load(Ordering::Acquire), 0);
+
+        let (outbound, _receiver) = OutboundQueue::new(1);
+        backend.release.add_permits(1);
+        let response =
+            dispatch_invocation_until_closed(&service, "peer", 2, invocation(), &outbound)
+                .await
+                .unwrap();
+        assert!(matches!(
+            response.result,
+            Some(invocation_response::Result::Value(ValueResult {
+                found: false,
+                ..
+            }))
+        ));
+        assert_eq!(service.accounting().pending_invocations, 0);
+        assert_eq!(backend.completed.load(Ordering::Acquire), 1);
+        let mut request = Box::pin(dispatch_invocation_async(&service, "peer", 3, invocation()));
+        assert!(request.as_mut().now_or_never().is_none());
+        assert_eq!(service.accounting().pending_invocations, 1);
+        drop(request);
+        assert_eq!(service.accounting().pending_invocations, 0);
+        assert_eq!(backend.completed.load(Ordering::Acquire), 1);
     }
 
     #[tokio::test]
