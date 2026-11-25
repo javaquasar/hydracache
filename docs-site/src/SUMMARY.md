@@ -37,6 +37,7 @@
 - [Macros](guides/macros.md)
 - [Database Query Caching](guides/database-query-caching.md)
 - [Invalidation After Commit](guides/invalidation-after-commit.md)
+- [SQL Dependency Lint](guides/sql-lint.md)
 - [SQLx Adapter](guides/sqlx-adapter.md)
 - [Diesel Adapter](guides/diesel-adapter.md)
 - [SeaORM Adapter](guides/seaorm-adapter.md)

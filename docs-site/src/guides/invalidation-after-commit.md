@@ -87,3 +87,4 @@ Sometimes the caller that just wrote must not read its own stale value — for e
 
 - [Tutorial: Two Instances](../tutorial.md) — `InvalidationPlan` across instances
 - [Consistency Model](../concepts/consistency-model.md) — what invalidation after commit guarantees
+- [SQL Dependency Lint](sql-lint.md) — check which tables your cached queries depend on

@@ -16,6 +16,7 @@ hydracache-db = { path = "../../crates/hydracache-db" }
 hydracache-diesel = { path = "../../crates/hydracache-diesel" }
 hydracache-seaorm = { path = "../../crates/hydracache-seaorm" }
 hydracache-sqlx = { path = "../../crates/hydracache-sqlx" }
+hydracache-sql-lint = { path = "../../crates/hydracache-sql-lint" }
 hydracache-redis-compat = { path = "../../crates/hydracache-redis-compat" }
 redis = { version = "1.3.0", default-features = false, features = ["tokio-comp"] }
 serde = { version = "1", features = ["derive"] }
