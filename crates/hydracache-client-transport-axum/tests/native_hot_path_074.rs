@@ -1,8 +1,10 @@
 use hydracache_client_protocol::{
     BatchPutEntry, ClientRequest, ClientRequestEnvelope, ClientResponse, Namespace, StructuredKey,
+    TtlState,
 };
 use hydracache_client_transport_axum::{
-    ClientIdentity, ClientSurfaceLimits, ClientSurfaceProfileMetrics, ClientSurfaceState,
+    ClientIdentity, ClientSurfaceLimits, ClientSurfaceMutationKind, ClientSurfaceProfileMetrics,
+    ClientSurfaceState,
 };
 
 fn namespace() -> Namespace {
@@ -11,6 +13,100 @@ fn namespace() -> Namespace {
 
 fn key() -> StructuredKey {
     StructuredKey::new(vec!["key".to_owned()]).unwrap()
+}
+
+#[tokio::test]
+async fn put_samples_the_write_clock_only_for_ttl_or_idempotency() {
+    let identity = ClientIdentity::new("profile-client", "profile-tenant").unwrap();
+    for (ttl_ms, idempotent, clock_reads) in [
+        (None, false, 1),
+        (Some(50), false, 2),
+        (None, true, 2),
+        (Some(50), true, 2),
+    ] {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+        state.set_cache_time_for_tests(Some(1_000));
+        state.set_profile_instrumentation_enabled(true);
+        let dispatcher = state.dispatcher();
+        let mut subscriber = state.subscribe_mutations(&identity).unwrap();
+        let put = |id, value| {
+            let request = ClientRequestEnvelope::new(
+                id,
+                ClientRequest::Put {
+                    ns: namespace(),
+                    key: key(),
+                    value,
+                    ttl_ms,
+                    dimensions: Vec::new(),
+                },
+            );
+            if idempotent {
+                request.with_idempotency_key("write-once")
+            } else {
+                request
+            }
+        };
+
+        let response = dispatcher
+            .dispatch_verified_request(&identity, put("write", vec![1]))
+            .await;
+        assert_eq!(response.request_id, "write");
+        assert_eq!(response.result, Ok(ClientResponse::Stored));
+        let metrics = state.profile_metrics();
+        assert_eq!(metrics.expiry_sweep_checks, 1);
+        assert_eq!(metrics.clock_reads, clock_reads);
+        assert_eq!(metrics.clock_floor_seqcst_operations, clock_reads);
+        let event = tokio::time::timeout(std::time::Duration::from_secs(1), subscriber.recv())
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(event.key(), Some(&key()));
+        assert_eq!(event.kind(), ClientSurfaceMutationKind::Stored);
+
+        if idempotent {
+            state.advance_cache_time_for_tests(1);
+            let replay = dispatcher
+                .dispatch_verified_request(&identity, put("replay", vec![2]))
+                .await;
+            assert_eq!(replay.request_id, "replay");
+            assert_eq!(replay.result, Ok(ClientResponse::Stored));
+            assert_eq!(state.state_mutations(), 1);
+        }
+        let response = dispatcher
+            .dispatch_verified_request(
+                &identity,
+                ClientRequestEnvelope::new(
+                    "read",
+                    ClientRequest::Get {
+                        ns: namespace(),
+                        key: key(),
+                    },
+                ),
+            )
+            .await;
+        assert_eq!(
+            response.result,
+            Ok(ClientResponse::Value {
+                value: Some(vec![1])
+            })
+        );
+        let ttl = dispatcher
+            .dispatch_verified_request(
+                &identity,
+                ClientRequestEnvelope::new(
+                    "ttl",
+                    ClientRequest::GetTtl {
+                        ns: namespace(),
+                        key: key(),
+                    },
+                ),
+            )
+            .await;
+        let expected = ttl_ms.map_or(TtlState::Persistent, |ttl_ms| TtlState::ExpiresIn {
+            ttl_ms: ttl_ms - u64::from(idempotent),
+        });
+        assert_eq!(ttl.result, Ok(ClientResponse::Ttl { state: expected }));
+    }
 }
 
 #[test]

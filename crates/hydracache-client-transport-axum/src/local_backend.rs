@@ -543,7 +543,9 @@ impl<'a> LocalBackendExecution<'a> {
                 ClientErrorEnvelope::new(ClientErrorCode::TooLarge, false, "value too large"),
             );
         }
-        let now_ms = self.now_ms();
+        // The request already checked expiry maintenance. A persistent write without
+        // idempotency needs no further time sample of its own.
+        let now_ms = (ttl_ms.is_some() || idempotency_key.is_some()).then(|| self.now_ms());
         let scoped_idempotency_key =
             idempotency_key.map(|idempotency_key| (identity.tenant().to_owned(), idempotency_key));
         let mut idempotency_keys = scoped_idempotency_key.as_ref().map(|_| {
@@ -555,6 +557,7 @@ impl<'a> LocalBackendExecution<'a> {
         if let (Some(idempotency_key), Some(keys)) =
             (scoped_idempotency_key.as_ref(), idempotency_keys.as_mut())
         {
+            let now_ms = now_ms.expect("idempotent write has a time sample");
             keys.retain(|_, record| record.expires_at_ms > now_ms);
             if keys.contains_key(idempotency_key) {
                 return ClientResponseEnvelope::ok(request_id, ClientResponse::Stored);
@@ -584,7 +587,11 @@ impl<'a> LocalBackendExecution<'a> {
                 .fetch_add(value_bytes, Ordering::Relaxed);
         }
         let stored = match ttl_ms {
-            Some(ttl_ms) => StoredValue::with_ttl(value, now_ms, ttl_ms),
+            Some(ttl_ms) => StoredValue::with_ttl(
+                value,
+                now_ms.expect("expiring write has a time sample"),
+                ttl_ms,
+            ),
             None => StoredValue::persistent(value),
         };
         let map_key = self.materialize_store_key(identity, &ns, &key);
@@ -617,7 +624,9 @@ impl<'a> LocalBackendExecution<'a> {
             keys.insert(
                 idempotency_key,
                 IdempotencyRecord {
-                    expires_at_ms: now_ms.saturating_add(CLIENT_SURFACE_IDEMPOTENCY_TTL_MS),
+                    expires_at_ms: now_ms
+                        .expect("idempotent write has a time sample")
+                        .saturating_add(CLIENT_SURFACE_IDEMPOTENCY_TTL_MS),
                 },
             );
         }
