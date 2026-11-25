@@ -63,6 +63,7 @@ The cluster layer is developed against a deterministic simulator. The [interacti
 | Run members, clients, and a cluster | [Client and Member Cluster](guides/client-member-cluster.md) |
 | Expose a Redis-compatible RESP edge | [Redis API](guides/redis-api.md) |
 | Inspect logical memory ownership and retained-byte estimates | [Memory Accounting](guides/memory-accounting.md) |
+| Understand what is guaranteed and how it is checked | [Consistency Model](concepts/consistency-model.md), [How We Test Correctness](concepts/how-we-test-correctness.md) |
 | Review production readiness | [Production Checklist](production-checklist.md) |
 | Avoid common cache mistakes | [Anti-patterns](anti-patterns.md) |
 

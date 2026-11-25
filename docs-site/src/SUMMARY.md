@@ -17,6 +17,8 @@
 - [Single-flight](concepts/single-flight.md)
 - [TTL and Invalidation](concepts/ttl-and-invalidation.md)
 - [Local-first Invalidation](concepts/local-first-invalidation.md)
+- [Consistency Model](concepts/consistency-model.md)
+- [How We Test Correctness](concepts/how-we-test-correctness.md)
 - [Typed Query Caching](concepts/typed-query-caching.md)
 - [What HydraCache Is Not](concepts/what-hydracache-is-not.md)
 
