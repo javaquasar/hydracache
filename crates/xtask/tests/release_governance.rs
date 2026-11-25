@@ -978,11 +978,11 @@ fn post_publish_consumer_tracks_the_current_public_api() {
     let problems = xtask::release_governance::post_publish_contract_problems(&workflow, &fixture);
     assert!(problems.is_empty(), "{problems:#?}");
 
-    let stable_only = workflow.replacen("[stable, '1.88.0']", "[stable]", 1);
+    let stable_only = workflow.replacen("[stable, '1.89.0']", "[stable]", 1);
     assert!(
         xtask::release_governance::post_publish_contract_problems(&stable_only, &fixture)
             .iter()
-            .any(|problem| problem.contains("1.88.0"))
+            .any(|problem| problem.contains("1.89.0"))
     );
 
     let stale = fixture

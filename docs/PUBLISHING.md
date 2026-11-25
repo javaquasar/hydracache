@@ -363,8 +363,8 @@ cargo semver-checks -p hydracache --baseline-version 0.20.0 --release-type minor
 cargo audit --ignore RUSTSEC-2024-0437
 cargo deny check
 
-cargo +1.88.0 check --workspace --all-targets --locked
-cargo +1.88.0 test --workspace --locked
+cargo +1.89.0 check --workspace --all-targets --locked
+cargo +1.89.0 test --workspace --locked
 
 cargo package -p hydracache-core
 cargo publish -p hydracache-core
@@ -523,7 +523,7 @@ last.
 
 ## MSRV and Dependency Updates
 
-The workspace MSRV is Rust `1.88`. Before publishing, run the MSRV commands in
+The workspace MSRV is Rust `1.89` (raised from `1.88` because the RUSTSEC-2026-0600 fix in kube 4.2.1 requires it). Before publishing, run the MSRV commands in
 the update checklist above, not only the stable toolchain commands.
 
 `hydracache-sqlx`, `hydracache-diesel`, and `hydracache-seaorm` use external
