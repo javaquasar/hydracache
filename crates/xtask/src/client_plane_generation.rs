@@ -53,7 +53,17 @@ fn generate_rust(
         return Err(format!("clean Rust HC/2 generation failed with {}", output.status).into());
     }
 
-    let out = rust_output_dir(std::str::from_utf8(&output.stdout)?, package_id)?.canonicalize()?;
+    let out = checked_rust_output(
+        &rust_output_dir(std::str::from_utf8(&output.stdout)?, package_id)?,
+        target_dir,
+    )?;
+    let mut generated = BTreeMap::new();
+    collect_files(&out, &out, &mut generated)?;
+    require_non_empty("Rust", generated)
+}
+
+fn checked_rust_output(out: &Path, target_dir: &Path) -> Result<PathBuf, Box<dyn Error>> {
+    let out = out.canonicalize()?;
     let target_dir = target_dir.canonicalize()?;
     if out == target_dir || !out.starts_with(&target_dir) {
         return Err(format!(
@@ -62,12 +72,22 @@ fn generate_rust(
         )
         .into());
     }
-    let mut generated = BTreeMap::new();
-    collect_files(&out, &out, &mut generated)?;
-    require_non_empty("Rust", generated)
+    Ok(out)
 }
 
 fn rust_package_id(root: &Path) -> Result<String, Box<dyn Error>> {
+    let output = Command::new("cargo")
+        .args(["metadata", "--locked", "--no-deps", "--format-version=1"])
+        .current_dir(root)
+        .stderr(std::process::Stdio::inherit())
+        .output()?;
+    if !output.status.success() {
+        return Err(format!("Rust HC/2 package metadata failed with {}", output.status).into());
+    }
+    package_id_from_metadata(&output.stdout)
+}
+
+fn package_id_from_metadata(bytes: &[u8]) -> Result<String, Box<dyn Error>> {
     #[derive(Deserialize)]
     struct Metadata {
         packages: Vec<Package>,
@@ -79,15 +99,7 @@ fn rust_package_id(root: &Path) -> Result<String, Box<dyn Error>> {
         id: String,
     }
 
-    let output = Command::new("cargo")
-        .args(["metadata", "--locked", "--no-deps", "--format-version=1"])
-        .current_dir(root)
-        .stderr(std::process::Stdio::inherit())
-        .output()?;
-    if !output.status.success() {
-        return Err(format!("Rust HC/2 package metadata failed with {}", output.status).into());
-    }
-    let metadata: Metadata = serde_json::from_slice(&output.stdout)?;
+    let metadata: Metadata = serde_json::from_slice(bytes)?;
     let mut packages = metadata
         .packages
         .into_iter()
@@ -256,6 +268,10 @@ fn workspace_root() -> Result<PathBuf, Box<dyn Error>> {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "../tests/support/client_plane_generation_process.rs"]
+mod process_tests;
 
 #[cfg(test)]
 mod tests {

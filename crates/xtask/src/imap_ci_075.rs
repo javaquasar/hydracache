@@ -265,6 +265,8 @@ pub fn tooling_command(root: &Path, _windows: bool) -> Command {
             "xtask",
             "--lib",
             "--test",
+            "release_governance",
+            "--test",
             "imap_contract_075",
             "--test",
             "imap_capability_audit_075",

@@ -538,6 +538,8 @@ fn tooling_isolates_the_live_producer_on_every_platform_and_preserves_gate_argum
                 "xtask",
                 "--lib",
                 "--test",
+                "release_governance",
+                "--test",
                 "imap_contract_075",
                 "--test",
                 "imap_capability_audit_075",

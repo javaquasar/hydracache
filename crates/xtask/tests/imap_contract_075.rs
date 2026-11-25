@@ -73,6 +73,17 @@ fn canary_missing_test_id_fails_closed() {
 }
 
 #[test]
+fn predecessor_admission_work_cannot_disappear_from_the_status() {
+    let temp = fixture();
+    edit(&temp.path().join("status.json"), |value| {
+        value["blocked_by_074"] = Value::Array(Vec::new());
+    });
+    assert!(problems(&temp).iter().any(|problem| {
+        problem.contains("must name remaining predecessor integration dependencies")
+    }));
+}
+
+#[test]
 fn canary_unmapped_and_ambiguous_test_claims_fail_closed() {
     let temp = fixture();
     edit(&temp.path().join("test-registry.json"), |value| {

@@ -1674,6 +1674,8 @@ fn capture_workloads(
         "hydracache-cluster-testkit",
         "--lib",
         "--test",
+        "raft_metadata_snapshot_075",
+        "--test",
         "distributed_value_plane_075",
         "--test",
         "imap_backend_contract_075",
