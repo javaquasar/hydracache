@@ -1006,11 +1006,21 @@ function paintGraph(now) {
     const y = pa.y + (pb.y - pa.y) * progress;
     packet.dot.setAttribute("transform", `translate(${x} ${y})`);
     // Each cycle a delivered message ripples at its target, and a lost one
-    // bursts where it vanishes. Control traffic stays silent.
-    if (!reduced && t >= 1 && packet.end >= 1 && packet.firedCycle !== cycle && packet.family !== "control") {
-      packet.firedCycle = cycle;
-      if (packet.doomed) spawnLossBurst(x, y);
-      else spawnArrivalRipple(packet.to, packet.family);
+    // bursts where it vanishes. Control traffic stays silent. The arrival
+    // point can fall in a short slice of the cycle that slow frames skip, so
+    // an arrival missed in a finished cycle fires on the next frame.
+    if (!reduced && packet.end >= 1 && packet.family !== "control") {
+      const missed = packet.lastCycle !== undefined && cycle > packet.lastCycle && packet.firedCycle !== packet.lastCycle;
+      if ((t >= 1 && packet.firedCycle !== cycle) || missed) {
+        packet.firedCycle = t >= 1 ? cycle : packet.lastCycle;
+        if (packet.doomed) {
+          const stop = Math.min(packet.start + (packet.end - packet.start) * 0.8, 0.82);
+          spawnLossBurst(pa.x + (pb.x - pa.x) * stop, pa.y + (pb.y - pa.y) * stop);
+        } else {
+          spawnArrivalRipple(packet.to, packet.family);
+        }
+      }
+      packet.lastCycle = cycle;
     }
     // The key label reads mid-edge and fades near the nodes it would overlap.
     if (packet.label) packet.label.style.opacity = String(Math.min(1, Math.sin(Math.PI * progress) * 1.6));

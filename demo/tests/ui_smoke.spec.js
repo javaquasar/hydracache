@@ -1055,6 +1055,7 @@ test("legend_folds_and_remembers_the_choice", async ({ page }, testInfo) => {
 });
 
 test("crash_hit_recovery_and_message_effects", async ({ page }) => {
+  test.setTimeout(90_000);
   await page.goto(`${demoUrl}?seed=80&steps=12&scenario=default`);
   await expect(page.getByTestId("timeline-label")).toHaveText("step 12 of 12");
   const node = (id) => page.locator(`.vertex.node[aria-label^="${id},"]`);
@@ -1066,23 +1067,44 @@ test("crash_hit_recovery_and_message_effects", async ({ page }) => {
     input.value = input.min;
     input.dispatchEvent(new Event("input", { bubbles: true }));
   });
-  const stepUntil = async (selector) => {
+  // Effects live about half a second; on a busy CI host a poll can miss
+  // them. Record every effect the graph adds instead of sampling the DOM.
+  await page.evaluate(() => {
+    window.__effects = { "arrival-ripple": 0, "loss-burst": 0 };
+    new MutationObserver((records) => {
+      for (const record of records) {
+        for (const added of record.addedNodes) {
+          const cls = added.getAttribute?.("class") || "";
+          for (const name of Object.keys(window.__effects)) {
+            if (cls.includes(name)) window.__effects[name] += 1;
+          }
+        }
+      }
+    }).observe(document.querySelector("#cluster-graph"), { childList: true, subtree: true });
+  });
+  // Step until a packet that will produce the effect is on the graph, then
+  // give the animation time to land it (without stepping past it).
+  const effectAfterPacket = async (packetSelector, effect) => {
+    const seen = () => page.evaluate((name) => window.__effects[name], effect);
+    const before = await seen();
     for (let attempt = 0; attempt < 20; attempt += 1) {
       await page.getByTestId("step").click();
-      // Effects fire when a packet lands, a few hundred ms into the step.
-      for (let poll = 0; poll < 9; poll += 1) {
-        if ((await page.locator(selector).count()) > 0) return true;
-        await page.waitForTimeout(100);
-      }
+      await page.waitForTimeout(50);
+      if ((await page.locator(packetSelector).count()) > 0) break;
     }
-    return false;
+    const packets = await page.locator(".packet-layer .packet").evaluateAll((dots) =>
+      dots.map((dot) => `${dot.dataset.kind}${dot.classList.contains("doomed") ? "!" : ""}:${dot.dataset.span}`).join(" "),
+    );
+    await expect.poll(seen, { timeout: 8000, message: `${effect} never fired; packets: ${packets}` }).toBeGreaterThan(before);
+    return true;
   };
-  expect(await stepUntil(".arrival-ripple")).toBe(true);
+  // A write or invalidation arriving ripples at its target.
+  await effectAfterPacket(".packet-layer .packet:not(.doomed)[data-family='data'], .packet-layer .packet:not(.doomed)[data-family='event']", "arrival-ripple");
 
   await rows.getByRole("button", { name: "Crash" }).nth(2).click();
   await expect(node("node-2")).toHaveClass(/down-hit/);
   // Writes still addressed to the crashed node are lost: they burst.
-  expect(await stepUntil(".loss-burst")).toBe(true);
+  await effectAfterPacket(".packet-layer .packet.doomed:not(.control)", "loss-burst");
 
   await rows.getByRole("button", { name: "Restart" }).first().click();
   await expect(node("node-2")).toHaveClass(/synced|recovering/);
