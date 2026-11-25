@@ -93,6 +93,11 @@ Unrelated finding while prototyping: the `memory_compat_driver_071` example need
 `durable-value-store` feature but declares no `required-features`, so
 `cargo check -p hydracache --all-targets` without that feature fails on `main` too.
 
+## Related
+
+This is step 1 of closing [TD-0016](TD-0016-simulator-write-path-fidelity.md) (gap G8 in
+[`docs/architecture/RAFT_CONTROL_PLANE.md`](../architecture/RAFT_CONTROL_PLANE.md#gap-register)).
+
 ## Revisit Trigger
 
 Any of:

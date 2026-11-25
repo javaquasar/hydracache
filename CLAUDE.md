@@ -43,6 +43,7 @@ roles). Crates live under `crates/`; the workspace version is in the root
 | Compatibility register (durable/wire artifacts) | `docs/COMPAT.md` |
 | Architecture decision records | `docs/adr/` |
 | Architecture overview | `ARCHITECTURE.md`, `docs/architecture/` |
+| Raft control plane + write path (single source of truth; sim/demo gap register) | `docs/architecture/RAFT_CONTROL_PLANE.md` |
 | Market positioning ("why not Redis?") | `docs/POSITIONING.md` |
 | Cross-project review (Hazelcast/ScyllaDB/etc.) | `docs/plans/V0_37_41_REVIEW_AND_IMPROVEMENTS.md` |
 | Competitive analysis + evolution (cluster) | `docs/COMPETITIVE_ANALYSIS_AND_EVOLUTION.md` |
