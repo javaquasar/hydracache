@@ -3237,8 +3237,6 @@ dependencies = [
 [[package]]
 name = "kube-client"
 version = "4.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d0f628e05bc2264c21fe10d3d675117dc9b43ea3bf4fb07262a222679757537b"
 dependencies = [
  "base64 0.22.1",
  "bytes",
