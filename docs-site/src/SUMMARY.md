@@ -41,6 +41,8 @@
 - [SQLx Adapter](guides/sqlx-adapter.md)
 - [Diesel Adapter](guides/diesel-adapter.md)
 - [SeaORM Adapter](guides/seaorm-adapter.md)
+- [Server and Deployment](guides/server-and-deployment.md)
+- [Client SDKs](guides/client-sdks.md)
 - [Redis API](guides/redis-api.md)
 - [Diagnostics and Events](guides/diagnostics-and-events.md)
 - [Management Center](guides/management-center.md)
