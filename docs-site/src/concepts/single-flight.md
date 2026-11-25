@@ -38,3 +38,8 @@ The sequence is:
 1. design the key correctly;
 2. use the cache API to coalesce same-key loads;
 3. observe loads and joins to confirm the cache is doing useful work.
+
+## Next Steps
+
+- [Refresh and Stale Reads](../guides/refresh-and-stale-reads.md) — avoid miss storms on expiry
+- [Diagnostics and Events](../guides/diagnostics-and-events.md) — observe loads and joins

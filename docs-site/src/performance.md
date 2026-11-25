@@ -2,7 +2,8 @@
 
 HydraCache publishes performance numbers only together with the exact host, commit, scenario, and method that produced them. This page explains what has been measured, what the numbers mean, and — just as important — what they do not mean.
 
-> **Read this first.** HydraCache is not pitched as a Redis throughput replacement. Its value is correctness and DB-aware invalidation inside your process. The numbers below are a reference point for one machine, not sizing advice.
+> [!IMPORTANT]
+> HydraCache is not pitched as a Redis throughput replacement. Its value is correctness and DB-aware invalidation inside your process. The numbers below are a reference point for one machine, not sizing advice.
 
 ## How Numbers Are Produced
 

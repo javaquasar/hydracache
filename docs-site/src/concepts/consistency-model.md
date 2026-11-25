@@ -1,5 +1,7 @@
 # Consistency Model
 
+**API:** [`ConsistencyLevel`](https://docs.rs/hydracache/latest/hydracache/enum.ConsistencyLevel.html)
+
 HydraCache is a cache, so some staleness is always possible. The point of the consistency model is to make that staleness **bounded, named, and visible** instead of accidental. This page lists what each layer guarantees, what it does not, and which knob you turn when you need more.
 
 ## Layers at a Glance
@@ -64,7 +66,8 @@ Ownership, topology, and "which version is newer" are decided by **authority** â
 
 ## Hard Limits
 
-These are permanent design limits, not missing features:
+> [!IMPORTANT]
+> These are permanent design limits, not missing features.
 
 - **No distributed transactions.** The ceiling is single-partition atomic invalidation and single-key linearizable conditional writes.
 - **No cross-region linearizability.** Between regions the model is bounded staleness / causal+.

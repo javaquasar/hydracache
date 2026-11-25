@@ -26,3 +26,8 @@ Use `get_or_load_with_refresh` when freshness behavior is a product decision and
 Use `cacheable_loader!` only after the key, tags, TTL, and loader boundary are already obvious.
 
 Use `hydracache-db` when cached values are repository or query results, not arbitrary function results.
+
+## Next Steps
+
+- [Recipes](recipes.md) — worked examples for common choices
+- [Compared to Alternatives](alternatives.md) — when another tool fits better

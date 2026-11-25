@@ -49,3 +49,8 @@ SQLx, Diesel, SeaORM, or the repository layer still own:
 - database-specific performance tuning.
 
 HydraCache owns the cache boundary around that query result.
+
+## Next Steps
+
+- [Database Query Caching](../guides/database-query-caching.md) — the guide for query results
+- [Tutorial: Two Instances](../tutorial.md) — a full read and write path

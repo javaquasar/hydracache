@@ -78,3 +78,8 @@ Stage invalidations while preparing repository work, then execute the plan only 
 | `prepared_query_policy!` | A repository method reuses stable policy metadata and binds only ids or segments per call. |
 
 Prefer macro inputs that read like the cache contract a reviewer should approve. If a macro invocation becomes hard to review, move some metadata into named builders or prepared policies.
+
+## Next Steps
+
+- [Database Query Caching](database-query-caching.md) — use policies with DbCache
+- [Recipes](../recipes.md) — macros in worked examples

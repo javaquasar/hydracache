@@ -1,5 +1,7 @@
 # Tutorial: Cache a SQL Service Across Two Instances
 
+**API:** [`DbCache`](https://docs.rs/hydracache-db/latest/hydracache_db/struct.DbCache.html) · [`InvalidationPlan`](https://docs.rs/hydracache-db/latest/hydracache_db/struct.InvalidationPlan.html) · [`HydraCacheEntity`](https://docs.rs/hydracache-db/latest/hydracache_db/derive.HydraCacheEntity.html) · [`InMemoryInvalidationBus`](https://docs.rs/hydracache/latest/hydracache/struct.InMemoryInvalidationBus.html)
+
 This tutorial builds the core HydraCache flow end to end, in one runnable program:
 
 1. a repository that caches query results by entity;
@@ -43,6 +45,9 @@ Two things to notice:
 
 - **Read path.** `for_entity::<User>(id).fetch_with(...)` returns the cached value on a hit. On a miss it runs the loader once, even if many requests miss at the same time (single-flight), and stores the result tagged with `user:42` and `users`.
 - **Write path.** The `InvalidationPlan` is built *before* the transaction and executed *after* `commit()`. If the update fails or the transaction rolls back, `?` returns early, the plan is dropped, and the cache is untouched. Invalidating before commit would let a concurrent reader re-cache the old row.
+
+> [!WARNING]
+> Never invalidate *before* `commit()`. Between the invalidation and the commit, a concurrent reader can miss, load the old row, and cache it again — and nothing will remove it until TTL.
 
 ## 4. Database and Two Instances
 

@@ -43,3 +43,8 @@ Use single-flight loaders when many requests can miss the same key at the same t
 Use the local cache first. Add the invalidation bus or cluster APIs when several local caches need to react to the same invalidation intent.
 
 Related terms: near cache, read-through cache, memoization, function caching, repository cache, query result cache, stale-if-error, stale while revalidate.
+
+## Next Steps
+
+- [Recipes](recipes.md) — copy-pasteable solutions
+- [Decision Guide](decision-guide.md) — choose the right API

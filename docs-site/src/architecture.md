@@ -33,3 +33,8 @@ The bus propagates intent, not values. This keeps distributed behavior local-fir
 Client/member cluster mode adds roles, node ids, generations, membership, and deterministic ownership. On top of that, opt-in crates provide chitchat discovery, a raft-rs metadata control plane with a durable log, HTTP peer fetch and owner load, and external invalidation transports over Redis or NATS. The grid layer adds replicated values with backups, per-operation consistency levels, online resharding, checkpoints, and multi-region links.
 
 None of this is required for the embedded case: an application that only needs a local or query-result cache does not pull in cluster dependencies, and local cache semantics stay visible when several processes participate. See [Client and Member Cluster](guides/client-member-cluster.md) for the support boundary.
+
+## Next Steps
+
+- [Consistency Model](concepts/consistency-model.md) — what each layer guarantees
+- [Tutorial: Two Instances](tutorial.md) — see the flows in running code
