@@ -51,6 +51,53 @@ pub struct Replicas {
     pub backups: Vec<ClusterNodeId>,
 }
 
+/// Rank `nodes` for `key` by rendezvous hashing and return the primary plus up
+/// to `replication_factor - 1` backups, or `None` when there are no nodes.
+///
+/// This is the placement rule behind `ClusterReplicationStrategy` for
+/// `RendezvousClusterOwnership`; it takes node ids instead of members so it
+/// builds for every target (the browser simulator uses it). The score is FNV-1a
+/// over `key 0xff node_id`, highest first, ties to the greater node id. Owners
+/// are a cross-version contract: `tests/placement_golden.rs` pins them.
+pub fn rank_replicas<'a, I>(key: &str, nodes: I, replication_factor: usize) -> Option<Replicas>
+where
+    I: IntoIterator<Item = &'a ClusterNodeId>,
+{
+    let mut ranked = nodes
+        .into_iter()
+        .map(|node| (rendezvous_score(key, node), node.clone()))
+        .collect::<Vec<_>>();
+    ranked.sort_by(|(left_score, left_node), (right_score, right_node)| {
+        right_score
+            .cmp(left_score)
+            .then_with(|| right_node.cmp(left_node))
+    });
+    ranked.dedup_by(|(_, left_node), (_, right_node)| left_node == right_node);
+
+    let mut nodes = ranked
+        .into_iter()
+        .map(|(_, node)| node)
+        .take(replication_factor.max(1))
+        .collect::<Vec<_>>();
+    if nodes.is_empty() {
+        return None;
+    }
+    let primary = nodes.remove(0);
+    Some(Replicas::new(primary, nodes))
+}
+
+fn rendezvous_score(key: &str, node_id: &ClusterNodeId) -> u64 {
+    const FNV_OFFSET: u64 = 0xcbf29ce484222325;
+    const FNV_PRIME: u64 = 0x100000001b3;
+
+    let mut hash = FNV_OFFSET;
+    for byte in key.bytes().chain([0xff]).chain(node_id.as_str().bytes()) {
+        hash ^= u64::from(byte);
+        hash = hash.wrapping_mul(FNV_PRIME);
+    }
+    hash
+}
+
 impl Replicas {
     /// Build a replica set and remove accidental duplicate backups.
     pub fn new(primary: impl Into<ClusterNodeId>, backups: Vec<ClusterNodeId>) -> Self {

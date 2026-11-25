@@ -70,46 +70,15 @@ impl ClusterReplicationStrategy for RendezvousClusterOwnership {
         members: &[ClusterMember],
         replication_factor: usize,
     ) -> Option<Replicas> {
-        let mut ranked = members
-            .iter()
-            .filter(|member| member.is_member())
-            .map(|member| {
-                (
-                    grid_rendezvous_score(key, &member.node_id),
-                    member.node_id.clone(),
-                )
-            })
-            .collect::<Vec<_>>();
-        ranked.sort_by(|(left_score, left_node), (right_score, right_node)| {
-            right_score
-                .cmp(left_score)
-                .then_with(|| right_node.cmp(left_node))
-        });
-        ranked.dedup_by(|(_, left_node), (_, right_node)| left_node == right_node);
-
-        let mut nodes = ranked
-            .into_iter()
-            .map(|(_, node)| node)
-            .take(replication_factor.max(1))
-            .collect::<Vec<_>>();
-        if nodes.is_empty() {
-            return None;
-        }
-        let primary = nodes.remove(0);
-        Some(Replicas::new(primary, nodes))
+        crate::replication_model::rank_replicas(
+            key,
+            members
+                .iter()
+                .filter(|member| member.is_member())
+                .map(|member| &member.node_id),
+            replication_factor,
+        )
     }
-}
-
-fn grid_rendezvous_score(key: &str, node_id: &ClusterNodeId) -> u64 {
-    const FNV_OFFSET: u64 = 0xcbf29ce484222325;
-    const FNV_PRIME: u64 = 0x100000001b3;
-
-    let mut hash = FNV_OFFSET;
-    for byte in key.bytes().chain([0xff]).chain(node_id.as_str().bytes()) {
-        hash ^= u64::from(byte);
-        hash = hash.wrapping_mul(FNV_PRIME);
-    }
-    hash
 }
 
 /// Rebalance work materialized as committed data.

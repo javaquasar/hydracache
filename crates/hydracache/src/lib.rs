@@ -818,7 +818,8 @@ pub use replication_model::consistency_level::{
     WriteOptions,
 };
 pub use replication_model::{
-    EffectiveReplicationMap, RegionId, Replicas, ReplicationConfig, ReplicationConfigError,
+    rank_replicas, EffectiveReplicationMap, RegionId, Replicas, ReplicationConfig,
+    ReplicationConfigError,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use security::{
