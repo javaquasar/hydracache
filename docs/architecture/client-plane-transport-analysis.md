@@ -78,7 +78,7 @@ Primary specifications and implementation documentation reviewed on 2026-08-09:
   bounds before allocation.
 - [tonic transport documentation](https://docs.rs/tonic/latest/tonic/transport/)
   exposes Rust HTTP/2 transport, rustls TLS, timeouts, and concurrency/rate
-  limits. The reviewed 0.14 line has MSRV 1.88, within this workspace's MSRV (1.89).
+  limits. The reviewed 0.14 line has MSRV 1.88, matching this workspace's MSRV.
 
 Local product sources reviewed:
 

@@ -103,7 +103,7 @@ system and mimalloc remain checked there, while Linux CI checks system, mimalloc
 | Tests | `cargo test --workspace --locked` (Windows verify: split workspace excluding `xtask` + xtask lib/integration tests, serialized with `-j 1`) | CI + verify | unit + integration (RULES R-8) |
 | Docs | `RUSTDOCFLAGS=-D warnings cargo doc --workspace --no-deps` | CI + verify | rustdoc warnings |
 | Clippy | workspace all-features excluding `hydracache`, then the valid `hydracache` allocator-feature matrix; always `-D warnings` | CI + verify | lints without combining mutually exclusive allocators |
-| MSRV | `cargo check` + `cargo test` on Rust 1.89.0 | CI (separate job, full-history checkout) | minimum supported Rust; workspace governance tests can resolve the pinned `v0.63.0` compatibility baseline and ancestry |
+| MSRV | `cargo check` + `cargo test` on Rust 1.88.0 | CI (separate job, full-history checkout) | minimum supported Rust; workspace governance tests can resolve the pinned `v0.63.0` compatibility baseline and ancestry |
 
 ## Release 0.67 performance evidence
 
