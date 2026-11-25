@@ -3,6 +3,7 @@
 [HydraCache](index.md)
 
 - [Getting Started](getting-started.md)
+- [Tutorial: Two Instances](tutorial.md)
 - [Installation](installation.md)
 - [Architecture](architecture.md)
 - [Use Cases](use-cases.md)

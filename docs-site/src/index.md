@@ -72,12 +72,13 @@ The cluster layer is developed against a deterministic simulator. The [interacti
 If you are new to HydraCache, read these pages in order:
 
 1. [Getting Started](getting-started.md)
-2. [Architecture](architecture.md)
-3. [Keys and Tags](concepts/keys-and-tags.md)
-4. [Local Cache](guides/local-cache.md)
-5. [Database Query Caching](guides/database-query-caching.md)
-6. [Decision Guide](decision-guide.md)
-7. [Production Checklist](production-checklist.md)
+2. [Tutorial: Two Instances](tutorial.md)
+3. [Architecture](architecture.md)
+4. [Keys and Tags](concepts/keys-and-tags.md)
+5. [Local Cache](guides/local-cache.md)
+6. [Database Query Caching](guides/database-query-caching.md)
+7. [Decision Guide](decision-guide.md)
+8. [Production Checklist](production-checklist.md)
 
 Concepts explain why the API is shaped this way; guides show how to use it. Use [Use Cases](use-cases.md) for concrete scenarios and [API Links](reference/api-links.md) for exact Rust signatures on docs.rs.
 
