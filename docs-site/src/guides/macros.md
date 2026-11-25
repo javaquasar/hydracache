@@ -1,5 +1,14 @@
 # Macros
 
+> [!NOTE]
+> **At a glance**
+>
+> - **Use when:** the key, tag, and TTL shape is settled and repeated across call sites.
+> - **Crate:** `hydracache`, `hydracache-db`.
+> - **Guarantees:** macros expand to the explicit runtime calls; `HydraCacheEntity` gives the read path and the write path identical key and tag names.
+> - **Watch:** the same counters as the explicit API.
+> - **Pitfalls:** introducing macros before the cache contract is designed and reviewed.
+
 HydraCache macros remove repetition around cache boundaries without making the boundary implicit.
 
 They are useful after the key, tags, TTL, and loader shape are already clear. If those choices are still being designed, start with the explicit runtime APIs first.

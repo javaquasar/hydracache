@@ -2,6 +2,15 @@
 
 **API:** [`InvalidationPlan`](https://docs.rs/hydracache-db/latest/hydracache_db/struct.InvalidationPlan.html) · [`InvalidationOutboxWorker`](https://docs.rs/hydracache-db/latest/hydracache_db/struct.InvalidationOutboxWorker.html) · [`SqlxInvalidationOutbox`](https://docs.rs/hydracache-sqlx/latest/hydracache_sqlx/struct.SqlxInvalidationOutbox.html)
 
+> [!NOTE]
+> **At a glance**
+>
+> - **Use when:** cached query results must stop being served after a write commits.
+> - **Crate:** `hydracache-db` (`InvalidationPlan`); outbox with the `sqlx-outbox` feature.
+> - **Guarantees:** invalidations run only after a successful commit; with the outbox, the intent is durable if and only if the write committed.
+> - **Watch:** `invalidations`; outbox `pending`, `oldest_pending_age_ms`, `dead_lettered`.
+> - **Pitfalls:** invalidating before commit; writers outside the service with no invalidation path.
+
 The write path decides whether a query cache is correct. HydraCache gives you two ways to invalidate at the right moment — after the database commit — and you choose based on how much a lost invalidation would cost.
 
 | | `InvalidationPlan` | Transactional outbox |

@@ -2,6 +2,15 @@
 
 **API:** [`hydracache-cluster`](https://docs.rs/hydracache-cluster/latest/hydracache_cluster/)
 
+> [!NOTE]
+> **At a glance**
+>
+> - **Use when:** processes need shared membership, key ownership, or peer fetch.
+> - **Crate:** `hydracache-cluster` (chitchat + raft), `hydracache-cluster-transport-axum`.
+> - **Guarantees:** generation-safe membership; deterministic ownership; values are not replicated unless the grid layer is enabled.
+> - **Watch:** membership and ownership diagnostics; peer-fetch and owner-load counters.
+> - **Pitfalls:** real adapters without a real discovery and storage story; treating staging-ready as battle-tested.
+
 `HydraCache::client()` and `HydraCache::member()` are the embedded cluster shape.
 
 A client is an application-side near-cache. A member is a cluster participant. Both can join an `InMemoryCluster`, share invalidation, and expose role, node id, generation, bootstrap, lifecycle, and participant diagnostics.

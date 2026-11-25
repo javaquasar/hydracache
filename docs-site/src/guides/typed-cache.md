@@ -2,6 +2,15 @@
 
 **API:** [`TypedCache`](https://docs.rs/hydracache/latest/hydracache/struct.TypedCache.html)
 
+> [!NOTE]
+> **At a glance**
+>
+> - **Use when:** several call sites share one value type and one domain namespace.
+> - **Crate:** `hydracache`.
+> - **Guarantees:** a view over the same cache: storage, stats, events, single-flight, and invalidation are shared; keys are prefixed with the namespace.
+> - **Watch:** the underlying cache's counters.
+> - **Pitfalls:** namespaces that mirror modules instead of domains; hiding TTLs and tags behind the view.
+
 Use a typed cache view when several call sites share one value type and one domain namespace.
 
 ```rust

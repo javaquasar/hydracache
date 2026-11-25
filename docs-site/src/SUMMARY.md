@@ -88,6 +88,7 @@
 - [Quality Gate](reference/quality-gate.md)
 - [Workspace Layout](reference/workspace-layout.md)
 - [Examples Contract](reference/examples-contract.md)
+- [Guide Template](reference/guide-template.md)
 - [Publishing Docs](reference/publishing-docs.md)
 - [Docs Ownership](reference/docs-ownership.md)
 - [Docs Release Checklist](reference/docs-release-checklist.md)

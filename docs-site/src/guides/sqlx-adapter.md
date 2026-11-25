@@ -2,6 +2,15 @@
 
 **API:** [`hydracache-sqlx`](https://docs.rs/hydracache-sqlx/latest/hydracache_sqlx/)
 
+> [!NOTE]
+> **At a glance**
+>
+> - **Use when:** SQLx is your query layer.
+> - **Crate:** `hydracache-sqlx`.
+> - **Guarantees:** SQLx keeps owning macros, pools, and transactions; HydraCache owns only the cache boundary.
+> - **Watch:** the same counters as [Database Query Caching](database-query-caching.md).
+> - **Pitfalls:** mixing the re-exported `sqlx` with a different `sqlx` version in the same crate.
+
 Use `hydracache-sqlx` when SQLx remains the query authority and HydraCache owns only the cache boundary.
 
 The adapter re-exports `DbCache`, policy types, `HydraCacheEntity`, and `query_cache_policy!` for SQLx users. It does not replace SQLx macros, pools, transactions, or row mapping.

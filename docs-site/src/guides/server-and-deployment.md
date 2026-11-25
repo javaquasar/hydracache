@@ -2,6 +2,15 @@
 
 **API:** [`hydracache-server`](https://docs.rs/hydracache-server/latest/hydracache_server/)
 
+> [!NOTE]
+> **At a glance**
+>
+> - **Use when:** you need a shared cache tier, remote clients in other languages, or a RESP endpoint.
+> - **Crate:** `hydracache-server` (binary, container, Helm, operator).
+> - **Guarantees:** every listener is opt-in; TLS without cluster auth, or a joiner that cannot be admitted, fails at startup.
+> - **Watch:** `/readyz`, `/cluster/overview` (leader, voters, quorum).
+> - **Pitfalls:** losing `storage_dir` and node identity; plaintext outside loopback.
+
 Most services never need a HydraCache server: the cache lives inside your process. Run `hydracache-server` when you want a **shared cache tier** — remote clients in Rust, Python, or Java, a Redis-compatible endpoint, or a raft-backed member grid that outlives individual application processes.
 
 | You want | Run |

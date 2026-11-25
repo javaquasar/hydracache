@@ -2,6 +2,15 @@
 
 **API:** [`HydraCache`](https://docs.rs/hydracache/latest/hydracache/struct.HydraCache.html) · [`HydraCacheBuilder`](https://docs.rs/hydracache/latest/hydracache/struct.HydraCacheBuilder.html) · [`CacheOptions`](https://docs.rs/hydracache/latest/hydracache/struct.CacheOptions.html) · [`CacheStats`](https://docs.rs/hydracache/latest/hydracache/struct.CacheStats.html)
 
+> [!NOTE]
+> **At a glance**
+>
+> - **Use when:** one process can reuse a value without asking the backing source again.
+> - **Crate:** `hydracache`.
+> - **Guarantees:** same-key misses run one loader; a load that races with an invalidation is discarded instead of stored; when an invalidation returns, later reads in this process miss.
+> - **Watch:** `hits`, `misses`, `loads`, `single_flight_joins`, `stale_load_discards`, `evictions`.
+> - **Pitfalls:** a key that omits a dimension of the result; a write path that never invalidates; no TTL as a safety net.
+
 Use the local cache when the current process can safely reuse a value without contacting a backing source.
 
 The local cache is the full-control API. You choose:

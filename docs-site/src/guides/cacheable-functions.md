@@ -2,6 +2,15 @@
 
 **API:** [`cacheable_loader!`](https://docs.rs/hydracache/latest/hydracache/macro.cacheable_loader.html) · [`#[cacheable]`](https://docs.rs/hydracache/latest/hydracache/attr.cacheable.html)
 
+> [!NOTE]
+> **At a glance**
+>
+> - **Use when:** the result of an ordinary async function is reusable.
+> - **Crate:** `hydracache` (`cacheable_loader!`, `cacheable_infallible!`, `#[cacheable]`).
+> - **Guarantees:** the same runtime path as `get_or_load` — single-flight, tags, TTL; no global cache and no keys silently derived from every argument.
+> - **Watch:** `loads` versus `hits` for the wrapped call.
+> - **Pitfalls:** a key that misses an argument which changes the result; caching functions with side effects.
+
 Use cacheable function helpers when ordinary async work needs the same cache boundary with less boilerplate.
 
 The macros are intentionally explicit. They do not discover a global cache, generate hidden keys from every function argument, or hide the loader. They build `CacheOptions` and call the same runtime methods you could call manually.

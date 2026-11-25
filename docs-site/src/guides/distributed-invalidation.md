@@ -2,6 +2,15 @@
 
 **API:** [`CacheInvalidationBus`](https://docs.rs/hydracache/latest/hydracache/trait.CacheInvalidationBus.html) · [`InMemoryInvalidationBus`](https://docs.rs/hydracache/latest/hydracache/struct.InMemoryInvalidationBus.html) · [`hydracache-transport-redis`](https://docs.rs/hydracache-transport-redis/latest/hydracache_transport_redis/) · [`hydracache-transport-nats`](https://docs.rs/hydracache-transport-nats/latest/hydracache_transport_nats/)
 
+> [!NOTE]
+> **At a glance**
+>
+> - **Use when:** several processes cache the same data and a write on one must invalidate the others.
+> - **Crate:** `hydracache` + `hydracache-transport-redis` or `hydracache-transport-nats`.
+> - **Guarantees:** intent travels, values do not; lag and decode errors are surfaced, not dropped.
+> - **Watch:** `distributed_invalidations_published`, `_applied`, `_lagged`, `_decode_errors`, `_publish_failures`.
+> - **Pitfalls:** relying on the broker for delivery guarantees it does not give; no TTL as a safety net.
+
 Use a shared invalidation bus when several cache instances should share invalidation intent.
 
 The bus propagates invalidations, not values. Each cache keeps its own local entries. When one cache invalidates a key, tag, or all entries, peers receive the same intent and remove their local copies.

@@ -1,5 +1,14 @@
 # Cluster Topology
 
+> [!NOTE]
+> **At a glance**
+>
+> - **Use when:** you are deciding how far beyond a single embedded cache to go.
+> - **Crate:** from `hydracache` alone up to `hydracache-server` members.
+> - **Guarantees:** each step is opt-in and leaves embedded behavior unchanged.
+> - **Watch:** the counters of the step you run.
+> - **Pitfalls:** jumping to a grid when a transport would do; active-active without accepting bounded staleness.
+
 HydraCache grows in steps. Each step is opt-in, adds crates rather than changing the ones you already use, and leaves the embedded cache's behavior unchanged. Pick the smallest shape that solves your problem.
 
 | Shape | What is shared | Values cross the network? | Extra infrastructure |

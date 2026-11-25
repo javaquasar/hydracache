@@ -2,6 +2,15 @@
 
 **API:** [`hydracache-client`](https://docs.rs/hydracache-client/latest/hydracache_client/) · [`hydracache-client-hc2`](https://docs.rs/hydracache-client-hc2/latest/hydracache_client_hc2/)
 
+> [!NOTE]
+> **At a glance**
+>
+> - **Use when:** a service talks to `hydracache-server` instead of embedding the cache.
+> - **Crate:** `hydracache-client` (HC/1), `hydracache-client-hc2`, Python and Java SDKs.
+> - **Guarantees:** versioned protocols; unknown versions refused before mutation; reconnects report gaps and lost sessions explicitly.
+> - **Watch:** SDK retry advice and pull-based metrics.
+> - **Pitfalls:** replaying mutations without idempotency keys; ignoring subscription gaps.
+
 Client SDKs talk to a running [`hydracache-server`](server-and-deployment.md). If your service is written in Rust and can embed the cache, you usually do not need one — the embedded cache has no network hop at all.
 
 ## Two Protocols

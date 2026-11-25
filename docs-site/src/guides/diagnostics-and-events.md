@@ -2,6 +2,15 @@
 
 **API:** [`CacheStats`](https://docs.rs/hydracache/latest/hydracache/struct.CacheStats.html) · [`CacheEvent`](https://docs.rs/hydracache/latest/hydracache/struct.CacheEvent.html) · [`hydracache-observability`](https://docs.rs/hydracache-observability/latest/hydracache_observability/)
 
+> [!NOTE]
+> **At a glance**
+>
+> - **Use when:** you need to prove what the cache is doing.
+> - **Crate:** `hydracache`, `hydracache-observability`, `hydracache-actuator-axum`.
+> - **Guarantees:** counters are always on; access events are opt-in; listeners never slow cache operations.
+> - **Watch:** everything in `CacheStats`.
+> - **Pitfalls:** enabling access events at high volume without a consumer; slow subscribers that lag.
+
 Use diagnostics to prove cache behavior locally before adding more infrastructure. The simplest useful check is: call the same cached operation twice, then inspect hit, load, and request counters.
 
 ```rust

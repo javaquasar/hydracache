@@ -2,6 +2,15 @@
 
 **API:** [`DependencyLint`](https://docs.rs/hydracache-sql-lint/latest/hydracache_sql_lint/struct.DependencyLint.html) · [`Relation`](https://docs.rs/hydracache-sql-lint/latest/hydracache_sql_lint/struct.Relation.html) · [`Baseline`](https://docs.rs/hydracache-sql-lint/latest/hydracache_sql_lint/struct.Baseline.html)
 
+> [!NOTE]
+> **At a glance**
+>
+> - **Use when:** you want CI to catch cached queries that read tables their policy does not declare.
+> - **Crate:** `hydracache-sql-lint` (dev-dependency).
+> - **Guarantees:** missing and extra dependencies are reported; unparseable SQL is inconclusive, never clean.
+> - **Watch:** new findings and stale baseline entries in CI.
+> - **Pitfalls:** linting only part of the cached queries; baselines that grow without review.
+
 HydraCache never parses SQL at runtime: you name the tags that invalidate a cached query. That keeps runtime behavior explicit, but it leaves one classic bug open — a query that **joins a table its cache policy does not know about**. When that table changes, nothing invalidates the cached result.
 
 `hydracache-sql-lint` closes that gap at **build/test time**. It parses the SQL of a cached query, lists the tables it reads, and compares them with the relations the policy declares.

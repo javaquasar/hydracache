@@ -2,6 +2,15 @@
 
 **API:** [`DbCache`](https://docs.rs/hydracache-db/latest/hydracache_db/struct.DbCache.html) · [`DbQuery`](https://docs.rs/hydracache-db/latest/hydracache_db/struct.DbQuery.html) · [`query_cache_policy!`](https://docs.rs/hydracache-db/latest/hydracache_db/macro.query_cache_policy.html) · [`InvalidationPlan`](https://docs.rs/hydracache-db/latest/hydracache_db/struct.InvalidationPlan.html) · [`HydraCacheEntity`](https://docs.rs/hydracache-db/latest/hydracache_db/derive.HydraCacheEntity.html)
 
+> [!NOTE]
+> **At a glance**
+>
+> - **Use when:** a repository or query result is reusable and you know which writes make it stale.
+> - **Crate:** `hydracache-db` (or an adapter crate).
+> - **Guarantees:** explicit key and tags per query; the database library keeps owning SQL, transactions, and row mapping.
+> - **Watch:** `hits`, `loads`, `invalidations`.
+> - **Pitfalls:** keys without tenant, permission, filter, or page; invalidating before commit.
+
 Use database query caching when a repository result is expensive enough to reuse and the application can describe its identity and invalidation model.
 
 The database layer remains visible. HydraCache does not parse SQL, infer table dependencies, install triggers, or replace SQLx, Diesel, SeaORM, or a repository layer.

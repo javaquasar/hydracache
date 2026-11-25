@@ -2,6 +2,15 @@
 
 **API:** [`RefreshOptions`](https://docs.rs/hydracache/latest/hydracache/struct.RefreshOptions.html) · [`HydraCache`](https://docs.rs/hydracache/latest/hydracache/struct.HydraCache.html)
 
+> [!NOTE]
+> **At a glance**
+>
+> - **Use when:** a bounded stale value is acceptable for this product path.
+> - **Crate:** `hydracache` (`RefreshOptions`).
+> - **Guarantees:** stale values are served only inside the configured window and only where the call opts in — never as an implicit fallback.
+> - **Watch:** `loads`, `misses`, and the refresh events in diagnostics.
+> - **Pitfalls:** stale windows longer than the product tolerates; using stale reads to hide a missing invalidation.
+
 TTL says when a value expires. Refresh options say what the cache may do around expiry.
 
 Use refresh behavior only when stale fallback is acceptable for the product path. It should be visible in code review.
