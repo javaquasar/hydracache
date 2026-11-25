@@ -57,5 +57,6 @@ Start with `InMemoryCluster` for tests and demos. Add real adapters only when th
 
 ## Next Steps
 
+- [Cluster Topology](cluster-topology.md) — where this shape fits between embedded and a server grid
 - [Consistency Model](../concepts/consistency-model.md) — consistency levels and limits
 - [How We Test Correctness](../concepts/how-we-test-correctness.md) — how the cluster is verified

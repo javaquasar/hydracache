@@ -92,4 +92,5 @@ Grafana dashboards and Prometheus alerts live in `deploy/dashboards`.
 
 - [Client SDKs](client-sdks.md) — connect from Rust, Python, or Java
 - [Redis API](redis-api.md) — the RESP facade and its supported subset
+- [Cluster Topology](cluster-topology.md) — from embedded to multi-region, step by step
 - [Production Checklist](../production-checklist.md)

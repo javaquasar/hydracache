@@ -50,6 +50,7 @@
 - [Memory Sizing](guides/memory-sizing.md)
 - [Distributed Invalidation](guides/distributed-invalidation.md)
 - [Client and Member Cluster](guides/client-member-cluster.md)
+- [Cluster Topology](guides/cluster-topology.md)
 
 # Releases
 
