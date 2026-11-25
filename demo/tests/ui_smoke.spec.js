@@ -1514,3 +1514,27 @@ test("push_to_a_crashed_replica_shows_a_lost_copy", async ({ page }) => {
   expect(flashed).not.toContain("node-2");
   expect(flashed.some((name) => name.startsWith("node-"))).toBe(true);
 });
+
+// The push request travels along drawn links: the writer's link to the node
+// it is attached to, then forwarded over a cluster link to the engine's write
+// node (the leader) when that is another node; never across empty space.
+test("push_request_follows_drawn_links", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=80&steps=12&scenario=default`);
+  await expect(page.locator(".vertex.node.role-leader")).toHaveCount(1);
+  await page.getByTestId("tab-clients").click();
+  await page.getByTestId("add-client-button").click();
+  const attached = (await page.locator("[data-client='client-a'] .entity-meta").textContent()).split("via ")[1].trim();
+  const leader = (await page.locator(".vertex.node.role-leader").getAttribute("aria-label")).split(",")[0];
+  await page.getByTestId("push-client-a").click();
+  const request = page.locator('.pulse-layer .pulse[data-from="client:client-a"]');
+  await expect(request).toHaveCount(1);
+  await expect(request).toHaveAttribute("data-to", attached);
+  const forward = page.locator(".pulse-layer .pulse.forward");
+  if (attached === leader) {
+    await expect(forward).toHaveCount(0);
+  } else {
+    await expect(forward).toHaveCount(1);
+    await expect(forward).toHaveAttribute("data-from", attached);
+    await expect(forward).toHaveAttribute("data-to", leader);
+  }
+});
