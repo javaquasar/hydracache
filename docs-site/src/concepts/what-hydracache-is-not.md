@@ -20,7 +20,10 @@ HydraCache does not install database triggers or provide change data capture by 
 
 Instead, the write path states its invalidations explicitly: stage an `InvalidationPlan` while preparing a write and execute it after commit, or record invalidation intent in a transactional outbox so it is published only when the transaction commits. `hydracache-sql-lint` can check at build time which tables a cached query policy depends on.
 
-If writes happen outside the service, those writers need an invalidation path too. The cache cannot safely infer external changes by looking only at reads. (`hydracache-cdc-postgres` is currently a connector stub, not a supported CDC pipeline.)
+If writes happen outside the service, those writers need an invalidation path too. The cache cannot safely infer external changes by looking only at reads.
+
+> [!NOTE]
+> `hydracache-cdc-postgres` is currently a connector stub, not a supported CDC pipeline.
 
 ## Not a Strongly Consistent Distributed Database
 
@@ -42,3 +45,8 @@ The runtime exists to keep cache semantics explicit:
 - observability around hits, misses, loads, and invalidations.
 
 This makes the API more deliberate than a raw map, and that deliberateness is the point.
+
+## Next Steps
+
+- [Compared to Alternatives](../alternatives.md) — when another tool fits better
+- [Consistency Model](consistency-model.md) — what HydraCache does guarantee

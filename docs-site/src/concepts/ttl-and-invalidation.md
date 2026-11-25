@@ -44,3 +44,8 @@ The strongest practical model often uses both:
 - keep a TTL as a fallback if an invalidation is missed or delayed.
 
 TTL bounds the damage window. Invalidation keeps the normal path fresh.
+
+## Next Steps
+
+- [Local-first Invalidation](local-first-invalidation.md) — carry invalidation to other processes
+- [Consistency Model](consistency-model.md) — the full set of guarantees
