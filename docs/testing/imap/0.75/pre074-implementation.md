@@ -72,8 +72,9 @@ reference/model receipt can satisfy a missing production verifier.
 
 The source handoff is available. The published `v0.74.0` tag resolves to
 `bcba511f0c1f4b3e965c9e17f81b248deb0ea331`. Main at
-`e6ccc2563db20efb0c59818f0692c580ea4ad504` also includes the `v0.74.1` registry maintenance
-candidate. The integration record and next product steps are in
+`6d41962292363fc6c84eaed1d7b1179f1915451d` also records `v0.74.1` as shipped for registry
+maintenance; its tagged source is `e6ccc2563db20efb0c59818f0692c580ea4ad504`.
+The integration record and next product steps are in
 [`main-integration.md`](main-integration.md).
 
 The retained blockers are W0 closure, production backend extraction/owner routing, final wire and

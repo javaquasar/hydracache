@@ -3,14 +3,18 @@
 The release owner requested integration of current main on 25 November 2026.
 The integration combines the 0.75 branch at
 `c8109470ce860179a955a6fd02f55e25e3108370` with main at
-`e6ccc2563db20efb0c59818f0692c580ea4ad504`.
+`6d41962292363fc6c84eaed1d7b1179f1915451d`.
+The expanded code checks ran on 0.75 with runtime base `e6ccc2563`; the final main
+advance records registry publication in three documentation files. The follow-up integration
+rechecks documentation, governance, the IMap contract and frozen performance-schema hashes.
 
 ## Predecessor identities
 
 | Input | Recorded identity | Use in 0.75 |
 | --- | --- | --- |
 | Stable maintenance release | `v0.74.0`, source `bcba511f0c1f4b3e965c9e17f81b248deb0ea331`, binary published 23 November 2026 | B74 behavior and signed binary for compatibility and D1 remeasurement |
-| Current main and registry maintenance candidate | `e6ccc2563db20efb0c59818f0692c580ea4ad504`, also tagged `v0.74.1` | Source and dependency base for development |
+| Published registry maintenance source | `e6ccc2563db20efb0c59818f0692c580ea4ad504`, tagged `v0.74.1` | Source and dependency base for development |
+| Current main with registry publication admission | `6d41962292363fc6c84eaed1d7b1179f1915451d` | Records 0.74.1 as shipped; no code or dependency change from the tagged source |
 | Existing 0.75 Linux qualification | `de4bc2a0b32ff8acffa8128f10c603316dca9a05` | Historical foundation proof for its exact source |
 
 The stable release notes record signed-binary compatibility, rolling upgrade/rollback and a
@@ -24,7 +28,8 @@ for reviewed forks. The integrated workspace inherits their exact dependency cho
 
 Resolve the lockfile against the merged manifests, using main's lock as the initial input.
 The resulting lock retains all 678 main package identities and checksums and adds 19 packages
-for the 0.75 tools and testkit. A second fetch confirmed the same main revision before commit.
+for the 0.75 tools and testkit. A final fetch found the documentation-only 0.74.1 publication
+admission, which was integrated after the expanded code checks.
 Keep the existing 0.75 testkit, proof workers, Java campaigns and rollback rehearsal.
 Bring in the server TLS/configuration fixes, native-path guards, simulator and Raft validation,
 registry dependency aliases, and current CI/docs gates.
@@ -51,6 +56,8 @@ and registry corrections.
 The expanded workspace run (excluding xtask) passed 3,547 tests and doctests, with 82 existing
 gated tests ignored. The complete xtask library/integration run passed 946 tests; four
 actual-artifact qualification tests remain ignored until their current-source preparation exists.
+After integrating the final main publication admission, 89 targeted documentation, governance,
+IMap-contract and frozen-schema tests passed again.
 The timing fix also passed package `cargo check --all-targets` and
 `cargo clippy --all-targets --all-features -- -D warnings`.
 

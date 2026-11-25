@@ -132,7 +132,7 @@
     {
       "id": "predecessor-evidence-replay",
       "required_artifact": "retained v0.74.0 signed-binary evidence and v0.74.1 dependency compatibility inputs for the integrated source",
-      "reason": "v0.74.0 resolves to bcba511f0c1f4b3e965c9e17f81b248deb0ea331; origin/main at e6ccc2563db20efb0c59818f0692c580ea4ad504 also includes the v0.74.1 registry maintenance candidate. Release notes record stable compatibility and six-hour qualification; preparation must bind and replay the relevant artifacts before a 0.75 candidate is admitted"
+      "reason": "v0.74.0 resolves to bcba511f0c1f4b3e965c9e17f81b248deb0ea331; origin/main at 6d41962292363fc6c84eaed1d7b1179f1915451d records v0.74.1 registry publication, whose tagged source is e6ccc2563db20efb0c59818f0692c580ea4ad504. Release notes record stable compatibility and six-hour qualification; preparation must bind and replay the relevant artifacts before a 0.75 candidate is admitted"
     },
     {
       "id": "accepted-native-batch-baseline",

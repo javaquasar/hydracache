@@ -6,7 +6,8 @@
 > - **Why** — a consumer cannot inherit the release workspace's dependency patches.
 > - **After (depends on)** — 0.74.0.
 > - **Unblocks** — 0.74 maintenance packages on crates.io.
-> - **Status** — planned.
+> - **Status:** shipped for registry maintenance. The tagged CI and public
+>   consumer checks are enforced by the publication workflow.
 
 The Rust minimum remains 1.88. The migration preserves the 0.74 maintenance
 wire and disk formats. Performance qualification remains subject to the

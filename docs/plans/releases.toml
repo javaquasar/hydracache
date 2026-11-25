@@ -358,7 +358,7 @@ depends_on = ["0.73.0"]
 [[release]]
 version = "0.74.1"
 file = "docs/plans/V0_74_1_REGISTRY_MAINTENANCE_PLAN.md"
-status = "planned"
+status = "shipped"
 networked_control_plane = true
 work_items = ["W0", "W1", "W2"]
 theme = "Registry maintenance release with reviewed, exact registry dependency forks and clean consumer checks on Rust 1.88."
