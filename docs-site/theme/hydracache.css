@@ -38,6 +38,114 @@
   background: var(--bg);
 }
 
+/* Landing page */
+.hc-hero {
+  margin: 0.5rem 0 2rem;
+  padding: 2rem 2rem 1.6rem;
+  border: 1px solid var(--table-border-color);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 92% 8%, rgba(232, 115, 31, 0.16), transparent 50%),
+    rgba(128, 128, 128, 0.06);
+}
+
+.hc-hero-logo {
+  display: block;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 0.8rem;
+}
+
+.hc-hero-tagline {
+  margin: 0 0 0.4rem;
+  font-size: 1.9em;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #e8731f;
+}
+
+.hc-hero-sub {
+  margin: 0 0 1.3rem;
+  font-size: 1.1em;
+  max-width: 46em;
+}
+
+.hc-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.content a.hc-btn,
+.content a.hc-btn:visited {
+  display: inline-block;
+  padding: 0.5rem 1.05rem;
+  border: 1px solid var(--table-border-color);
+  border-radius: 8px;
+  color: var(--fg);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.content a.hc-btn:hover {
+  border-color: #e8731f;
+  text-decoration: none;
+}
+
+.content a.hc-btn-primary,
+.content a.hc-btn-primary:visited {
+  background: #e8731f;
+  border-color: #e8731f;
+  color: #fff;
+}
+
+.content a.hc-btn-primary:hover {
+  background: #cf6214;
+}
+
+.hc-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.9rem;
+  margin: 1rem 0 1.6rem;
+}
+
+.hc-card {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--table-border-color);
+  border-radius: 10px;
+  background: rgba(128, 128, 128, 0.06);
+}
+
+.hc-card h3 {
+  margin: 0 0 0.45rem;
+  font-size: 1.05em;
+}
+
+.hc-card p {
+  margin: 0;
+  font-size: 0.94em;
+}
+
+.hc-screenshot {
+  margin: 1.25rem 0 1.75rem;
+}
+
+.hc-screenshot img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--table-border-color);
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+
+.hc-screenshot figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
 @media (max-width: 700px) {
   html,
   body {
@@ -92,6 +200,14 @@
   .brand-mark img {
     width: 80px;
     height: 80px;
+  }
+
+  .hc-hero {
+    padding: 1.3rem 1.1rem 1.1rem;
+  }
+
+  .hc-hero-tagline {
+    font-size: 1.5em;
   }
 
   .architecture-diagram img {
