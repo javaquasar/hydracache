@@ -3397,7 +3397,18 @@ fn system_time_millis() -> u64 {
         .min(u128::from(u64::MAX)) as u64
 }
 
+#[cfg(test)]
+std::thread_local! {
+    static PROFILE_ELAPSED_NANOSECONDS_FOR_TESTS: std::cell::Cell<Option<u64>> = const {
+        std::cell::Cell::new(None)
+    };
+}
+
 fn elapsed_nanoseconds(started: Instant) -> u64 {
+    #[cfg(test)]
+    if let Some(elapsed) = PROFILE_ELAPSED_NANOSECONDS_FOR_TESTS.with(std::cell::Cell::get) {
+        return elapsed;
+    }
     started.elapsed().as_nanos().min(u128::from(u64::MAX)) as u64
 }
 
@@ -4028,5 +4039,127 @@ mod retention_tests {
         assert_eq!(reset.after.store_identity_bytes, 0);
         assert_eq!(reset.after.idempotency_outcomes, 0);
         assert_eq!(reset.after.conditional, ConditionalRetainedState::default());
+    }
+}
+
+#[cfg(test)]
+mod profiled_store_guard_tests {
+    use super::*;
+    use std::sync::TryLockError;
+
+    #[test]
+    fn profile_timing_accumulates_exact_samples_including_zero() {
+        struct ResetElapsedSample;
+        impl Drop for ResetElapsedSample {
+            fn drop(&mut self) {
+                PROFILE_ELAPSED_NANOSECONDS_FOR_TESTS.with(|sample| sample.set(None));
+            }
+        }
+
+        for elapsed in [0, 37] {
+            PROFILE_ELAPSED_NANOSECONDS_FOR_TESTS.with(|sample| sample.set(Some(elapsed)));
+            let _reset_sample = ResetElapsedSample;
+            let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+            let identity = ClientIdentity::new("profile-client", "profile-tenant").unwrap();
+            let ns = Namespace::new("profile-clock").unwrap();
+            let key = StructuredKey::new(vec!["key".to_owned()]).unwrap();
+            let put = || {
+                state.dispatch_verified_request(
+                    &identity,
+                    ClientRequestEnvelope::new(
+                        "put",
+                        ClientRequest::Put {
+                            ns: ns.clone(),
+                            key: key.clone(),
+                            value: vec![7; 256],
+                            ttl_ms: None,
+                            dimensions: Vec::new(),
+                        },
+                    ),
+                )
+            };
+            assert!(matches!(put().result, Ok(ClientResponse::Stored)));
+            assert_eq!(
+                state.profile_metrics(),
+                ClientSurfaceProfileMetrics::default()
+            );
+
+            state.set_profile_instrumentation_enabled(true);
+            state.reset_profile_metrics();
+            assert!(matches!(put().result, Ok(ClientResponse::Stored)));
+            let get = state.dispatch_verified_request(
+                &identity,
+                ClientRequestEnvelope::new("get", ClientRequest::Get { ns, key }),
+            );
+            assert!(matches!(
+                get.result,
+                Ok(ClientResponse::Value { value: Some(ref value) }) if value == &vec![7; 256]
+            ));
+            let metrics = state.profile_metrics();
+            assert_eq!(metrics.dispatches, 2);
+            assert_eq!(metrics.identity_validations, 2);
+            assert_eq!(metrics.identity_validation_nanoseconds, 2 * elapsed);
+            assert_eq!(metrics.protocol_validations, 2);
+            assert_eq!(metrics.protocol_validation_nanoseconds, 2 * elapsed);
+            assert!(metrics.clock_reads >= 2);
+            assert_eq!(metrics.clock_nanoseconds, metrics.clock_reads * elapsed);
+            assert!(metrics.store_lock_acquisitions >= 2);
+            assert_eq!(
+                metrics.store_lock_wait_nanoseconds,
+                metrics.store_lock_acquisitions * elapsed
+            );
+            assert_eq!(
+                metrics.store_lock_hold_nanoseconds,
+                metrics.store_lock_acquisitions * elapsed
+            );
+
+            state.set_profile_instrumentation_enabled(false);
+            state.reset_profile_metrics();
+            drop(state.lock_store());
+            state.now_ms();
+            assert_eq!(
+                state.profile_metrics(),
+                ClientSurfaceProfileMetrics::default()
+            );
+        }
+    }
+
+    #[test]
+    fn profiled_store_guard_releases_borrow_on_drop_and_unwind() {
+        for profiling in [false, true] {
+            let store = Mutex::new(BTreeMap::<StoreKey, StoredValue>::new());
+            let instrumentation = ClientSurfaceProfileInstrumentation::default();
+            let make_guard = || ProfiledStoreGuard {
+                guard: store.lock().unwrap(),
+                hold_started: profiling.then(|| Instant::now() - Duration::from_millis(1)),
+                instrumentation: &instrumentation,
+            };
+            {
+                let guard = make_guard();
+                assert!(guard.is_empty());
+                assert!(matches!(store.try_lock(), Err(TryLockError::WouldBlock)));
+            }
+            assert!(store.try_lock().unwrap().is_empty());
+            let normal_hold = instrumentation
+                .store_lock_hold_nanoseconds
+                .load(Ordering::Relaxed);
+            assert_eq!(normal_hold > 0, profiling);
+
+            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                let _guard = make_guard();
+                assert!(matches!(store.try_lock(), Err(TryLockError::WouldBlock)));
+                panic!("intentional guard unwind");
+            }));
+            assert!(result.is_err());
+            // Poisoning is preserved. Poisoned means the mutex was released, not leaked.
+            match store.try_lock() {
+                Err(TryLockError::Poisoned(error)) => assert!(error.into_inner().is_empty()),
+                other => panic!("expected released poisoned store, got {other:?}"),
+            }
+            let final_hold = instrumentation
+                .store_lock_hold_nanoseconds
+                .load(Ordering::Relaxed);
+            assert_eq!(final_hold > normal_hold, profiling);
+        }
     }
 }

@@ -468,6 +468,28 @@ impl BoundedGrowthChecker {
 pub struct InvariantChecker;
 
 impl InvariantChecker {
+    /// Invariant names evaluated by [`Self::check_history`].
+    pub const HISTORY_INVARIANTS: &'static [&'static str] =
+        &["read-your-writes", "invalidate-read"];
+
+    /// Invariant names evaluated by [`Self::check_replicas`].
+    pub const REPLICA_INVARIANTS: &'static [&'static str] = &[
+        "consensus-prefix",
+        "durability",
+        "tombstone-resurrection",
+        "convergence",
+    ];
+
+    /// Invariant names evaluated by [`Self::check_election_topology`].
+    pub const ELECTION_INVARIANTS: &'static [&'static str] = &[
+        "election_safety",
+        "leader_requires_quorum",
+        "no_stale_leader_writes",
+        "index_monotonicity",
+        "catchup_no_skip",
+        "event_after_commit",
+    ];
+
     /// Check only workload history invariants.
     pub fn check_history(&self, history: &History) -> InvariantReport {
         let mut report = InvariantReport::default();

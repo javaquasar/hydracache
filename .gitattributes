@@ -9,6 +9,8 @@ docs/testing/memory/0.71/** text eol=lf
 docs/testing/perf-scenarios/0.71/** text eol=lf
 docs/testing/perf-host-profiles/memory-reference-071-v1.json text eol=lf
 docs/testing/perf-artifacts/0.67.1/**/accepted-receipts/*.json text eol=lf
+# W11 contracts bind schema bytes to SHA-256 on both Linux and Windows.
+docs/testing/performance/0.74/schemas/*.json text eol=lf
 
 # Archived performance evidence is immutable. Do not normalize text files inside
 # these byte-for-byte campaign copies on add or checkout.
@@ -27,3 +29,10 @@ docs/testing/perf-artifacts/0.73/**/README.md text eol=lf
 docs/testing/perf-artifacts/0.73/**/manifest.json text eol=lf
 docs/testing/perf-artifacts/0.73/**/SHA256SUMS text eol=lf
 docs/testing/perf-artifacts/0.73/**/verify.ps1 text eol=lf
+# Simulator demo sources are served and hash-verified as published bytes.
+demo/**/*.js text eol=lf
+demo/**/*.mjs text eol=lf
+demo/**/*.css text eol=lf
+demo/**/*.html text eol=lf
+demo/**/*.json text eol=lf
+demo/**/*.md text eol=lf

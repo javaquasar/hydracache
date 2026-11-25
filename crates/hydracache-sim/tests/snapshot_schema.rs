@@ -18,7 +18,7 @@ fn snapshot_roundtrips_and_is_versioned() {
     assert_eq!(decoded.step, 12);
     assert_eq!(decoded.nodes.len(), 3);
     assert_eq!(decoded.links.len(), 6);
-    assert_eq!(decoded.schema_version, 6);
+    assert_eq!(decoded.schema_version, 8);
     assert_eq!(decoded.formation_phase, "formed");
     assert_eq!(decoded.election_source, "sim-model");
     assert!(decoded.over_budget.in_flight_summarized <= decoded.in_flight.len() as u64);
@@ -49,6 +49,10 @@ fn snapshot_roundtrips_and_is_versioned() {
         "mode": "manual",
         "active_scenario": null,
         "intervention_count": 0,
+        "workload_enabled": true,
+        "checked_invariants": [],
+        "first_violation_step": null,
+        "consistency": [],
         "verdict": { "status": "holding" },
         "progress": {
             "committed_entries": 0,
@@ -67,7 +71,7 @@ fn schema_version_matches_contract_for_each_field_set() {
     let mut world = SimWorld::new(0x53_04, SimConfig::default());
     world.set_workload_enabled(false);
     let before = world.snapshot();
-    assert_eq!(before.schema_version, 6);
+    assert_eq!(before.schema_version, 8);
     assert_eq!(before.formation_phase, "unformed");
     assert_eq!(before.election_source, "sim-model");
     assert!(before.in_flight.is_empty());
@@ -91,7 +95,7 @@ fn schema_version_matches_contract_for_each_field_set() {
 
     world.run(8);
     let formed = world.snapshot();
-    assert_eq!(formed.schema_version, 6);
+    assert_eq!(formed.schema_version, 8);
     assert_eq!(formed.formation_phase, "formed");
     assert!(formed.nodes.iter().any(|node| {
         node.vote_state == "leader" && node.voted_for.as_deref() == Some(node.id.as_str())
@@ -141,7 +145,7 @@ fn snapshot_exposes_typed_in_flight_messages() {
     world.step();
     let snapshot = world.snapshot();
 
-    assert_eq!(snapshot.schema_version, 6);
+    assert_eq!(snapshot.schema_version, 8);
     assert!(snapshot.in_flight.iter().any(|message| {
         message.kind == "heartbeat"
             && message.from == "node-0"
@@ -258,4 +262,118 @@ fn verdict_reflects_real_checker() {
         snapshot.progress.convergence,
         hydracache_sim::ConvergenceView::Diverged
     );
+}
+
+// v7: the snapshot carries workload state and the exact invariant set behind
+// the verdict, so the demo can explain it instead of implying more coverage.
+#[test]
+fn snapshot_v7_exposes_workload_and_checked_invariants() {
+    let mut world = SimWorld::new(0x53_07, SimConfig::default());
+    world.run(4);
+    let running = world.snapshot();
+    assert_eq!(running.schema_version, 8);
+    assert!(running.workload_enabled);
+    assert_eq!(running.first_violation_step, None);
+    assert_eq!(running.checked_invariants, SimWorld::checked_invariants());
+    for name in [
+        "read-your-writes",
+        "election_safety",
+        "leader_requires_quorum",
+        "resource_bounded_growth",
+    ] {
+        assert!(running
+            .checked_invariants
+            .iter()
+            .any(|checked| checked == name));
+    }
+    for replica_only in hydracache_sim::InvariantChecker::REPLICA_INVARIANTS {
+        assert!(!running
+            .checked_invariants
+            .iter()
+            .any(|checked| checked == replica_only));
+    }
+
+    world.set_workload_enabled(false);
+    assert!(!world.snapshot().workload_enabled);
+}
+
+#[test]
+fn listed_invariant_names_match_the_checker_source() {
+    let source = include_str!("../src/invariants.rs");
+    // Listed names appear once in their list and at least once where a check
+    // reports them; `resource_bounded_growth` is only reported (listed in world).
+    for name in hydracache_sim::InvariantChecker::HISTORY_INVARIANTS
+        .iter()
+        .chain(hydracache_sim::InvariantChecker::ELECTION_INVARIANTS)
+        .chain(hydracache_sim::InvariantChecker::REPLICA_INVARIANTS)
+    {
+        let quoted = format!("\"{name}\"");
+        assert!(
+            source.matches(&quoted).count() >= 2,
+            "{name} must be reported by a check, not only listed"
+        );
+    }
+    assert!(source.contains("\"resource_bounded_growth\""));
+}
+
+// v8: per-level satisfiability comes from the product's ConsistencyLevel rules
+// on the simulator topology (every node a replica, live nodes acknowledge).
+#[test]
+fn snapshot_v8_reports_product_consistency_levels() {
+    fn level<'a>(
+        snapshot: &'a SimSnapshot,
+        name: &str,
+    ) -> &'a hydracache_sim::ConsistencyLevelView {
+        snapshot
+            .consistency
+            .iter()
+            .find(|view| view.level == name)
+            .unwrap_or_else(|| panic!("level {name} reported"))
+    }
+
+    let mut world = SimWorld::new(0x53_08, SimConfig::default());
+    world.run(8);
+    let healthy = world.snapshot();
+    assert_eq!(healthy.schema_version, 8);
+    assert_eq!(
+        healthy
+            .consistency
+            .iter()
+            .map(|view| view.level.as_str())
+            .collect::<Vec<_>>(),
+        ["one", "local_quorum", "quorum", "each_quorum", "all"]
+    );
+    for (name, required) in [
+        ("one", 1),
+        ("local_quorum", 2),
+        ("quorum", 2),
+        ("each_quorum", 2),
+        ("all", 3),
+    ] {
+        let view = level(&healthy, name);
+        assert_eq!(view.total_replicas, 3, "{name}");
+        assert_eq!(view.required_acks, required, "{name}");
+        assert_eq!(view.live_replicas, 3, "{name}");
+        assert!(view.satisfiable, "{name}");
+        assert_eq!(view.reason, None, "{name}");
+    }
+
+    assert!(world.crash_node("node-2"));
+    let one_down = world.snapshot();
+    assert!(level(&one_down, "quorum").satisfiable);
+    assert!(!level(&one_down, "all").satisfiable);
+    assert_eq!(level(&one_down, "all").live_replicas, 2);
+    assert!(level(&one_down, "all").reason.is_some());
+
+    assert!(world.crash_node("node-1"));
+    let two_down = world.snapshot();
+    assert!(level(&two_down, "one").satisfiable);
+    for name in ["local_quorum", "quorum", "each_quorum", "all"] {
+        let view = level(&two_down, name);
+        assert!(!view.satisfiable, "{name}");
+        assert!(
+            !view.reason.as_deref().unwrap_or_default().is_empty(),
+            "{name}"
+        );
+    }
 }

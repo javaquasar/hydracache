@@ -1,10 +1,12 @@
 use std::collections::VecDeque;
 use std::env;
+use std::io::Read;
 use std::process::ExitCode;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use hydracache_sim::{
-    run_soak, run_soak_with_seed_runner, SimConfig, SimWorld, SoakConfig, SoakReport,
+    replay_world, run_soak, run_soak_with_seed_runner, ReplayScriptV1, SimConfig, SimWorld,
+    SoakConfig, SoakReport,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -23,10 +25,19 @@ struct SoakCli {
     synthetic_failure_after_seeds: Option<u64>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// Replay a `ReplayScriptV1` exported by the demo ("Download script") or the
+/// sandbox `/sim/replay` route, including every recorded intervention.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ReplayCli {
+    /// Script path, or `-` for stdin.
+    path: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum Command {
     SingleShot(SingleShotCli),
     Soak(SoakCli),
+    Replay(ReplayCli),
 }
 
 impl Command {
@@ -36,6 +47,8 @@ impl Command {
         if args.front().is_some_and(|arg| arg == "soak") {
             args.pop_front();
             Ok(Self::Soak(SoakCli::parse(args)?))
+        } else if args.iter().any(|arg| arg == "--script") {
+            Ok(Self::Replay(ReplayCli::parse(args)?))
         } else {
             Ok(Self::SingleShot(SingleShotCli::parse(args)?))
         }
@@ -68,6 +81,34 @@ impl SingleShotCli {
             seed: seed.unwrap_or_else(random_seed),
             steps,
         })
+    }
+}
+
+impl ReplayCli {
+    fn parse(mut args: VecDeque<String>) -> Result<Self, String> {
+        let mut path = None;
+        while let Some(arg) = args.pop_front() {
+            match arg.as_str() {
+                "--script" => {
+                    let raw = args
+                        .pop_front()
+                        .ok_or_else(|| "--script requires a path (or - for stdin)".to_owned())?;
+                    path = Some(raw);
+                }
+                "--seed" | "--steps" => {
+                    return Err(format!(
+                        "{arg} cannot be combined with --script: the script carries its seed and target step
+{}",
+                        usage()
+                    ))
+                }
+                "--help" | "-h" => return Err(usage()),
+                other => return Err(format!("unknown argument '{other}'
+{}", usage())),
+            }
+        }
+        path.map(|path| Self { path })
+            .ok_or_else(|| "--script requires a path (or - for stdin)".to_owned())
     }
 }
 
@@ -151,6 +192,7 @@ fn main() -> ExitCode {
     match Command::parse(env::args()) {
         Ok(Command::SingleShot(cli)) => run_single_shot(cli),
         Ok(Command::Soak(cli)) => run_soak_command(cli),
+        Ok(Command::Replay(cli)) => run_replay(&cli),
         Err(message) => {
             eprintln!("{message}");
             ExitCode::from(64)
@@ -167,6 +209,54 @@ fn run_single_shot(cli: SingleShotCli) -> ExitCode {
     println!("delivered_messages={}", outcome.delivered_messages);
     println!("history_hash={}", outcome.history_hash);
     println!("invariant_violations={}", outcome.invariant_violations);
+
+    if outcome.invariant_violations == 0 {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::from(2)
+    }
+}
+
+fn run_replay(cli: &ReplayCli) -> ExitCode {
+    let mut json = String::new();
+    let read = if cli.path == "-" {
+        std::io::stdin().read_to_string(&mut json).map(|_| ())
+    } else {
+        std::fs::read_to_string(&cli.path).map(|text| json = text)
+    };
+    if let Err(error) = read {
+        eprintln!("cannot read replay script '{}': {error}", cli.path);
+        return ExitCode::from(66);
+    }
+    let script = match ReplayScriptV1::from_json(&json) {
+        Ok(script) => script,
+        Err(error) => {
+            eprintln!("invalid replay script '{}': {error}", cli.path);
+            return ExitCode::from(65);
+        }
+    };
+    let world = match replay_world(&script, |seed| SimWorld::new(seed, SimConfig::default())) {
+        Ok(world) => world,
+        Err(error) => {
+            eprintln!("replay script '{}' was rejected: {error}", cli.path);
+            return ExitCode::from(65);
+        }
+    };
+    let outcome = world.outcome();
+    let snapshot = world.snapshot();
+    println!("seed={}", outcome.seed);
+    println!("steps={}", outcome.steps);
+    println!("scenario={}", script.scenario.as_deref().unwrap_or("none"));
+    println!("actions={}", script.actions.len());
+    println!("accepted_ops={}", outcome.accepted_ops);
+    println!("delivered_messages={}", outcome.delivered_messages);
+    println!("history_hash={}", outcome.history_hash);
+    println!("invariant_violations={}", outcome.invariant_violations);
+    match snapshot.first_violation_step {
+        Some(step) => println!("first_violation_step={step}"),
+        None => println!("first_violation_step=none"),
+    }
+    println!("verdict={}", snapshot.verdict_json());
 
     if outcome.invariant_violations == 0 {
         ExitCode::SUCCESS
@@ -236,6 +326,7 @@ fn usage() -> String {
     [
         "usage:",
         "  vopr [--seed <u64>] [--steps <u64>]",
+        "  vopr --script <replay.json|->",
         "  vopr soak [--master-seed <u64>] [--budget-secs <u64>|--budget-ms <u64>] [--steps-per-seed <u64>] [--max-seeds <u64>]",
     ]
     .join("\n")

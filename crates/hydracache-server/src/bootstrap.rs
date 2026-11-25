@@ -576,7 +576,41 @@ impl ServerRuntime {
         if !self.config.redis_api.enabled || !self.config.redis_api.rediss_enabled {
             return Ok(None);
         }
-        RedisTlsAcceptor::from_tls_config(&self.config.tls).map(Some)
+        match self.config.redis_api.mtls_client_ca_path.as_deref() {
+            Some(client_ca) => {
+                RedisTlsAcceptor::from_tls_config_with_client_ca(&self.config.tls, client_ca)
+                    .map(Some)
+            }
+            None => RedisTlsAcceptor::from_tls_config(&self.config.tls).map(Some),
+        }
+    }
+
+    /// Send the effective decoder and dispatch limits to the isolated W11 observer.
+    #[cfg(target_os = "linux")]
+    #[doc(hidden)]
+    pub fn publish_w11_effective_config(&self) -> std::io::Result<()> {
+        use crate::w11_effective_config::{publish, requested, Limits};
+
+        let Some(profile) = requested()? else {
+            return Ok(());
+        };
+        let listener = self.redis_listener_config.as_ref().ok_or_else(|| {
+            std::io::Error::other("W11 config readback requires the active RESP listener")
+        })?;
+        let dispatch = self.client_dispatch_state.as_ref().ok_or_else(|| {
+            std::io::Error::other("W11 config readback requires the active dispatch state")
+        })?;
+        let limits = dispatch.limits();
+        publish(
+            profile,
+            Limits {
+                resp_array_items: listener.decode_limits.max_array_elements,
+                resp_frame_bytes: listener.decode_limits.max_frame_bytes,
+                shared_batch_entries: limits.max_batch_entries,
+                shared_batch_payload_bytes: limits.max_batch_bytes,
+                shared_value_bytes: limits.max_value_bytes,
+            },
+        )
     }
 
     /// Return the shared verified-dispatch state used by HC/1, RESP, and HC/2.

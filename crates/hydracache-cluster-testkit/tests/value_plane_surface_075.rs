@@ -84,13 +84,21 @@ fn unsupported_surface_fails_before_shared_state_mutation() {
         SurfaceOutcome::Read(None)
     );
     assert_eq!(map.event_count(), 0);
-    assert_eq!(map.execute(command(SurfaceId::Hc2Rust, SurfaceOperation::Mutation {
-        identity: MutationIdentity::new("client", 2),
-        operation: MutationOperation::ExpireVersion {
-            version: 1,
-            deadline: hydracache_cluster_testkit::value_plane_model_075::LogicalTime::new(10),
-        },
-    })), Err(SurfaceError::Unsupported));
+    assert_eq!(
+        map.execute(command(
+            SurfaceId::Hc2Rust,
+            SurfaceOperation::Mutation {
+                identity: MutationIdentity::new("client", 2),
+                operation: MutationOperation::ExpireVersion {
+                    version: 1,
+                    deadline: hydracache_cluster_testkit::value_plane_model_075::LogicalTime::new(
+                        10
+                    ),
+                },
+            }
+        )),
+        Err(SurfaceError::Unsupported)
+    );
 }
 
 #[test]

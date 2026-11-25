@@ -1,0 +1,136 @@
+name: Separate Diagnostic Builder 0.74
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: diagnostic-builder-074
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Frozen observer build without signing authority
+    if: github.repository_id == '1217101761' && github.ref == 'refs/heads/feat/0.74-resp-native-throughput'
+    runs-on: ubuntu-24.04
+    environment: performance-diagnostic-builder-074
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - name: Refuse absent or unprotected signing environment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api repos/javaquasar/hydracache/environments/performance-diagnostic-builder-074 > "$RUNNER_TEMP/environment.json"
+          gh api repos/javaquasar/hydracache/environments/performance-diagnostic-builder-074/deployment-branch-policies > "$RUNNER_TEMP/branches.json"
+          python3 tooling/scripts/perf/diagnostic_builder_074.py check-protection "$RUNNER_TEMP/environment.json" "$RUNNER_TEMP/branches.json"
+      - name: Refuse missing reviewed policy before observer compilation
+        env:
+          BUILDER_PUBLIC_KEY_HEX: ${{ vars.HYDRACACHE_074_BUILDER_PUBLIC_KEY_HEX }}
+          CONTROLLER_PUBLIC_KEY_HEX: ${{ vars.HYDRACACHE_074_CONTROLLER_PUBLIC_KEY_HEX }}
+          BUILDER_POLICY_SHA256: ${{ vars.HYDRACACHE_074_BUILDER_POLICY_SHA256 }}
+        run: python3 tooling/scripts/perf/diagnostic_builder_074.py policy "$RUNNER_TEMP/build-policy.json"
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: 62114be0f5da3218706e30d7424acfb5d0579d07
+          path: observer
+          persist-credentials: false
+      - name: Install exact reviewed compiler
+        timeout-minutes: 10
+        run: rustup toolchain install 1.94.0 --profile minimal
+      - name: Build once and retain native observations; validation only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain=v1)"
+          python3 -m unittest scripts.perf.test_diagnostic_builder_074
+        working-directory: tooling
+      - name: Execute fixed build coordinator
+        run: python3 tooling/scripts/perf/diagnostic_builder_074.py build observer tooling/docs/testing/performance/0.74/rental-pilot-draft build-bundle
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: diagnostic-unsigned-build-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build-bundle/**
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: false
+
+  sign:
+    name: Protected separate builder signing boundary
+    needs: build
+    runs-on: ubuntu-24.04
+    environment: performance-diagnostic-builder-074
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Recheck human review and exact branch before signing preparation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api repos/javaquasar/hydracache/environments/performance-diagnostic-builder-074 > "$RUNNER_TEMP/environment.json"
+          gh api repos/javaquasar/hydracache/environments/performance-diagnostic-builder-074/deployment-branch-policies > "$RUNNER_TEMP/branches.json"
+          python3 scripts/perf/diagnostic_builder_074.py check-protection "$RUNNER_TEMP/environment.json" "$RUNNER_TEMP/branches.json"
+      - name: Check reviewed policy configuration before compilation
+        env:
+          BUILDER_PUBLIC_KEY_HEX: ${{ vars.HYDRACACHE_074_BUILDER_PUBLIC_KEY_HEX }}
+          CONTROLLER_PUBLIC_KEY_HEX: ${{ vars.HYDRACACHE_074_CONTROLLER_PUBLIC_KEY_HEX }}
+          BUILDER_POLICY_SHA256: ${{ vars.HYDRACACHE_074_BUILDER_POLICY_SHA256 }}
+        run: python3 scripts/perf/diagnostic_builder_074.py policy "$RUNNER_TEMP/builder-policy.json"
+      - name: Build reviewed signer without any signing secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain=v1)"
+          rustup toolchain install 1.94.0 --profile minimal
+          cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test diagnostic_artifacts --lib builder
+          cargo +1.94.0 build -p hydracache-long-run-supervisor-074 --locked --bin diagnostic_builder
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: diagnostic-unsigned-build-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build-bundle
+      - name: Sign only this run's checked fixed build with the separate key
+        shell: bash
+        env:
+          BUILDER_SIGNING_KEY_HEX: ${{ secrets.HYDRACACHE_074_BUILDER_SIGNING_KEY_HEX }}
+          CONTROLLER_PUBLIC_KEY_HEX: ${{ vars.HYDRACACHE_074_CONTROLLER_PUBLIC_KEY_HEX }}
+          BUILDER_POLICY_SHA256: ${{ vars.HYDRACACHE_074_BUILDER_POLICY_SHA256 }}
+        run: |
+          set -euo pipefail
+          umask 077
+          private=$(mktemp -d "$RUNNER_TEMP/diagnostic-builder-074.XXXXXXXX")
+          key="$private/key.hex"
+          trap 'rm -f -- "$key"' EXIT
+          test -n "$BUILDER_SIGNING_KEY_HEX"
+          printf '%s\n' "$BUILDER_SIGNING_KEY_HEX" > "$key"
+          unset BUILDER_SIGNING_KEY_HEX
+          mkdir -m 0700 signed-build
+          target/debug/diagnostic_builder sign \
+            "$RUNNER_TEMP/builder-policy.json" "$BUILDER_POLICY_SHA256" \
+            "$CONTROLLER_PUBLIC_KEY_HEX" "$key" \
+            "$PWD/build-bundle/observation.json" "$PWD/build-bundle" \
+            "$PWD/signed-build/build-receipt-v1.json"
+          cp "$RUNNER_TEMP/builder-policy.json" signed-build/builder-policy.json
+          sha256sum signed-build/build-receipt-v1.json > signed-build/build-receipt.sha256
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: diagnostic-signed-build-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: signed-build/**
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: false

@@ -189,10 +189,11 @@ jobs:
               )
           )
           packages = metadata["packages"]
+          workspace_members = set(metadata["workspace_members"])
           publishable = [
               package
               for package in packages
-              if package.get("source") is None and package.get("publish") is None
+              if package["id"] in workspace_members and package.get("publish") is None
           ]
           versions = {package["version"] for package in publishable}
           if versions != {version}:

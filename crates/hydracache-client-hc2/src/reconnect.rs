@@ -5,6 +5,7 @@
 //! a successful reconnect installs a newly negotiated `Hc2Client` and fences
 //! every owner of the previous generation.
 
+use crate::atomic_update::AtomicCompareUpdate;
 use std::collections::BTreeMap;
 use std::future::Future;
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
@@ -1349,7 +1350,7 @@ fn has_idempotency_key(options: Option<&RequestOptions>) -> bool {
 
 fn next_nonzero(value: &AtomicU64) -> Result<u64, ClientError> {
     value
-        .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+        .compare_update(Ordering::AcqRel, Ordering::Acquire, |current| {
             current.checked_add(1).filter(|next| *next != 0)
         })
         .map(|previous| previous + 1)

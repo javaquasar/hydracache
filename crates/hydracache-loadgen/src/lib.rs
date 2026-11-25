@@ -3,6 +3,7 @@
 //! This crate is a development tool. Product crates must never depend on it.
 
 pub mod allocation;
+mod atomic_update;
 pub mod budget_receipt;
 pub mod cli;
 pub mod compare_redis;

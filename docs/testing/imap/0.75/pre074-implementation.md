@@ -70,6 +70,12 @@ reference/model receipt can satisfy a missing production verifier.
 
 ## Handoff after 0.74 publication
 
+The source handoff is available. The published `v0.74.0` tag resolves to
+`bcba511f0c1f4b3e965c9e17f81b248deb0ea331`. Main at
+`e6ccc2563db20efb0c59818f0692c580ea4ad504` also includes the `v0.74.1` registry maintenance
+candidate. The integration record and next product steps are in
+[`main-integration.md`](main-integration.md).
+
 The retained blockers are W0 closure, production backend extraction/owner routing, final wire and
 durable identities, production SDK generation, accepted 0.74 non-regression evidence, and actual
 distributed S2/release admission. The next product changes follow W10's D1-D16 gates, using these

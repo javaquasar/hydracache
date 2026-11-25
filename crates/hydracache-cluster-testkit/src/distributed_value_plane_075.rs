@@ -327,7 +327,10 @@ impl DistributedValuePlaneSimulator {
         let resuming = pending.is_some();
         if let Some((identity, digest)) = pending {
             let owner = self.require_current(&assignment.owner)?;
-            if !owner.plane.has_applied_mutation(assignment.partition, identity, *digest) {
+            if !owner
+                .plane
+                .has_applied_mutation(assignment.partition, identity, *digest)
+            {
                 return Err(ValuePlaneError::ReplicaProofMismatch.into());
             }
         }
@@ -406,7 +409,8 @@ impl DistributedValuePlaneSimulator {
         let (outcome, replayed) = execution?;
         if fault == ExecutionFault::LoseReplicaAcknowledgement {
             if !replayed {
-                self.pending.insert(assignment.partition, (identity.clone(), digest));
+                self.pending
+                    .insert(assignment.partition, (identity.clone(), digest));
             }
         } else if resuming || !replayed {
             self.pending.remove(&assignment.partition);
@@ -696,9 +700,15 @@ impl DistributedValuePlaneSimulator {
         }
         let backup = self.require_current(&current.backup)?;
         self.require_applied_prefix(partition, &current.backup, backup)?;
-        if self.pending.get(&partition).is_some_and(|(identity, digest)| {
-            !backup.plane.has_applied_mutation(partition, identity, *digest)
-        }) {
+        if self
+            .pending
+            .get(&partition)
+            .is_some_and(|(identity, digest)| {
+                !backup
+                    .plane
+                    .has_applied_mutation(partition, identity, *digest)
+            })
+        {
             return Err(SimulatorError::NoPromotionCandidate);
         }
         let next_backup = self
@@ -1356,25 +1366,51 @@ mod read_fence_tests {
     #[test]
     fn pending_replica_proof_does_not_allow_reapplying_on_a_corrupt_copy() {
         let mut sim = DistributedValuePlaneSimulator::new(
-            ["a", "b", "c"], SimulatorBounds::default(), ValuePlaneBounds::default(),
-        ).unwrap();
+            ["a", "b", "c"],
+            SimulatorBounds::default(),
+            ValuePlaneBounds::default(),
+        )
+        .unwrap();
         let key = CanonicalMapKey::new("tenant", "map", 1, b"key".to_vec(), 0);
         let plan = campaign_put(1, key, b"value".to_vec(), 1);
-        sim.execute_with_fault("a", plan.clone(), 0, ExecutionFault::LoseReplicaAcknowledgement).unwrap();
+        sim.execute_with_fault(
+            "a",
+            plan.clone(),
+            0,
+            ExecutionFault::LoseReplicaAcknowledgement,
+        )
+        .unwrap();
         let good_owner = sim.nodes.get("a").unwrap().plane.clone();
         let good_backup = sim.nodes.get("b").unwrap().plane.clone();
         for node in ["a", "b"] {
-            sim.nodes.get_mut(node).unwrap().plane = ReferenceValuePlane::new(ValuePlaneBounds::default(), 1).unwrap();
-            assert_eq!(sim.execute("a", plan.clone()), Err(SimulatorError::Model(ValuePlaneError::ReplicaProofMismatch)));
+            sim.nodes.get_mut(node).unwrap().plane =
+                ReferenceValuePlane::new(ValuePlaneBounds::default(), 1).unwrap();
+            assert_eq!(
+                sim.execute("a", plan.clone()),
+                Err(SimulatorError::Model(ValuePlaneError::ReplicaProofMismatch))
+            );
             if node == "a" {
                 sim.nodes.get_mut(node).unwrap().plane = good_owner.clone();
             } else {
-                assert_eq!(sim.promote_backup(0, 2), Err(SimulatorError::NoPromotionCandidate));
+                assert_eq!(
+                    sim.promote_backup(0, 2),
+                    Err(SimulatorError::NoPromotionCandidate)
+                );
                 sim.nodes.get_mut(node).unwrap().plane = good_backup.clone();
             }
         }
-        let response_lost = sim.execute_with_fault("a", plan, 0, ExecutionFault::LoseResponseAfterAcknowledgement).unwrap();
+        let response_lost = sim
+            .execute_with_fault(
+                "a",
+                plan,
+                0,
+                ExecutionFault::LoseResponseAfterAcknowledgement,
+            )
+            .unwrap();
         assert!(response_lost.replayed);
-        assert_eq!(response_lost.outcome.certainty, OutcomeCertainty::OutcomeUnknown);
+        assert_eq!(
+            response_lost.outcome.certainty,
+            OutcomeCertainty::OutcomeUnknown
+        );
     }
 }

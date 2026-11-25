@@ -1,3 +1,7 @@
+#[path = "../src/atomic_update.rs"]
+mod atomic_update;
+
+use crate::atomic_update::AtomicCompareUpdate;
 use std::fs;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
@@ -68,7 +72,7 @@ impl TransportAdapter for ScriptedAdapter {
         if self
             .state
             .fail_connects_remaining
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |remaining| {
+            .compare_update(Ordering::AcqRel, Ordering::Acquire, |remaining| {
                 remaining.checked_sub(1)
             })
             .is_ok()

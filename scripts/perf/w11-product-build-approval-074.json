@@ -1,0 +1,19 @@
+{
+  "observer_runtime_sha256": "554774804040d65bcabae5289f6ee2c41eb419340aac2fc06daf57ed72ea8a8f",
+  "observer_transport": "ssh",
+  "profile_sha256": "204b0eb3a41fc762cb1a58cecce87119f6779870495710fbf596cad3ca5214aa",
+  "roles": {
+    "C74": {
+      "commit": "22b5e8fa1bcb256d8ecbf4596a18d2fce55d19df",
+      "lock": "46571cd5c8e2a7aa5b659575d7828f935e7538e64d33cf148391b2fe43204a19",
+      "tree": "c76fcc485a544156c502c9f2f0fc1bf88b841e1e"
+    },
+    "I74": {
+      "commit": "37ce0bc0a0e97bd4baa3bfe21282365db2d4de0c",
+      "lock": "46571cd5c8e2a7aa5b659575d7828f935e7538e64d33cf148391b2fe43204a19",
+      "tree": "0471f251ead5b1d0c96d36d0005b76553ee35ec7"
+    }
+  },
+  "schema": "hydracache-w11-approval-074-v1",
+  "status": "approved"
+}

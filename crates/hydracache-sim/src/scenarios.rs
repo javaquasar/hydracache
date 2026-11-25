@@ -1,8 +1,8 @@
 use std::fmt;
 
 use crate::{
-    ControlActionV1, ConvergenceView, ReplayScriptV1, SimConfig, SimMode, SimSnapshot, SimWorld,
-    VerdictView,
+    ControlActionV1, ControlApplyError, ConvergenceView, ReplayScriptV1, SimConfig, SimMode,
+    SimSnapshot, SimWorld, VerdictView,
 };
 
 /// Curated simulator scenario set version.
@@ -197,6 +197,7 @@ pub fn scripted_lab_catalog() -> Vec<ReplayScriptV1> {
             mode: SimMode::Scripted,
             scenario: Some("cold-start-formation".to_owned()),
             actions: vec![ControlActionV1::Step { at_step: 0, n: 8 }],
+            target_step: None,
         },
         ReplayScriptV1 {
             version: crate::REPLAY_SCRIPT_VERSION,
@@ -215,6 +216,7 @@ pub fn scripted_lab_catalog() -> Vec<ReplayScriptV1> {
                     node: "node-0".to_owned(),
                 },
             ],
+            target_step: None,
         },
         ReplayScriptV1 {
             version: crate::REPLAY_SCRIPT_VERSION,
@@ -237,6 +239,7 @@ pub fn scripted_lab_catalog() -> Vec<ReplayScriptV1> {
                 },
                 ControlActionV1::Step { at_step: 8, n: 2 },
             ],
+            target_step: None,
         },
         ReplayScriptV1 {
             version: crate::REPLAY_SCRIPT_VERSION,
@@ -247,28 +250,75 @@ pub fn scripted_lab_catalog() -> Vec<ReplayScriptV1> {
                 ControlActionV1::Step { at_step: 0, n: 8 },
                 ControlActionV1::AddNode { at_step: 8 },
             ],
+            target_step: None,
         },
     ]
 }
 
-/// Run a named scenario.
+/// Run a named scenario on the default (simulator-model election) world.
 pub fn run_scenario(name: &str) -> Result<ScenarioRun, ScenarioError> {
+    run_scenario_with(name, |seed| SimWorld::new(seed, SimConfig::default()))
+}
+
+/// Run a named scenario on a world built by `base_world(preset_seed)`, e.g. a
+/// raft-election world for the sandbox server engine.
+pub fn run_scenario_with(
+    name: &str,
+    base_world: impl FnOnce(u64) -> SimWorld,
+) -> Result<ScenarioRun, ScenarioError> {
     let preset = scenario_presets()
         .into_iter()
         .find(|preset| preset.name == name)
         .ok_or_else(|| ScenarioError::UnknownScenario {
             name: name.to_owned(),
         })?;
-    let mut world = SimWorld::new(preset.seed, SimConfig::default());
+    let mut world = base_world(preset.seed);
     for action in &preset.actions {
         apply_action(&mut world, preset.name, action)?;
     }
+    world.set_active_scenario(Some(preset.name.to_owned()));
     let snapshot = world.snapshot();
     Ok(ScenarioRun {
         preset,
         world,
         snapshot,
     })
+}
+
+/// Rebuild a world from a replay script.
+///
+/// When `script.scenario` names a curated preset, replay starts from that
+/// preset's world (its own faults and steps included) and the script seed must
+/// match the preset seed; any other scenario value is a label and replay starts
+/// from `default_world(script.seed)`. Presets are also built on `default_world`,
+/// so a caller's election backend is kept for scenario replays. Actions and `target_step` are then applied
+/// through [`SimWorld::apply_replay_script`].
+pub fn replay_world(
+    script: &ReplayScriptV1,
+    default_world: impl FnOnce(u64) -> SimWorld,
+) -> Result<SimWorld, ControlApplyError> {
+    script.validate()?;
+    let preset = script.scenario.as_deref().and_then(|name| {
+        scenario_presets()
+            .into_iter()
+            .find(|preset| preset.name == name)
+    });
+    let mut world = match preset {
+        Some(preset) => {
+            if preset.seed != script.seed {
+                return Err(ControlApplyError::InvalidAction(format!(
+                    "replay seed {} does not match scenario '{}' seed {}",
+                    script.seed, preset.name, preset.seed
+                )));
+            }
+            run_scenario_with(preset.name, default_world)
+                .map_err(|error| ControlApplyError::InvalidAction(error.to_string()))?
+                .world
+        }
+        None => default_world(script.seed),
+    };
+    world.apply_replay_script(script)?;
+    Ok(world)
 }
 
 fn apply_action(

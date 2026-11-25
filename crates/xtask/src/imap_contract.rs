@@ -605,7 +605,7 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     );
 
     if status.w0_disposition != "open" {
-        problems.push("status.json must keep w0_disposition=open until 0.74 is published".into());
+        problems.push("status.json must keep w0_disposition=open until compatibility decisions and production evidence are admitted".into());
     }
     if status.production_capability != "disabled_fail_closed" {
         problems.push("status.json must keep production_capability=disabled_fail_closed".into());
@@ -719,7 +719,8 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         problems.push("status.json safe foundation must retain deferred work".into());
     }
     if status.blocked_by_074.is_empty() {
-        problems.push("status.json must name blocked-by-0.74 dependencies".into());
+        problems
+            .push("status.json must name remaining predecessor integration dependencies".into());
     }
     for blocked in &status.blocked_by_074 {
         require_text("blocked dependency id", &blocked.id, &mut problems);

@@ -7,16 +7,26 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <main class="shell" data-testid="demo-shell">
+    <main class="shell" data-testid="demo-shell" aria-busy="true">
       <header class="topbar glass-panel">
         <div>
           <h1>HydraCache Cluster Simulator</h1>
           <p id="engine-banner" data-testid="engine-banner">
             This runs the real hydracache-sim engine. Verdicts are produced by the actual invariant checker.
           </p>
+          <p
+            id="action-notice"
+            class="action-notice"
+            role="alert"
+            aria-live="assertive"
+            data-testid="action-notice"
+            hidden
+          ></p>
         </div>
         <div class="status-cluster" aria-label="simulation status">
-          <div id="verdict" class="verdict" data-testid="verdict">loading</div>
+          <div id="verdict" class="verdict warn" data-testid="verdict" role="status" aria-live="polite">
+            loading the simulator engine…
+          </div>
           <div
             id="election-source-chip"
             class="source-chip"
@@ -31,7 +41,14 @@
       <section class="controls glass-panel" aria-label="simulation controls">
         <label>
           Seed
-          <input id="seed-input" data-testid="seed-input" inputmode="numeric" value="80" />
+          <input
+            id="seed-input"
+            data-testid="seed-input"
+            inputmode="numeric"
+            value="80"
+            aria-describedby="seed-error"
+          />
+          <span id="seed-error" class="field-error" data-testid="seed-error" hidden></span>
         </label>
         <label>
           Scenario
@@ -45,7 +62,6 @@
             <option value="mixed">Mixed</option>
           </select>
         </label>
-        <p id="intervention-status" class="copy-status" data-testid="intervention-status"></p>
         <button id="load-scenario" type="button" data-testid="load-scenario">Load</button>
         <button id="reset-button" type="button" data-testid="reset">Reset</button>
         <button id="step-button" type="button" data-testid="step">Step</button>
@@ -53,7 +69,20 @@
         <button id="copy-reproducer" type="button" data-testid="copy-reproducer">
           Copy reproducer
         </button>
-        <p id="copy-status" class="copy-status" data-testid="copy-status"></p>
+        <button id="download-script" type="button" data-testid="download-script">
+          Download script
+        </button>
+        <div class="button-row run-until" role="group" aria-label="run until">
+          <button id="until-leader" type="button" data-until="leader" data-testid="until-leader">
+            Run to leader
+          </button>
+          <button id="until-agree" type="button" data-until="agree" data-testid="until-agree">
+            Run to replica agreement
+          </button>
+          <button id="until-violation" type="button" data-until="violation" data-testid="until-violation">
+            Run to violation
+          </button>
+        </div>
         <label class="toggle">
           <input id="workload-toggle" type="checkbox" checked data-testid="workload-toggle" />
           Workload
@@ -62,11 +91,40 @@
           Speed
           <input id="speed-input" type="range" min="80" max="1200" step="40" value="1200" />
         </label>
+        <p id="intervention-status" class="copy-status" data-testid="intervention-status"></p>
+        <p id="copy-status" class="copy-status" data-testid="copy-status"></p>
+        <p id="script-status" class="copy-status" data-testid="script-status"></p>
       </section>
 
       <section class="workspace">
         <section class="graph-panel glass-panel" aria-label="cluster graph">
-          <svg id="cluster-graph" viewBox="0 0 800 520" role="img" aria-label="cluster graph"></svg>
+          <svg
+            id="cluster-graph"
+            viewBox="0 0 800 520"
+            role="group"
+            aria-label="cluster graph"
+            aria-describedby="graph-summary"
+          ></svg>
+          <p id="graph-summary" class="visually-hidden" data-testid="graph-summary"></p>
+          <section class="timeline" aria-label="timeline">
+            <label class="timeline-scrub">
+              <span id="timeline-label" data-testid="timeline-label">step 0</span>
+              <input
+                id="timeline-input"
+                data-testid="timeline-input"
+                type="range"
+                min="0"
+                max="0"
+                step="1"
+                value="0"
+                aria-describedby="timeline-help"
+              />
+            </label>
+            <p id="timeline-help" class="timeline-help" data-testid="timeline-help">
+              Drag to rebuild any earlier step of this run from its seed and recorded actions.
+            </p>
+            <ol id="events-panel" class="events" data-testid="events-panel"></ol>
+          </section>
           <div class="graph-legend" data-testid="graph-legend" aria-label="signal legend">
             <span><i class="legend-dot vote"></i>vote</span>
             <span><i class="legend-dot heartbeat"></i>heartbeat</span>
@@ -76,84 +134,121 @@
         </section>
 
         <aside class="side-panel glass-panel">
-          <section class="glass-panel">
-            <h2>Link</h2>
-            <p id="selected-link" data-testid="selected-link">none</p>
+          <section class="glass-panel guide" aria-label="guide">
+            <h2 id="guide-title" data-testid="guide-title">Guide</h2>
+            <p id="guide-text" data-testid="guide-text"></p>
             <div class="button-row">
-              <button id="partition-link" type="button" data-action="partition" data-testid="partition-link">
-                Partition
-              </button>
-              <button id="delay-link" type="button" data-action="delay" data-testid="delay-link">
-                Delay
-              </button>
-              <button id="drop-link" type="button" data-action="drop" data-testid="drop-link">
-                Drop
-              </button>
-              <button id="heal-link" type="button" data-action="heal" data-testid="heal-link">
-                Heal
-              </button>
+              <button id="guide-back" type="button" data-testid="guide-back">Back</button>
+              <button id="guide-do" type="button" data-testid="guide-do">Do it</button>
+              <button id="guide-next" type="button" data-testid="guide-next">Next</button>
             </div>
           </section>
 
           <section class="glass-panel">
-            <h2>Progress</h2>
-            <dl id="progress-panel" data-testid="progress-panel"></dl>
-            <p id="snapshot-hash" class="hash" data-testid="snapshot-hash"></p>
+            <details class="panel" open data-collapse-mobile>
+              <summary><h2>Verdict</h2></summary>
+              <div id="verdict-panel" data-testid="verdict-panel"></div>
+            </details>
           </section>
 
           <section class="glass-panel">
-            <h2>Nodes</h2>
-            <button id="add-node-button" type="button" data-testid="add-node-button">
-              Add node
-            </button>
-            <div id="nodes-panel" data-testid="nodes-panel"></div>
-          </section>
-
-          <section class="glass-panel">
-            <h2>Signals</h2>
-            <div id="signals-panel" data-testid="signals-panel"></div>
-          </section>
-
-          <section class="glass-panel">
-            <h2>Client</h2>
-            <div class="manual-controls">
-              <label>
-                Client
-                <input id="manual-client" value="client-a" data-testid="manual-client" />
+            <details class="panel" open>
+              <summary><h2>Link</h2></summary>
+              <label class="link-picker">
+                Link
+                <select id="link-select" data-testid="link-select">
+                  <option value="">Choose a link</option>
+                </select>
               </label>
-              <label>
-                Namespace
-                <input id="manual-ns" value="profiles" data-testid="manual-ns" />
-              </label>
-              <label>
-                Key
-                <input id="manual-key" value="profile-42" data-testid="manual-key" />
-              </label>
-              <label>
-                Value
-                <input id="manual-value" value="fresh" data-testid="manual-value" />
-              </label>
+              <p id="selected-link" data-testid="selected-link" aria-live="polite">none</p>
               <div class="button-row">
-                <button id="subscribe-button" type="button" data-testid="subscribe-button">
-                  Subscribe
+                <button id="partition-link" type="button" data-action="partition" data-testid="partition-link">
+                  Partition
                 </button>
-                <button id="push-event-button" type="button" data-testid="push-event-button">
-                  Push
+                <button id="delay-link" type="button" data-action="delay" data-testid="delay-link">
+                  Delay
+                </button>
+                <button id="drop-link" type="button" data-action="drop" data-testid="drop-link">
+                  Drop
+                </button>
+                <button id="heal-link" type="button" data-action="heal" data-testid="heal-link">
+                  Heal
                 </button>
               </div>
-            </div>
-            <div id="clients-panel" data-testid="clients-panel"></div>
-            <div id="subscribers-panel" data-testid="subscribers-panel"></div>
+            </details>
           </section>
 
           <section class="glass-panel">
-            <h2>Consistency</h2>
-            <div id="consistency-panel" data-testid="consistency-panel"></div>
+            <details class="panel" open data-collapse-mobile>
+              <summary><h2>Progress</h2></summary>
+              <dl id="progress-panel" data-testid="progress-panel"></dl>
+              <p id="snapshot-hash" class="hash" data-testid="snapshot-hash"></p>
+            </details>
           </section>
 
           <section class="glass-panel">
-            <h2>Keys</h2>
-            <div id="keys-panel" data-testid="keys-panel"></div>
+            <details class="panel" open>
+              <summary><h2>Nodes</h2></summary>
+              <button id="add-node-button" type="button" data-testid="add-node-button">
+                Add node
+              </button>
+              <div id="nodes-panel" data-testid="nodes-panel"></div>
+            </details>
+          </section>
+
+          <section class="glass-panel">
+            <details class="panel" open data-collapse-mobile>
+              <summary><h2>Signals</h2></summary>
+              <div id="signals-panel" data-testid="signals-panel"></div>
+            </details>
+          </section>
+
+          <section class="glass-panel">
+            <details class="panel" open>
+              <summary><h2>Client</h2></summary>
+              <div class="manual-controls">
+                <label>
+                  Client
+                  <input id="manual-client" value="client-a" data-testid="manual-client" />
+                </label>
+                <label>
+                  Namespace
+                  <input id="manual-ns" value="profiles" data-testid="manual-ns" />
+                </label>
+                <label>
+                  Key
+                  <input id="manual-key" value="profile-42" data-testid="manual-key" />
+                </label>
+                <label>
+                  Value
+                  <input id="manual-value" value="fresh" data-testid="manual-value" />
+                </label>
+                <div class="button-row">
+                  <button id="subscribe-button" type="button" data-testid="subscribe-button">
+                    Subscribe
+                  </button>
+                  <button id="push-event-button" type="button" data-testid="push-event-button">
+                    Push
+                  </button>
+                </div>
+              </div>
+              <div id="clients-panel" data-testid="clients-panel"></div>
+              <div id="subscribers-panel" data-testid="subscribers-panel"></div>
+            </details>
+          </section>
+
+          <section class="glass-panel">
+            <details class="panel" open data-collapse-mobile>
+              <summary><h2>Consistency <span class="model-tag">availability now</span></h2></summary>
+              <div id="consistency-panel" data-testid="consistency-panel"></div>
+            </details>
+          </section>
+
+          <section class="glass-panel">
+            <details class="panel" open data-collapse-mobile>
+              <summary><h2>Keys</h2></summary>
+              <div id="keys-panel" data-testid="keys-panel"></div>
+            </details>
           </section>
         </aside>
       </section>

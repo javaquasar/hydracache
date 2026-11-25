@@ -132,6 +132,7 @@ pub struct SimWorld {
     invariant_checker: InvariantChecker,
     resource_growth_checker: BoundedGrowthChecker,
     invariant_report: InvariantReport,
+    first_violation_step: Option<u64>,
     nodes: BTreeMap<ClusterNodeId, SimNode>,
     clients: BTreeMap<String, SimClientActor>,
     subscribers: BTreeMap<String, SimSubscriber>,
@@ -197,6 +198,7 @@ impl SimWorld {
             invariant_checker: InvariantChecker,
             resource_growth_checker: BoundedGrowthChecker::default(),
             invariant_report: InvariantReport::default(),
+            first_violation_step: None,
             nodes,
             clients: BTreeMap::new(),
             subscribers: BTreeMap::new(),
@@ -316,6 +318,13 @@ impl SimWorld {
         &mut self,
         action: ControlActionV1,
     ) -> Result<(), ControlApplyError> {
+        // A workload toggle that does not change state is not an intervention;
+        // keeping it out of the log keeps default runs shareable as plain seeds.
+        if let ControlActionV1::Workload { enabled, .. } = &action {
+            if *enabled == self.workload_enabled {
+                return Ok(());
+            }
+        }
         let result = match action.clone() {
             ControlActionV1::Step { n, .. } => {
                 self.run(n);
@@ -364,6 +373,50 @@ impl SimWorld {
                 self.add_node();
                 Ok(())
             }
+            ControlActionV1::Crash { node, .. } => {
+                self.crash_node(node).then_some(()).ok_or_else(|| {
+                    ControlApplyError::InvalidAction("crash references an unknown node".to_owned())
+                })
+            }
+            ControlActionV1::Restart { node, .. } => {
+                self.restart_node(node).then_some(()).ok_or_else(|| {
+                    ControlApplyError::InvalidAction(
+                        "restart references a node that is not crashed".to_owned(),
+                    )
+                })
+            }
+            ControlActionV1::Partition { from, to, .. } => {
+                self.partition_link(from, to).then_some(()).ok_or_else(|| {
+                    ControlApplyError::InvalidAction(
+                        "partition references an unknown link".to_owned(),
+                    )
+                })
+            }
+            ControlActionV1::Heal { from, to, .. } => {
+                self.heal_link(from, to).then_some(()).ok_or_else(|| {
+                    ControlApplyError::InvalidAction(
+                        "heal references a link that is not partitioned".to_owned(),
+                    )
+                })
+            }
+            ControlActionV1::DropNext { from, to, .. } => self
+                .drop_next_on_link(from, to)
+                .then_some(())
+                .ok_or_else(|| {
+                    ControlApplyError::InvalidAction("drop references an unknown link".to_owned())
+                }),
+            ControlActionV1::DelayNext {
+                from, to, millis, ..
+            } => self
+                .delay_next_on_link_millis(from, to, millis)
+                .then_some(())
+                .ok_or_else(|| {
+                    ControlApplyError::InvalidAction("delay references an unknown link".to_owned())
+                }),
+            ControlActionV1::Workload { enabled, .. } => {
+                self.set_workload_enabled(enabled);
+                Ok(())
+            }
         };
         if result.is_ok() {
             self.action_log.push(action);
@@ -385,7 +438,21 @@ impl SimWorld {
             }
             self.apply_control_action(action)?;
         }
+        if let Some(target_step) = script.target_step {
+            if target_step < self.steps {
+                return Err(ControlApplyError::InvalidAction(format!(
+                    "replay target_step {target_step} is before step {} reached by its actions",
+                    self.steps
+                )));
+            }
+            self.run(target_step - self.steps);
+        }
         Ok(())
+    }
+
+    /// Record the curated scenario this world was built from.
+    pub(crate) fn set_active_scenario(&mut self, scenario: Option<String>) {
+        self.active_scenario = scenario;
     }
 
     /// Return the replay-visible action log accumulated by the shared control surface.
@@ -401,6 +468,7 @@ impl SimWorld {
             mode: self.mode,
             scenario: self.active_scenario.clone(),
             actions: self.action_log.clone(),
+            target_step: Some(self.steps),
         }
     }
 
@@ -786,12 +854,30 @@ impl SimWorld {
             mode: self.mode.as_str().to_owned(),
             active_scenario: self.active_scenario.clone(),
             intervention_count: self.action_log.len() as u64,
+            workload_enabled: self.workload_enabled,
+            checked_invariants: Self::checked_invariants(),
+            first_violation_step: self.first_violation_step,
+            consistency: self.consistency_views(),
             verdict: crate::snapshot::VerdictView::from_report(&self.invariant_report),
             progress: crate::snapshot::progress_from_report(
                 committed_entries,
                 &self.invariant_report,
             ),
         }
+    }
+
+    /// Per-level satisfiability on this world's topology: every node is a
+    /// replica in one region, and only live (not crashed, disabled, or
+    /// isolated) nodes can acknowledge. Partitioned individual links are not
+    /// considered. See `crate::consistency` for the product-parity contract.
+    fn consistency_views(&self) -> Vec<crate::snapshot::ConsistencyLevelView> {
+        let total = self.nodes.len();
+        let live = self
+            .live_node_ids()
+            .iter()
+            .filter(|node_id| self.nodes.contains_key(*node_id))
+            .count();
+        crate::consistency::consistency_level_views(total, live)
     }
 
     /// Serialize the canonical UI snapshot as JSON.
@@ -909,6 +995,21 @@ impl SimWorld {
         let sample = self.resource_sample();
         self.resource_growth_checker
             .observe(sample, &mut self.invariant_report);
+        if self.first_violation_step.is_none() && !self.invariant_report.violations.is_empty() {
+            self.first_violation_step = Some(self.steps);
+        }
+    }
+
+    /// Invariant names the live verdict is computed from: workload history,
+    /// election/topology, and bounded resource growth. Replica-snapshot
+    /// invariants ([`InvariantChecker::REPLICA_INVARIANTS`]) are not part of it.
+    pub fn checked_invariants() -> Vec<String> {
+        InvariantChecker::HISTORY_INVARIANTS
+            .iter()
+            .chain(InvariantChecker::ELECTION_INVARIANTS)
+            .chain(["resource_bounded_growth"].iter())
+            .map(|name| (*name).to_owned())
+            .collect()
     }
 
     fn resource_sample(&self) -> ResourceSample {

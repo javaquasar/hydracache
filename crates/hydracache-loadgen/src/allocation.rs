@@ -6,6 +6,7 @@
 //! process has only one global allocator, callers must run these measurements
 //! on an otherwise quiescent process if they need workload-only evidence.
 
+use crate::atomic_update::AtomicCompareUpdate;
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::future::Future;
 use std::hint::spin_loop;
@@ -74,7 +75,7 @@ fn record_successful_allocation(bytes: usize) {
     // across scope boundaries must never charge the next measurement.
     if ACTIVE_EPOCH.load(Ordering::Acquire) == epoch {
         let _ =
-            GROSS_ALLOCATED_BYTES.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
+            GROSS_ALLOCATED_BYTES.compare_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
                 Some(current.saturating_add(bytes))
             });
     }

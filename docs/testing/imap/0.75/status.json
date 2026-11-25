@@ -130,19 +130,14 @@
   },
   "blocked_by_074": [
     {
-      "id": "published-074-qualification",
-      "required_artifact": "accepted exact-candidate 0.74 package, compatibility, dependency-policy and server-qualification receipts",
-      "reason": "the observed 0.74 branch at 355c6fe226a17e63d60ac6c831eb081afd648d82 is preparing the test-process control plane; zero accepted performance proposals and the absence of a frozen candidate do not establish release qualification"
-    },
-    {
-      "id": "published-074-commit",
-      "required_artifact": "published 0.74.0 tag and exact source SHA",
-      "reason": "W0 cannot freeze old/new compatibility or final file ownership against an unpublished predecessor"
+      "id": "predecessor-evidence-replay",
+      "required_artifact": "retained v0.74.0 signed-binary evidence and v0.74.1 dependency compatibility inputs for the integrated source",
+      "reason": "v0.74.0 resolves to bcba511f0c1f4b3e965c9e17f81b248deb0ea331; origin/main at e6ccc2563db20efb0c59818f0692c580ea4ad504 also includes the v0.74.1 registry maintenance candidate. Release notes record stable compatibility and six-hour qualification; preparation must bind and replay the relevant artifacts before a 0.75 candidate is admitted"
     },
     {
       "id": "accepted-native-batch-baseline",
-      "required_artifact": "accepted 0.74 native and batch compatibility/performance baseline plus receipts, including an explicitly accepted zero-improvement outcome",
-      "reason": "0.75 needs the predecessor's frozen behavior and measured baseline; a positive throughput improvement is not itself a dependency requirement"
+      "required_artifact": "paired B74/I75 native, RESP and batch non-regression receipts on the reviewed harness",
+      "reason": "0.74.0 shipped as a maintenance binary while paired W11 qualification was deferred. Use the exact published predecessor as B74 and remeasure it for D1; no throughput improvement is required to accept that baseline"
     },
     {
       "id": "final-wire-durable-identities",

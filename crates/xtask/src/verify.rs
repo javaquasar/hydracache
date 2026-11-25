@@ -161,36 +161,22 @@ fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
         ),
     ];
 
-    let clippy = if is_windows {
-        gate(
+    // HydraCache allocator features are mutually exclusive on every platform.
+    // Check workspace defaults here; the all-feature lane above excludes
+    // HydraCache, whose common features and allocators have separate lanes.
+    let clippy = gate(
+        "clippy",
+        [
             "clippy",
-            [
-                "clippy",
-                "--workspace",
-                "--all-targets",
-                "--locked",
-                "--",
-                "-D",
-                "warnings",
-            ],
-            None,
-        )
-    } else {
-        gate(
-            "clippy",
-            [
-                "clippy",
-                "--workspace",
-                "--all-targets",
-                "--all-features",
-                "--locked",
-                "--",
-                "-D",
-                "warnings",
-            ],
-            None,
-        )
-    };
+            "--workspace",
+            "--all-targets",
+            "--locked",
+            "--",
+            "-D",
+            "warnings",
+        ],
+        None,
+    );
     gates.insert(1, clippy);
 
     if is_windows {
@@ -541,6 +527,80 @@ mod tests {
                 "warnings"
             ]
         );
+    }
+
+    #[test]
+    fn workspace_clippy_never_unifies_exclusive_allocators() {
+        for is_windows in [false, true] {
+            let gates = gates_for_platform(is_windows);
+            assert_eq!(
+                args_for(&gates, "clippy"),
+                [
+                    "clippy",
+                    "--workspace",
+                    "--all-targets",
+                    "--locked",
+                    "--",
+                    "-D",
+                    "warnings"
+                ]
+            );
+            let all_features = args_for(&gates, "clippy workspace");
+            assert!(all_features.contains(&"--all-features"));
+            assert!(all_features.contains(&"--all-targets"));
+            assert!(all_features
+                .windows(2)
+                .any(|pair| pair == ["--exclude", "hydracache"]));
+            for gate in &gates {
+                if gate.args.contains(&"--all-features") {
+                    assert!(gate
+                        .args
+                        .windows(2)
+                        .any(|pair| pair == ["--exclude", "hydracache"]));
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn allocator_clippy_lanes_keep_common_features_and_one_allocator() {
+        for is_windows in [false, true] {
+            let gates = gates_for_platform(is_windows);
+            for (label, allocator) in [
+                ("clippy hydracache system allocator", "allocator-system"),
+                ("clippy hydracache mimalloc", "allocator-mimalloc"),
+                ("clippy hydracache jemalloc", "allocator-jemalloc"),
+            ] {
+                if is_windows && allocator == "allocator-jemalloc" {
+                    assert!(!gates.iter().any(|gate| gate.label == label));
+                    continue;
+                }
+                let args = args_for(&gates, label);
+                assert!(args.contains(&"--no-default-features"));
+                assert!(args.contains(&"--locked"));
+                let features = args
+                    .windows(2)
+                    .find(|pair| pair[0] == "--features")
+                    .unwrap()[1];
+                let features: Vec<_> = features.split(',').collect();
+                for common in [
+                    "durable-value-store",
+                    "durable-values",
+                    "tiered-values",
+                    "testing",
+                ] {
+                    assert!(features.contains(&common));
+                }
+                assert_eq!(
+                    features
+                        .iter()
+                        .filter(|feature| feature.starts_with("allocator-"))
+                        .copied()
+                        .collect::<Vec<_>>(),
+                    [allocator]
+                );
+            }
+        }
     }
 
     #[test]

@@ -1,8 +1,12 @@
 # HydraCache 0.75 Extended IMap foundation evidence
 
 This directory is provisional, test-only foundation work. It does not enable a production
-distributed IMap capability, allocate wire or durable identities, or close W0 before 0.74 is
-published.
+distributed IMap capability, allocate wire or durable identities, or close W0.
+
+The 0.74 source handoff is recorded in
+[`main-integration.md`](main-integration.md), including the exact published predecessor,
+integrated main revision, local checks and remaining release gates. Use that record for
+post-handoff development; the preparation documents below retain their historical scope.
 
 The current predecessor-independent integration work is documented in
 [`pre074-implementation.md`](pre074-implementation.md). It adds current-daemon/storage

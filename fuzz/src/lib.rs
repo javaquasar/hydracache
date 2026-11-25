@@ -8,8 +8,8 @@ use hydracache_redis_compat::{
     decode_resp2_command_with_limits, decode_resp3_command_with_limits, RespDecodeLimits,
 };
 use hydracache_server::config::ServerConfig;
-use protobuf::Message;
 use raft::eraftpb::Snapshot;
+use raft::protocompat::{PbMessage, PbMessageExt};
 
 const MAX_FUZZ_INPUT_BYTES: usize = 16 * 1024;
 
@@ -65,15 +65,15 @@ pub fn fuzz_snapshot_decode(data: &[u8]) {
         return;
     }
     if data == b"empty-snapshot" {
-        let snapshot = Snapshot::new();
+        let snapshot = Snapshot::default();
         let encoded = snapshot
             .write_to_bytes()
             .expect("empty snapshot should encode");
-        let decoded = Snapshot::parse_from_bytes(&encoded).expect("empty snapshot should decode");
+        let decoded = Snapshot::decode(encoded.as_slice()).expect("empty snapshot should decode");
         assert!(decoded.get_metadata().get_index() == 0);
         return;
     }
-    let _ = Snapshot::parse_from_bytes(data);
+    let _ = Snapshot::decode(data);
 }
 
 /// Decode and validate the common management envelope without accepting unbounded input.

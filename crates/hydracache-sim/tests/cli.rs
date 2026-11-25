@@ -103,3 +103,59 @@ fn json_contains_key(value: &Value, needle: &str) -> bool {
         _ => false,
     }
 }
+
+fn temp_script(name: &str, json: &str) -> std::path::PathBuf {
+    let dir = std::env::temp_dir().join(format!("hydracache-vopr-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).expect("temp dir");
+    let path = dir.join(name);
+    std::fs::write(&path, json).expect("write script");
+    path
+}
+
+#[test]
+fn vopr_script_replays_interventions_like_the_demo() {
+    use hydracache_sim::{ControlActionV1, SimConfig, SimWorld};
+
+    let mut world = SimWorld::new(0x5420, SimConfig::default());
+    world.run(5);
+    world
+        .apply_control_action(ControlActionV1::Crash {
+            at_step: 5,
+            node: "node-1".to_owned(),
+        })
+        .expect("crash applies");
+    world.run(4);
+    let path = temp_script("crash.json", &world.replay_script().to_json());
+
+    let output = run_vopr(&["--script", path.to_str().unwrap()]);
+
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    let stdout = stdout_utf8(output);
+    assert!(stdout.contains("seed=21536"), "{stdout}");
+    assert!(stdout.contains("steps=9"), "{stdout}");
+    assert!(stdout.contains("actions=1"), "{stdout}");
+    assert!(
+        stdout.contains(&format!("history_hash={}", world.outcome().history_hash)),
+        "{stdout}"
+    );
+    assert!(stdout.contains("first_violation_step=none"), "{stdout}");
+    assert!(
+        stdout.contains("verdict={\"status\":\"holding\"}"),
+        "{stdout}"
+    );
+}
+
+#[test]
+fn vopr_script_rejects_bad_input_loudly() {
+    let invalid = temp_script("invalid.json", "{\"version\":1}");
+    let output = run_vopr(&["--script", invalid.to_str().unwrap()]);
+    assert_eq!(output.status.code(), Some(65), "{output:?}");
+    assert!(stderr_utf8(&output).contains("invalid replay script"));
+
+    let missing = run_vopr(&["--script", "does-not-exist.json"]);
+    assert_eq!(missing.status.code(), Some(66), "{missing:?}");
+
+    let mixed = run_vopr(&["--script", invalid.to_str().unwrap(), "--seed", "1"]);
+    assert_eq!(mixed.status.code(), Some(64), "{mixed:?}");
+    assert!(stderr_utf8(&mixed).contains("cannot be combined with --script"));
+}

@@ -14,14 +14,16 @@
 >   data in the contacted daemon's local `ClientSurfaceState`. Client-side read/compare/write
 >   composition is racy, bulk emulation amplifies protocol overhead, and node-local routing,
 >   listeners, retries and expiry prevent an honest distributed IMap claim.
-> - **After (depends on):** published `0.74.0`, including its accepted native/batch performance
->   baseline and compatibility receipts. Release 0.75 must preserve the accepted 0.74 native-path
->   behavior, including an explicitly accepted baseline with no numerical improvement.
+> - **After (depends on):** published `0.74.0` and retained compatibility receipts. Its source
+>   handoff is recorded; D1 still needs paired native/batch baseline measurements because 0.74
+>   deferred W11 performance qualification. Release 0.75 must preserve the published native-path
+>   behavior; baseline acceptance requires no numerical improvement.
 > - **Unblocks:** a practical Hazelcast-to-HydraCache distributed-map migration path, a publishable
 >   cluster comparison, and a shared atomic collection foundation for later `MultiMap` and `Set`
 >   proposals.
-> - **Status:** planned. No expanded IMap compatibility claim exists until every mandatory gate and
->   exact-candidate receipt in this plan is green.
+> - **Status:** planned. Production integration is being prepared on the published 0.74 source.
+>   W0 and the D1 gate are open.
+>   [Main integration record](../testing/imap/0.75/main-integration.md).
 
 Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) · gates:
 [`../GATES.md`](../GATES.md) · original facade plan:
@@ -210,7 +212,7 @@ work stays blocked; it is not started on an assumed answer.
 | OD-1 | How an isolated former owner stops serving authoritative reads | **Selected in W0:** a quorum-backed read barrier on the owner lane (committed epoch, ownership and applied watermark are checked before key lookup). Lease-based local reads are not used in 0.75; adopting them later requires OD-2 bounds and a new ADR. Record the choice and its per-read cost in an ADR. | Final W10b/W10c/W10e message formats; D2/D3 gates |
 | OD-2 | Time source for `ClusterTimeAuthority`: provider, how uncertainty is measured, the admitted maximum uncertainty, and behavior on clock step or uncertainty overflow | **Open.** W0 already requires the provider and bound to be recorded; the concrete choice is not made. Record it in an ADR. | W10d expiry, D2 clock model, D3 expiry checks |
 | OD-3 | Write availability after one member loss in the RF=2, three-member profile | **Fail-closed is selected** by the frozen profile and W10e. With uniform placement, losing one of three members leaves about two thirds of partitions without a required backup (those it owned plus those it backed up), and their writes are rejected until re-replication proves the prefix. **Open:** numeric targets for maximum write-unavailable partition-seconds and maximum re-replication time at the frozen cardinality and payload. Record in an ADR. | W10e gate, W10m RPO/RTO matrix, W11e reporting |
-| OD-4 | Publication date of 0.74 and the minimum definition of "0.74 published" that 0.75 depends on | **Open.** | Every production slice D1 and later |
+| OD-4 | Publication date of 0.74 and the minimum definition of "0.74 published" that 0.75 depends on | **Source handoff recorded on 2026-11-25.** The stable Linux binary was published on 2026-11-23 at `v0.74.0` / `bcba511f0c1f4b3e965c9e17f81b248deb0ea331`. The release owner requested integration of current main, which also includes the `v0.74.1` registry maintenance candidate. D1 binds and remeasures B74 under its own non-regression gate. | Predecessor artifacts and D1 measurements |
 | OD-5 | Fallback scope if the distributed value plane is late | **Open.** Proposed default: a decision point after D7. If D7 is not green by the date frozen in OD-10, ship the extended surface on the local backend, keep the distributed mode behind a non-default capability with `not-comparable: distributed-value-plane-absent`, and move the distributed claim to 0.75.x. | Release scope after D7 |
 | OD-6 | Foundation items beyond the 0.75 public surface: `clear`/`destroy`, `size`, contains-value scans, cursors and iterators, Flow publishers, checkpoint/restore, statistics | **Open.** Each `implemented` item in `status.json` is labeled `w0_mandatory` or `beyond_075_scope`. Items beyond scope stay reference-only or move to a later plan. | W0 closure |
 | OD-7 | Latency budget of the distributed path, written as `member-mode p99 ≤ k × local p99 + n × measured inter-member RTT` per operation family (read, write, conditional, bulk group) | **Open:** values of `k` and `n`. | Skeleton checkpoint, W11 internal cells |
@@ -248,7 +250,7 @@ evidence.
 
 ### Provisional safe-foundation progress
 
-Foundation work that does not depend on the unfinished 0.74 production shape exists on the 0.75
+Foundation work prepared before the 0.74 source handoff exists on the 0.75
 branch: a provisional W0 registry, a bounded reference mutation model and certainty-aware
 linearizability oracle, a three-node logical value-plane simulator and seeded chaos campaign, a
 common Java semantic harness, local API extensions and actual-service test-cluster integrations.
@@ -261,6 +263,8 @@ distributed backend remains disabled and fail-closed.
   [`pre074-implementation.md`](../testing/imap/0.75/pre074-implementation.md).
 - Current machine-readable status: [`status.json`](../testing/imap/0.75/status.json); provisional
   gate: `cargo xtask imap-contract-check --release 0.75`.
+- The 2026-11-25 source handoff pins the published `v0.74.0` predecessor and main's
+  `v0.74.1` dependency changes. [Integration and D1 preparation](../testing/imap/0.75/main-integration.md).
 - Foundation freeze: no new foundation items are added before D1 starts. Every `implemented` item
   in `status.json` carries a scope label, `w0_mandatory` or `beyond_075_scope`, decided by OD-6.
   Items labeled `beyond_075_scope` stay reference-only and are not projected into the release
@@ -2121,18 +2125,31 @@ red listener or bulk gate cannot be relabeled optional after implementation.
 
 ### SQLite dependency follow-up
 
-Carry the deferred SQLx and Diesel dependency upgrade from the 0.74 SQLite advisory record,
-`docs/testing/performance/0.74/release-closure-execution-plan-20261026.md#sqlite-advisory-and-dependency-upgrade-deferral`
-on the 0.74 branch (not present on the 0.75 branch). Select published releases of both drivers and
-a compatible SeaORM release. The workspace and an independent consumer of the packaged crates must
-resolve a single `libsqlite3-sys` with the fix for `RUSTSEC-2026-0459`. The tested target is
-`libsqlite3-sys 0.39.1` with bundled SQLite 3.54.1. Confirm the selected versions support Rust 1.88
+The main source handoff already advances the SQLx/Diesel graph: exact registry
+`hydra-sqlx 0.8.6-hydra.1` and `hydra-sqlx-sqlite 0.8.6-hydra.1`, Diesel 2.4.0 and
+`libsqlite3-sys 0.40.0` supersede the previously proposed 0.39.1 target. Retain the
+[0.74.1 dependency admission](../releases/0.74.1.md) and requalify the exact 0.75 candidate.
+
+The workspace and an independent consumer of the packaged crates must resolve a single
+`libsqlite3-sys` with the fix for `RUSTSEC-2026-0459`. SeaORM's upstream SQLite path can
+still select an incompatible binding without the workspace patch; selecting and proving a
+compatible normal consumer graph remains open. Confirm all selected versions support Rust 1.88
 or record a separate MSRV decision before adoption.
 
 The W12 evidence includes the resolved dependency and feature graph for both builds, SQLite version
 and shared WAL commit/rollback checks across the three drivers, and a passing `cargo xtask verify`
 on the exact candidate under the existing dependency policy. The consumer must resolve its graph
 with its ordinary manifest and no local dependency overrides.
+
+### Supervisor dependency follow-up
+
+The integrated full gate currently rejects the Linux supervisor's `zbus 5.19.0` graph:
+`zvariant`, `zbus_names` and `zvariant_derive` are unmaintained under
+RUSTSEC-2026-0370/0371/0372. Keep the dependency policy unchanged. Resolve this through an
+MSRV-compatible client or an explicit toolchain decision plus migration to zbus 6, which requires
+Rust 1.89 and removes the blocking API. Re-run Linux supervisor tests, dependency policy and the
+four W12 lanes on the resulting source. Details and check results are in the
+[main integration record](../testing/imap/0.75/main-integration.md).
 
 ## Concrete file map
 

@@ -61,18 +61,11 @@ fn client_surface_profile_counters_are_opt_in_bounded_and_resettable() {
     assert_eq!(metrics.dispatches, 2);
     assert_eq!(metrics.expiry_sweep_checks, 2);
     assert!(metrics.clock_reads >= 2);
-    assert!(metrics.clock_nanoseconds > 0);
+    // A real clock may report zero for a fast operation. Exact duration accounting,
+    // including zero samples, is checked by the library's deterministic timing test.
     assert!(metrics.expiry_sweeps_claimed <= metrics.expiry_sweep_checks);
     assert!(
         metrics.store_lock_acquisitions >= 2,
-        "unexpected profile metrics: {metrics:?}"
-    );
-    assert!(
-        metrics.store_lock_wait_nanoseconds > 0,
-        "unexpected profile metrics: {metrics:?}"
-    );
-    assert!(
-        metrics.store_lock_hold_nanoseconds > 0,
         "unexpected profile metrics: {metrics:?}"
     );
     assert_eq!(metrics.live_get_hits, 1);

@@ -1,3 +1,6 @@
+const externalUrl = process.env.HYDRACACHE_DEMO_URL;
+const demoUrl = externalUrl ?? "http://127.0.0.1:5173/demo/";
+
 export default {
   testDir: "./tests",
   timeout: 45_000,
@@ -6,13 +9,13 @@ export default {
   },
   reporter: [["list"]],
   use: {
-    baseURL: "http://127.0.0.1:5173/demo/",
+    baseURL: demoUrl,
     screenshot: "only-on-failure",
     trace: "retain-on-failure"
   },
-  webServer: {
+  webServer: externalUrl ? undefined : {
     command: "npm run serve",
-    url: "http://127.0.0.1:5173/demo/",
+    url: demoUrl,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000
   },

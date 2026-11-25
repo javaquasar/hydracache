@@ -477,7 +477,11 @@ fn verified_point_projection_preserves_conditional_return_and_ttl_contracts() {
         MutationOperation::Delete,
     ];
     let expiry = verified(
-        "a", "map", 1, SurfaceId::Hc2Java, b"k",
+        "a",
+        "map",
+        1,
+        SurfaceId::Hc2Java,
+        b"k",
         SurfaceOperation::Mutation {
             identity: MutationIdentity::new("verified", 100),
             operation: MutationOperation::ExpireVersion {
@@ -487,8 +491,12 @@ fn verified_point_projection_preserves_conditional_return_and_ttl_contracts() {
         },
     );
     assert_eq!(
-        registry.enqueue_verified(&handle, &context, &expiry).unwrap_err(),
-        RegistryError::Service(hydracache_cluster_testkit::value_plane_service_075::MapServiceError::InvalidArgument)
+        registry
+            .enqueue_verified(&handle, &context, &expiry)
+            .unwrap_err(),
+        RegistryError::Service(
+            hydracache_cluster_testkit::value_plane_service_075::MapServiceError::InvalidArgument
+        )
     );
     let mut results = Vec::new();
     for (index, operation) in operations.into_iter().enumerate() {
