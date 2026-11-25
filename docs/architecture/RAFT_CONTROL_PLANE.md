@@ -236,7 +236,7 @@ describes the *target* of these primitives, not shipped behaviour. Label it that
 | --- | --- | --- | --- |
 | Election (server and sandbox, native) | `SimRaft`: real raft-rs `RawNode` over `SimNetwork`, `election_source: "raft"` | `RaftMetadataRuntime`'s `RawNode` | same library, own harness |
 | Election (browser, wasm) | `ElectionDriver` model, partition-aware, `election_source: "sim-model"` | none | model; ADR-0016 forbids claiming raft fidelity |
-| Metadata commands | not simulated; `SimRaft` proposes only conf changes | `RaftMetadataCommand` | no |
+| Metadata commands | `ClientUpsert` only: `SimWorld::admit_client` needs a live leader, commits at once and is reported in `admitted_clients` (schema 10). `SimRaft` proposes only conf changes; the other commands are not simulated | `RaftMetadataCommand` | model of the admission rule |
 | Data plane | `ClusterNode`: write locally, then broadcast `ReplicatePut` / `ReplicateInvalidate` / `ReplicateFlush` to **all** peers | default: local write plus invalidation bus; opt-in: owner placement (primitives) | `ClusterNode` is product code, but only the simulator and `tests/sans_io_seam.rs` use it |
 | Consistency panel | `SimWorld::consistency_views` calls `ConsistencyLevel::{required_acks, validate}` with every node a replica, one region | `ConsistencyLevel` | yes, in both builds (TD-0014, resolved) |
 
@@ -248,13 +248,10 @@ gap moves to the history list below, with its commit.
 
 | Id | Gap | Simulator / demo today | Product | Owner |
 | --- | --- | --- | --- | --- |
-| G1 | Write entry node | `SimWorld::push_event` writes on `preferred_write_node`: the leader, or **silently the first live node** when there is none. The smoke workload (`issue_smoke_workload`) writes on a random live node. | The member the client is connected to, with or without a leader. | TD-0016 |
-| G2 | Leader on the data path | `demo/graph.js` `pushPlan` and `playDataFlowPulse` draw client → attached node → leader → replicas. | The leader is not involved in a cache write. | TD-0016 |
 | G3 | Replica set | Every live node receives every write (`ClusterNode::broadcast`). | Default: nobody receives the value, others invalidate. Opt-in: the primary and `RF - 1` backups only. | TD-0016, TD-0014 |
 | G4 | Acknowledgement and quorum | `handle_client` returns `Accepted` as soon as the node applies locally. Peer `Ack` messages are ignored. | Opt-in: the write is acknowledged per `ConsistencyLevel`, or refused with `ConsistencyUnsatisfiable`. | TD-0016 |
 | G5 | Subscriber delivery | An event is delivered only once **every** live node holds the version (`deliver_subscriber_events`). | Events come from the cache event or invalidation stream of the node the subscriber is attached to. | TD-0016 |
-| G6 | Client attachment | `connected_node_for` hashes the id over live nodes, so a client re-pins whenever the live set changes. | The client connects through bootstrap and discovery, and stays until its connection fails. | TD-0016 |
-| G7 | Client admission | `add_client` / the first push insert the client directly. | `ClientUpsert` is committed through Raft and fails while there is no leader. | TD-0016 |
+| G7′ | Admission details | `ClientUpsert` commits at once when a live leader exists (no log round trip, no forwarded-apply wait). The built-in workload fleet is treated as admitted with the cluster. Removing a writer or subscriber keeps the client admitted (`NodeLeft` is not modeled). | Proposal, forward to the leader, commit, apply; a stopped process proposes `NodeLeft`. | TD-0016 |
 
 Closed gaps:
 
@@ -263,6 +260,18 @@ Closed gaps:
 - G8 / TD-0014: the simulator used a mirror of the consistency rules. The placement
   and consistency types now live in `replication_model` and build for wasm32; both
   simulator builds call the product rules, and the snapshot is unchanged.
+- G1, G2, G6, G7 / TD-0016 step 2 (snapshot schema 10):
+  - a write enters on the member the client is connected to (`admit_client`, then
+    `attached_node`), with or without a leader; the silent first-live-node
+    fallback is gone;
+  - each workload client also writes through one sticky member;
+  - a connection is sticky and moves only when its member is crashed, disabled or
+    isolated (`reattach_sessions`, traced as `client_connect`);
+  - a new client is admitted with a simulated `ClientUpsert` that fails loud with
+    the product's no-leader error;
+  - the demo draws the request only along the writer's link to that member.
+
+  What remains of admission is G7′.
 
 ### Target engine shape
 
@@ -274,7 +283,7 @@ with its own tests.
    because it takes `ClusterMember`, which is native-only. Step 3 has to make it
    available to wasm32, and must keep `tests/placement_golden.rs` green while doing
    it.
-2. **Write through the client's coordinator** (G1, G6, G7).
+2. **Done: write through the client's coordinator** (G1, G2, G6, G7).
    - `push_event` enters on the client's attached node. Attachment is sticky and
      stored in the world, not re-hashed.
    - Admission becomes a simulated `ClientUpsert` that fails loud without a leader.
@@ -291,7 +300,7 @@ with its own tests.
      write. This bumps the snapshot schema and needs a `docs/COMPAT.md` entry.
 4. **Subscriber events from the attached node** (G5). An event is delivered when the
    subscriber's node applies the write or receives the invalidation.
-5. **Demo** (G2). The demo draws:
+5. **Demo**. The demo draws:
    - client → coordinator → primary → backups, then acknowledgements back;
    - invalidations to the holders of the key;
    - the Raft leader on a separate metadata lane, shown only for admission, leave

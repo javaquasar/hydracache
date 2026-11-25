@@ -23,7 +23,11 @@ mod overload_sim {
             max_subscriber_pending: MAX_SUBSCRIBER_BUFFER as u64,
             sample_window: 4,
         });
-        world.subscribe("client-a", "ns");
+        // Clients join through the Raft metadata path, so the cluster forms first.
+        world.run(8);
+        world
+            .subscribe("client-a", "ns")
+            .expect("subscribe admits the client");
 
         let schedule = FaultSchedule::from_faults(vec![
             ScheduledFault::new(
@@ -65,7 +69,7 @@ mod overload_sim {
         }
 
         let outcome = world.outcome();
-        assert_eq!(outcome.steps, 96);
+        assert_eq!(outcome.steps, 104);
         assert_eq!(outcome.accepted_ops, manual_pushes);
         assert!(outcome.delivered_messages > 0, "{outcome:?}");
 

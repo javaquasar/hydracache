@@ -13,8 +13,8 @@ use crate::{
     BoundedGrowthChecker, ControlActionV1, ControlApplyError, ElectionDriver,
     ElectionDriverSnapshot, History, InvariantChecker, InvariantReport, LinkFault,
     PartitionSymmetry, ReplayScriptV1, ResourceBudget, ResourceSample, SimClock, SimNetwork,
-    SimRng, SimSnapshot, SimStorage, SubscriberEventView, WorkloadConfig, WorkloadGenerator,
-    WorkloadOp, WorkloadResult, MAX_SUBSCRIBER_BUFFER,
+    SimSnapshot, SimStorage, SubscriberEventView, WorkloadConfig, WorkloadGenerator, WorkloadOp,
+    WorkloadResult, MAX_SUBSCRIBER_BUFFER,
 };
 
 const BUS_EVENT_UPSERTED: &str = "upserted";
@@ -98,6 +98,22 @@ struct PendingSubscriberEvent {
     commit_index: u64,
 }
 
+/// A client process the cluster knows about, and the member it is connected to.
+#[derive(Debug, Clone)]
+struct ClientSession {
+    /// Member the client's connection is open to. It coordinates the client's
+    /// writes, the way a product member handles writes from its own clients.
+    attached: Option<ClusterNodeId>,
+    /// Step at which the simulated `ClientUpsert` committed. `None` for the
+    /// built-in workload fleet, which the simulator treats as admitted with
+    /// the cluster (disclosed in the Raft control-plane gap register).
+    admitted_at_step: Option<u64>,
+}
+
+/// Product error text for a metadata proposal with no leader
+/// (`hydracache-cluster-raft`, `commit_command`).
+const NO_LEADER_PROPOSAL: &str = "no raft leader; retry metadata proposal after election";
+
 #[derive(Debug, Clone)]
 struct SimSubscriber {
     id: String,
@@ -130,7 +146,6 @@ pub enum ElectionBackend {
 pub struct SimWorld {
     seed: u64,
     cfg: SimConfig,
-    rng: SimRng,
     clock: SimClock,
     network: SimNetwork,
     election_backend: ElectionBackend,
@@ -146,6 +161,7 @@ pub struct SimWorld {
     nodes: BTreeMap<ClusterNodeId, SimNode>,
     clients: BTreeMap<String, SimClientActor>,
     subscribers: BTreeMap<String, SimSubscriber>,
+    sessions: BTreeMap<String, ClientSession>,
     crashed_nodes: BTreeSet<ClusterNodeId>,
     isolated_nodes: BTreeSet<ClusterNodeId>,
     disabled_nodes: BTreeSet<ClusterNodeId>,
@@ -192,7 +208,6 @@ impl SimWorld {
         Self {
             seed,
             cfg,
-            rng: SimRng::from_seed(seed),
             clock: SimClock::default(),
             network: SimNetwork::from_seed(seed ^ 0x44_44_44_44),
             election_backend: ElectionBackend::Model,
@@ -214,6 +229,7 @@ impl SimWorld {
             nodes,
             clients: BTreeMap::new(),
             subscribers: BTreeMap::new(),
+            sessions: BTreeMap::new(),
             crashed_nodes: BTreeSet::new(),
             isolated_nodes: BTreeSet::new(),
             disabled_nodes: BTreeSet::new(),
@@ -261,6 +277,7 @@ impl SimWorld {
             self.clock.now().as_millis()
         ));
 
+        self.reattach_sessions();
         self.drive_election();
         self.deliver_network();
         self.tick_nodes();
@@ -285,6 +302,11 @@ impl SimWorld {
     /// Return the current logical time.
     pub fn now(&self) -> LogicalTime {
         self.clock.now()
+    }
+
+    /// Return the deterministic event trace recorded so far.
+    pub fn trace(&self) -> &[String] {
+        &self.trace
     }
 
     /// Return the recorded workload history.
@@ -349,10 +371,7 @@ impl SimWorld {
                 value,
                 ..
             } => self.push_event(client, ns, key, value),
-            ControlActionV1::Subscribe { client, ns, .. } => {
-                self.subscribe(client, ns);
-                Ok(())
-            }
+            ControlActionV1::Subscribe { client, ns, .. } => self.subscribe(client, ns),
             ControlActionV1::AddClient { client, ns, .. } => self.add_client(client, ns),
             ControlActionV1::Unsubscribe { client, ns, .. } => self.unsubscribe(client, ns),
             ControlActionV1::RemoveClient { client, .. } => self.remove_client(client),
@@ -491,21 +510,32 @@ impl SimWorld {
     ///
     /// Creates only the subscriber (a reader); a writer with the same name is
     /// registered by [`Self::add_client`] or by its first push. Subscribing an
-    /// existing subscriber again is a no-op.
-    pub fn subscribe(&mut self, client: impl Into<String>, namespace: impl Into<String>) {
+    /// existing subscriber again is a no-op. A client name the cluster has not
+    /// seen is admitted first, which fails loud while there is no leader.
+    pub fn subscribe(
+        &mut self,
+        client: impl Into<String>,
+        namespace: impl Into<String>,
+    ) -> Result<(), ControlApplyError> {
         let client = client.into();
         let namespace = namespace.into();
         let id = subscriber_id(&client, &namespace);
-        self.subscribers
-            .entry(id.clone())
-            .or_insert_with(|| SimSubscriber {
+        if self.subscribers.contains_key(&id) {
+            return Ok(());
+        }
+        self.admit_client(&client)?;
+        self.subscribers.insert(
+            id.clone(),
+            SimSubscriber {
                 id,
                 client_id: client,
                 namespace,
                 pending: VecDeque::new(),
                 last_event: None,
                 dropped: 0,
-            });
+            },
+        );
+        Ok(())
     }
 
     /// Register a manual-mode writer client for a namespace without writing.
@@ -529,6 +559,7 @@ impl SimWorld {
                 "client '{client}' already exists"
             )));
         }
+        self.admit_client(&client)?;
         self.ensure_client_actor(&client, &namespace);
         self.record(format!("manual_add_client:{client}:{namespace}"));
         Ok(())
@@ -555,7 +586,8 @@ impl SimWorld {
 
     /// Remove a manual-mode writer client. Its operations already recorded in
     /// the history stay (they happened); a later push under the same name
-    /// registers a new writer. Fails loud when no such writer exists.
+    /// registers a new writer. The client process stays admitted and connected
+    /// (no `NodeLeft` is modeled). Fails loud when no such writer exists.
     pub fn remove_client(&mut self, client: impl Into<String>) -> Result<(), ControlApplyError> {
         let client = client.into();
         if self.clients.remove(&client).is_none() {
@@ -579,9 +611,10 @@ impl SimWorld {
         let namespace = namespace.into();
         let key = namespaced_key(&namespace, &key.into());
         let value = value.into().into_bytes();
-        let target = self.preferred_write_node().ok_or_else(|| {
-            ControlApplyError::InvalidAction("no live node for push_event".to_owned())
-        })?;
+        // The member the client is connected to handles the write, as in the
+        // product; the Raft leader is not on the data path. A client the
+        // cluster has not seen is admitted first (needs a leader).
+        let target = self.admit_client(&client)?;
         let numeric_id = self.ensure_client_actor(&client, &namespace);
         let op = WorkloadOp::Put {
             key: key.clone(),
@@ -917,7 +950,7 @@ impl SimWorld {
                     namespace: actor.namespace.clone(),
                     last_op: actor.last_op.clone(),
                     in_flight: actor.in_flight,
-                    connected_node: self.connected_node_for(id),
+                    connected_node: self.session_node(id),
                 })
                 .collect(),
             subscribers: self
@@ -930,7 +963,23 @@ impl SimWorld {
                     last_event: subscriber.last_event.clone(),
                     lag: subscriber.pending.len() as u64,
                     dropped: subscriber.dropped,
-                    connected_node: self.connected_node_for(&subscriber.id),
+                    connected_node: self.session_node(&subscriber.client_id),
+                })
+                .collect(),
+            admitted_clients: self
+                .sessions
+                .iter()
+                .filter_map(|(id, session)| {
+                    session.admitted_at_step.map(|admitted_at_step| {
+                        crate::snapshot::AdmittedClientView {
+                            id: id.clone(),
+                            admitted_at_step,
+                            connected_node: session
+                                .attached
+                                .as_ref()
+                                .map(|node| node.as_str().to_owned()),
+                        }
+                    })
                 })
                 .collect(),
             sync_progress,
@@ -998,28 +1047,114 @@ impl SimWorld {
         self.snapshot().to_json()
     }
 
-    /// Deterministically route a client/subscriber id to a live cluster node
-    /// (smart-client routing), so the demo can draw which node it connects to.
-    /// `None` when no node is currently live. `self.nodes` is a `BTreeMap`, so the
-    /// candidate order is stable and the routing is seed-reproducible.
-    fn connected_node_for(&self, id: &str) -> Option<String> {
-        let live = self
-            .nodes
-            .keys()
-            .filter(|node| {
-                !self.crashed_nodes.contains(*node) && !self.disabled_nodes.contains(*node)
-            })
+    /// Member a client's connection is open to, as the snapshot reports it.
+    fn session_node(&self, client: &str) -> Option<String> {
+        self.sessions
+            .get(client)
+            .and_then(|session| session.attached.as_ref())
             .map(|node| node.as_str().to_owned())
-            .collect::<Vec<_>>();
+    }
+
+    /// Pick a live member for a client connection: a stable hash of the client
+    /// name over the live members, so a seed always reproduces the same
+    /// routing. `self.nodes` is a `BTreeMap`, so the candidate order is stable.
+    fn pick_member(&self, client: &str) -> Option<ClusterNodeId> {
+        let live = self.live_node_ids().into_iter().collect::<Vec<_>>();
         if live.is_empty() {
             return None;
         }
         let mut hash: u64 = 0xcbf2_9ce4_8422_2325;
-        for byte in id.as_bytes() {
+        for byte in client.as_bytes() {
             hash ^= u64::from(*byte);
             hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
         }
         Some(live[(hash % live.len() as u64) as usize].clone())
+    }
+
+    /// The member a client writes through, reconnecting it first when its
+    /// member is down. A workload client is connected on first use.
+    fn attached_node(&mut self, client: &str) -> Option<ClusterNodeId> {
+        let live = self.live_node_ids();
+        if let Some(node) = self
+            .sessions
+            .get(client)
+            .and_then(|session| session.attached.clone())
+            .filter(|node| live.contains(node))
+        {
+            return Some(node);
+        }
+        let node = self.pick_member(client);
+        let session = self
+            .sessions
+            .entry(client.to_owned())
+            .or_insert(ClientSession {
+                attached: None,
+                admitted_at_step: None,
+            });
+        let previous = std::mem::replace(&mut session.attached, node.clone());
+        if previous != node {
+            self.record(format!(
+                "client_connect:{client}:{}->{}",
+                previous.as_ref().map_or("-", |node| node.as_str()),
+                node.as_ref().map_or("-", |node| node.as_str())
+            ));
+        }
+        node
+    }
+
+    /// Reconnect every client whose member went down (crashed, disabled or
+    /// isolated) to a live one. Reconnecting is not a metadata change: the
+    /// client's `ClientUpsert` is already committed.
+    fn reattach_sessions(&mut self) {
+        let live = self.live_node_ids();
+        let stale = self
+            .sessions
+            .iter()
+            .filter(|(_, session)| {
+                session
+                    .attached
+                    .as_ref()
+                    .is_none_or(|node| !live.contains(node))
+            })
+            .map(|(client, _)| client.clone())
+            .collect::<Vec<_>>();
+        for client in stale {
+            self.attached_node(&client);
+        }
+    }
+
+    /// Admit a client through the simulated Raft metadata path and connect it,
+    /// returning the member that coordinates its writes. A client already
+    /// admitted only reconnects if its member is down. A new client needs a
+    /// live leader to commit its `ClientUpsert`; without one this fails loud
+    /// with the product's no-leader error instead of falling back.
+    fn admit_client(&mut self, client: &str) -> Result<ClusterNodeId, ControlApplyError> {
+        if !self.sessions.contains_key(client) {
+            let live = self.live_node_ids();
+            let leader = self
+                .election_snapshot()
+                .leader
+                .filter(|leader| live.contains(leader))
+                .ok_or_else(|| {
+                    ControlApplyError::InvalidAction(format!(
+                        "cannot admit client '{client}': {NO_LEADER_PROPOSAL}"
+                    ))
+                })?;
+            let step = self.steps;
+            self.sessions.insert(
+                client.to_owned(),
+                ClientSession {
+                    attached: None,
+                    admitted_at_step: Some(step),
+                },
+            );
+            self.record(format!(
+                "client_upsert:{client}:leader={leader}:step={step}"
+            ));
+        }
+        self.attached_node(client).ok_or_else(|| {
+            ControlApplyError::InvalidAction(format!("no live member for client '{client}'"))
+        })
     }
 
     /// Serialize the canonical invariant verdict as JSON.
@@ -1172,14 +1307,13 @@ impl SimWorld {
         if !self.workload_enabled {
             return;
         }
-        let live_nodes = self.live_node_ids().into_iter().collect::<Vec<_>>();
-        let node_count = live_nodes.len();
-        if node_count == 0 {
+        if self.live_node_ids().is_empty() {
             return;
         }
-        let node_index = self.rng.next_index(node_count);
-        let node_id = live_nodes[node_index].clone();
         let (client, op) = self.workload.next_invocation();
+        let Some(node_id) = self.attached_node(&workload_session_id(client)) else {
+            return;
+        };
         if let Some(sim_node) = self.nodes.get_mut(&node_id) {
             let event_id = self
                 .history
@@ -1242,7 +1376,10 @@ impl SimWorld {
         }
     }
 
-    fn preferred_write_node(&self) -> Option<ClusterNodeId> {
+    /// Source for copying state to a restarted or rejoining node: the live
+    /// leader, else the first live node. This models state transfer only; it
+    /// is not the write path (writes go through the client's member).
+    fn catch_up_source(&self) -> Option<ClusterNodeId> {
         let live = self.live_node_ids();
         self.election_snapshot()
             .leader
@@ -1255,7 +1392,7 @@ impl SimWorld {
             return;
         }
         let Some(source_id) = self
-            .preferred_write_node()
+            .catch_up_source()
             .filter(|source| source != node_id)
             .or_else(|| self.nodes.keys().find(|source| *source != node_id).cloned())
         else {
@@ -1439,6 +1576,11 @@ fn consistency_level_name(level: ConsistencyLevel) -> &'static str {
         ConsistencyLevel::EachQuorum => "each_quorum",
         ConsistencyLevel::All => "all",
     }
+}
+
+/// Session name of a built-in workload client.
+fn workload_session_id(client: u64) -> String {
+    format!("workload:{client}")
 }
 
 fn subscriber_id(client: &str, namespace: &str) -> String {

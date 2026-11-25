@@ -33,6 +33,9 @@ fn isolating_leader_triggers_reelection() {
 #[test]
 fn rejoin_node_catches_up_to_leader_commit() {
     let mut world = topology_world();
+    // The client joins while the cluster has a leader; isolating node-2 may
+    // remove it, and a writer that is already admitted keeps writing.
+    world.add_client("client-a", NS).expect("client admitted");
     assert!(world.isolate_node("node-2"));
 
     world

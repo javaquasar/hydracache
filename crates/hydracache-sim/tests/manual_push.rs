@@ -23,7 +23,9 @@ fn pushed_event_replicates_and_converges() {
 #[test]
 fn subscriber_receives_event_after_push() {
     let mut world = manual_world();
-    world.subscribe("client-a", NS);
+    world
+        .subscribe("client-a", NS)
+        .expect("subscribe admits the client");
 
     world
         .push_event("client-a", NS, KEY, "fresh")
@@ -69,7 +71,9 @@ fn divergence_then_convergence_is_observable_in_keys() {
 #[test]
 fn subscriber_only_sees_bus_carried_event_kinds() {
     let mut world = manual_world();
-    world.subscribe("client-a", NS);
+    world
+        .subscribe("client-a", NS)
+        .expect("subscribe admits the client");
     world
         .push_event("client-a", NS, KEY, "fresh")
         .expect("manual push applies");
@@ -89,7 +93,9 @@ fn subscriber_only_sees_bus_carried_event_kinds() {
 #[test]
 fn slow_subscriber_drops_with_counter() {
     let mut world = manual_world();
-    world.subscribe("client-a", NS);
+    world
+        .subscribe("client-a", NS)
+        .expect("subscribe admits the client");
 
     for index in 0..(MAX_SUBSCRIBER_BUFFER + 3) {
         world
@@ -162,7 +168,9 @@ fn versions_for(snapshot: &hydracache_sim::SimSnapshot, key: &str) -> Vec<u64> {
 #[test]
 fn subscribe_creates_only_a_subscriber() {
     let mut world = manual_world();
-    world.subscribe("reader-1", NS);
+    world
+        .subscribe("reader-1", NS)
+        .expect("subscribe admits the client");
     let snapshot = world.snapshot();
     assert!(snapshot.clients.is_empty(), "no writer twin");
     assert_eq!(snapshot.subscribers.len(), 1);
@@ -200,7 +208,9 @@ fn add_client_registers_a_writer_without_writing() {
 #[test]
 fn unsubscribed_reader_stops_receiving_and_fails_loud_twice() {
     let mut world = manual_world();
-    world.subscribe("reader-1", NS);
+    world
+        .subscribe("reader-1", NS)
+        .expect("subscribe admits the client");
     world
         .unsubscribe("reader-1", NS)
         .expect("a subscriber can leave");
@@ -222,17 +232,18 @@ fn writer_and_subscriber_actions_replay_identically() {
             at_step: 0,
             enabled: false,
         },
+        // Clients join through the Raft metadata path: form the cluster first.
+        ControlActionV1::Step { at_step: 0, n: 8 },
         ControlActionV1::AddClient {
-            at_step: 0,
+            at_step: 8,
             client: "client-b".to_owned(),
             ns: NS.to_owned(),
         },
         ControlActionV1::Subscribe {
-            at_step: 0,
+            at_step: 8,
             client: "reader-1".to_owned(),
             ns: NS.to_owned(),
         },
-        ControlActionV1::Step { at_step: 0, n: 8 },
         ControlActionV1::PushEvent {
             at_step: 8,
             client: "client-b".to_owned(),

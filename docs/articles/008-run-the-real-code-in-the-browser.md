@@ -183,7 +183,7 @@ The fix is the same each time. Find the pure core, give it a home with no runtim
 and leave the runtime parts where they are. Gate modules, not the whole crate. The work is
 mechanical; the expensive part is noticing that the boundary was in the wrong place.
 
-## Step 2: enter through the same door as the product (planned)
+## Step 2: enter through the same door as the product (done)
 
 The leader-shaped animation came from one line in the simulator. A manual write went to the
 "preferred write node", which was the Raft leader, or, silently, the first live node when there
@@ -194,13 +194,18 @@ there is a leader.
 The silent fallback was the worse half. It hid "there is no leader" behind a working write, which
 is exactly the kind of quiet degradation our project rules forbid.
 
-The plan is to route every write through the client's **coordinator**, the node it is attached to:
+Every write now goes through the client's **coordinator**, the member it is connected to:
 
-- attachment is sticky and stored in the world, not recomputed from a hash each time the set of
-  live nodes changes;
-- client admission becomes a simulated `ClientUpsert` metadata command, which, like the real one,
-  fails loud while there is no leader;
-- the leader is then no longer on the write path, and the demo will show that.
+- the connection is sticky and stored in the world. It moves only when its member crashes, is
+  disabled, or is isolated, and the move is traced;
+- client admission is a simulated `ClientUpsert` metadata command, which, like the real one, fails
+  loud while there is no leader. The page explains this before the user hits the refusal;
+- a client that is already admitted keeps writing during an election, because the leader is not
+  on the write path.
+
+Two side effects are worth noting. Every client-facing test now starts from a formed cluster,
+which is what the product requires anyway. And the push animation lost a hop: the request travels
+only along the writer's own link, because that member is where the engine applies the write.
 
 ## Step 3: model the protocol with product primitives, behind an explicit mode (planned)
 

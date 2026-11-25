@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Current stable simulator snapshot JSON schema version.
-pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 9;
+pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 10;
 
 /// Region every simulator node reports; the simulator models one region.
 pub(crate) const SIM_REGION: &str = "local";
@@ -52,6 +52,10 @@ pub struct SimSnapshot {
     pub clients: Vec<ClientView>,
     /// Manual-mode namespace subscribers.
     pub subscribers: Vec<SubscriberView>,
+    /// Client processes admitted through the simulated Raft metadata path
+    /// (schema 10): one entry per client name, writer or reader, with the
+    /// member its connection is open to.
+    pub admitted_clients: Vec<AdmittedClientView>,
     /// Cluster sync progress visible to manual/topology modes.
     pub sync_progress: Vec<SyncProgressView>,
     /// Current deterministic rebalance/reshard progress.
@@ -96,6 +100,7 @@ impl SimSnapshot {
             keys: keys_from_history(history),
             clients: Vec::new(),
             subscribers: Vec::new(),
+            admitted_clients: Vec::new(),
             sync_progress: Vec::new(),
             rebalance: None,
             mode: "manual".to_owned(),
@@ -316,7 +321,21 @@ pub struct ClientView {
     pub last_op: Option<String>,
     /// Operations currently in flight for this actor.
     pub in_flight: u32,
-    /// Cluster node this client is currently routed to (smart-client routing).
+    /// Member this client's connection is open to (its coordinator). Sticky
+    /// since schema 10: it changes only when that member goes down.
+    pub connected_node: Option<String>,
+}
+
+/// A client process admitted through the simulated `ClientUpsert` metadata
+/// command (schema 10).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AdmittedClientView {
+    /// Client name.
+    pub id: String,
+    /// Step at which the simulated `ClientUpsert` committed.
+    pub admitted_at_step: u64,
+    /// Member the client's connection is open to; it coordinates the client's
+    /// writes. `None` when no member is live.
     pub connected_node: Option<String>,
 }
 
@@ -335,7 +354,7 @@ pub struct SubscriberView {
     pub lag: u64,
     /// Events dropped because the bounded buffer was full.
     pub dropped: u64,
-    /// Cluster node this subscriber currently receives events from.
+    /// Member the subscriber's client is connected to (sticky since schema 10).
     pub connected_node: Option<String>,
 }
 

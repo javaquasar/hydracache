@@ -897,6 +897,16 @@ function renderClients(snapshot) {
     // The form right above is the action; the block only explains.
     clients.append(emptyState("No writers yet. A writer pushes values into one namespace; add one above, or push to create it."));
   }
+  // A new client is admitted by a Raft metadata commit (ClientUpsert), so the
+  // engine refuses new names while there is no leader. Say so before the
+  // user hits the refusal; admitted clients keep writing.
+  if (!(snapshot.nodes || []).some((node) => node.vote_state === "leader")) {
+    const hint = emptyState(
+      "No Raft leader yet: a new client joins through a leader commit, so adding one is refused until a leader is elected. Clients already admitted keep writing through their own member.",
+    );
+    hint.setAttribute("data-testid", "admission-hint");
+    clients.prepend(hint);
+  }
 
   const subscribers = document.createElement("div");
   subscribers.className = "metric-list entity-list";

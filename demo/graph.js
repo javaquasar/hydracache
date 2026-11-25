@@ -1294,15 +1294,13 @@ export function pushPlan(after, final, clientId, namespace, key) {
       node: subscriber.connected_node,
       steps: Math.max(0, subscriber.last_event.delivered_at_step - pushStep),
     }));
-  // The node the writer is drawn attached to; the request is shown going
-  // there first and being forwarded to the entry node, along drawn links.
-  const via = (after.clients || []).find((client) => client.id === clientId)?.connected_node ?? null;
-  return { clientId, via, entry, pushStep, replicas, subscribers };
+  // Since schema 10 the entry node is the member the writer is connected to
+  // (its coordinator): the request goes there directly, never via the leader.
+  return { clientId, entry, pushStep, replicas, subscribers };
 }
 
 const PULSE_STEP_MS = 420;
 const PULSE_REQUEST_MS = 460;
-const PULSE_FORWARD_MS = 400;
 
 // Play a push as the engine ran it (pushPlan): the request reaches the entry
 // node, each replica's copy travels as many steps as the engine took to
@@ -1329,16 +1327,11 @@ export function playDataFlowPulse(plan) {
   };
 
   const clientVertex = `client:${plan.clientId}`;
-  // 1) the request into the cluster, along drawn links: along the writer's
-  //    link to the node it is attached to, then forwarded over the cluster
-  //    link to the entry node (the engine's write node) when that is another
-  //    node. A brand-new writer has no vertex yet, so it starts at its node.
-  const toAttached = graphSim.pos.has(clientVertex) ? PULSE_REQUEST_MS : 0;
-  const via = plan.via && graphSim.pos.has(plan.via) ? plan.via : null;
-  const forwarded = via && via !== plan.entry;
-  if (toAttached) add(clientVertex, via ?? plan.entry, 0, toAttached, "data");
-  if (forwarded) add(via, plan.entry, toAttached, PULSE_FORWARD_MS, "data forward");
-  const requestMs = toAttached + (forwarded ? PULSE_FORWARD_MS : 0);
+  // 1) the request into the cluster, along the writer's link to the member
+  //    it is connected to, which is the engine's entry node for the write.
+  //    A brand-new writer has no vertex yet, so it starts at its node.
+  const requestMs = graphSim.pos.has(clientVertex) ? PULSE_REQUEST_MS : 0;
+  if (requestMs) add(clientVertex, plan.entry, 0, requestMs, "data");
   // 2) replication, timed by the steps the engine took
   const replicationStart = Math.max(0, requestMs - 100);
   for (const replica of plan.replicas) {
@@ -1367,12 +1360,10 @@ export function playDataFlowPulse(plan) {
   } else {
     graphSim.pulseArrivals.delete(plan.entry);
   }
-  // The attached node only passes the request on; it flashes when its own
-  // replica arrives (set below), not as the request goes through.
   // Each vertex lights up when its message arrives; pending and lost
   // copies never arrive, so their nodes do not flash.
   for (const mover of movers) {
-    if (mover.end < 1 || mover.fromId === clientVertex || mover.kind.includes("forward")) continue;
+    if (mover.end < 1 || mover.fromId === clientVertex) continue;
     const at = t0 + mover.startMs + mover.durMs;
     graphSim.pulseArrivals.set(mover.toId, Math.max(graphSim.pulseArrivals.get(mover.toId) ?? 0, at));
     if (mover.toId.startsWith("sub:")) {

@@ -129,13 +129,13 @@ guarantee.
   off. The client → node → replication →
   subscriber **pulse** fired on a push replays what the engine did: it is
   built from the snapshot right after the push (the push step and the entry
-  node that applied it, the engine's preferred write node) and the settled
+  node that applied it: the member the writer is connected to) and the settled
   snapshot (each replica's `applied_at_step`, copies still in flight, copies
   that will never arrive, each subscriber's delivery step). Two parts are
   drawn, not engine facts: its wall-clock pace (a fixed time per engine
-  step), and the request's path, which follows drawn links (the writer's link
-  to the node it is attached to, then a forward over a cluster link to the
-  entry node) while the engine hands the write straight to that node. Its "fan out to
+  step), and the shape of the writer's link. Since snapshot schema 10 the
+  write enters on the writer's own member, as in the product, so the request
+  travels only along that link; the Raft leader is not on the path. Its "fan out to
   every node" matches the simulator's full-replication model, not the
   product's configurable RF.
 - **Auto-stepping after an intervention** (`settleAfterIntervention`) is a UI

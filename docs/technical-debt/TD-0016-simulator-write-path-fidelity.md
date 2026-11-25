@@ -2,7 +2,12 @@
 
 ## Status
 
-Open — recorded 2026-11-25. Not scheduled.
+Open — recorded 2026-11-25.
+
+- Step 2 is done (2026-11-26, snapshot schema 10). It closes G1, G2, G6 and G7: writes
+  go through the client's sticky member, and a new client is admitted by a simulated
+  `ClientUpsert` that fails loud without a leader.
+- G7′ (admission details) is still open, and so are steps 3–5 (G3, G4, G5).
 
 Owner: simulator / demo.
 
@@ -12,16 +17,15 @@ The simulator gets elections right: real raft-rs on native targets, a labelled m
 in wasm. Its data plane does not follow the product. The full comparison, with code
 references, is the gap register in
 [`docs/architecture/RAFT_CONTROL_PLANE.md`](../architecture/RAFT_CONTROL_PLANE.md#gap-register)
-(gaps G1–G7; G8 was TD-0014, now resolved).
+(gaps G3–G5 and G7′ are open; G1, G2, G6, G7 and G8 are closed).
 
 In short:
 
-- a manual push enters on the Raft leader, and falls back silently to the first live
-  node when there is none;
 - every live node receives every write;
 - writes are never acknowledged by peers;
 - subscriber events wait until every live node holds the version;
-- clients re-pin whenever the live set changes, and are not admitted through Raft.
+- (closed by step 2) a push entered on the Raft leader, clients re-pinned whenever the
+  live set changed, and clients were not admitted through Raft.
 
 In the product, the Raft leader is not on the write path. The default is local-first
 with invalidation. Opt-in replication places a value on its rendezvous owners and
