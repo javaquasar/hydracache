@@ -30,6 +30,7 @@ wire compatibility, or long-term product direction.
 | [ADR-0021](0021-management-center-frontend-toolchain.md) | Accepted for 0.72 | Use strict TypeScript, Preact, and Vite with deterministic content-hashed embedding. |
 | [ADR-0022](0022-retain-canonical-key-representation-for-074.md) | Accepted for 0.74 local candidate | Retain canonical key identity and defer representation migration because the measured isolated ceiling is below the frozen floor. |
 | [ADR-0023](0023-verified-session-and-native-value-ownership.md) | Proposed for post-0.73 decision | Require an authoritative policy generation for reusable verification and a versioned `Bytes` response for zero-copy native GET. |
+| [ADR-0024](0024-imap-quorum-backed-read-barrier.md) | Accepted architectural selection for 0.75 | Require a request-scoped quorum-backed barrier for authoritative member reads; production and cost admission remain open. |
 
 ## Naming
 

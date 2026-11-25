@@ -556,6 +556,54 @@ fn default_manual_dispatch_runs_core_ci_jobs() {
 }
 
 #[test]
+fn linux_workspace_and_imap_jobs_prepare_native_dbus_dependencies() {
+    let action = "run: bash scripts/ci/setup-linux-dbus.sh";
+    let workflow = fs::read_to_string(repo_root().join(".github/workflows/ci.yml"))
+        .unwrap()
+        .replace("\r\n", "\n");
+    for job in [
+        "memory-contracts-071",
+        "rust",
+        "redis-compat-release-proof",
+        "performance-067-shared-tripwire",
+        "performance-ci-instruction-v1",
+        "raft-mutation-testing",
+        "msrv",
+        "migration-conformance-fast-evidence-069",
+        "release-0671-frozen-candidate",
+        "coverage-ratchet",
+        "gated-proof-registry",
+    ] {
+        let section = workflow.split_once(&format!("  {job}:\n")).unwrap().1;
+        let body = section
+            .lines()
+            .take_while(|line| !line.starts_with("  ") || line.starts_with("    "))
+            .collect::<Vec<_>>()
+            .join("\n");
+        assert!(
+            body.contains(action),
+            "{job} must prepare the Linux supervisor dependencies"
+        );
+    }
+    let imap = fs::read_to_string(repo_root().join(".github/workflows/imap-075.yml")).unwrap();
+    assert!(imap.find(action).unwrap() < imap.find("Run bounded local proofs").unwrap());
+    assert!(imap.contains("'scripts/ci/setup-linux-dbus.sh'"));
+    let setup = fs::read_to_string(repo_root().join("scripts/ci/setup-linux-dbus.sh")).unwrap();
+    assert!(setup.contains("== github-hosted"));
+    for required in [
+        "libdbus-1-dev",
+        "pkg-config",
+        "dbus-daemon",
+        "pkg-config --modversion dbus-1",
+    ] {
+        assert!(
+            setup.contains(required),
+            "missing native dependency setup: {required}"
+        );
+    }
+}
+
+#[test]
 fn rust_canaries_install_locked_console_dependencies_first() {
     let workflow = fs::read_to_string(repo_root().join(".github/workflows/ci.yml"))
         .expect("read CI workflow")

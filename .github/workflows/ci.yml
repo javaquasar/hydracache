@@ -206,6 +206,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Prepare Linux supervisor D-Bus dependencies
+        timeout-minutes: 5
+        env:
+          HYDRACACHE_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: bash scripts/ci/setup-linux-dbus.sh
+
       - name: Install pinned Rust 1.94.0
         uses: dtolnay/rust-toolchain@1.94.0
 
@@ -698,6 +704,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Prepare Linux supervisor D-Bus dependencies
+        timeout-minutes: 5
+        env:
+          HYDRACACHE_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: bash scripts/ci/setup-linux-dbus.sh
+
       - name: Install pinned Rust 1.94.0
         uses: dtolnay/rust-toolchain@1.94.0
         with:
@@ -940,6 +952,12 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+
+      - name: Prepare Linux supervisor D-Bus dependencies
+        timeout-minutes: 5
+        env:
+          HYDRACACHE_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: bash scripts/ci/setup-linux-dbus.sh
 
       - name: Install pinned Rust
         uses: dtolnay/rust-toolchain@1.94.0
@@ -1357,6 +1375,12 @@ jobs:
           test "${#candidate}" -eq 40
           test "$(git rev-parse HEAD)" = "$candidate"
           git diff --exit-code
+
+      - name: Prepare Linux supervisor D-Bus dependencies
+        timeout-minutes: 5
+        env:
+          HYDRACACHE_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: bash scripts/ci/setup-linux-dbus.sh
 
       - name: Install pinned Rust 1.94.0
         uses: dtolnay/rust-toolchain@1.94.0
@@ -1887,6 +1911,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Prepare Linux supervisor D-Bus dependencies
+        timeout-minutes: 5
+        env:
+          HYDRACACHE_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: bash scripts/ci/setup-linux-dbus.sh
+
       - name: Install pinned Rust 1.94.0
         uses: dtolnay/rust-toolchain@1.94.0
 
@@ -1916,6 +1946,12 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Prepare Linux supervisor D-Bus dependencies
+        timeout-minutes: 5
+        env:
+          HYDRACACHE_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: bash scripts/ci/setup-linux-dbus.sh
 
       - name: Install pinned Rust 1.94.0
         uses: dtolnay/rust-toolchain@1.94.0
@@ -2551,6 +2587,12 @@ jobs:
           persist-credentials: false
           clean: true
 
+      - name: Prepare Linux supervisor D-Bus dependencies
+        timeout-minutes: 5
+        env:
+          HYDRACACHE_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: bash scripts/ci/setup-linux-dbus.sh
+
       - name: Install pinned Rust 1.94.0
         uses: dtolnay/rust-toolchain@1.94.0
 
@@ -2849,6 +2891,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Prepare Linux supervisor D-Bus dependencies
+        timeout-minutes: 5
+        env:
+          HYDRACACHE_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: bash scripts/ci/setup-linux-dbus.sh
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@1.94.0
 
@@ -3077,6 +3125,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Prepare Linux supervisor D-Bus dependencies
+        timeout-minutes: 5
+        env:
+          HYDRACACHE_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: bash scripts/ci/setup-linux-dbus.sh
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@1.94.0
         with:
@@ -3135,6 +3189,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Prepare Linux supervisor D-Bus dependencies
+        timeout-minutes: 5
+        env:
+          HYDRACACHE_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: bash scripts/ci/setup-linux-dbus.sh
+
       - name: Install Rust 1.88.0
         uses: dtolnay/rust-toolchain@1.88.0
 
@@ -3169,6 +3229,12 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+
+      - name: Prepare Linux supervisor D-Bus dependencies
+        timeout-minutes: 5
+        env:
+          HYDRACACHE_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: bash scripts/ci/setup-linux-dbus.sh
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@1.94.0

@@ -131,8 +131,8 @@
   "blocked_by_074": [
     {
       "id": "predecessor-evidence-replay",
-      "required_artifact": "retained v0.74.0 signed-binary evidence and v0.74.1 dependency compatibility inputs for the integrated source",
-      "reason": "v0.74.0 resolves to bcba511f0c1f4b3e965c9e17f81b248deb0ea331; origin/main at 6d41962292363fc6c84eaed1d7b1179f1915451d records v0.74.1 registry publication, whose tagged source is e6ccc2563db20efb0c59818f0692c580ea4ad504. Release notes record stable compatibility and six-hour qualification; preparation must bind and replay the relevant artifacts before a 0.75 candidate is admitted"
+      "required_artifact": "retained v0.74.0 upgrade/rollback compatibility replay plus v0.74.1 dependency compatibility inputs for the integrated source",
+      "reason": "v0.74.0 resolves to bcba511f0c1f4b3e965c9e17f81b248deb0ea331; ELF 60a37932c554e58a54303f1196c347948fbe0dde162d5a3e32cef5e00f0dd10a passed protected-signature verification and isolated Linux smoke. The complete six-hour archive replay passed 21600 seconds, 5400000 verified pairs and 64 reconciled values. Main at 6d41962292363fc6c84eaed1d7b1179f1915451d records v0.74.1 registry publication from e6ccc2563db20efb0c59818f0692c580ea4ad504. Compatibility and dependency evidence still need retained replay before a 0.75 candidate is admitted"
     },
     {
       "id": "accepted-native-batch-baseline",

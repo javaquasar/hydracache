@@ -1,18 +1,23 @@
 use crate::manifest::CampaignManifest;
 use crate::spawn::SpawnIntent;
 use crate::{canonical_json, sha256_hex, ProcessIdentity, Role};
+use dbus::arg::{RefArg, Variant};
+use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
+use dbus::blocking::Connection;
+use dbus::Path as ObjectPath;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::{Component, Path};
+use std::time::Duration;
 use thiserror::Error;
-use zbus::blocking::{Connection, Proxy};
-use zbus::zvariant::{OwnedObjectPath, Value};
 
 const SYSTEMD_DESTINATION: &str = "org.freedesktop.systemd1";
 const SYSTEMD_MANAGER_PATH: &str = "/org/freedesktop/systemd1";
 const SYSTEMD_MANAGER_INTERFACE: &str = "org.freedesktop.systemd1.Manager";
 const SYSTEMD_UNIT_INTERFACE: &str = "org.freedesktop.systemd1.Unit";
 const SYSTEMD_SERVICE_INTERFACE: &str = "org.freedesktop.systemd1.Service";
+const DBUS_TIMEOUT: Duration = Duration::from_secs(25);
+type DbusProperties<'a> = Vec<(&'a str, Variant<Box<dyn RefArg>>)>;
 const UNIT_PREFIX: &str = "hydracache-performance-074-";
 const SERVICE_USER: &str = "hydracache-perf";
 const SERVICE_GROUP: &str = "hydracache-perf";
@@ -71,7 +76,7 @@ pub enum UnitError {
     #[error("systemd unit name is outside the fixed HydraCache 0.74 namespace")]
     UnitName,
     #[error("systemd D-Bus inspection failed: {0}")]
-    Dbus(#[from] zbus::Error),
+    Dbus(#[from] dbus::Error),
     #[error("transient systemd unit policy or campaign path is invalid")]
     Policy,
     #[error("transient systemd unit policy serialization failed: {0}")]
@@ -215,21 +220,25 @@ pub fn expected_command_environment_sha256(
     Ok(sha256_hex(&canonical_json(&roles)?))
 }
 
-pub fn start_transient_unit(spec: &TransientUnitSpec) -> Result<OwnedObjectPath, UnitError> {
+pub fn start_transient_unit(spec: &TransientUnitSpec) -> Result<ObjectPath<'static>, UnitError> {
     validate_unit_name(&spec.unit_name)?;
-    let connection = Connection::system()?;
-    let manager = Proxy::new(
-        &connection,
-        SYSTEMD_DESTINATION,
-        SYSTEMD_MANAGER_PATH,
-        SYSTEMD_MANAGER_INTERFACE,
-    )?;
+    start_transient_unit_on(&Connection::new_system()?, spec)
+}
+
+fn start_transient_unit_on(
+    connection: &Connection,
+    spec: &TransientUnitSpec,
+) -> Result<ObjectPath<'static>, UnitError> {
+    validate_unit_name(&spec.unit_name)?;
+    let manager = connection.with_proxy(SYSTEMD_DESTINATION, SYSTEMD_MANAGER_PATH, DBUS_TIMEOUT);
     let properties = dbus_properties(spec);
-    let auxiliary: Vec<(&str, Vec<(&str, Value<'_>)>)> = Vec::new();
-    Ok(manager.call(
+    let auxiliary: Vec<(&str, DbusProperties<'_>)> = Vec::new();
+    let (job,) = manager.method_call(
+        SYSTEMD_MANAGER_INTERFACE,
         "StartTransientUnit",
-        &(spec.unit_name.as_str(), "fail", properties, auxiliary),
-    )?)
+        (spec.unit_name.as_str(), "fail", properties, auxiliary),
+    )?;
+    Ok(job)
 }
 
 pub fn inspect_unit(unit_name: &str) -> Result<UnitSnapshot, UnitError> {
@@ -239,10 +248,16 @@ pub fn inspect_unit(unit_name: &str) -> Result<UnitSnapshot, UnitError> {
 
 pub fn inspect_unit_optional(unit_name: &str) -> Result<Option<UnitSnapshot>, UnitError> {
     validate_unit_name(unit_name)?;
-    match inspect_loaded_unit(unit_name) {
+    optional_snapshot(inspect_loaded_unit(unit_name))
+}
+
+fn optional_snapshot(
+    result: Result<UnitSnapshot, UnitError>,
+) -> Result<Option<UnitSnapshot>, UnitError> {
+    match result {
         Ok(snapshot) => Ok(Some(snapshot)),
-        Err(UnitError::Dbus(zbus::Error::MethodError(name, _, _)))
-            if name.as_str() == "org.freedesktop.systemd1.NoSuchUnit" =>
+        Err(UnitError::Dbus(error))
+            if error.name() == Some("org.freedesktop.systemd1.NoSuchUnit") =>
         {
             Ok(None)
         }
@@ -282,60 +297,51 @@ pub fn verify_unit_terminal(
 }
 
 fn inspect_loaded_unit(unit_name: &str) -> Result<UnitSnapshot, UnitError> {
-    let connection = Connection::system()?;
-    let manager = Proxy::new(
-        &connection,
-        SYSTEMD_DESTINATION,
-        SYSTEMD_MANAGER_PATH,
-        SYSTEMD_MANAGER_INTERFACE,
-    )?;
-    let path: OwnedObjectPath = manager.call("GetUnit", &(unit_name,))?;
-    let unit = Proxy::new(
-        &connection,
-        SYSTEMD_DESTINATION,
-        path.as_str(),
-        SYSTEMD_UNIT_INTERFACE,
-    )?;
-    let service = Proxy::new(
-        &connection,
-        SYSTEMD_DESTINATION,
-        path.as_str(),
-        SYSTEMD_SERVICE_INTERFACE,
-    )?;
+    inspect_loaded_unit_on(&Connection::new_system()?, unit_name)
+}
+
+fn inspect_loaded_unit_on(
+    connection: &Connection,
+    unit_name: &str,
+) -> Result<UnitSnapshot, UnitError> {
+    let manager = connection.with_proxy(SYSTEMD_DESTINATION, SYSTEMD_MANAGER_PATH, DBUS_TIMEOUT);
+    let (path,): (ObjectPath<'static>,) =
+        manager.method_call(SYSTEMD_MANAGER_INTERFACE, "GetUnit", (unit_name,))?;
+    let unit = connection.with_proxy(SYSTEMD_DESTINATION, path, DBUS_TIMEOUT);
     Ok(UnitSnapshot {
         unit_name: unit_name.to_owned(),
-        active_state: unit.get_property("ActiveState")?,
-        sub_state: unit.get_property("SubState")?,
-        main_pid: service.get_property("MainPID")?,
-        control_group: service.get_property("ControlGroup")?,
-        result: service.get_property("Result")?,
+        active_state: unit.get(SYSTEMD_UNIT_INTERFACE, "ActiveState")?,
+        sub_state: unit.get(SYSTEMD_UNIT_INTERFACE, "SubState")?,
+        main_pid: unit.get(SYSTEMD_SERVICE_INTERFACE, "MainPID")?,
+        control_group: unit.get(SYSTEMD_SERVICE_INTERFACE, "ControlGroup")?,
+        result: unit.get(SYSTEMD_SERVICE_INTERFACE, "Result")?,
     })
 }
 
-fn dbus_properties(spec: &TransientUnitSpec) -> Vec<(&str, Value<'_>)> {
+fn dbus_properties(spec: &TransientUnitSpec) -> DbusProperties<'_> {
     spec.properties
         .iter()
         .map(|(name, property)| {
-            let value = match property {
-                UnitProperty::Text(value) => Value::from(value),
-                UnitProperty::Boolean(value) => Value::from(*value),
-                UnitProperty::Unsigned(value) => Value::from(*value),
-                UnitProperty::Bytes(value) => Value::from(value),
-                UnitProperty::Strings(value) => Value::from(value),
-                UnitProperty::Commands(commands) => Value::from(
+            let value: Box<dyn RefArg> = match property {
+                UnitProperty::Text(value) => Box::new(value.clone()),
+                UnitProperty::Boolean(value) => Box::new(*value),
+                UnitProperty::Unsigned(value) => Box::new(*value),
+                UnitProperty::Bytes(value) => Box::new(value.clone()),
+                UnitProperty::Strings(value) => Box::new(value.clone()),
+                UnitProperty::Commands(commands) => Box::new(
                     commands
                         .iter()
                         .map(|command| {
                             (
-                                command.path.as_str(),
-                                command.argv.iter().map(String::as_str).collect::<Vec<_>>(),
+                                command.path.clone(),
+                                command.argv.clone(),
                                 command.ignore_failure,
                             )
                         })
                         .collect::<Vec<_>>(),
                 ),
             };
-            (*name, value)
+            (*name, Variant(value))
         })
         .collect()
 }
@@ -450,23 +456,6 @@ fn path_text(path: &Path) -> Result<String, UnitError> {
         .ok_or(UnitError::Policy)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::inspect_loaded_unit;
-
-    #[test]
-    #[ignore = "requires a local systemd system bus"]
-    fn reads_a_real_loaded_service_over_dbus() {
-        let snapshot = inspect_loaded_unit("dbus.service").unwrap();
-        assert_eq!(snapshot.unit_name, "dbus.service");
-        assert_eq!(snapshot.active_state, "active");
-        assert_eq!(snapshot.sub_state, "running");
-        assert!(snapshot.main_pid > 0);
-        assert_eq!(snapshot.control_group, "/system.slice/dbus.service");
-        assert_eq!(snapshot.result, "success");
-    }
-}
-
 pub fn verify_unit_identity(
     harness: &ProcessIdentity,
     daemon: &ProcessIdentity,
@@ -514,5 +503,26 @@ fn validate_unit_name(value: &str) -> Result<(), UnitError> {
         Ok(())
     } else {
         Err(UnitError::UnitName)
+    }
+}
+
+#[cfg(test)]
+#[path = "systemd_unit_dbus_tests.rs"]
+mod dbus_tests;
+
+#[cfg(test)]
+mod tests {
+    use super::inspect_loaded_unit;
+
+    #[test]
+    #[ignore = "requires a local systemd system bus"]
+    fn reads_a_real_loaded_service_over_dbus() {
+        let snapshot = inspect_loaded_unit("dbus.service").unwrap();
+        assert_eq!(snapshot.unit_name, "dbus.service");
+        assert_eq!(snapshot.active_state, "active");
+        assert_eq!(snapshot.sub_state, "running");
+        assert!(snapshot.main_pid > 0);
+        assert_eq!(snapshot.control_group, "/system.slice/dbus.service");
+        assert_eq!(snapshot.result, "success");
     }
 }

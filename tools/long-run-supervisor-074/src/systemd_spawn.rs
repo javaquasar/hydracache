@@ -142,8 +142,8 @@ impl<M: TransientUnitManager> SystemdSpawnBackend<M> {
                     &observation.unit,
                     observation.processes,
                 )? {
-                    ObservationDisposition::Ready(observation) => return Ok(observation),
-                    ObservationDisposition::Pending => last = Some(()),
+                    Some(observation) => return Ok(observation),
+                    None => last = Some(()),
                 },
             }
             if attempt + 1 < self.observation_attempts && !self.observation_interval.is_zero() {
@@ -181,18 +181,13 @@ impl<M: TransientUnitManager> SpawnBackend for SystemdSpawnBackend<M> {
     }
 }
 
-enum ObservationDisposition {
-    Ready(SpawnObservation),
-    Pending,
-}
-
 fn classify_observation(
     expected_boot_id: &str,
     expected_cpuset: &str,
     unit_name: &str,
     unit: &UnitSnapshot,
     processes: Vec<ProcessSnapshot>,
-) -> Result<ObservationDisposition, SystemdSpawnError> {
+) -> Result<Option<SpawnObservation>, SystemdSpawnError> {
     let expected_cgroup = format!("/system.slice/{unit_name}");
     if unit.unit_name != unit_name
         || unit.control_group != expected_cgroup
@@ -200,17 +195,17 @@ fn classify_observation(
         || (unit.active_state == "active" && unit.sub_state != "running")
         || (unit.active_state == "active" && unit.result != "success")
     {
-        return Ok(ObservationDisposition::Ready(SpawnObservation::Mismatch {
+        return Ok(Some(SpawnObservation::Mismatch {
             reason: SpawnMismatch::Identity,
             harness: None,
             daemon: None,
         }));
     }
     if unit.main_pid == 0 || processes.len() < 2 {
-        return Ok(ObservationDisposition::Pending);
+        return Ok(None);
     }
     if processes.len() > 2 {
-        return Ok(ObservationDisposition::Ready(SpawnObservation::Mismatch {
+        return Ok(Some(SpawnObservation::Mismatch {
             reason: SpawnMismatch::MultipleExecutors,
             harness: process_by_pid(&processes, unit.main_pid, unit_name).ok(),
             daemon: None,
@@ -221,7 +216,7 @@ fn classify_observation(
         .find(|process| process.pid == unit.main_pid)
         .cloned()
     else {
-        return Ok(ObservationDisposition::Ready(SpawnObservation::Mismatch {
+        return Ok(Some(SpawnObservation::Mismatch {
             reason: SpawnMismatch::Identity,
             harness: None,
             daemon: None,
@@ -231,7 +226,7 @@ fn classify_observation(
         .into_iter()
         .find(|process| process.pid != unit.main_pid)
     else {
-        return Ok(ObservationDisposition::Ready(SpawnObservation::Mismatch {
+        return Ok(Some(SpawnObservation::Mismatch {
             reason: SpawnMismatch::Identity,
             harness: None,
             daemon: None,
@@ -246,13 +241,13 @@ fn classify_observation(
         || harness_snapshot.cpus_allowed_list != expected_cpuset
         || daemon_snapshot.cpus_allowed_list != expected_cpuset
     {
-        return Ok(ObservationDisposition::Ready(SpawnObservation::Mismatch {
+        return Ok(Some(SpawnObservation::Mismatch {
             reason: SpawnMismatch::Identity,
             harness: identity_from_snapshot(harness_snapshot, unit_name).ok(),
             daemon: identity_from_snapshot(daemon_snapshot, unit_name).ok(),
         }));
     }
-    Ok(ObservationDisposition::Ready(SpawnObservation::Exact {
+    Ok(Some(SpawnObservation::Exact {
         harness: identity_from_snapshot(harness_snapshot, unit_name)?,
         daemon: identity_from_snapshot(daemon_snapshot, unit_name)?,
     }))
@@ -352,7 +347,7 @@ fn set_owner_and_mode(
 
 #[cfg(test)]
 mod tests {
-    use super::{classify_observation, ObservationDisposition};
+    use super::classify_observation;
     use crate::process_identity::ProcessSnapshot;
     use crate::spawn::{SpawnMismatch, SpawnObservation};
     use crate::systemd_unit::UnitSnapshot;
@@ -384,16 +379,14 @@ mod tests {
 
     #[test]
     fn exact_original_process_pair_is_admitted() {
-        let ObservationDisposition::Ready(SpawnObservation::Exact { harness, daemon }) =
-            classify_observation(
-                "boot-a",
-                "1-2",
-                UNIT,
-                &unit(100),
-                vec![process(100), process(101)],
-            )
-            .unwrap()
-        else {
+        let Some(SpawnObservation::Exact { harness, daemon }) = classify_observation(
+            "boot-a",
+            "1-2",
+            UNIT,
+            &unit(100),
+            vec![process(100), process(101)],
+        )
+        .unwrap() else {
             panic!("expected exact process identities");
         };
         assert_eq!(harness.pid, 100);
@@ -403,10 +396,11 @@ mod tests {
 
     #[test]
     fn startup_is_pending_but_extra_executor_and_identity_drift_are_terminal() {
-        assert!(matches!(
-            classify_observation("boot-a", "1-2", UNIT, &unit(100), vec![process(100)]).unwrap(),
-            ObservationDisposition::Pending
-        ));
+        assert!(
+            classify_observation("boot-a", "1-2", UNIT, &unit(100), vec![process(100)])
+                .unwrap()
+                .is_none()
+        );
         assert!(matches!(
             classify_observation(
                 "boot-a",
@@ -416,7 +410,7 @@ mod tests {
                 vec![process(100), process(101), process(102)]
             )
             .unwrap(),
-            ObservationDisposition::Ready(SpawnObservation::Mismatch {
+            Some(SpawnObservation::Mismatch {
                 reason: SpawnMismatch::MultipleExecutors,
                 ..
             })
@@ -432,7 +426,7 @@ mod tests {
                 vec![process(100), drifted]
             )
             .unwrap(),
-            ObservationDisposition::Ready(SpawnObservation::Mismatch {
+            Some(SpawnObservation::Mismatch {
                 reason: SpawnMismatch::Identity,
                 ..
             })

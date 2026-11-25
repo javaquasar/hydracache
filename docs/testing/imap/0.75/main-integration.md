@@ -88,11 +88,19 @@ cargo test --locked --offline -p xtask --lib --tests --no-fail-fast
 
 ## Next product steps
 
+The subsequent [supervisor dependency admission](supervisor-dependency-admission.md) replaces
+the unmaintained graph while preserving Rust 1.88. The blocked verification above records the
+initial integration; the follow-up retains its own checks and W12 evidence.
+
 1. Bind the retained B74 binary, package and compatibility evidence to the published tag.
    Capture the dependency identity of the integrated 0.75 tree separately.
    Resolve the supervisor dependency-policy blocker above before the release qualification run.
-2. Freeze W0's remaining owner decisions in the release ledger. OD-1 needs its read-barrier ADR,
-   OD-2 needs an admitted time provider and uncertainty bound, OD-3 needs recovery targets,
+   The subsequent [D1 B74 intake](d1-b74-intake.md) records the verified signature and isolated
+   smoke and complete raw maintenance replay; compatibility replay and paired measurements remain open.
+2. Freeze W0's remaining owner decisions in the release ledger. OD-1's selected read barrier is
+   recorded in [ADR-0024](../../../adr/0024-imap-quorum-backed-read-barrier.md); its implementation
+   and cost admission remain open. OD-2 needs an admitted time provider and uncertainty bound,
+   OD-3 needs recovery targets,
    and OD-6 through OD-10 need their scope, latency, routing, max-idle and schedule decisions.
 3. Start D1 with a mechanical extraction of the production local backend. Reuse the existing
    daemon characterization and backend contract tests. Compare the bounded dispatch variants

@@ -209,7 +209,7 @@ work stays blocked; it is not started on an assumed answer.
 
 | ID | Decision | Current state | Blocks |
 | --- | --- | --- | --- |
-| OD-1 | How an isolated former owner stops serving authoritative reads | **Selected in W0:** a quorum-backed read barrier on the owner lane (committed epoch, ownership and applied watermark are checked before key lookup). Lease-based local reads are not used in 0.75; adopting them later requires OD-2 bounds and a new ADR. Record the choice and its per-read cost in an ADR. | Final W10b/W10c/W10e message formats; D2/D3 gates |
+| OD-1 | How an isolated former owner stops serving authoritative reads | **Selected in W0:** a request-scoped quorum-backed read barrier on the owner lane (committed epoch, ownership and applied watermark are checked before key lookup), recorded in [ADR-0024](../adr/0024-imap-quorum-backed-read-barrier.md). Lease-based local reads are not used in 0.75; adopting them later requires OD-2 bounds and a new ADR. Production implementation and per-read cost admission remain open. | Final W10b/W10c/W10e message formats; D2/D3 gates |
 | OD-2 | Time source for `ClusterTimeAuthority`: provider, how uncertainty is measured, the admitted maximum uncertainty, and behavior on clock step or uncertainty overflow | **Open.** W0 already requires the provider and bound to be recorded; the concrete choice is not made. Record it in an ADR. | W10d expiry, D2 clock model, D3 expiry checks |
 | OD-3 | Write availability after one member loss in the RF=2, three-member profile | **Fail-closed is selected** by the frozen profile and W10e. With uniform placement, losing one of three members leaves about two thirds of partitions without a required backup (those it owned plus those it backed up), and their writes are rejected until re-replication proves the prefix. **Open:** numeric targets for maximum write-unavailable partition-seconds and maximum re-replication time at the frozen cardinality and payload. Record in an ADR. | W10e gate, W10m RPO/RTO matrix, W11e reporting |
 | OD-4 | Publication date of 0.74 and the minimum definition of "0.74 published" that 0.75 depends on | **Source handoff recorded on 2026-11-25.** The stable Linux binary was published on 2026-11-23 at `v0.74.0` / `bcba511f0c1f4b3e965c9e17f81b248deb0ea331`. The release owner requested integration of current main; `6d4196229` records `v0.74.1` as shipped for registry maintenance. D1 binds and remeasures B74 under its own non-regression gate. | Predecessor artifacts and D1 measurements |
@@ -2143,13 +2143,12 @@ with its ordinary manifest and no local dependency overrides.
 
 ### Supervisor dependency follow-up
 
-The integrated full gate currently rejects the Linux supervisor's `zbus 5.19.0` graph:
-`zvariant`, `zbus_names` and `zvariant_derive` are unmaintained under
-RUSTSEC-2026-0370/0371/0372. Keep the dependency policy unchanged. Resolve this through an
-MSRV-compatible client or an explicit toolchain decision plus migration to zbus 6, which requires
-Rust 1.89 and removes the blocking API. Re-run Linux supervisor tests, dependency policy and the
-four W12 lanes on the resulting source. Details and check results are in the
-[main integration record](../testing/imap/0.75/main-integration.md).
+The Linux supervisor's unmaintained zbus 5 graph has been replaced with `dbus 0.9.12`,
+retaining Rust 1.88 and the unchanged dependency policy. Native D-Bus prerequisites are explicit
+in Linux CI, and isolated IPC plus existing lifecycle tests cover the replacement. Dependency
+policy and Linux package checks pass. Full verification and fresh W12 receipts are retained
+separately from the prior main-integration checks; see the
+[dependency admission record](../testing/imap/0.75/supervisor-dependency-admission.md).
 
 ## Concrete file map
 

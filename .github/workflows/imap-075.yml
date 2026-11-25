@@ -1,7 +1,7 @@
 name: IMap 0.75 local qualification
 on:
   pull_request:
-    paths: ['crates/**', 'sdks/java/**', 'tests/java-imap-benchmark/**', 'tests/java-imap-hazelcast-075/**', 'tests/java-imap-provenance-075/**', 'tests/rust-imap-contract-consumer-075/**', 'docs/testing/imap/**', 'fuzz/**', '.github/workflows/ci.yml', '.github/workflows/imap-075.yml', '.github/workflows/imap-soak-075.yml', 'Cargo.toml', 'Cargo.lock']
+    paths: ['crates/**', 'tools/long-run-supervisor-074/**', 'tools/performance-integrated-074/**', 'sdks/java/**', 'tests/java-imap-benchmark/**', 'tests/java-imap-hazelcast-075/**', 'tests/java-imap-provenance-075/**', 'tests/rust-imap-contract-consumer-075/**', 'docs/testing/imap/**', 'fuzz/**', '.github/workflows/ci.yml', 'scripts/ci/setup-linux-dbus.sh', '.github/workflows/imap-075.yml', '.github/workflows/imap-soak-075.yml', 'Cargo.toml', 'Cargo.lock']
   schedule:
     - cron: '23 2 * * *'
   workflow_dispatch:
@@ -55,6 +55,12 @@ jobs:
           distribution: temurin
           java-version: ${{ matrix.java }}
           cache: maven
+      - name: Prepare Linux supervisor D-Bus dependencies
+        timeout-minutes: 5
+        env:
+          HYDRACACHE_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: bash scripts/ci/setup-linux-dbus.sh
+
       - name: Exact Rust toolchain
         run: |
           rustup toolchain install '${{ matrix.rust }}' --profile minimal --component clippy --component rustfmt --component llvm-tools-preview

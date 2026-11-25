@@ -115,7 +115,7 @@ impl SupervisorServer {
             return self.dispatch_attach(authorized, now);
         }
         if request.operation != Operation::Status {
-            return Ok(error_response_from_request(request, now, 11)?);
+            return error_response_from_request(request, now, 11);
         }
         let result = match CampaignLock::acquire(&self.config.campaign_root, &request.campaign_id) {
             Ok(lock) => match reconcile_campaign(&lock) {
@@ -143,7 +143,7 @@ impl SupervisorServer {
     ) -> Result<Response, ServerError> {
         match self.admit_start(authorized, now)? {
             StartAdmission::Rejected(response) => Ok(response),
-            StartAdmission::Ready(admission) => finish_start(authorized, now, admission, backend),
+            StartAdmission::Ready(admission) => finish_start(authorized, now, *admission, backend),
         }
     }
 
@@ -159,7 +159,7 @@ impl SupervisorServer {
                     admission.evidence.manifest.clone(),
                     admission.evidence.campaign_directory.clone(),
                 );
-                finish_start(authorized, now, admission, &mut backend)
+                finish_start(authorized, now, *admission, &mut backend)
             }
         }
     }
@@ -221,12 +221,12 @@ impl SupervisorServer {
                     )?))
                 }
             };
-        Ok(StartAdmission::Ready(AdmittedStart {
+        Ok(StartAdmission::Ready(Box::new(AdmittedStart {
             evidence,
             host_claim,
             lock,
             identity,
-        }))
+        })))
     }
 
     fn dispatch_attach(
@@ -238,22 +238,14 @@ impl SupervisorServer {
         let lock = match CampaignLock::acquire(&self.config.campaign_root, &request.campaign_id) {
             Ok(lock) => lock,
             Err(error) => {
-                return Ok(error_response_from_request(
-                    request,
-                    now,
-                    state_error_code(&error),
-                )?)
+                return error_response_from_request(request, now, state_error_code(&error))
             }
         };
         let transaction = match begin_attach(&lock, request, now) {
             Ok(BeginAttach::Replayed(response)) => return Ok(response),
             Ok(BeginAttach::New(transaction)) => transaction,
             Err(error) => {
-                return Ok(error_response_from_request(
-                    request,
-                    now,
-                    mutation_error_code(&error),
-                )?)
+                return error_response_from_request(request, now, mutation_error_code(&error))
             }
         };
         let state = transaction.state().clone();
@@ -361,7 +353,7 @@ impl SupervisorServer {
 }
 
 enum StartAdmission {
-    Ready(AdmittedStart),
+    Ready(Box<AdmittedStart>),
     Rejected(Response),
 }
 
