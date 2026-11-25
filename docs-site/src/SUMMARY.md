@@ -3,12 +3,18 @@
 [HydraCache](index.md)
 
 - [Getting Started](getting-started.md)
+- [Tutorial: Two Instances](tutorial.md)
 - [Installation](installation.md)
 - [Architecture](architecture.md)
 - [Use Cases](use-cases.md)
+- [Compared to Alternatives](alternatives.md)
+- [Performance](performance.md)
 - [Decision Guide](decision-guide.md)
 - [Production Checklist](production-checklist.md)
 - [Anti-patterns](anti-patterns.md)
+- [Recipes](recipes.md)
+- [FAQ and Troubleshooting](faq.md)
+- [Glossary](glossary.md)
 
 # Concepts
 
@@ -17,6 +23,8 @@
 - [Single-flight](concepts/single-flight.md)
 - [TTL and Invalidation](concepts/ttl-and-invalidation.md)
 - [Local-first Invalidation](concepts/local-first-invalidation.md)
+- [Consistency Model](concepts/consistency-model.md)
+- [How We Test Correctness](concepts/how-we-test-correctness.md)
 - [Typed Query Caching](concepts/typed-query-caching.md)
 - [What HydraCache Is Not](concepts/what-hydracache-is-not.md)
 

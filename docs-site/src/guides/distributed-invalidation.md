@@ -1,5 +1,7 @@
 # Distributed Invalidation
 
+**API:** [`CacheInvalidationBus`](https://docs.rs/hydracache/latest/hydracache/trait.CacheInvalidationBus.html) · [`InMemoryInvalidationBus`](https://docs.rs/hydracache/latest/hydracache/struct.InMemoryInvalidationBus.html) · [`hydracache-transport-redis`](https://docs.rs/hydracache-transport-redis/latest/hydracache_transport_redis/) · [`hydracache-transport-nats`](https://docs.rs/hydracache-transport-nats/latest/hydracache_transport_nats/)
+
 Use a shared invalidation bus when several cache instances should share invalidation intent.
 
 The bus propagates invalidations, not values. Each cache keeps its own local entries. When one cache invalidates a key, tag, or all entries, peers receive the same intent and remove their local copies.
@@ -35,7 +37,10 @@ Two opt-in crates carry the same invalidation frames between processes:
 | `hydracache-transport-redis` | Redis via the async Redis client | Redis testcontainers smoke test |
 | `hydracache-transport-nats` | NATS via the async NATS client | NATS testcontainers smoke test |
 
-Both implement the `InvalidationTransport` seam and keep the same semantics as the in-memory bus: values are not replicated, and malformed frames are reported as decode errors instead of being silently dropped. Delivery guarantees are those of the underlying broker, so keep TTL as a freshness bound for writes whose invalidation can be lost.
+Both implement the `InvalidationTransport` seam and keep the same semantics as the in-memory bus: values are not replicated, and malformed frames are reported as decode errors instead of being silently dropped.
+
+> [!TIP]
+> Delivery guarantees are those of the underlying broker. Keep a TTL on entries as a freshness bound for writes whose invalidation can be lost.
 
 ## Custom Transports
 
@@ -46,3 +51,8 @@ External transports implement `CacheInvalidationBus` and return a receiver.
 ```
 
 Return `Message(...)` for normal delivery, `Lagged(n)` when the transport reports skipped messages, and `Closed` when the stream is no longer usable.
+
+## Next Steps
+
+- [Client and Member Cluster](client-member-cluster.md) — roles, membership, and the grid
+- [Consistency Model](../concepts/consistency-model.md) — what is and is not guaranteed

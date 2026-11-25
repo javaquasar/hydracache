@@ -1,5 +1,7 @@
 # Cacheable Functions
 
+**API:** [`cacheable_loader!`](https://docs.rs/hydracache/latest/hydracache/macro.cacheable_loader.html) · [`#[cacheable]`](https://docs.rs/hydracache/latest/hydracache/attr.cacheable.html)
+
 Use cacheable function helpers when ordinary async work needs the same cache boundary with less boilerplate.
 
 The macros are intentionally explicit. They do not discover a global cache, generate hidden keys from every function argument, or hide the loader. They build `CacheOptions` and call the same runtime methods you could call manually.
@@ -43,3 +45,8 @@ Prefer:
 - `cacheable_loader!` for one-off fallible loaders;
 - `cacheable_infallible!` for one-off loaders that cannot fail;
 - `#[cacheable]` for reusable async functions with stable key/tag metadata.
+
+## Next Steps
+
+- [Macros](macros.md) — entity and policy macros
+- [Recipes: cache an external API](../recipes.md#cache-an-external-http-api) — a worked example

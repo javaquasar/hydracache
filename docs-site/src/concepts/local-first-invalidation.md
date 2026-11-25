@@ -34,3 +34,8 @@ Applications should still design for:
 - duplicated invalidation messages;
 - nodes that miss a message and rely on TTL fallback;
 - external writers that need their own invalidation path.
+
+## Next Steps
+
+- [Distributed Invalidation](../guides/distributed-invalidation.md) — buses and transports
+- [Tutorial: Two Instances](../tutorial.md) — see it end to end

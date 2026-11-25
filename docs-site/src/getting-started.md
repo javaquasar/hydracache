@@ -33,4 +33,4 @@ Run the checked example from the repository root:
 cargo run --manifest-path docs-site/examples/Cargo.toml --bin quick_start
 ```
 
-Next, read [Keys and Tags](concepts/keys-and-tags.md). Most HydraCache usage becomes straightforward once key identity and invalidation tags are clear.
+Next, follow the [end-to-end tutorial](tutorial.md) to cache SQL query results, invalidate after commit, and share invalidation between two instances. Then read [Keys and Tags](concepts/keys-and-tags.md). Most HydraCache usage becomes straightforward once key identity and invalidation tags are clear.

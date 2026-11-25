@@ -41,3 +41,8 @@ When reviewing a cached operation, prefer code that makes the decision visible:
 - invalidation happens after successful writes.
 
 The API can become more ergonomic over time, but the semantics should remain visible.
+
+## Next Steps
+
+- [Keys and Tags](keys-and-tags.md) — name values and their invalidation
+- [Single-flight](single-flight.md) — protect the backing source on misses

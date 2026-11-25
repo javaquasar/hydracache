@@ -1,5 +1,7 @@
 # Diagnostics and Events
 
+**API:** [`CacheStats`](https://docs.rs/hydracache/latest/hydracache/struct.CacheStats.html) · [`CacheEvent`](https://docs.rs/hydracache/latest/hydracache/struct.CacheEvent.html) · [`hydracache-observability`](https://docs.rs/hydracache-observability/latest/hydracache_observability/)
+
 Use diagnostics to prove cache behavior locally before adding more infrastructure. The simplest useful check is: call the same cached operation twice, then inspect hit, load, and request counters.
 
 ```rust
@@ -33,3 +35,8 @@ Callback listeners are useful for lightweight integration points. Keep the retur
 ```
 
 HydraCache builds owned event payloads only when an event kind is enabled and at least one active subscriber can receive it.
+
+## Next Steps
+
+- [FAQ and Troubleshooting](../faq.md) — read the counters to diagnose problems
+- [Memory Accounting](memory-accounting.md) — retained-byte estimates

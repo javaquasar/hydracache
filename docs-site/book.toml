@@ -1,6 +1,6 @@
 [book]
 title = "HydraCache Documentation"
-description = "Rust-native cache semantics, local-first caching, and distributed invalidation."
+description = "The Rust cache that knows your database: embedded, query-result-aware, correctness-first caching with post-commit invalidation, single-flight loading, and a path to a distributed grid."
 authors = ["HydraCache Contributors"]
 language = "en"
 src = "src"

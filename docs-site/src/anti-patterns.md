@@ -43,3 +43,8 @@ Updating one entity may affect both `user:42` and `users` or `tenant:7:users`. I
 ## Caching Arbitrary Remote Code
 
 HydraCache cluster APIs do not ship closures to another process. Keep execution local and move only invalidation intent or encoded cached bytes through explicit transports.
+
+## Next Steps
+
+- [Keys and Tags](concepts/keys-and-tags.md) — design keys that avoid these mistakes
+- [FAQ and Troubleshooting](faq.md) — diagnose problems in a running service

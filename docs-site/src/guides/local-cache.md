@@ -1,5 +1,7 @@
 # Local Cache
 
+**API:** [`HydraCache`](https://docs.rs/hydracache/latest/hydracache/struct.HydraCache.html) · [`HydraCacheBuilder`](https://docs.rs/hydracache/latest/hydracache/struct.HydraCacheBuilder.html) · [`CacheOptions`](https://docs.rs/hydracache/latest/hydracache/struct.CacheOptions.html) · [`CacheStats`](https://docs.rs/hydracache/latest/hydracache/struct.CacheStats.html)
+
 Use the local cache when the current process can safely reuse a value without contacting a backing source.
 
 The local cache is the full-control API. You choose:
