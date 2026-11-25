@@ -2048,8 +2048,123 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydra-raft"
+version = "0.7.0-hydra.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "49f7952f61c570872042314db56023c89e8757475c2f6473616be64429af1cae"
+dependencies = [
+ "getset",
+ "hydra-raft-proto",
+ "rand 0.8.6",
+ "rustc-hash 1.1.0",
+ "slog",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "hydra-raft-proto"
+version = "0.7.0-hydra.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8256f4a5b740f3496479d413aa76ba24c58d041f0a35fd5cd37628d3a11cc74a"
+dependencies = [
+ "lazy_static",
+ "prost 0.11.9",
+ "protobuf-build",
+ "protoc-bin-vendored",
+]
+
+[[package]]
+name = "hydra-sled"
+version = "0.34.7-hydra.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eefc7ee4983949a9340915e9c991f73a1ac9409013926eecb8d7722930a65dd0"
+dependencies = [
+ "crc32fast",
+ "crossbeam-epoch",
+ "crossbeam-utils",
+ "fs2",
+ "libc",
+ "log",
+ "parking_lot",
+ "rustc-hash 2.1.3",
+]
+
+[[package]]
+name = "hydra-sqlx"
+version = "0.8.6-hydra.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4a4177f032d39fd2d0ea30c7f471bc2d0228ba06ebcee0aa91e91385df3ded7"
+dependencies = [
+ "hydra-sqlx-macros",
+ "hydra-sqlx-sqlite",
+ "sqlx-core",
+ "sqlx-postgres",
+]
+
+[[package]]
+name = "hydra-sqlx-macros"
+version = "0.8.6-hydra.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59c51e33b085c35fd2d440ac20f72bf6317c45a9a93b5737c8a884061b6b6b56"
+dependencies = [
+ "hydra-sqlx-macros-core",
+ "proc-macro2",
+ "quote",
+ "sqlx-core",
+ "syn 2.0.118",
+]
+
+[[package]]
+name = "hydra-sqlx-macros-core"
+version = "0.8.6-hydra.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11c009c0f927dc37ff3904bd7548be1a83ea0fb76d17b75d7a96f44eb8a36ba9"
+dependencies = [
+ "dotenvy",
+ "either",
+ "heck 0.5.0",
+ "hex",
+ "hydra-sqlx-sqlite",
+ "once_cell",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "sqlx-core",
+ "sqlx-postgres",
+ "syn 2.0.118",
+ "tokio",
+ "url",
+]
+
+[[package]]
+name = "hydra-sqlx-sqlite"
+version = "0.8.6-hydra.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3eb345cf1164a1ffec417624c612a3f7c7e82c7f4b441954c9cd4535edae5537"
+dependencies = [
+ "atoi",
+ "flume",
+ "futures-channel",
+ "futures-core",
+ "futures-executor",
+ "futures-intrusive",
+ "futures-util",
+ "libsqlite3-sys",
+ "log",
+ "percent-encoding",
+ "serde",
+ "serde_urlencoded",
+ "sqlx-core",
+ "thiserror 2.0.18",
+ "tracing",
+ "url",
+]
+
+[[package]]
 name = "hydracache"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2057,6 +2172,7 @@ dependencies = [
  "crossbeam-queue",
  "futures-util",
  "hydra-moka",
+ "hydra-sled",
  "hydracache-core",
  "hydracache-macros",
  "jsonschema",
@@ -2065,7 +2181,6 @@ dependencies = [
  "proptest",
  "serde",
  "serde_json",
- "sled",
  "thiserror 2.0.18",
  "tikv-jemallocator",
  "tokio",
@@ -2074,7 +2189,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-actuator-axum"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "axum",
  "hydracache",
@@ -2087,14 +2202,14 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cache-sim"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "sha2 0.11.0",
 ]
 
 [[package]]
 name = "hydracache-cdc-postgres"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "hydracache-db",
  "thiserror 2.0.18",
@@ -2103,7 +2218,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "axum",
@@ -2122,7 +2237,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-hc2"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2141,7 +2256,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-plane-spike"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "bytes",
  "ed25519-dalek",
@@ -2167,7 +2282,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-protocol"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "bytes",
  "postcard",
@@ -2177,7 +2292,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-transport-axum"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "axum",
@@ -2197,7 +2312,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "hydracache",
  "hydracache-cluster-chitchat",
@@ -2207,7 +2322,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster-chitchat"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "hydra-chitchat",
@@ -2218,22 +2333,22 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster-raft"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "axum",
  "fail",
  "hydra-chitchat",
+ "hydra-raft",
+ "hydra-sled",
  "hydracache",
  "hydracache-cluster-chitchat",
  "hydracache-cluster-testkit",
  "hydracache-cluster-transport-axum",
  "loom",
  "proptest",
- "raft",
  "serde",
  "serde_json",
- "sled",
  "slog",
  "stateright",
  "tokio",
@@ -2242,22 +2357,22 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster-testkit"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "anyhow",
  "async-trait",
  "hydra-chitchat",
+ "hydra-raft",
  "hydracache",
  "hydracache-client-protocol",
  "hydracache-cluster-raft",
- "raft",
  "serde_json",
  "tokio",
 ]
 
 [[package]]
 name = "hydracache-cluster-transport-axum"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "axum",
@@ -2276,7 +2391,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-core"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2287,17 +2402,17 @@ dependencies = [
 
 [[package]]
 name = "hydracache-db"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "criterion",
+ "hydra-sqlx",
  "hydracache",
  "hydracache-core",
  "hydracache-macros",
  "proptest",
  "serde",
  "sha2 0.11.0",
- "sqlx",
  "thiserror 2.0.18",
  "tokio",
  "trybuild",
@@ -2305,7 +2420,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-diesel"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "diesel",
@@ -2322,6 +2437,7 @@ dependencies = [
 name = "hydracache-fuzz"
 version = "0.0.0"
 dependencies = [
+ "hydra-raft",
  "hydracache-client-hc2",
  "hydracache-client-plane-spike",
  "hydracache-client-protocol",
@@ -2332,14 +2448,13 @@ dependencies = [
  "hydracache-server",
  "libfuzzer-sys",
  "prost 0.14.4",
- "raft",
  "serde",
  "serde_json",
 ]
 
 [[package]]
 name = "hydracache-loadgen"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "axum",
@@ -2366,7 +2481,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-macros"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -2376,7 +2491,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-observability"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -2388,7 +2503,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-operator"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "futures-util",
  "http",
@@ -2407,7 +2522,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-post-publish-consumer"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "hydracache",
  "hydracache-actuator-axum",
@@ -2428,7 +2543,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-redis-compat"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "bytes",
  "futures-util",
@@ -2452,10 +2567,11 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sandbox"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "axum",
  "hydra-chitchat",
+ "hydra-sqlx",
  "hydracache",
  "hydracache-actuator-axum",
  "hydracache-cluster-chitchat",
@@ -2468,7 +2584,6 @@ dependencies = [
  "hydracache-sqlx",
  "serde",
  "serde_json",
- "sqlx",
  "testcontainers-modules",
  "thiserror 2.0.18",
  "tokio",
@@ -2479,7 +2594,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-seaorm"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -2493,7 +2608,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-server"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "axum",
@@ -2501,6 +2616,7 @@ dependencies = [
  "bytes",
  "fs2",
  "futures-util",
+ "hydra-raft",
  "hydracache",
  "hydracache-actuator-axum",
  "hydracache-client-hc2",
@@ -2515,7 +2631,6 @@ dependencies = [
  "hydracache-sim",
  "proptest",
  "prost 0.14.4",
- "raft",
  "rcgen",
  "redis",
  "reqwest",
@@ -2534,12 +2649,12 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sim"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
+ "hydra-raft",
  "hydracache",
  "hydracache-cluster-raft",
  "hydracache-cluster-testkit",
- "raft",
  "rand_chacha 0.9.0",
  "rand_core 0.9.5",
  "serde",
@@ -2549,7 +2664,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sim-wasm"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "hydracache-sim",
  "serde_json",
@@ -2559,7 +2674,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sql-lint"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "proptest",
  "serde",
@@ -2571,14 +2686,14 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sqlx"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
+ "hydra-sqlx",
  "hydracache",
  "hydracache-core",
  "hydracache-db",
  "serde",
- "sqlx",
  "testcontainers-modules",
  "thiserror 2.0.18",
  "tokio",
@@ -2586,7 +2701,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-transport-nats"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-nats",
  "async-trait",
@@ -2599,7 +2714,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-transport-redis"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "bytes",
@@ -3265,9 +3380,9 @@ dependencies = [
 
 [[package]]
 name = "libsqlite3-sys"
-version = "0.39.1"
+version = "0.40.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14a5f01b87b92705d07b433c06f96cbc764637d81a0bffb5734ce17cf0f9a2b3"
+checksum = "b06e69070b7e12262b0cd90832f0a7396f142a2b330181255562decf9f0c6215"
 dependencies = [
  "cc",
  "pkg-config",
@@ -4310,28 +4425,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 
 [[package]]
-name = "raft"
-version = "0.7.0"
-dependencies = [
- "getset",
- "raft-proto",
- "rand 0.8.6",
- "rustc-hash 1.1.0",
- "slog",
- "thiserror 1.0.69",
-]
-
-[[package]]
-name = "raft-proto"
-version = "0.7.0"
-dependencies = [
- "lazy_static",
- "prost 0.11.9",
- "protobuf-build",
- "protoc-bin-vendored",
-]
-
-[[package]]
 name = "rand"
 version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5259,20 +5352,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5"
 
 [[package]]
-name = "sled"
-version = "0.34.7"
-dependencies = [
- "crc32fast",
- "crossbeam-epoch",
- "crossbeam-utils",
- "fs2",
- "libc",
- "log",
- "parking_lot",
- "rustc-hash 2.1.3",
-]
-
-[[package]]
 name = "slog"
 version = "2.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5358,7 +5437,6 @@ checksum = "1fefb893899429669dcdd979aff487bd78f4064e5e7907e4269081e0ef7d97dc"
 dependencies = [
  "sqlx-core",
  "sqlx-macros",
- "sqlx-postgres",
  "sqlx-sqlite",
 ]
 
@@ -5428,7 +5506,6 @@ dependencies = [
  "serde_json",
  "sha2 0.10.9",
  "sqlx-core",
- "sqlx-postgres",
  "sqlx-sqlite",
  "syn 2.0.118",
  "tokio",
@@ -6973,7 +7050,7 @@ dependencies = [
 
 [[package]]
 name = "xtask"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "flate2",
  "hydracache",

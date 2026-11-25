@@ -848,8 +848,81 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydra-sqlx"
+version = "0.8.6-hydra.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4a4177f032d39fd2d0ea30c7f471bc2d0228ba06ebcee0aa91e91385df3ded7"
+dependencies = [
+ "hydra-sqlx-macros",
+ "hydra-sqlx-sqlite",
+ "sqlx-core",
+ "sqlx-postgres",
+]
+
+[[package]]
+name = "hydra-sqlx-macros"
+version = "0.8.6-hydra.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59c51e33b085c35fd2d440ac20f72bf6317c45a9a93b5737c8a884061b6b6b56"
+dependencies = [
+ "hydra-sqlx-macros-core",
+ "proc-macro2",
+ "quote",
+ "sqlx-core",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "hydra-sqlx-macros-core"
+version = "0.8.6-hydra.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11c009c0f927dc37ff3904bd7548be1a83ea0fb76d17b75d7a96f44eb8a36ba9"
+dependencies = [
+ "dotenvy",
+ "either",
+ "heck 0.5.0",
+ "hex",
+ "hydra-sqlx-sqlite",
+ "once_cell",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "sqlx-core",
+ "sqlx-postgres",
+ "syn 2.0.119",
+ "tokio",
+ "url",
+]
+
+[[package]]
+name = "hydra-sqlx-sqlite"
+version = "0.8.6-hydra.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3eb345cf1164a1ffec417624c612a3f7c7e82c7f4b441954c9cd4535edae5537"
+dependencies = [
+ "atoi",
+ "flume",
+ "futures-channel",
+ "futures-core",
+ "futures-executor",
+ "futures-intrusive",
+ "futures-util",
+ "libsqlite3-sys",
+ "log",
+ "percent-encoding",
+ "serde",
+ "serde_urlencoded",
+ "sqlx-core",
+ "thiserror",
+ "tracing",
+ "url",
+]
+
+[[package]]
 name = "hydracache"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "bytes",
@@ -865,7 +938,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-protocol"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "bytes",
  "postcard",
@@ -875,7 +948,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-transport-axum"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "axum",
  "bytes",
@@ -889,7 +962,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-core"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "bytes",
@@ -900,22 +973,22 @@ dependencies = [
 
 [[package]]
 name = "hydracache-db"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
+ "hydra-sqlx",
  "hydracache",
  "hydracache-core",
  "hydracache-macros",
  "serde",
  "sha2 0.11.0",
- "sqlx",
  "thiserror",
  "tokio",
 ]
 
 [[package]]
 name = "hydracache-diesel"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "diesel",
@@ -947,7 +1020,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-macros"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -957,7 +1030,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-observability"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -967,7 +1040,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-redis-compat"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "bytes",
  "hydracache",
@@ -981,7 +1054,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-seaorm"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -994,14 +1067,14 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sqlx"
-version = "0.74.0"
+version = "0.74.1"
 dependencies = [
  "async-trait",
+ "hydra-sqlx",
  "hydracache",
  "hydracache-core",
  "hydracache-db",
  "serde",
- "sqlx",
  "thiserror",
 ]
 
@@ -1207,9 +1280,9 @@ dependencies = [
 
 [[package]]
 name = "libsqlite3-sys"
-version = "0.39.1"
+version = "0.40.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14a5f01b87b92705d07b433c06f96cbc764637d81a0bffb5734ce17cf0f9a2b3"
+checksum = "b06e69070b7e12262b0cd90832f0a7396f142a2b330181255562decf9f0c6215"
 dependencies = [
  "cc",
  "pkg-config",
@@ -1820,18 +1893,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "858cea190fe7555971c35a5eb336858f1bf962a2bd7ceb8704fb1759b36af2cd"
 
 [[package]]
-name = "sqlx"
-version = "0.8.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1fefb893899429669dcdd979aff487bd78f4064e5e7907e4269081e0ef7d97dc"
-dependencies = [
- "sqlx-core",
- "sqlx-macros",
- "sqlx-postgres",
- "sqlx-sqlite",
-]
-
-[[package]]
 name = "sqlx-core"
 version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1865,43 +1926,6 @@ dependencies = [
  "tracing",
  "url",
  "webpki-roots 0.26.11",
-]
-
-[[package]]
-name = "sqlx-macros"
-version = "0.8.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2d452988ccaacfbf5e0bdbc348fb91d7c8af5bee192173ac3636b5fb6e6715d"
-dependencies = [
- "proc-macro2",
- "quote",
- "sqlx-core",
- "sqlx-macros-core",
- "syn 2.0.119",
-]
-
-[[package]]
-name = "sqlx-macros-core"
-version = "0.8.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19a9c1841124ac5a61741f96e1d9e2ec77424bf323962dd894bdb93f37d5219b"
-dependencies = [
- "dotenvy",
- "either",
- "heck 0.5.0",
- "hex",
- "once_cell",
- "proc-macro2",
- "quote",
- "serde",
- "serde_json",
- "sha2 0.10.9",
- "sqlx-core",
- "sqlx-postgres",
- "sqlx-sqlite",
- "syn 2.0.119",
- "tokio",
- "url",
 ]
 
 [[package]]
@@ -1939,28 +1963,6 @@ dependencies = [
  "thiserror",
  "tracing",
  "whoami",
-]
-
-[[package]]
-name = "sqlx-sqlite"
-version = "0.8.6"
-dependencies = [
- "atoi",
- "flume",
- "futures-channel",
- "futures-core",
- "futures-executor",
- "futures-intrusive",
- "futures-util",
- "libsqlite3-sys",
- "log",
- "percent-encoding",
- "serde",
- "serde_urlencoded",
- "sqlx-core",
- "thiserror",
- "tracing",
- "url",
 ]
 
 [[package]]
@@ -2694,3 +2696,7 @@ name = "zmij"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"
+
+[[patch.unused]]
+name = "sqlx-sqlite"
+version = "0.8.6"
