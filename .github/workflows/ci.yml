@@ -3211,6 +3211,12 @@ jobs:
       - name: Check MSRV
         run: cargo check --workspace --all-targets --locked
 
+      - name: Test the kube-client OpenSSL backport
+        run: >-
+          cargo test --manifest-path vendor/kube-client/Cargo.toml --locked
+          --lib --no-default-features --features client,openssl-tls
+          client::tls::openssl_tls::tests
+
       - name: Test MSRV
         run: cargo test --workspace --locked
 

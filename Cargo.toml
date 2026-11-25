@@ -37,6 +37,7 @@ members = [
     "tools/long-run-supervisor-074",
     "tools/performance-integrated-074",
 ]
+exclude = ["vendor/kube-client"]
 resolver = "2"
 
 [workspace.package]
@@ -151,5 +152,6 @@ wasm-bindgen = "0.2.122"
 wasm-bindgen-test = "0.3"
 
 [patch.crates-io]
+kube-client = { path = "vendor/kube-client" }
 sqlx-sqlite = { path = "vendor/sqlx-sqlite" }
 testcontainers = { path = "vendor/testcontainers" }
