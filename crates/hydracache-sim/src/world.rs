@@ -75,6 +75,9 @@ struct SimNode {
     /// cluster replicates without a log, so this, not a commit index, is the
     /// node's own progress.
     applied_writes: u64,
+    /// Step at which this node applied the value it now holds, per key: a
+    /// write or invalidate on the node, or the catch-up that copied it in.
+    applied_at: BTreeMap<String, u64>,
 }
 
 #[derive(Debug, Clone)]
@@ -179,6 +182,7 @@ impl SimWorld {
                     node,
                     storage: SimStorage::new(),
                     applied_writes: 0,
+                    applied_at: BTreeMap::new(),
                 },
             );
         }
@@ -729,6 +733,7 @@ impl SimWorld {
                 node,
                 storage: SimStorage::new(),
                 applied_writes: 0,
+                applied_at: BTreeMap::new(),
             },
         );
         self.cfg.node_count = self.cfg.node_count.saturating_add(1);
@@ -853,13 +858,14 @@ impl SimWorld {
             election.signals.iter(),
             self.clock.now(),
         );
-        let mut key_observations = BTreeMap::<String, BTreeMap<String, u64>>::new();
+        let mut key_observations = BTreeMap::<String, BTreeMap<String, (u64, Option<u64>)>>::new();
         for (node_id, sim_node) in &self.nodes {
             for (key, checksum) in sim_node.storage.visible_checksums() {
+                let applied_at = sim_node.applied_at.get(&key).copied();
                 key_observations
                     .entry(key)
                     .or_default()
-                    .insert(node_id.to_string(), checksum);
+                    .insert(node_id.to_string(), (checksum, applied_at));
             }
         }
         for replicas in key_observations.values_mut() {
@@ -1157,6 +1163,7 @@ impl SimWorld {
 
     fn drain_node_effects(&mut self) {
         let mut outbound = Vec::new();
+        let step = self.steps;
         for (node_id, sim_node) in self.nodes.iter_mut() {
             if self.crashed_nodes.contains(node_id)
                 || self.disabled_nodes.contains(node_id)
@@ -1166,8 +1173,18 @@ impl SimWorld {
             }
             outbound.extend(sim_node.node.take_outbound());
             for request in sim_node.node.storage_requests() {
-                if !matches!(request.kind, StorageOpKind::Read { .. }) {
-                    sim_node.applied_writes = sim_node.applied_writes.saturating_add(1);
+                match &request.kind {
+                    StorageOpKind::Read { .. } => {}
+                    StorageOpKind::Write { key, .. } | StorageOpKind::Delete { key } => {
+                        sim_node.applied_writes = sim_node.applied_writes.saturating_add(1);
+                        sim_node.applied_at.insert(key.clone(), step);
+                    }
+                    StorageOpKind::Flush => {
+                        sim_node.applied_writes = sim_node.applied_writes.saturating_add(1);
+                        for applied in sim_node.applied_at.values_mut() {
+                            *applied = step;
+                        }
+                    }
                 }
                 let applied = sim_node
                     .storage
@@ -1213,10 +1230,15 @@ impl SimWorld {
         else {
             return;
         };
-        let Some((source_storage, source_applied)) = self
-            .nodes
-            .get(&source_id)
-            .map(|node| (node.storage.clone(), node.applied_writes))
+        let step = self.steps;
+        let Some((source_storage, source_applied, source_keys)) =
+            self.nodes.get(&source_id).map(|node| {
+                (
+                    node.storage.clone(),
+                    node.applied_writes,
+                    node.applied_at.keys().cloned().collect::<Vec<_>>(),
+                )
+            })
         else {
             return;
         };
@@ -1225,8 +1247,9 @@ impl SimWorld {
                 .storage
                 .replace_visible_default_zone_from(&source_storage);
             // The node now holds the source's state, so it has the source's
-            // progress too.
+            // progress too; every copied value arrived now.
             target.applied_writes = source_applied;
+            target.applied_at = source_keys.into_iter().map(|key| (key, step)).collect();
         }
         self.rebalance = Some(RebalanceState {
             phase: "complete".to_owned(),

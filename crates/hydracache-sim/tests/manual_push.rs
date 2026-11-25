@@ -293,3 +293,77 @@ fn removed_writer_leaves_its_history_and_fails_loud_twice() {
         })
         .unwrap_err();
 }
+
+fn applied_steps(
+    world: &SimWorld,
+    key: &str,
+) -> std::collections::BTreeMap<String, (u64, Option<u64>)> {
+    world
+        .snapshot()
+        .keys
+        .into_iter()
+        .find(|view| view.key == key)
+        .map(|view| {
+            view.replicas
+                .into_iter()
+                .map(|replica| (replica.node_id, (replica.version, replica.applied_at_step)))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+// Schema 9: each replica says when it applied the value it holds. A push is
+// applied on its entry node at once and on the others when ReplicatePut is
+// delivered; a crashed node gets nothing until a restart copies the value in.
+#[test]
+fn replicas_report_when_they_applied_a_pushed_value() {
+    let mut world = manual_world();
+    assert!(world.crash_node("node-2"));
+    world
+        .push_event("client-a", NS, KEY, "fresh")
+        .expect("manual push applies");
+    let push_step = world.snapshot().step;
+    let at_push = applied_steps(&world, FULL_KEY);
+    let entry: Vec<_> = at_push
+        .iter()
+        .filter(|(_, (_, applied))| *applied == Some(push_step))
+        .map(|(node, _)| node.clone())
+        .collect();
+    assert_eq!(
+        entry.len(),
+        1,
+        "one entry node applies at the push step: {at_push:?}"
+    );
+    let entry = entry[0].clone();
+
+    world.run(2);
+    let delivered = applied_steps(&world, FULL_KEY);
+    let pushed = delivered[&entry].0;
+    for (node, (version, applied)) in &delivered {
+        if node == &entry || node == "node-2" {
+            continue;
+        }
+        assert_eq!(*version, pushed, "{node} received the value");
+        let applied = applied.expect("a replicated value has a step");
+        assert!(
+            applied > push_step && applied <= push_step + 2,
+            "{node} applied at {applied}"
+        );
+    }
+    assert_ne!(
+        delivered["node-2"].0, pushed,
+        "the crashed node got nothing"
+    );
+
+    assert!(world.restart_node("node-2"));
+    let restarted = applied_steps(&world, FULL_KEY);
+    assert_eq!(
+        restarted["node-2"].0, pushed,
+        "the restart copied the value in"
+    );
+    assert_eq!(
+        restarted["node-2"].1,
+        Some(world.snapshot().step),
+        "at the restart step"
+    );
+}

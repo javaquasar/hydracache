@@ -299,6 +299,10 @@ pub struct KeyReplicaView {
     pub version: u64,
     /// Logical epoch. The 0.44 simulator does not model storage epochs yet.
     pub epoch: u64,
+    /// Step at which this node applied the value it holds (schema 9): its own
+    /// write or invalidate, a replicated one, or a catch-up copy. `None` when
+    /// the node has no value or got it before the step was recorded.
+    pub applied_at_step: Option<u64>,
 }
 
 /// Manual-mode client actor projection.
@@ -589,7 +593,7 @@ fn message_view_from_election(signal: &ElectionSignal, now: LogicalTime) -> Mess
 }
 
 pub(crate) fn key_views_from_storage(
-    observations: BTreeMap<String, BTreeMap<String, u64>>,
+    observations: BTreeMap<String, BTreeMap<String, (u64, Option<u64>)>>,
 ) -> Vec<KeyView> {
     observations
         .into_iter()
@@ -597,10 +601,11 @@ pub(crate) fn key_views_from_storage(
             key,
             replicas: replicas
                 .into_iter()
-                .map(|(node_id, version)| KeyReplicaView {
+                .map(|(node_id, (version, applied_at_step))| KeyReplicaView {
                     node_id,
                     version,
                     epoch: 0,
+                    applied_at_step,
                 })
                 .collect(),
         })
@@ -664,6 +669,7 @@ fn keys_from_history(history: &History) -> Vec<KeyView> {
                     node_id: "history".to_owned(),
                     version,
                     epoch: 0,
+                    applied_at_step: None,
                 }],
             }
         })
