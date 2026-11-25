@@ -332,7 +332,7 @@ pub fn post_publish_contract_problems(workflow: &str, fixture: &str) -> Vec<Stri
         "tests/post-publish-consumer/src/lib.rs",
         "hydracache-client-hc2",
         "cargo add serde_json --dev",
-        "toolchain: [stable, '1.89.0']",
+        "toolchain: [stable, '1.88.0']",
         "cargo add \"$package@=$RELEASE_VERSION\"",
         "${{ runner.temp }}/hydracache-consumer",
     ] {

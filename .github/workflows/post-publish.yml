@@ -39,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        toolchain: [stable, '1.89.0']
+        toolchain: [stable, '1.88.0']
     env:
       RELEASE_VERSION: ${{ inputs.version }}
       CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS: fallback
@@ -151,8 +151,8 @@ jobs:
           RUSTDOCFLAGS: -D warnings
         run: cargo doc --no-deps --locked
 
-      - name: Install the published server on the MSRV toolchain
-        if: inputs.version == '0.74.1' && matrix.toolchain != 'stable'
+      - name: Install the published server on Rust 1.88
+        if: inputs.version == '0.74.1' && matrix.toolchain == '1.88.0'
         timeout-minutes: 15
         working-directory: ${{ runner.temp }}/hydracache-consumer
         run: |
@@ -164,7 +164,7 @@ jobs:
           cargo install --list --root "$install_root"
 
       - name: Audit the public consumer and server lockfiles without exceptions
-        if: inputs.version == '0.74.1' && matrix.toolchain != 'stable'
+        if: inputs.version == '0.74.1' && matrix.toolchain == '1.88.0'
         timeout-minutes: 20
         working-directory: ${{ runner.temp }}/hydracache-consumer
         run: |

@@ -3109,7 +3109,7 @@ jobs:
         run: rm -rf target/tests
 
   msrv:
-    name: MSRV 1.89.0
+    name: MSRV 1.88.0
     if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
     runs-on: ubuntu-latest
     timeout-minutes: 120
@@ -3120,15 +3120,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Rust 1.89.0
-        uses: dtolnay/rust-toolchain@1.89.0
+      - name: Install Rust 1.88.0
+        uses: dtolnay/rust-toolchain@1.88.0
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
           prefix-key: v1-rust-no-target
           cache-targets: false
-          shared-key: msrv-1.89.0
+          shared-key: msrv-1.88.0
 
       - name: Install cargo-deny
         uses: taiki-e/install-action@cargo-deny
