@@ -7,6 +7,8 @@
 - [Installation](installation.md)
 - [Architecture](architecture.md)
 - [Use Cases](use-cases.md)
+- [Compared to Alternatives](alternatives.md)
+- [Performance](performance.md)
 - [Decision Guide](decision-guide.md)
 - [Production Checklist](production-checklist.md)
 - [Anti-patterns](anti-patterns.md)
