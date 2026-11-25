@@ -31,5 +31,6 @@ The macro is still explicit: it names the key source, tags, TTL or preset, and o
 
 ## Next Steps
 
+- [Invalidation After Commit](invalidation-after-commit.md) — `InvalidationPlan` vs the transactional outbox
 - [Tutorial: Two Instances](../tutorial.md) — invalidate after commit, end to end
 - [SQLx Adapter](sqlx-adapter.md) — adapter-specific helpers

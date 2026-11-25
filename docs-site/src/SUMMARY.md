@@ -36,6 +36,7 @@
 - [Refresh and Stale Reads](guides/refresh-and-stale-reads.md)
 - [Macros](guides/macros.md)
 - [Database Query Caching](guides/database-query-caching.md)
+- [Invalidation After Commit](guides/invalidation-after-commit.md)
 - [SQLx Adapter](guides/sqlx-adapter.md)
 - [Diesel Adapter](guides/diesel-adapter.md)
 - [SeaORM Adapter](guides/seaorm-adapter.md)
