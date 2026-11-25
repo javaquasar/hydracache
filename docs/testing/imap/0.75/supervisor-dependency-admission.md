@@ -43,6 +43,14 @@ admission, replay, identity and failure tests retain their assertions.
 Logs are retained in `target/imap-075/supervisor-dbus-20261125/`. The complete `verify` and
 the four W12 lanes must pass before this preparation is treated as the new qualified baseline.
 
+The Windows milestone verifier exposed a separate preparation error: its isolated xtask target
+had no actual-owner peers built by the preceding workspace test gate. The verifier now builds
+`imap-extended-owner-075` and `imap-extended-concurrent-owner-075` into that same isolated target
+before executing xtask tests. Peer lookup and all actual-process/canary assertions stay strict.
+`verify::tests::windows_builds_actual_imap_peers_in_the_test_target_before_differential_tests`
+checks both peers, gate order and target isolation. The initial failed log remains retained;
+qualification must use the committed follow-up source and four matching receipts.
+
 ```sh
 cargo +1.88.0 test --locked -p hydracache-long-run-supervisor-074 -p hydracache-performance-integrated-074 --all-targets
 cargo +1.88.0 check --locked -p hydracache-long-run-supervisor-074 -p hydracache-performance-integrated-074 --all-targets

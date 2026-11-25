@@ -23,6 +23,7 @@ struct Gate {
 
 const CONSOLE_GATE_LABEL: &str = "management console";
 const XTASK_TEST_GATE_LABEL: &str = "tests (xtask lib/integration)";
+const IMAP_PEER_GATE_LABEL: &str = "IMap actual owner peers (xtask isolation)";
 const PERFORMANCE_BUDGET_GATE_LABEL: &str = "performance budget contract";
 
 fn gate(
@@ -213,8 +214,27 @@ fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
             ],
             None,
         ));
+        // Differential tests resolve real owner peers from CARGO_TARGET_DIR too.
+        // Build them in the same isolated target; never fall back to a peer from
+        // another build or replace the actual-process assertions with a model.
         gates.push(gate(
-            "tests (xtask lib/integration)",
+            IMAP_PEER_GATE_LABEL,
+            [
+                "build",
+                "-p",
+                "hydracache-cluster-testkit",
+                "--bin",
+                "imap-extended-owner-075",
+                "--bin",
+                "imap-extended-concurrent-owner-075",
+                "--locked",
+                "-j",
+                "1",
+            ],
+            None,
+        ));
+        gates.push(gate(
+            XTASK_TEST_GATE_LABEL,
             [
                 "test", "-p", "xtask", "--lib", "--tests", "--locked", "-j", "1",
             ],
@@ -274,7 +294,7 @@ fn target_dir_for_gate<'a>(
     (is_windows
         && matches!(
             gate_label,
-            XTASK_TEST_GATE_LABEL | PERFORMANCE_BUDGET_GATE_LABEL
+            XTASK_TEST_GATE_LABEL | IMAP_PEER_GATE_LABEL | PERFORMANCE_BUDGET_GATE_LABEL
         ))
     .then_some(windows_target_dir)
     .flatten()
@@ -458,7 +478,7 @@ mod tests {
 
     use super::{
         console_npm_steps, gates_for_platform, target_dir_for_gate,
-        windows_verify_target_dir_for_process, Gate, CONSOLE_GATE_LABEL,
+        windows_verify_target_dir_for_process, Gate, CONSOLE_GATE_LABEL, IMAP_PEER_GATE_LABEL,
         PERFORMANCE_BUDGET_GATE_LABEL, XTASK_TEST_GATE_LABEL,
     };
 
@@ -527,6 +547,42 @@ mod tests {
                 "warnings"
             ]
         );
+    }
+
+    #[test]
+    fn windows_builds_actual_imap_peers_in_the_test_target_before_differential_tests() {
+        let gates = gates_for_platform(true);
+        assert_eq!(
+            args_for(&gates, IMAP_PEER_GATE_LABEL),
+            [
+                "build",
+                "-p",
+                "hydracache-cluster-testkit",
+                "--bin",
+                "imap-extended-owner-075",
+                "--bin",
+                "imap-extended-concurrent-owner-075",
+                "--locked",
+                "-j",
+                "1"
+            ]
+        );
+        let position = |label| gates.iter().position(|gate| gate.label == label).unwrap();
+        assert!(position("tests (workspace excluding xtask)") < position(IMAP_PEER_GATE_LABEL));
+        assert!(position(IMAP_PEER_GATE_LABEL) < position(XTASK_TEST_GATE_LABEL));
+        let isolated = Path::new("repo/target/xtask-verify-42");
+        assert_eq!(
+            target_dir_for_gate(true, IMAP_PEER_GATE_LABEL, Some(isolated)),
+            Some(isolated)
+        );
+        assert_eq!(
+            target_dir_for_gate(false, IMAP_PEER_GATE_LABEL, Some(isolated)),
+            None
+        );
+        assert_eq!(target_dir_for_gate(true, IMAP_PEER_GATE_LABEL, None), None);
+        assert!(!gates_for_platform(false)
+            .iter()
+            .any(|gate| gate.label == IMAP_PEER_GATE_LABEL));
     }
 
     #[test]
