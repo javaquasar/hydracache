@@ -1,7 +1,7 @@
 # HydraCache
 
 <div class="hc-hero">
-  <img class="hc-hero-logo" src="assets/brand/hydracache-emblem-orange-256.png" alt="HydraCache emblem">
+  <p class="brand-mark hc-hero-brand"><img class="hc-hero-logo" src="assets/brand/hydracache-emblem-orange-256.png" alt="HydraCache emblem"></p>
   <p class="hc-hero-tagline">The Rust cache that knows your database.</p>
   <p class="hc-hero-sub">Embedded, query-result-aware, correctness-first — grows from an in-process cache into a distributed cache grid on one codebase.</p>
   <div class="hc-hero-actions">

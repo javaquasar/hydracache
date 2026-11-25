@@ -49,11 +49,14 @@
     rgba(128, 128, 128, 0.06);
 }
 
-.hc-hero-logo {
+.hc-hero .brand-mark {
+  margin: 0 0 0.8rem;
+}
+
+.hc-hero .brand-mark img.hc-hero-logo {
   display: block;
   width: 88px;
   height: 88px;
-  margin-bottom: 0.8rem;
 }
 
 .hc-hero-tagline {
