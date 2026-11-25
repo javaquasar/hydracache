@@ -42,8 +42,10 @@ locally.
 | Discovery (liveness only) | `ChitchatDiscovery` | `crates/hydracache-cluster-chitchat` |
 | Topology epoch fence | `TopologyFence` | `crates/hydracache/src/cluster/topology.rs` |
 | Key ownership | `RendezvousClusterOwnership` (`ClusterOwnershipResolver`) | `crates/hydracache/src/cluster/ownership.rs` |
-| Replica placement (opt-in) | `ClusterReplicationStrategy`, `Replicas`, `EffectiveReplicationMap`, `ReplicationConfig` | `crates/hydracache/src/grid/mod.rs` |
-| Consistency levels (opt-in) | `ConsistencyLevel`, `AckRequirement`, `ConsistencyUnsatisfiable` | `crates/hydracache/src/grid/consistency_level.rs` |
+| Replica placement types (built for every target, incl. wasm32) | `Replicas`, `EffectiveReplicationMap`, `ReplicationConfig`, `RegionId` | `crates/hydracache/src/replication_model/mod.rs` |
+| Replica ranking (native only) | `ClusterReplicationStrategy` for `RendezvousClusterOwnership` | `crates/hydracache/src/grid/mod.rs` |
+| Consistency levels (built for every target) | `ConsistencyLevel`, `AckRequirement`, `ConsistencyUnsatisfiable` | `crates/hydracache/src/replication_model/consistency_level.rs` |
+| Golden key placement (cross-version contract) | `rendezvous_placement_matches_recorded_owners` | `crates/hydracache/tests/placement_golden.rs` |
 | Hinted handoff (opt-in) | `Hint`, `HintStore`, `replay_hints` | `crates/hydracache/src/grid/hinted_handoff.rs` |
 | Invalidation publish | `HydraCache::publish_invalidation` | `crates/hydracache/src/cache.rs` |
 | Daemon hosting of the stack | `networked_member_stack`, `drive_grid_once`, `metadata_authority_matches` | `crates/hydracache-server/src/grid_host.rs` |
@@ -236,7 +238,7 @@ describes the *target* of these primitives, not shipped behaviour. Label it that
 | Election (browser, wasm) | `ElectionDriver` model, partition-aware, `election_source: "sim-model"` | none | model; ADR-0016 forbids claiming raft fidelity |
 | Metadata commands | not simulated; `SimRaft` proposes only conf changes | `RaftMetadataCommand` | no |
 | Data plane | `ClusterNode`: write locally, then broadcast `ReplicatePut` / `ReplicateInvalidate` / `ReplicateFlush` to **all** peers | default: local write plus invalidation bus; opt-in: owner placement (primitives) | `ClusterNode` is product code, but only the simulator and `tests/sans_io_seam.rs` use it |
-| Consistency panel | `crates/hydracache-sim/src/consistency.rs`: every node a replica, one region | `ConsistencyLevel` | mirror, parity-tested (TD-0014) |
+| Consistency panel | `SimWorld::consistency_views` calls `ConsistencyLevel::{required_acks, validate}` with every node a replica, one region | `ConsistencyLevel` | yes, in both builds (TD-0014, resolved) |
 
 ### Gap register
 
@@ -253,21 +255,25 @@ gap moves to the history list below, with its commit.
 | G5 | Subscriber delivery | An event is delivered only once **every** live node holds the version (`deliver_subscriber_events`). | Events come from the cache event or invalidation stream of the node the subscriber is attached to. | TD-0016 |
 | G6 | Client attachment | `connected_node_for` hashes the id over live nodes, so a client re-pins whenever the live set changes. | The client connects through bootstrap and discovery, and stays until its connection fails. | TD-0016 |
 | G7 | Client admission | `add_client` / the first push insert the client directly. | `ClientUpsert` is committed through Raft and fails while there is no leader. | TD-0016 |
-| G8 | Consistency rules | Mirror in `hydracache-sim` (the `grid` module is not built for wasm32). | `hydracache::ConsistencyLevel`. | TD-0014 |
 
-Closed gaps: TD-0015 (per-node applied writes, drops at send, push delivery timing;
-snapshot schema 9).
+Closed gaps:
+
+- TD-0015: per-node applied writes, drops at send, push delivery timing (snapshot
+  schema 9).
+- G8 / TD-0014: the simulator used a mirror of the consistency rules. The placement
+  and consistency types now live in `replication_model` and build for wasm32; both
+  simulator builds call the product rules, and the snapshot is unchanged.
 
 ### Target engine shape
 
 This is the order for closing TD-0016 and TD-0014. Each step is a separate commit
 with its own tests.
 
-1. **Make the placement and consistency types available in wasm** (TD-0014, steps
-   1–5). This moves `Replicas`, `EffectiveReplicationMap`, `ReplicationConfig`,
-   `RegionId` and `ConsistencyLevel` into an always-compiled module, and the
-   rendezvous ranking with them. The simulator then calls the product rules on both
-   targets. This closes G8.
+1. **Done: make the placement and consistency types available in wasm** (TD-0014,
+   closes G8). The rendezvous *ranking* (`replicas_for_key`) still lives in `grid`,
+   because it takes `ClusterMember`, which is native-only. Step 3 has to make it
+   available to wasm32, and must keep `tests/placement_golden.rs` green while doing
+   it.
 2. **Write through the client's coordinator** (G1, G6, G7).
    - `push_event` enters on the client's attached node. Attachment is sticky and
      stored in the world, not re-hashed.

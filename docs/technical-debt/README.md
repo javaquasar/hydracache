@@ -17,7 +17,6 @@ Each item should explain:
 - [TD-0005: Release-claim evidence gap (Hibernate L2 / JVM artifact)](TD-0005-release-claim-evidence-gap.md)
 - [TD-0008: Networked daemon grid hosting is deferred after W6a](TD-0008-networked-daemon-grid-hosting.md)
 - [TD-0012: crates.io publication automation](TD-0012-crates-publication-automation.md)
-- [TD-0014: Simulator mirrors the product consistency-level rules](TD-0014-simulator-consistency-rules-mirror.md)
 - [TD-0016: Simulator write path does not match the product](TD-0016-simulator-write-path-fidelity.md)
 
 ## Resolved Items
@@ -29,4 +28,5 @@ Each item should explain:
 - [TD-0010: Cluster transport has no TLS termination and no peer auth](TD-0010-cluster-transport-tls-and-peer-auth.md)
 - [TD-0011: Static raft voter set and address-derived node identity](TD-0011-dynamic-raft-membership-and-node-identity.md)
 - [TD-0013: Dedicated performance runner and baseline bootstrap](TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md)
+- [TD-0014: Simulator mirrors the product consistency-level rules](TD-0014-simulator-consistency-rules-mirror.md)
 - [TD-0015: Demo fidelity gaps (per-node applied writes, send-time drops, push delivery timing)](TD-0015-demo-fidelity-gaps.md)

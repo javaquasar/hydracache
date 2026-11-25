@@ -1,10 +1,12 @@
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 use hydracache::{
-    ClientAck, ClientOp, ClusterNode, ClusterNodeConfig, ClusterNodeId, LogicalDuration,
-    LogicalTime, OutboundClusterMessage, StorageOpKind,
+    ClientAck, ClientOp, ClusterNode, ClusterNodeConfig, ClusterNodeId, ConsistencyLevel,
+    EffectiveReplicationMap, LogicalDuration, LogicalTime, OutboundClusterMessage, RegionId,
+    Replicas, StorageOpKind,
 };
 
+use crate::snapshot::SIM_REGION;
 #[cfg(not(target_arch = "wasm32"))]
 use crate::SimRaftCluster;
 use crate::{
@@ -948,18 +950,47 @@ impl SimWorld {
         }
     }
 
-    /// Per-level satisfiability on this world's topology: every node is a
-    /// replica in one region, and only live (not crashed, disabled, or
-    /// isolated) nodes can acknowledge. Partitioned individual links are not
-    /// considered. See `crate::consistency` for the product-parity contract.
+    /// Per-level satisfiability on this world's topology, computed by the
+    /// product rules (`hydracache::ConsistencyLevel`, built for every target
+    /// since TD-0014): every node is a replica in one region, and only live
+    /// (not crashed, disabled, or isolated) nodes can acknowledge. Partitioned
+    /// individual links are not considered.
     fn consistency_views(&self) -> Vec<crate::snapshot::ConsistencyLevelView> {
-        let total = self.nodes.len();
+        let mut nodes = self.nodes.keys().cloned();
+        let primary = nodes
+            .next()
+            .expect("a simulated world always has at least one node");
+        let map = EffectiveReplicationMap::new(Replicas::new(primary, nodes.collect()));
+        let region = RegionId::new(SIM_REGION);
+        let topology = self
+            .nodes
+            .keys()
+            .map(|node| (node.clone(), region.clone()))
+            .collect::<BTreeMap<_, _>>();
         let live = self
             .live_node_ids()
-            .iter()
-            .filter(|node_id| self.nodes.contains_key(*node_id))
-            .count();
-        crate::consistency::consistency_level_views(total, live)
+            .into_iter()
+            .filter(|node_id| self.nodes.contains_key(node_id))
+            .collect::<BTreeSet<_>>();
+        SIM_CONSISTENCY_LEVELS
+            .into_iter()
+            .map(|level| {
+                let requirement = level.required_acks(&map, &topology, &region);
+                let verdict = level.validate(&map, &topology, &region, &live);
+                crate::snapshot::ConsistencyLevelView {
+                    level: consistency_level_name(level).to_owned(),
+                    total_replicas: requirement.total_replicas as u64,
+                    required_acks: requirement.required_total as u64,
+                    live_replicas: requirement
+                        .replicas
+                        .iter()
+                        .filter(|node| live.contains(*node))
+                        .count() as u64,
+                    satisfiable: verdict.is_ok(),
+                    reason: verdict.err().map(|error| error.reason),
+                }
+            })
+            .collect()
     }
 
     /// Serialize the canonical UI snapshot as JSON.
@@ -1387,6 +1418,27 @@ fn workload_result(ack: ClientAck) -> WorkloadResult {
 
 fn namespaced_key(namespace: &str, key: &str) -> String {
     format!("{namespace}:{key}")
+}
+
+/// Product consistency levels in the order the demo lists them.
+const SIM_CONSISTENCY_LEVELS: [ConsistencyLevel; 5] = [
+    ConsistencyLevel::One,
+    ConsistencyLevel::LocalQuorum,
+    ConsistencyLevel::Quorum,
+    ConsistencyLevel::EachQuorum,
+    ConsistencyLevel::All,
+];
+
+/// Snapshot name of a level. The match is exhaustive on purpose: a new product
+/// level stops this from compiling until it is named and listed above.
+fn consistency_level_name(level: ConsistencyLevel) -> &'static str {
+    match level {
+        ConsistencyLevel::One => "one",
+        ConsistencyLevel::LocalQuorum => "local_quorum",
+        ConsistencyLevel::Quorum => "quorum",
+        ConsistencyLevel::EachQuorum => "each_quorum",
+        ConsistencyLevel::All => "all",
+    }
 }
 
 fn subscriber_id(client: &str, namespace: &str) -> String {

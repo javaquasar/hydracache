@@ -4,8 +4,7 @@ use std::fmt;
 use serde::{Deserialize, Serialize};
 
 use crate::cluster::ClusterNodeId;
-use crate::grid::elasticity::RegionId;
-use crate::grid::{EffectiveReplicationMap, ReplicationConfig};
+use crate::replication_model::{EffectiveReplicationMap, RegionId, ReplicationConfig};
 
 /// Per-operation consistency level for grid reads, writes, and invalidations.
 #[derive(

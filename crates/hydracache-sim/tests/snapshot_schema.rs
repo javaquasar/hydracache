@@ -318,6 +318,7 @@ fn listed_invariant_names_match_the_checker_source() {
 
 // v8: per-level satisfiability comes from the product's ConsistencyLevel rules
 // on the simulator topology (every node a replica, live nodes acknowledge).
+// Since TD-0014 the simulator calls those rules directly in both builds.
 #[test]
 fn snapshot_v8_reports_product_consistency_levels() {
     fn level<'a>(
@@ -363,7 +364,11 @@ fn snapshot_v8_reports_product_consistency_levels() {
     assert!(level(&one_down, "quorum").satisfiable);
     assert!(!level(&one_down, "all").satisfiable);
     assert_eq!(level(&one_down, "all").live_replicas, 2);
-    assert!(level(&one_down, "all").reason.is_some());
+    // The reason is the product's own text (ConsistencyUnsatisfiable).
+    assert_eq!(
+        level(&one_down, "all").reason.as_deref(),
+        Some("requires 3 live acknowledgements from 3 replicas, only 2 are live")
+    );
 
     assert!(world.crash_node("node-1"));
     let two_down = world.snapshot();
@@ -376,4 +381,8 @@ fn snapshot_v8_reports_product_consistency_levels() {
             "{name}"
         );
     }
+    assert_eq!(
+        level(&two_down, "local_quorum").reason.as_deref(),
+        Some("regional quorum unsatisfied: local needs 2, has 1")
+    );
 }

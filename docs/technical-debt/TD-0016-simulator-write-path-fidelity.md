@@ -12,7 +12,7 @@ The simulator gets elections right: real raft-rs on native targets, a labelled m
 in wasm. Its data plane does not follow the product. The full comparison, with code
 references, is the gap register in
 [`docs/architecture/RAFT_CONTROL_PLANE.md`](../architecture/RAFT_CONTROL_PLANE.md#gap-register)
-(gaps G1–G7; G8 is TD-0014).
+(gaps G1–G7; G8 was TD-0014, now resolved).
 
 In short:
 
@@ -45,7 +45,7 @@ through the leader.
 ## Implementation Idea
 
 Follow "Target engine shape" in `docs/architecture/RAFT_CONTROL_PLANE.md`. Its first
-step is TD-0014. After that:
+step, TD-0014, is done. After that:
 
 - writes go through a sticky coordinator, the client's attached node;
 - clients are admitted with a simulated `ClientUpsert` that fails loud without a
@@ -60,7 +60,6 @@ step is TD-0014. After that:
 Any of:
 
 - demo work on the write path, replication, quorum or failover;
-- TD-0014 is closed (it removes the wasm blocker);
 - a runtime replicated-write path lands in the product (the simulator must then model
   that path rather than the primitives).
 

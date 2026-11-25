@@ -7,7 +7,6 @@
 #[cfg(not(target_arch = "wasm32"))]
 pub mod checkpoint;
 pub mod clock;
-pub mod consistency;
 pub mod control;
 pub mod election;
 pub mod invariants;
@@ -33,7 +32,6 @@ pub mod world;
 #[cfg(not(target_arch = "wasm32"))]
 pub use checkpoint::{run_checkpoint_rescale, CheckpointRescaleReport};
 pub use clock::SimClock;
-pub use consistency::{consistency_level_views, SIM_CONSISTENCY_LEVELS};
 pub use control::{
     ControlActionV1, ControlApplyError, ReplayScriptError, ReplayScriptV1, SimMode,
     MAX_REPLAY_ACTIONS, REPLAY_SCRIPT_VERSION,

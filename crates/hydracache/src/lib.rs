@@ -536,6 +536,7 @@ mod multitenancy;
 mod refresh;
 #[cfg(not(target_arch = "wasm32"))]
 mod removal_observer;
+mod replication_model;
 #[cfg(not(target_arch = "wasm32"))]
 mod security;
 #[cfg(not(target_arch = "wasm32"))]
@@ -628,11 +629,6 @@ pub use grid::conditional::{
     TombstoneGcError, TombstoneGcWatermark,
 };
 #[cfg(not(target_arch = "wasm32"))]
-pub use grid::consistency_level::{
-    AckRequirement, ConsistencyLevel, ConsistencyReadiness, ConsistencyUnsatisfiable, ReadOptions,
-    WriteOptions,
-};
-#[cfg(not(target_arch = "wasm32"))]
 pub use grid::convergence_staleness::{
     converge_replicated_values, resolve_session_read_mode, within_staleness_bound,
     BoundedStalenessMetrics, SessionReadMode, StalenessBound, StalenessDecision,
@@ -667,13 +663,13 @@ pub use grid::elasticity::{
     topology_from_member_metadata, validate_move_preserves_zone_quorum, AtomicInvalidationError,
     AutoRepairDecision, AutoRepairPolicy, BatchInvalidationState, CompatVersion,
     ControlPlaneSnapshot, HedgePolicy, HedgedReadPlan, InMemorySnapshotSink, InvalidateBatch,
-    InvalidationSaga, InvalidationTarget, MovePhase, NodeTopology, PartitionMove, RegionId,
-    RepairAction, RepairMode, ReplicaObservation, ReplicaScorer, ReplicaSelection,
-    RescaleCheckpointPhase, RescaleWithCheckpointPlan, ReshardPlan, ReshardPlanError,
-    SnapshotError, SnapshotSink, TieredValueStore, TopologyAuthority, UpgradeGuard,
-    UpgradeGuardError, UpgradeStep, ZoneAwareReplicaSet, ZoneAwareReplicationStrategy, ZoneId,
-    ZonePlacementReadiness, CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION,
-    NODE_TOPOLOGY_REGION_METADATA_KEY, NODE_TOPOLOGY_ZONE_METADATA_KEY,
+    InvalidationSaga, InvalidationTarget, MovePhase, NodeTopology, PartitionMove, RepairAction,
+    RepairMode, ReplicaObservation, ReplicaScorer, ReplicaSelection, RescaleCheckpointPhase,
+    RescaleWithCheckpointPlan, ReshardPlan, ReshardPlanError, SnapshotError, SnapshotSink,
+    TieredValueStore, TopologyAuthority, UpgradeGuard, UpgradeGuardError, UpgradeStep,
+    ZoneAwareReplicaSet, ZoneAwareReplicationStrategy, ZoneId, ZonePlacementReadiness,
+    CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION, NODE_TOPOLOGY_REGION_METADATA_KEY,
+    NODE_TOPOLOGY_ZONE_METADATA_KEY,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::failure_detector::{
@@ -775,10 +771,9 @@ pub use grid::{
     cluster_grid_metric_descriptors, diff_effective_maps, prepare_replicated_payload,
     replicated_slot_version, select_backup_promotion, AntiEntropyTask, BackupPromotion,
     ClusterGridCounters, ClusterGridDiagnostics, ClusterMetricDescriptor,
-    ClusterReplicationStrategy, EffectiveReplicationMap, HotCacheDirectory,
-    PartitionReplicaVersions, PromotionPhase, RebalancePlan, RebalanceTask, RebalanceTaskAck,
-    RedactReplicatedValue, RepairingTask, Replicas, ReplicatedSlot, ReplicatedValueSecurityPosture,
-    Replication, ReplicationConfig, ReplicationConfigError, ReplicationCryptoError,
+    ClusterReplicationStrategy, HotCacheDirectory, PartitionReplicaVersions, PromotionPhase,
+    RebalancePlan, RebalanceTask, RebalanceTaskAck, RedactReplicatedValue, RepairingTask,
+    ReplicatedSlot, ReplicatedValueSecurityPosture, Replication, ReplicationCryptoError,
     ReplicationKeyProvider, ReplicationPayload, SharedReplicationKeyProvider, TombstoneAdmission,
     TombstoneBudget, TombstoneTracker,
 };
@@ -818,6 +813,13 @@ pub use multitenancy::{
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use refresh::RefreshOptions;
+pub use replication_model::consistency_level::{
+    AckRequirement, ConsistencyLevel, ConsistencyReadiness, ConsistencyUnsatisfiable, ReadOptions,
+    WriteOptions,
+};
+pub use replication_model::{
+    EffectiveReplicationMap, RegionId, Replicas, ReplicationConfig, ReplicationConfigError,
+};
 #[cfg(not(target_arch = "wasm32"))]
 pub use security::{
     AtRestKeyProvider, AtRestSealer, CertificateBundle, CertificateRotationWindow, KeyMaterial,
