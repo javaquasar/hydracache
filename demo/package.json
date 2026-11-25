@@ -11,6 +11,7 @@
     "test": "npm run test:unit && npm run test:e2e"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@playwright/test": "1.57.0"
   }
 }

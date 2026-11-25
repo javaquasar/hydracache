@@ -78,6 +78,17 @@ enum SimInjectRequest {
         client: String,
         ns: String,
     },
+    AddClient {
+        client: String,
+        ns: String,
+    },
+    Unsubscribe {
+        client: String,
+        ns: String,
+    },
+    RemoveClient {
+        client: String,
+    },
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -233,6 +244,19 @@ fn apply_injection(
             client,
             ns,
         },
+        SimInjectRequest::AddClient { client, ns } => ControlActionV1::AddClient {
+            at_step,
+            client,
+            ns,
+        },
+        SimInjectRequest::Unsubscribe { client, ns } => ControlActionV1::Unsubscribe {
+            at_step,
+            client,
+            ns,
+        },
+        SimInjectRequest::RemoveClient { client } => {
+            ControlActionV1::RemoveClient { at_step, client }
+        }
     };
     world
         .apply_control_action(action)

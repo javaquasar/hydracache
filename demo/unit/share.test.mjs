@@ -124,6 +124,17 @@ describe("parseSeed", () => {
 describe("writeUrlState", () => {
   const snapshot = { seed: 5, step: 17 };
 
+  test("the guide step is shared from step 2 on and read back", () => {
+    const history = fakeHistory();
+    writeUrlState(history, snapshot, "default", "wasm", "", "", 4);
+    assert.equal(history.params().get("tourStep"), "4");
+    assert.equal(readInitialState(`?${history.params().toString()}`, ORIGIN).tourStep, 4);
+    const first = fakeHistory();
+    writeUrlState(first, snapshot, "default", "wasm", "", "", 1);
+    assert.equal(first.params().get("tourStep"), null);
+    assert.equal(readInitialState("?seed=5", ORIGIN).tourStep, 0);
+  });
+
   test("a plain run shares only seed, steps and scenario", () => {
     const history = fakeHistory();
     writeUrlState(history, snapshot, "default", "wasm", "", JSON.stringify({

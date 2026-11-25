@@ -3,9 +3,19 @@
 // the timeline cannot rewind into the preset's own setup.
 //
 // Each tour step has `text` and optional `actions` the Guide panel can run.
-// Action targets may be "$leader" (the current leader) or "$crashed" (the node
-// the tour crashed last). Tour text describes what to look at; it never claims
-// an outcome the engine has not produced.
+// Action targets may be "$leader" (the current leader), "$crashed" (the node
+// the tour crashed last) or, for restart, "$all_crashed". Tour text describes
+// what to look at; it never claims an outcome the engine has not produced.
+//
+// Optional per step:
+// - `report`: what to read back from the snapshot after "Do it" (insight.js
+//   tourOutcome); the guide shows it and marks the step done, or says plainly
+//   that the claim did not happen.
+// - `focus`: `{ tab, target }`, the side-panel tab to open and the element to
+//   spotlight where the result shows.
+// - `predict`: `{ question, options: [{ label, when }] }`, asked before the
+//   action; the right answer is whichever `when` holds afterwards
+//   (insight.js predictionHolds), never a hard-coded key.
 export const SCENARIOS = [
   {
     name: "default",
@@ -16,29 +26,67 @@ export const SCENARIOS = [
       {
         text: "A fresh three-node cluster starts without a leader. Run until one is elected and watch the vote and heartbeat signals.",
         actions: [{ type: "until", condition: "leader" }],
+        report: { kind: "leader" },
+        focus: { tab: "cluster", target: "#cluster-graph" },
       },
       {
         text: "Subscribe client-a to the profiles namespace. Subscribers receive committed cache events.",
         actions: [{ type: "subscribe", client: "client-a", ns: "profiles" }],
+        report: { kind: "subscribed", client: "client-a", ns: "profiles" },
+        focus: { tab: "clients", target: "[data-testid='subscribers-panel']" },
       },
       {
         text: "Push profile-42. The write commits through the leader, replicates to every node, and is delivered to the subscriber. Compare the checksums in the Keys panel.",
         actions: [{ type: "push", client: "client-a", ns: "profiles", key: "profile-42", value: "fresh" }],
+        report: { kind: "delivered", client: "client-a", ns: "profiles", key: "profile-42" },
+        focus: { tab: "data", target: "[data-testid='keys-panel']" },
       },
       {
-        text: "Crash the current leader. Two of three nodes are still a quorum.",
-        actions: [{ type: "crash", node: "$leader" }],
-      },
-      {
-        text: "Run until a leader exists again. The timeline records the crash and the observed leader change; the verdict panel shows what was checked.",
-        actions: [{ type: "until", condition: "leader" }],
-      },
-      {
-        text: "Restart the crashed node and run until the replicas agree on every sampled key.",
+        text: "Crash the current leader and run 20 steps. The timeline records the crash and any leader change.",
+        predict: {
+          question: "Two of three nodes are left. What happens?",
+          options: [
+            { label: "They elect a new leader", when: "leader" },
+            { label: "The cluster stops: no leader", when: "no_leader" },
+          ],
+        },
         actions: [
-          { type: "restart", node: "$crashed" },
-          { type: "until", condition: "agree" },
+          { type: "crash", node: "$leader" },
+          { type: "run", steps: 20 },
         ],
+        report: { kind: "leader" },
+        focus: { tab: "cluster", target: "#timeline-marks" },
+      },
+      {
+        text: "Now crash the new leader too and run 20 steps. Watch the Consistency panel on the Data tab.",
+        predict: {
+          question: "One of three nodes is left. What happens?",
+          options: [
+            { label: "It becomes leader on its own", when: "leader" },
+            { label: "No leader: one node is not a quorum", when: "no_leader" },
+          ],
+        },
+        actions: [
+          { type: "crash", node: "$leader" },
+          { type: "run", steps: 20 },
+        ],
+        report: { kind: "no_leader" },
+        focus: { tab: "data", target: "[data-testid='consistency-panel']" },
+      },
+      {
+        text: "Restart both crashed nodes and run until a leader is elected again.",
+        actions: [
+          { type: "restart", node: "$all_crashed" },
+          { type: "until", condition: "leader" },
+        ],
+        report: { kind: "leader" },
+        focus: { tab: "cluster", target: "#cluster-graph" },
+      },
+      {
+        text: "Run until the replicas agree on every sampled key.",
+        actions: [{ type: "until", condition: "agree" }],
+        report: { kind: "agree" },
+        focus: { tab: "data", target: "[data-testid='keys-panel']" },
       },
     ],
   },
@@ -57,6 +105,8 @@ export const SCENARIOS = [
           { type: "workload", enabled: true },
           { type: "run", steps: 10 },
         ],
+        report: { kind: "committed" },
+        focus: { tab: "cluster", target: "[data-testid='progress-panel']" },
       },
       {
         text: "Heal both partitioned links and run until the replicas agree.",
@@ -65,6 +115,8 @@ export const SCENARIOS = [
           { type: "heal", from: "node-0", to: "node-2" },
           { type: "until", condition: "agree" },
         ],
+        report: { kind: "agree" },
+        focus: { tab: "data", target: "[data-testid='keys-panel']" },
       },
     ],
   },
@@ -80,6 +132,8 @@ export const SCENARIOS = [
       {
         text: "Run the cluster on for 8 steps, then use the timeline to rewind: every earlier step is rebuilt exactly from the seed.",
         actions: [{ type: "run", steps: 8 }],
+        report: { kind: "committed" },
+        focus: { tab: "cluster", target: "#timeline-input" },
       },
       {
         text: "Try it live: crash the current leader and run until a new one is elected.",
@@ -87,6 +141,8 @@ export const SCENARIOS = [
           { type: "crash", node: "$leader" },
           { type: "until", condition: "leader" },
         ],
+        report: { kind: "leader" },
+        focus: { tab: "cluster", target: "#cluster-graph" },
       },
     ],
   },
@@ -105,6 +161,8 @@ export const SCENARIOS = [
           { type: "partition", from: "node-0", to: "node-2" },
           { type: "run", steps: 6 },
         ],
+        report: { kind: "diverged" },
+        focus: { tab: "data", target: "[data-testid='keys-panel']" },
       },
       {
         text: "Heal it and run until the replicas agree again.",
@@ -112,6 +170,8 @@ export const SCENARIOS = [
           { type: "heal", from: "node-0", to: "node-2" },
           { type: "until", condition: "agree" },
         ],
+        report: { kind: "agree" },
+        focus: { tab: "data", target: "[data-testid='keys-panel']" },
       },
     ],
   },
@@ -130,6 +190,8 @@ export const SCENARIOS = [
           { type: "restart", node: "node-1" },
           { type: "until", condition: "leader" },
         ],
+        report: { kind: "leader" },
+        focus: { tab: "data", target: "[data-testid='consistency-panel']" },
       },
     ],
   },
@@ -145,6 +207,8 @@ export const SCENARIOS = [
       {
         text: "Run until the replicas agree, then compare checksums in the Keys panel.",
         actions: [{ type: "until", condition: "agree" }],
+        report: { kind: "agree" },
+        focus: { tab: "data", target: "[data-testid='keys-panel']" },
       },
     ],
   },

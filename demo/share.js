@@ -41,6 +41,8 @@ export function readInitialState(search, pageOrigin = "") {
     apiBase: api.apiBase,
     apiError: api.error,
     script,
+    // 1-based guide step to open (a link to "this step of the tour").
+    tourStep: readPositiveInt(params.get("tourStep"), 0),
     warnings,
   };
 }
@@ -87,6 +89,7 @@ export function writeUrlState(
   engine = DEFAULT_ENGINE,
   apiBase = "",
   replayScriptJson = "",
+  tourStep = 0,
 ) {
   if (!history || !snapshot) {
     return;
@@ -106,6 +109,9 @@ export function writeUrlState(
   if (shouldShareReplayScript(replayScript)) {
     replayScript.target_step = snapshot.step;
     params.set("script", encodeReplayScript(replayScript));
+  }
+  if (Number.isInteger(tourStep) && tourStep > 1) {
+    params.set("tourStep", String(tourStep));
   }
   history.replaceState(null, "", `?${params.toString()}`);
 }

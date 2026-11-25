@@ -53,6 +53,20 @@ struct LinkState {
     faults: VecDeque<LinkFault>,
 }
 
+/// Messages one directed link dropped, by cause. A dropped message used to
+/// leave no trace; these counters make refused traffic observable.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct LinkDrops {
+    /// Refused at send because the link was partitioned.
+    pub cut_at_send: u64,
+    /// Discarded by an injected link fault (`drop_next` and similar).
+    pub injected: u64,
+    /// In flight when the link was cut; discarded on delivery.
+    pub cut_at_delivery: u64,
+    /// Delivered to a node that was crashed, disabled or isolated.
+    pub target_down: u64,
+}
+
 /// Deterministic packet simulator.
 #[derive(Debug, Clone)]
 pub struct SimNetwork {
@@ -61,6 +75,7 @@ pub struct SimNetwork {
     links: BTreeMap<LinkKey, LinkState>,
     partitions: BTreeSet<LinkKey>,
     next_packet_id: u64,
+    drops: BTreeMap<LinkKey, LinkDrops>,
 }
 
 impl SimNetwork {
@@ -72,7 +87,27 @@ impl SimNetwork {
             links: BTreeMap::new(),
             partitions: BTreeSet::new(),
             next_packet_id: 1,
+            drops: BTreeMap::new(),
         }
+    }
+
+    /// Messages the directed link `from -> to` has dropped so far, by cause.
+    pub fn link_drops(&self, from: &ClusterNodeId, to: &ClusterNodeId) -> LinkDrops {
+        self.drops
+            .get(&(from.clone(), to.clone()))
+            .copied()
+            .unwrap_or_default()
+    }
+
+    /// Record a message delivered to a node that could not take it (crashed,
+    /// disabled or isolated); the world decides that, the network counts it.
+    pub fn record_target_down(&mut self, from: &ClusterNodeId, to: &ClusterNodeId) {
+        let drops = self.drops.entry((from.clone(), to.clone())).or_default();
+        drops.target_down = drops.target_down.saturating_add(1);
+    }
+
+    fn count_drop(&mut self, from: &ClusterNodeId, to: &ClusterNodeId, cause: fn(&mut LinkDrops)) {
+        cause(self.drops.entry((from.clone(), to.clone())).or_default());
     }
 
     /// Queue a fault for the next packet on a directed link.
@@ -112,12 +147,22 @@ impl SimNetwork {
         now: LogicalTime,
     ) {
         if self.partitions.contains(&(from.clone(), to.clone())) {
+            self.count_drop(&from, &to, |drops| {
+                drops.cut_at_send = drops.cut_at_send.saturating_add(1);
+            });
             return;
         }
 
         match self.pop_link_fault(from.clone(), to.clone()) {
-            Some(LinkFault::Drop) | Some(LinkFault::PartitionAsym) => {}
+            Some(LinkFault::Drop) | Some(LinkFault::PartitionAsym) => {
+                self.count_drop(&from, &to, |drops| {
+                    drops.injected = drops.injected.saturating_add(1);
+                });
+            }
             Some(LinkFault::PartitionSym) => {
+                self.count_drop(&from, &to, |drops| {
+                    drops.injected = drops.injected.saturating_add(1);
+                });
                 self.partition((&[from], &[to]), PartitionSymmetry::Symmetric);
             }
             Some(LinkFault::Duplicate) => {
@@ -154,10 +199,14 @@ impl SimNetwork {
         let mut delivered = Vec::with_capacity(ready_keys.len());
         for key in ready_keys {
             if let Some(packet) = self.in_flight.remove(&key) {
-                if !self
+                if self
                     .partitions
                     .contains(&(packet.from.clone(), packet.to.clone()))
                 {
+                    self.count_drop(&packet.from, &packet.to, |drops| {
+                        drops.cut_at_delivery = drops.cut_at_delivery.saturating_add(1);
+                    });
+                } else {
                     delivered.push((packet.from, packet.to, packet.message));
                 }
             }

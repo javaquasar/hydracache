@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Current stable simulator snapshot JSON schema version.
-pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 8;
+pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 9;
 
 /// Region every simulator node reports; the simulator models one region.
 pub(crate) const SIM_REGION: &str = "local";
@@ -174,12 +174,31 @@ pub struct NodeView {
     pub commit_index: u64,
     /// Applied logical operation index visible to the simulator.
     pub applied_index: u64,
+    /// Write, invalidate and flush operations this node itself has applied
+    /// (schema 9). Unlike `commit_index`, which is cluster-wide, this lags on
+    /// a node that missed writes (crashed, isolated, partitioned) and catches
+    /// up when the node copies state on restart or rejoin.
+    pub applied_writes: u64,
     /// Whether the node is currently up.
     pub up: bool,
     /// Whether the node is currently crashed.
     pub crashed: bool,
     /// Whether the node is administratively disabled in the simulator.
     pub disabled: bool,
+}
+
+/// Messages one directed link dropped, by cause (schema 9). Cumulative over
+/// the run; a cut link that keeps refusing traffic shows `cut_at_send` rising.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LinkDropsView {
+    /// Refused at send because the link was partitioned.
+    pub cut_at_send: u64,
+    /// Discarded by an injected link fault (`drop_next` and similar).
+    pub injected: u64,
+    /// In flight when the link was cut; discarded on delivery.
+    pub cut_at_delivery: u64,
+    /// Delivered to a node that was crashed, disabled or isolated.
+    pub target_down: u64,
 }
 
 /// UI directed-link projection.
@@ -193,6 +212,8 @@ pub struct LinkView {
     pub state: LinkStateView,
     /// Delay in milliseconds when [`LinkStateView::Delayed`].
     pub delay_millis: Option<u64>,
+    /// Messages this directed link has dropped so far, by cause (schema 9).
+    pub drops: LinkDropsView,
     /// Packets currently in flight on this directed link.
     pub in_flight: u32,
 }
@@ -278,6 +299,10 @@ pub struct KeyReplicaView {
     pub version: u64,
     /// Logical epoch. The 0.44 simulator does not model storage epochs yet.
     pub epoch: u64,
+    /// Step at which this node applied the value it holds (schema 9): its own
+    /// write or invalidate, a replicated one, or a catch-up copy. `None` when
+    /// the node has no value or got it before the step was recorded.
+    pub applied_at_step: Option<u64>,
 }
 
 /// Manual-mode client actor projection.
@@ -436,6 +461,7 @@ pub(crate) fn node_view(
     id: String,
     committed_entries: u64,
     applied_entries: u64,
+    applied_writes: u64,
     crashed: bool,
     disabled: bool,
     election: Option<&ElectionNodeState>,
@@ -462,6 +488,7 @@ pub(crate) fn node_view(
         votes_received,
         commit_index: committed_entries,
         applied_index: applied_entries,
+        applied_writes,
         up: !crashed && !disabled,
         crashed,
         disabled,
@@ -474,6 +501,7 @@ pub(crate) fn link_view(
     can_deliver: bool,
     delay: Option<u64>,
     in_flight: usize,
+    drops: crate::network::LinkDrops,
 ) -> LinkView {
     let state = if !can_deliver {
         LinkStateView::Partitioned
@@ -487,6 +515,12 @@ pub(crate) fn link_view(
         to,
         state,
         delay_millis: delay,
+        drops: LinkDropsView {
+            cut_at_send: drops.cut_at_send,
+            injected: drops.injected,
+            cut_at_delivery: drops.cut_at_delivery,
+            target_down: drops.target_down,
+        },
         in_flight: in_flight.min(u32::MAX as usize) as u32,
     }
 }
@@ -559,7 +593,7 @@ fn message_view_from_election(signal: &ElectionSignal, now: LogicalTime) -> Mess
 }
 
 pub(crate) fn key_views_from_storage(
-    observations: BTreeMap<String, BTreeMap<String, u64>>,
+    observations: BTreeMap<String, BTreeMap<String, (u64, Option<u64>)>>,
 ) -> Vec<KeyView> {
     observations
         .into_iter()
@@ -567,10 +601,11 @@ pub(crate) fn key_views_from_storage(
             key,
             replicas: replicas
                 .into_iter()
-                .map(|(node_id, version)| KeyReplicaView {
+                .map(|(node_id, (version, applied_at_step))| KeyReplicaView {
                     node_id,
                     version,
                     epoch: 0,
+                    applied_at_step,
                 })
                 .collect(),
         })
@@ -634,6 +669,7 @@ fn keys_from_history(history: &History) -> Vec<KeyView> {
                     node_id: "history".to_owned(),
                     version,
                     epoch: 0,
+                    applied_at_step: None,
                 }],
             }
         })

@@ -32,9 +32,10 @@ test("copy_reproducer_roundtrips_mode_and_actions", async ({ page, browser }) =>
   await expect(page.getByTestId("snapshot-hash")).toContainText(/^snapshot /);
   await page.getByTestId("mode-select").selectOption("mixed");
   await expect(page.getByTestId("intervention-status")).toContainText("mixed");
+  await page.getByTestId("tab-clients").click();
   await page.getByTestId("subscribe-button").click();
   await page.getByTestId("push-event-button").click();
-  await expect(page.getByTestId("subscribers-panel")).toContainText("client-a@profiles");
+  await expect(page.getByTestId("subscribers-panel")).toContainText("reader-1@profiles");
   await page.getByTestId("copy-reproducer").click();
 
   await expect(page.getByTestId("copy-status")).toContainText("script=");
@@ -45,7 +46,8 @@ test("copy_reproducer_roundtrips_mode_and_actions", async ({ page, browser }) =>
   await replayed.goto(replayUrl ?? "");
   await expect(replayed.getByTestId("intervention-status")).toContainText("mixed");
   await expect(replayed.getByTestId("intervention-status")).toContainText("3 replay action");
-  await expect(replayed.getByTestId("subscribers-panel")).toContainText("client-a@profiles");
+  await replayed.getByTestId("tab-clients").click();
+  await expect(replayed.getByTestId("subscribers-panel")).toContainText("reader-1@profiles");
   await replayed.close();
 });
 
@@ -71,6 +73,7 @@ test("copy_reproducer_replays_faults_to_identical_snapshot", async ({ page, brow
   await replayed.goto(replayUrl ?? "");
   await expect(replayed.getByTestId("snapshot-hash")).toHaveText(liveHash ?? "");
   await expect(replayed.getByTestId("intervention-status")).toContainText("3 replay action");
+  await replayed.getByTestId("tab-clients").click();
   await expect(replayed.getByTestId("workload-toggle")).not.toBeChecked();
   await replayed.close();
 });

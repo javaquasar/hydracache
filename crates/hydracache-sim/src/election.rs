@@ -681,6 +681,42 @@ impl ElectionSignalKind {
     }
 }
 
+/// Which directed links can deliver during one election step.
+struct Links<'a> {
+    blocked: &'a BTreeSet<(ClusterNodeId, ClusterNodeId)>,
+}
+
+impl Links<'_> {
+    fn can_send(&self, from: &ClusterNodeId, to: &ClusterNodeId) -> bool {
+        !self.blocked.contains(&(from.clone(), to.clone()))
+    }
+
+    /// `node` plus every live peer connected to it in both directions: the nodes
+    /// a vote or a heartbeat round from `node` can complete with.
+    fn electorate(
+        &self,
+        node: &ClusterNodeId,
+        live_nodes: &BTreeSet<ClusterNodeId>,
+    ) -> BTreeSet<ClusterNodeId> {
+        live_nodes
+            .iter()
+            .filter(|peer| {
+                *peer == node || (self.can_send(node, peer) && self.can_send(peer, node))
+            })
+            .cloned()
+            .collect()
+    }
+
+    fn reaches_quorum(
+        &self,
+        node: &ClusterNodeId,
+        live_nodes: &BTreeSet<ClusterNodeId>,
+        quorum: usize,
+    ) -> bool {
+        self.electorate(node, live_nodes).len() >= quorum
+    }
+}
+
 #[derive(Debug, Clone)]
 struct ElectionNode {
     fsm: NodeFsm,
@@ -840,8 +876,31 @@ impl ElectionDriver {
         }
     }
 
-    /// Advance election state by one logical simulator step.
+    /// Advance election state by one logical simulator step over a fully
+    /// connected network (no partitioned links).
     pub fn step(&mut self, logical_step: u64, live_nodes: &BTreeSet<ClusterNodeId>) {
+        self.step_with_partitions(logical_step, live_nodes, &BTreeSet::new());
+    }
+
+    /// Advance election state by one logical simulator step, honouring the
+    /// directed links that cannot deliver (`blocked` holds `(from, to)` pairs).
+    ///
+    /// The model mirrors what the network allows, as the Raft backend does:
+    /// - a signal from A to B exists only when A -> B is not blocked;
+    /// - a vote or a heartbeat round needs both directions, so only peers
+    ///   connected both ways count towards a quorum;
+    /// - a leader that no longer reaches a quorum steps down (check-quorum);
+    /// - a node campaigns only when it reaches a quorum (pre-vote), so a node cut
+    ///   off by partitions never wins and never stalls the rest of the cluster.
+    ///
+    /// With no blocked links this is exactly [`Self::step`].
+    pub fn step_with_partitions(
+        &mut self,
+        logical_step: u64,
+        live_nodes: &BTreeSet<ClusterNodeId>,
+        blocked: &BTreeSet<(ClusterNodeId, ClusterNodeId)>,
+    ) {
+        let links = Links { blocked };
         self.mark_unavailable_nodes(live_nodes, logical_step);
 
         if self.cluster.phase() == FormationPhase::Unformed && !live_nodes.is_empty() {
@@ -872,18 +931,33 @@ impl ElectionDriver {
 
         if let Some(leader) = self.leader.clone() {
             if live_nodes.contains(&leader) {
-                self.heartbeat_from_leader(&leader, live_nodes, logical_step);
-                return;
+                if links.reaches_quorum(&leader, live_nodes, quorum) {
+                    self.heartbeat_from_leader(&leader, live_nodes, &links, logical_step);
+                    return;
+                }
+                // Alive but partitioned away from a quorum: step down.
+                self.apply_node(&leader, ClusterFsmEvent::LeaderLost, logical_step);
+                if let Some(node) = self.nodes.get_mut(&leader) {
+                    node.clear_vote();
+                }
+                self.leader = None;
+                self.apply_cluster(ClusterFsmEvent::LeaderLost, logical_step);
+                self.trace.push(format!(
+                    "election:{logical_step}:leader-lost:{leader}:no-quorum-reachable"
+                ));
+            } else {
+                self.leader = None;
+                self.apply_cluster(ClusterFsmEvent::LeaderLost, logical_step);
+                self.trace
+                    .push(format!("election:{logical_step}:leader-lost:{leader}"));
             }
-            self.leader = None;
-            self.apply_cluster(ClusterFsmEvent::LeaderLost, logical_step);
-            self.trace
-                .push(format!("election:{logical_step}:leader-lost:{leader}"));
         }
 
         if let Some(candidate) = self.pending_candidate.clone() {
-            if live_nodes.contains(&candidate) {
-                self.elect(candidate, live_nodes, logical_step);
+            if live_nodes.contains(&candidate)
+                && links.reaches_quorum(&candidate, live_nodes, quorum)
+            {
+                self.elect(candidate, live_nodes, &links, logical_step);
             } else {
                 self.pending_candidate = None;
                 self.apply_cluster(ClusterFsmEvent::LeaderLost, logical_step);
@@ -891,8 +965,8 @@ impl ElectionDriver {
             return;
         }
 
-        if let Some(candidate) = self.due_candidate(logical_step, live_nodes) {
-            self.start_election(candidate, live_nodes, logical_step);
+        if let Some(candidate) = self.due_candidate(logical_step, live_nodes, &links, quorum) {
+            self.start_election(candidate, live_nodes, &links, logical_step);
         }
     }
 
@@ -900,9 +974,13 @@ impl ElectionDriver {
         &self,
         logical_step: u64,
         live_nodes: &BTreeSet<ClusterNodeId>,
+        links: &Links<'_>,
+        quorum: usize,
     ) -> Option<ClusterNodeId> {
         live_nodes
             .iter()
+            // Pre-vote: a node that cannot reach a quorum does not campaign.
+            .filter(|node_id| links.reaches_quorum(node_id, live_nodes, quorum))
             .filter(|node_id| {
                 // Only nodes that are actually part of the formation may campaign.
                 // A `Disconnected` (e.g. freshly added, not-yet-integrated) node can
@@ -928,12 +1006,15 @@ impl ElectionDriver {
         &mut self,
         candidate: ClusterNodeId,
         live_nodes: &BTreeSet<ClusterNodeId>,
+        links: &Links<'_>,
         logical_step: u64,
     ) {
         self.apply_cluster(ClusterFsmEvent::ElectionTimeout, logical_step);
         let term = self.term();
         self.signals.clear();
-        for node_id in live_nodes {
+        // Only the candidate and the peers its vote request reaches take part.
+        let electorate = links.electorate(&candidate, live_nodes);
+        for node_id in &electorate {
             self.apply_node(node_id, ClusterFsmEvent::ElectionTimeout, logical_step);
             if let Some(node) = self.nodes.get_mut(node_id) {
                 node.set_term(term);
@@ -965,21 +1046,23 @@ impl ElectionDriver {
         &mut self,
         candidate: ClusterNodeId,
         live_nodes: &BTreeSet<ClusterNodeId>,
+        links: &Links<'_>,
         logical_step: u64,
     ) {
         let term = self.term();
         self.signals.clear();
+        let electorate = links.electorate(&candidate, live_nodes);
         self.apply_node(&candidate, ClusterFsmEvent::VoteQuorum, logical_step);
-        for node_id in live_nodes {
+        for node_id in &electorate {
             if let Some(node) = self.nodes.get_mut(node_id) {
                 node.set_term(term);
                 node.observe_vote(candidate.clone(), usize::from(*node_id == candidate));
             }
         }
         if let Some(winner) = self.nodes.get_mut(&candidate) {
-            winner.observe_vote(candidate.clone(), live_nodes.len());
+            winner.observe_vote(candidate.clone(), electorate.len());
         }
-        for node_id in live_nodes {
+        for node_id in &electorate {
             if *node_id != candidate {
                 self.apply_node(node_id, ClusterFsmEvent::LeaderHeartbeat, logical_step);
             }
@@ -989,7 +1072,7 @@ impl ElectionDriver {
         self.pending_candidate = None;
         self.trace.push(format!(
             "election:{logical_step}:leader:{candidate}:term:{term}:votes:{}:source:{}",
-            live_nodes.len(),
+            electorate.len(),
             self.source
         ));
     }
@@ -998,24 +1081,31 @@ impl ElectionDriver {
         &mut self,
         leader: &ClusterNodeId,
         live_nodes: &BTreeSet<ClusterNodeId>,
+        links: &Links<'_>,
         logical_step: u64,
     ) {
         self.signals.clear();
         let term = self.term();
+        let votes = links.electorate(leader, live_nodes).len();
         if let Some(node) = self.nodes.get_mut(leader) {
-            node.observe_vote(leader.clone(), live_nodes.len());
+            node.observe_vote(leader.clone(), votes);
         }
         for node_id in live_nodes {
-            if node_id != leader {
-                self.apply_node(node_id, ClusterFsmEvent::LeaderHeartbeat, logical_step);
-                self.push_signal(
-                    leader.clone(),
-                    node_id.clone(),
-                    ElectionSignalKind::LeaderHeartbeat,
-                    term,
-                );
-                // Follower -> leader acknowledgement, so steady-state traffic is
-                // visibly bidirectional instead of only emanating from the leader.
+            // A heartbeat only reaches a follower over an open leader -> follower
+            // link; the acknowledgement also needs the reverse link.
+            if node_id == leader || !links.can_send(leader, node_id) {
+                continue;
+            }
+            self.apply_node(node_id, ClusterFsmEvent::LeaderHeartbeat, logical_step);
+            self.push_signal(
+                leader.clone(),
+                node_id.clone(),
+                ElectionSignalKind::LeaderHeartbeat,
+                term,
+            );
+            // Follower -> leader acknowledgement, so steady-state traffic is
+            // visibly bidirectional instead of only emanating from the leader.
+            if links.can_send(node_id, leader) {
                 self.push_signal(
                     node_id.clone(),
                     leader.clone(),
@@ -1421,5 +1511,158 @@ mod node_lifecycle_tests {
             NodeFsmState::Follower,
             "restarted node must return to follower"
         );
+    }
+
+    // --- Partition-aware model (step_with_partitions) ---------------------
+
+    fn cut(pairs: &[(&str, &str)]) -> BTreeSet<(ClusterNodeId, ClusterNodeId)> {
+        pairs
+            .iter()
+            .flat_map(|(a, b)| [(nid(a), nid(b)), (nid(b), nid(a))])
+            .collect()
+    }
+
+    fn crosses(driver: &ElectionDriver, a: &ClusterNodeId, b: &ClusterNodeId) -> bool {
+        driver.snapshot().signals.iter().any(|signal| {
+            (&signal.from == a && &signal.to == b) || (&signal.from == b && &signal.to == a)
+        })
+    }
+
+    // No blocked links must reproduce `step` exactly: same trace, same signals.
+    #[test]
+    fn empty_partition_set_matches_plain_step() {
+        let members = live(&["node-0", "node-1", "node-2", "node-3", "node-4"]);
+        let mut plain = ElectionDriver::new(23, members.clone());
+        let mut aware = ElectionDriver::new(23, members.clone());
+        for step in 0..40 {
+            plain.step(step, &members);
+            aware.step_with_partitions(step, &members, &BTreeSet::new());
+        }
+        assert_eq!(plain.trace(), aware.trace());
+        assert_eq!(plain.snapshot().signals, aware.snapshot().signals);
+    }
+
+    // A cut link carries no model signal; the leader keeps a 2-of-3 quorum.
+    #[test]
+    fn signals_never_cross_a_partitioned_link() {
+        let members = live(&["node-0", "node-1", "node-2"]);
+        let mut driver = ElectionDriver::new(7, members.clone());
+        run_to_leader(&mut driver, &members);
+        let leader = driver.leader().cloned().expect("leader");
+        let follower = members
+            .iter()
+            .find(|node| **node != leader)
+            .cloned()
+            .expect("follower");
+
+        let blocked = cut(&[(leader.as_str(), follower.as_str())]);
+        for step in 30..40 {
+            driver.step_with_partitions(step, &members, &blocked);
+            assert!(
+                !crosses(&driver, &leader, &follower),
+                "signal crossed the cut at step {step}"
+            );
+        }
+        assert_eq!(driver.leader(), Some(&leader), "2 of 3 is still a quorum");
+        assert!(
+            !driver.snapshot().signals.is_empty(),
+            "the open links still carry heartbeats"
+        );
+    }
+
+    // A one-way cut stops the heartbeat in that direction and the ack that
+    // would answer it; the reverse direction alone carries nothing.
+    #[test]
+    fn one_way_cut_blocks_the_heartbeat_and_its_ack() {
+        let members = live(&["node-0", "node-1", "node-2"]);
+        let mut driver = ElectionDriver::new(7, members.clone());
+        run_to_leader(&mut driver, &members);
+        let leader = driver.leader().cloned().expect("leader");
+        let follower = members
+            .iter()
+            .find(|node| **node != leader)
+            .cloned()
+            .expect("follower");
+
+        let blocked = BTreeSet::from([(leader.clone(), follower.clone())]);
+        driver.step_with_partitions(30, &members, &blocked);
+        assert!(!crosses(&driver, &leader, &follower));
+        assert_eq!(driver.leader(), Some(&leader));
+    }
+
+    // A live leader cut off from every peer steps down; the connected majority
+    // elects a new leader, and the cut-off node never campaigns.
+    #[test]
+    fn leader_cut_off_from_quorum_steps_down_and_majority_reelects() {
+        let members = live(&["node-0", "node-1", "node-2"]);
+        let mut driver = ElectionDriver::new(7, members.clone());
+        run_to_leader(&mut driver, &members);
+        let old = driver.leader().cloned().expect("leader");
+        let others = members
+            .iter()
+            .filter(|node| **node != old)
+            .collect::<Vec<_>>();
+        let blocked = cut(&[
+            (old.as_str(), others[0].as_str()),
+            (old.as_str(), others[1].as_str()),
+        ]);
+
+        let before = driver.trace().len();
+        driver.step_with_partitions(30, &members, &blocked);
+        assert_eq!(
+            driver.leader(),
+            None,
+            "a leader without a reachable quorum steps down"
+        );
+        assert!(driver
+            .trace()
+            .iter()
+            .any(|line| line.ends_with(&format!("leader-lost:{old}:no-quorum-reachable"))));
+
+        let mut step = 31;
+        while driver.leader().is_none() && step < 90 {
+            driver.step_with_partitions(step, &members, &blocked);
+            assert!(
+                !driver
+                    .snapshot()
+                    .signals
+                    .iter()
+                    .any(|signal| signal.from == old || signal.to == old),
+                "the cut-off node must not send or receive at step {step}"
+            );
+            step += 1;
+        }
+        let new = driver
+            .leader()
+            .cloned()
+            .expect("the connected majority re-elects");
+        assert_ne!(new, old);
+        let campaigned = format!(":candidate:{old}:");
+        assert!(
+            !driver.trace()[before..]
+                .iter()
+                .any(|line| line.contains(&campaigned)),
+            "the cut-off node must not campaign"
+        );
+    }
+
+    // Cut into 1 + 1 + 1, nobody reaches a quorum: no leader, no votes.
+    #[test]
+    fn fully_cut_cluster_elects_nobody() {
+        let members = live(&["node-0", "node-1", "node-2"]);
+        let mut driver = ElectionDriver::new(7, members.clone());
+        let blocked = cut(&[
+            ("node-0", "node-1"),
+            ("node-0", "node-2"),
+            ("node-1", "node-2"),
+        ]);
+        for step in 0..60 {
+            driver.step_with_partitions(step, &members, &blocked);
+            assert!(
+                driver.snapshot().signals.is_empty(),
+                "no link is open at step {step}"
+            );
+        }
+        assert_eq!(driver.leader(), None);
     }
 }

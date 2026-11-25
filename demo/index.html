@@ -3,17 +3,36 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
     <title>HydraCache Cluster Simulator</title>
+    <meta
+      name="description"
+      content="Run the real hydracache-sim engine in your browser: partition links, crash nodes and watch the invariant checker's verdict."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="HydraCache" />
+    <meta property="og:title" content="HydraCache Cluster Simulator" />
+    <meta
+      property="og:description"
+      content="Run the real hydracache-sim engine in your browser: partition links, crash nodes and watch the invariant checker's verdict."
+    />
+    <meta property="og:url" content="https://javaquasar.github.io/hydracache/demo/" />
+    <meta property="og:image" content="https://javaquasar.github.io/hydracache/demo/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The simulator with a three-node cluster, an elected leader and the verdict: invariants hold." />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
     <main class="shell" data-testid="demo-shell" aria-busy="true">
       <header class="topbar glass-panel">
-        <div>
+        <div class="title-block">
           <h1>HydraCache Cluster Simulator</h1>
-          <p id="engine-banner" data-testid="engine-banner">
-            This runs the real hydracache-sim engine. Verdicts are produced by the actual invariant checker.
+          <p class="tagline">
+            Runs the real hydracache-sim engine in your browser. Verdicts are produced by the actual invariant checker.
           </p>
+          <p id="engine-banner" class="run-facts" data-testid="engine-banner">loading the engine…</p>
           <p
             id="action-notice"
             class="action-notice"
@@ -27,232 +46,488 @@
           <div id="verdict" class="verdict warn" data-testid="verdict" role="status" aria-live="polite">
             loading the simulator engine…
           </div>
-          <div
-            id="election-source-chip"
-            class="source-chip"
-            data-testid="election-source-chip"
-            aria-label="Election source"
-          >
-            unknown
+          <div class="status-row">
+            <div
+              id="election-source-chip"
+              class="source-chip"
+              data-testid="election-source-chip"
+              aria-label="Election source"
+            >
+              unknown
+            </div>
+            <button
+              id="show-intro"
+              class="ghost icon-button"
+              type="button"
+              data-testid="show-intro"
+              aria-label="Show the introduction"
+              title="Show the introduction"
+              aria-controls="intro"
+            >
+              <span aria-hidden="true">?</span>
+            </button>
+            <button
+              id="show-shortcuts"
+              class="ghost icon-button"
+              type="button"
+              data-testid="show-shortcuts"
+              aria-label="Keyboard shortcuts"
+              title="Keyboard shortcuts (?)"
+              aria-haspopup="dialog"
+            >
+              <span aria-hidden="true">⌨</span>
+            </button>
+            <button
+              id="theme-toggle"
+              class="ghost icon-button"
+              type="button"
+              data-testid="theme-toggle"
+              aria-label="Use dark theme"
+              title="Use dark theme"
+            >
+              <span aria-hidden="true">◐</span>
+            </button>
           </div>
         </div>
       </header>
 
       <section class="controls glass-panel" aria-label="simulation controls">
-        <label>
-          Seed
-          <input
-            id="seed-input"
-            data-testid="seed-input"
-            inputmode="numeric"
-            value="80"
-            aria-describedby="seed-error"
-          />
-          <span id="seed-error" class="field-error" data-testid="seed-error" hidden></span>
-        </label>
-        <label>
-          Scenario
-          <select id="scenario-select" data-testid="scenario-select"></select>
-        </label>
-        <label>
-          Mode
-          <select id="mode-select" data-testid="mode-select">
-            <option value="manual">Manual</option>
-            <option value="scripted">Scripted</option>
-            <option value="mixed">Mixed</option>
-          </select>
-        </label>
-        <button id="load-scenario" type="button" data-testid="load-scenario">Load</button>
-        <button id="reset-button" type="button" data-testid="reset">Reset</button>
-        <button id="step-button" type="button" data-testid="step">Step</button>
-        <button id="play-button" type="button" data-testid="play">Play</button>
-        <button id="copy-reproducer" type="button" data-testid="copy-reproducer">
-          Copy reproducer
-        </button>
-        <button id="download-script" type="button" data-testid="download-script">
-          Download script
-        </button>
-        <div class="button-row run-until" role="group" aria-label="run until">
-          <button id="until-leader" type="button" data-until="leader" data-testid="until-leader">
-            Run to leader
-          </button>
-          <button id="until-agree" type="button" data-until="agree" data-testid="until-agree">
-            Run to replica agreement
-          </button>
-          <button id="until-violation" type="button" data-until="violation" data-testid="until-violation">
-            Run to violation
-          </button>
+        <div class="control-group" role="group" aria-labelledby="group-run">
+          <span id="group-run" class="group-title">Run</span>
+          <div class="group-body">
+            <button id="play-button" class="primary" type="button" data-testid="play">Play</button>
+            <button id="step-button" type="button" data-testid="step">Step</button>
+            <label class="range">
+              Speed
+              <span class="range-row">
+                <input
+                  id="speed-input"
+                  type="range"
+                  min="80"
+                  max="1200"
+                  step="40"
+                  value="1200"
+                  aria-describedby="speed-value"
+                />
+                <output id="speed-value" for="speed-input" data-testid="speed-value">1.2 s/step</output>
+              </span>
+            </label>
+            <label class="toggle">
+              <input id="workload-toggle" type="checkbox" checked data-testid="workload-toggle" />
+              Workload
+            </label>
+          </div>
         </div>
-        <label class="toggle">
-          <input id="workload-toggle" type="checkbox" checked data-testid="workload-toggle" />
-          Workload
-        </label>
-        <label class="range">
-          Speed
-          <input id="speed-input" type="range" min="80" max="1200" step="40" value="1200" />
-        </label>
+
+        <div class="control-group" role="group" aria-labelledby="group-scenario">
+          <span id="group-scenario" class="group-title">Scenario</span>
+          <div class="group-body">
+            <label>
+              Seed
+              <input
+                id="seed-input"
+                data-testid="seed-input"
+                inputmode="numeric"
+                value="80"
+                aria-describedby="seed-error"
+              />
+              <span id="seed-error" class="field-error" data-testid="seed-error" hidden></span>
+            </label>
+            <label>
+              Scenario
+              <select id="scenario-select" data-testid="scenario-select"></select>
+            </label>
+            <label>
+              Mode
+              <select id="mode-select" data-testid="mode-select">
+                <option value="manual">Manual</option>
+                <option value="scripted">Scripted</option>
+                <option value="mixed">Mixed</option>
+              </select>
+            </label>
+            <button id="load-scenario" type="button" data-testid="load-scenario">Load</button>
+            <button id="reset-button" class="ghost" type="button" data-testid="reset">Reset</button>
+          </div>
+        </div>
+
+        <div class="control-group run-until" role="group" aria-labelledby="group-until">
+          <span id="group-until" class="group-title">Run to</span>
+          <div class="group-body">
+            <button id="until-leader" type="button" data-until="leader" data-testid="until-leader" aria-label="Run to leader">
+              Leader
+            </button>
+            <button id="until-agree" type="button" data-until="agree" data-testid="until-agree" aria-label="Run to replica agreement">
+              Agreement
+            </button>
+            <button id="until-violation" type="button" data-until="violation" data-testid="until-violation" aria-label="Run to violation">
+              Violation
+            </button>
+          </div>
+        </div>
+
+        <div class="control-group" role="group" aria-labelledby="group-share">
+          <span id="group-share" class="group-title">Share</span>
+          <div class="group-body">
+            <button id="copy-reproducer" class="ghost" type="button" data-testid="copy-reproducer">
+              Copy reproducer
+            </button>
+            <button id="download-script" class="ghost" type="button" data-testid="download-script">
+              Download script
+            </button>
+          </div>
+        </div>
+
         <p id="intervention-status" class="copy-status" data-testid="intervention-status"></p>
         <p id="copy-status" class="copy-status" data-testid="copy-status"></p>
         <p id="script-status" class="copy-status" data-testid="script-status"></p>
       </section>
 
+      <section id="intro" class="intro-card glass-panel" aria-labelledby="intro-title" data-testid="intro" hidden>
+        <div class="intro-head">
+          <h2 id="intro-title">New here? Three things to know</h2>
+          <button id="intro-dismiss" class="ghost" type="button" data-testid="intro-dismiss">Got it</button>
+        </div>
+        <ol class="intro-steps">
+          <li>
+            <strong>The circles are cluster nodes.</strong>
+            ★ marks the leader. Click a node for its details and actions; click a line to pick a link.
+            <button class="link-button" type="button" data-spotlight="#cluster-graph">Show me</button>
+          </li>
+          <li>
+            <strong>Step advances one deterministic step; Play keeps going.</strong>
+            Values that changed on the last step flash, and are listed under the graph.
+            <button class="link-button" type="button" data-spotlight="#group-run">Show me</button>
+          </li>
+          <li>
+            <strong>The verdict is the live invariant checker.</strong>
+            If it turns red, the run pauses on the first violating step and shows how to reproduce it.
+            <button class="link-button" type="button" data-spotlight="#verdict">Show me</button>
+          </li>
+        </ol>
+      </section>
+
+      <section
+        id="violation-card"
+        class="violation-card glass-panel"
+        role="alert"
+        aria-labelledby="violation-title"
+        data-testid="violation-card"
+        hidden
+      ></section>
+
       <section class="workspace">
         <section class="graph-panel glass-panel" aria-label="cluster graph">
-          <svg
-            id="cluster-graph"
-            viewBox="0 0 800 520"
-            role="group"
-            aria-label="cluster graph"
-            aria-describedby="graph-summary"
-          ></svg>
+          <div class="graph-stage">
+            <svg
+              id="cluster-graph"
+              viewBox="0 0 800 520"
+              role="group"
+              aria-label="cluster graph"
+              aria-describedby="graph-summary"
+            ></svg>
+            <div class="graph-tools" role="group" aria-label="graph view">
+              <button id="zoom-in" class="icon-button" type="button" data-testid="zoom-in" aria-label="Zoom in" title="Zoom in">
+                <span aria-hidden="true">+</span>
+              </button>
+              <button id="zoom-out" class="icon-button" type="button" data-testid="zoom-out" aria-label="Zoom out" title="Zoom out">
+                <span aria-hidden="true">−</span>
+              </button>
+              <button id="zoom-fit" class="icon-button" type="button" data-testid="zoom-fit" aria-label="Fit the cluster" aria-pressed="true" title="Fit the cluster (following)">
+                <span aria-hidden="true">⤢</span>
+              </button>
+              <button id="tidy-graph" class="icon-button" type="button" data-testid="tidy-graph" aria-label="Tidy layout" title="Tidy layout: put every node back in its place">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="4" r="2.4"></circle><circle cx="4.6" cy="13.5" r="2.4"></circle><circle cx="15.4" cy="13.5" r="2.4"></circle><circle cx="10" cy="10.5" r="7.2" class="ring"></circle></svg>
+              </button>
+              <button id="present-graph" class="icon-button" type="button" data-testid="present-graph" aria-label="Presentation mode" aria-pressed="false" title="Presentation mode (P); Esc to leave">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7V3h4M13 3h4v4M17 13v4h-4M7 17H3v-4"></path></svg>
+              </button>
+            </div>
+            <details class="graph-legend" data-testid="graph-legend" open>
+              <summary data-testid="legend-toggle">Legend</summary>
+              <div class="legend-group">
+                <span><i class="legend-node leader"></i>leader</span>
+                <span><i class="legend-node follower"></i>follower</span>
+                <span><i class="legend-node candidate"></i>candidate</span>
+                <span><i class="legend-node crashed"></i>crashed</span>
+                <span>
+                  <svg class="legend-badge" viewBox="-13 -13 26 26" aria-hidden="true"><circle r="13"></circle><path d="M-4.4 -3.6 A6 6 0 1 0 4.4 -3.6 M0 -7 V-0.5"></path></svg>disabled
+                </span>
+                <span>
+                  <svg class="legend-badge cut" viewBox="-13 -13 26 26" aria-hidden="true"><circle r="13"></circle><path d="M0 -6.5 A6.5 6.5 0 1 1 -0.01 -6.5 Z M-4.6 4.6 L4.6 -4.6"></path></svg>isolated
+                </span>
+                <span title="Writes this node applied against the most up-to-date live node; lighter: writes on their way; red dashed track: its stored values differ from the live majority"><i class="legend-progress"></i>writes applied</span>
+              </div>
+              <div class="legend-group">
+                <span><i class="legend-dot vote"></i>vote</span>
+                <span><i class="legend-dot heartbeat"></i>heartbeat</span>
+                <span><i class="legend-dot data"></i>data</span>
+                <span><i class="legend-dot event"></i>event</span>
+                <span title="The engine drops it on delivery: its link is cut or its target is down"><i class="legend-dot doomed"></i>lost</span>
+              </div>
+              <div class="legend-group">
+                <span><i class="legend-entity writer" aria-hidden="true">↑</i>writer</span>
+                <span><i class="legend-entity subscriber" aria-hidden="true">↓</i>subscriber</span>
+                <span><i class="legend-line flow"></i>same namespace</span>
+              </div>
+              <div class="legend-group">
+                <span><i class="legend-line partitioned"></i>partitioned</span>
+                <span><i class="legend-line delayed"></i>delayed</span>
+              </div>
+            </details>
+            <p id="graph-hint" class="graph-hint">
+              Drag to pan · Ctrl + wheel to zoom · click a node or a line for details
+            </p>
+            <div
+              id="node-popover"
+              class="node-popover"
+              role="dialog"
+              aria-labelledby="node-popover-title"
+              data-testid="node-popover"
+              hidden
+            ></div>
+          </div>
+          <p id="step-changes" class="step-changes" data-testid="step-changes"></p>
           <p id="graph-summary" class="visually-hidden" data-testid="graph-summary"></p>
           <section class="timeline" aria-label="timeline">
             <label class="timeline-scrub">
-              <span id="timeline-label" data-testid="timeline-label">step 0</span>
-              <input
-                id="timeline-input"
-                data-testid="timeline-input"
-                type="range"
-                min="0"
-                max="0"
-                step="1"
-                value="0"
-                aria-describedby="timeline-help"
-              />
+              <span id="timeline-label" class="timeline-label" data-testid="timeline-label">step 0</span>
+              <span class="timeline-track">
+                <span id="timeline-marks" class="timeline-marks" data-testid="timeline-marks" aria-hidden="true"></span>
+                <input
+                  id="timeline-input"
+                  data-testid="timeline-input"
+                  type="range"
+                  min="0"
+                  max="0"
+                  step="1"
+                  value="0"
+                  aria-describedby="timeline-help"
+                />
+                <svg
+                  id="timeline-history"
+                  class="timeline-history"
+                  data-testid="timeline-history"
+                  viewBox="0 0 1000 24"
+                  preserveAspectRatio="none"
+                  aria-hidden="true"
+                ></svg>
+              </span>
             </label>
+            <p id="history-summary" class="visually-hidden" data-testid="history-summary"></p>
+            <div id="history-legend" class="history-legend" data-testid="history-legend" aria-hidden="true"></div>
             <p id="timeline-help" class="timeline-help" data-testid="timeline-help">
               Drag to rebuild any earlier step of this run from its seed and recorded actions.
             </p>
             <ol id="events-panel" class="events" data-testid="events-panel"></ol>
           </section>
-          <div class="graph-legend" data-testid="graph-legend" aria-label="signal legend">
-            <span><i class="legend-dot vote"></i>vote</span>
-            <span><i class="legend-dot heartbeat"></i>heartbeat</span>
-            <span><i class="legend-dot data"></i>data</span>
-            <span><i class="legend-dot event"></i>event</span>
-          </div>
         </section>
 
-        <aside class="side-panel glass-panel">
+        <aside class="side-panel">
           <section class="glass-panel guide" aria-label="guide">
             <h2 id="guide-title" data-testid="guide-title">Guide</h2>
+            <ol id="guide-dots" class="guide-dots" data-testid="guide-dots" aria-label="Guide steps"></ol>
             <p id="guide-text" data-testid="guide-text"></p>
+            <div id="guide-predict" class="guide-predict" data-testid="guide-predict" hidden>
+              <p id="guide-predict-question" class="guide-question"></p>
+              <div id="guide-predict-options" class="guide-options" role="group" aria-labelledby="guide-predict-question"></div>
+            </div>
+            <p id="guide-outcome" class="guide-outcome" data-testid="guide-outcome" role="status" hidden></p>
             <div class="button-row">
-              <button id="guide-back" type="button" data-testid="guide-back">Back</button>
-              <button id="guide-do" type="button" data-testid="guide-do">Do it</button>
+              <button id="guide-back" class="ghost" type="button" data-testid="guide-back">Back</button>
+              <button id="guide-do" class="primary" type="button" data-testid="guide-do">Do it</button>
               <button id="guide-next" type="button" data-testid="guide-next">Next</button>
+            </div>
+            <div id="guide-finale" class="guide-finale" data-testid="guide-finale" hidden>
+              <p id="guide-finale-text"></p>
+              <div class="button-row">
+                <button id="guide-next-tour" class="primary" type="button" data-testid="guide-next-tour">Next tour</button>
+                <button id="guide-copy-run" type="button" data-testid="guide-copy-run">Copy reproducer</button>
+              </div>
+            </div>
+            <div class="guide-extra">
+              <button id="guide-run" class="ghost" type="button" data-testid="guide-run">Play the tour</button>
+              <button id="guide-link" class="ghost" type="button" data-testid="guide-link">Copy link to this step</button>
             </div>
           </section>
 
-          <section class="glass-panel">
-            <details class="panel" open data-collapse-mobile>
-              <summary><h2>Verdict</h2></summary>
-              <div id="verdict-panel" data-testid="verdict-panel"></div>
-            </details>
-          </section>
-
-          <section class="glass-panel">
-            <details class="panel" open>
-              <summary><h2>Link</h2></summary>
-              <label class="link-picker">
-                Link
-                <select id="link-select" data-testid="link-select">
-                  <option value="">Choose a link</option>
-                </select>
-              </label>
-              <p id="selected-link" data-testid="selected-link" aria-live="polite">none</p>
-              <div class="button-row">
-                <button id="partition-link" type="button" data-action="partition" data-testid="partition-link">
-                  Partition
-                </button>
-                <button id="delay-link" type="button" data-action="delay" data-testid="delay-link">
-                  Delay
-                </button>
-                <button id="drop-link" type="button" data-action="drop" data-testid="drop-link">
-                  Drop
-                </button>
-                <button id="heal-link" type="button" data-action="heal" data-testid="heal-link">
-                  Heal
-                </button>
-              </div>
-            </details>
-          </section>
-
-          <section class="glass-panel">
-            <details class="panel" open data-collapse-mobile>
-              <summary><h2>Progress</h2></summary>
-              <dl id="progress-panel" data-testid="progress-panel"></dl>
-              <p id="snapshot-hash" class="hash" data-testid="snapshot-hash"></p>
-            </details>
-          </section>
-
-          <section class="glass-panel">
-            <details class="panel" open>
-              <summary><h2>Nodes</h2></summary>
-              <button id="add-node-button" type="button" data-testid="add-node-button">
-                Add node
-              </button>
-              <div id="nodes-panel" data-testid="nodes-panel"></div>
-            </details>
-          </section>
-
-          <section class="glass-panel">
-            <details class="panel" open data-collapse-mobile>
-              <summary><h2>Signals</h2></summary>
-              <div id="signals-panel" data-testid="signals-panel"></div>
-            </details>
-          </section>
-
-          <section class="glass-panel">
-            <details class="panel" open>
-              <summary><h2>Client</h2></summary>
-              <div class="manual-controls">
-                <label>
-                  Client
-                  <input id="manual-client" value="client-a" data-testid="manual-client" />
+          <div class="panel-tabs" role="tablist" aria-label="Lab panels" data-testid="panel-tabs">
+            <button id="tab-cluster" class="panel-tab" type="button" role="tab" aria-selected="true" aria-controls="tabpanel-cluster" tabindex="0" data-tab="cluster" data-testid="tab-cluster">
+              Cluster<span class="tab-badge" aria-hidden="true"></span>
+            </button>
+            <button id="tab-clients" class="panel-tab" type="button" role="tab" aria-selected="false" aria-controls="tabpanel-clients" tabindex="-1" data-tab="clients" data-testid="tab-clients">
+              Clients<span class="tab-badge" aria-hidden="true"></span>
+            </button>
+            <button id="tab-data" class="panel-tab" type="button" role="tab" aria-selected="false" aria-controls="tabpanel-data" tabindex="-1" data-tab="data" data-testid="tab-data">
+              Data<span class="tab-badge" aria-hidden="true"></span>
+            </button>
+            <button id="tab-verdict" class="panel-tab" type="button" role="tab" aria-selected="false" aria-controls="tabpanel-verdict" tabindex="-1" data-tab="verdict" data-testid="tab-verdict">
+              Verdict<span class="tab-badge" aria-hidden="true"></span>
+            </button>
+          </div>
+          <div id="tabpanel-cluster" class="tab-panel" role="tabpanel" aria-labelledby="tab-cluster" data-tabpanel="cluster">
+            <section class="glass-panel">
+              <details class="panel" open>
+                <summary><h2>Link</h2></summary>
+                <label class="link-picker">
+                  Link
+                  <select id="link-select" data-testid="link-select">
+                    <option value="">Choose a link</option>
+                  </select>
                 </label>
-                <label>
-                  Namespace
-                  <input id="manual-ns" value="profiles" data-testid="manual-ns" />
-                </label>
-                <label>
-                  Key
-                  <input id="manual-key" value="profile-42" data-testid="manual-key" />
-                </label>
-                <label>
-                  Value
-                  <input id="manual-value" value="fresh" data-testid="manual-value" />
-                </label>
+                <p id="selected-link" class="empty-state" data-testid="selected-link" aria-live="polite">none selected</p>
                 <div class="button-row">
-                  <button id="subscribe-button" type="button" data-testid="subscribe-button">
-                    Subscribe
+                  <button id="partition-link" type="button" data-action="partition" data-testid="partition-link">
+                    Partition
                   </button>
-                  <button id="push-event-button" type="button" data-testid="push-event-button">
-                    Push
+                  <button id="delay-link" type="button" data-action="delay" data-testid="delay-link">
+                    Delay
+                  </button>
+                  <button id="drop-link" type="button" data-action="drop" data-testid="drop-link">
+                    Drop
+                  </button>
+                  <button id="heal-link" type="button" data-action="heal" data-testid="heal-link">
+                    Heal
                   </button>
                 </div>
-              </div>
-              <div id="clients-panel" data-testid="clients-panel"></div>
-              <div id="subscribers-panel" data-testid="subscribers-panel"></div>
-            </details>
-          </section>
+              </details>
+            </section>
+            <section class="glass-panel">
+              <details class="panel" open>
+                <summary><h2>Nodes</h2></summary>
+                <button id="add-node-button" type="button" data-testid="add-node-button">
+                  Add node
+                </button>
+                <div id="nodes-panel" data-testid="nodes-panel"></div>
+              </details>
+            </section>
+            <section class="glass-panel">
+              <details class="panel" open data-collapse-mobile>
+                <summary><h2>Progress</h2></summary>
+                <dl id="progress-panel" data-testid="progress-panel"></dl>
+                <p id="snapshot-hash" class="hash" data-testid="snapshot-hash"></p>
+              </details>
+            </section>
+            <section class="glass-panel">
+              <details class="panel" open data-collapse-mobile>
+                <summary><h2>Signals</h2></summary>
+                <div id="signals-panel" data-testid="signals-panel" tabindex="0" role="region" aria-label="Signals, scrollable"></div>
+              </details>
+            </section>
+          </div>
+          <div id="tabpanel-clients" class="tab-panel" role="tabpanel" aria-labelledby="tab-clients" data-tabpanel="clients" hidden>
+            <section class="glass-panel">
+              <details class="panel" open>
+                <summary><h2>Writers</h2></summary>
+                <p class="panel-note">A writer pushes values into one namespace. Push from its row, or click it on the graph.</p>
+                <div class="manual-controls">
+                  <label>
+                    Writer
+                    <input id="manual-client" value="client-a" autocomplete="off" data-testid="manual-client" />
+                  </label>
+                  <label>
+                    Namespace
+                    <input id="manual-ns" value="profiles" list="namespace-options" autocomplete="off" data-testid="manual-ns" />
+                  </label>
+                  <label>
+                    Key
+                    <input id="manual-key" value="profile-42" autocomplete="off" data-testid="manual-key" />
+                  </label>
+                  <label>
+                    Value
+                    <input id="manual-value" value="fresh" autocomplete="off" data-testid="manual-value" />
+                  </label>
+                  <div class="button-row">
+                    <button id="add-client-button" type="button" data-testid="add-client-button">+ Add writer</button>
+                    <button id="push-event-button" type="button" data-testid="push-event-button">Push</button>
+                  </div>
+                </div>
+                <div id="clients-panel" data-testid="clients-panel"></div>
+              </details>
+            </section>
+            <section class="glass-panel">
+              <details class="panel" open>
+                <summary><h2>Subscribers</h2></summary>
+                <p class="panel-note">A subscriber receives the committed events of one namespace. It is a reader only.</p>
+                <div class="manual-controls">
+                  <label>
+                    Subscriber
+                    <input id="manual-reader" value="reader-1" autocomplete="off" data-testid="manual-reader" />
+                  </label>
+                  <label>
+                    Namespace
+                    <input id="manual-reader-ns" value="profiles" list="namespace-options" autocomplete="off" data-testid="manual-reader-ns" />
+                  </label>
+                  <div class="button-row">
+                    <button id="subscribe-button" type="button" data-testid="subscribe-button">+ Subscribe</button>
+                  </div>
+                </div>
+                <datalist id="namespace-options"></datalist>
+                <div id="subscribers-panel" data-testid="subscribers-panel"></div>
+              </details>
+            </section>
+          </div>
+          <div id="tabpanel-data" class="tab-panel" role="tabpanel" aria-labelledby="tab-data" data-tabpanel="data" hidden>
+            <section class="glass-panel">
+              <details class="panel" open>
+                <summary><h2>Keys</h2></summary>
+                <div id="keys-panel" data-testid="keys-panel"></div>
+              </details>
+            </section>
+            <section class="glass-panel">
+              <details class="panel" open>
+                <summary><h2>Consistency <span class="model-tag">availability now</span></h2></summary>
+                <div id="consistency-panel" data-testid="consistency-panel"></div>
+              </details>
+            </section>
+          </div>
+          <div id="tabpanel-verdict" class="tab-panel" role="tabpanel" aria-labelledby="tab-verdict" data-tabpanel="verdict" hidden>
+            <section class="glass-panel">
+              <details class="panel" open>
+                <summary><h2>Verdict</h2></summary>
+                <div id="verdict-panel" data-testid="verdict-panel"></div>
+              </details>
+            </section>
+          </div>
 
-          <section class="glass-panel">
-            <details class="panel" open data-collapse-mobile>
-              <summary><h2>Consistency <span class="model-tag">availability now</span></h2></summary>
-              <div id="consistency-panel" data-testid="consistency-panel"></div>
-            </details>
-          </section>
-
-          <section class="glass-panel">
-            <details class="panel" open data-collapse-mobile>
-              <summary><h2>Keys</h2></summary>
-              <div id="keys-panel" data-testid="keys-panel"></div>
-            </details>
-          </section>
         </aside>
       </section>
+      <nav id="run-dock" class="run-dock" aria-label="run controls" data-testid="run-dock" hidden>
+        <span id="dock-verdict" class="dock-verdict" data-testid="dock-verdict"></span>
+        <span id="dock-step-label" class="dock-step-label" data-testid="dock-step-label">step 0</span>
+        <button id="dock-step" type="button" data-testid="dock-step">Step</button>
+        <button id="dock-play" class="primary" type="button" data-testid="dock-play">Play</button>
+      </nav>
+
+      <p id="announcer" class="visually-hidden" aria-live="polite" data-testid="announcer"></p>
     </main>
+
+    <dialog id="shortcuts" class="shortcuts-dialog" aria-labelledby="shortcuts-title" data-testid="shortcuts-dialog">
+      <div class="dialog-head">
+        <h2 id="shortcuts-title">Keyboard shortcuts</h2>
+        <button id="shortcuts-close" class="ghost icon-button" type="button" aria-label="Close" data-testid="shortcuts-close">
+          <span aria-hidden="true">✕</span>
+        </button>
+      </div>
+      <dl class="shortcut-list">
+        <dt><kbd>Space</kbd></dt>
+        <dd>Play / pause</dd>
+        <dt><kbd>.</kbd></dt>
+        <dd>Step once</dd>
+        <dt><kbd>←</kbd> <kbd>→</kbd></dt>
+        <dd>Previous / next step on the timeline</dd>
+        <dt><kbd>Shift</kbd> + <kbd>←</kbd> <kbd>→</kbd></dt>
+        <dd>Ten steps back / forward</dd>
+        <dt><kbd>F</kbd></dt>
+        <dd>Fit the cluster in view</dd>
+        <dt><kbd>P</kbd></dt>
+        <dd>Presentation mode: the graph fills the screen (Esc leaves)</dd>
+        <dt><kbd>?</kbd></dt>
+        <dd>Show this list</dd>
+        <dt><kbd>Esc</kbd></dt>
+        <dd>Close a popover or dialog</dd>
+      </dl>
+      <p class="model-note">Shortcuts are ignored while typing in a field or when a button, tab, or slider has focus.</p>
+    </dialog>
 
     <script type="module" src="./app.js"></script>
   </body>

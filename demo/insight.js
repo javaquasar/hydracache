@@ -85,9 +85,17 @@ export function keyAgreement(snapshot) {
         diverged: live.has(id) && version !== majority,
       };
     });
-    return { key: key.key, cells, agree: counts.size <= 1 && !counts.has(null) };
+    return { key: key.key, cells, majority, agree: counts.size <= 1 && !counts.has(null) };
   });
   return { keys, agree: keys.every((key) => key.agree) };
+}
+
+// The whole 64-bit checksum as 16 hex digits (tooltips).
+export function fullVersion(version) {
+  if (version === null || version === undefined) {
+    return "—";
+  }
+  return BigInt.asUintN(64, BigInt(version)).toString(16).padStart(16, "0");
 }
 
 export function shortVersion(version) {
@@ -125,6 +133,12 @@ export function describeAction(action) {
       return action.enabled ? "workload on" : "workload off";
     case "subscribe":
       return `subscribe ${action.client}@${action.ns}`;
+    case "unsubscribe":
+      return `unsubscribe ${action.client}@${action.ns}`;
+    case "add_client":
+      return `add writer ${action.client} on ${action.ns}`;
+    case "remove_client":
+      return `remove writer ${action.client}`;
     case "push_event":
       return `push ${action.ns}/${action.key} from ${action.client}`;
     case "mode_change":
@@ -205,4 +219,450 @@ export function graphSummary(snapshot) {
     `${nodes.length} nodes: ${nodes.join(", ")}. Directed links: ${links}. ` +
     `${clients} client(s), ${subscribers} subscriber(s), ${(snapshot.in_flight || []).length} message(s) in flight.`
   );
+}
+
+// Human label for the auto-play interval (milliseconds per step).
+export function speedLabel(intervalMs) {
+  const ms = Number(intervalMs);
+  if (!Number.isFinite(ms) || ms <= 0) {
+    return "—";
+  }
+  if (ms >= 1000) {
+    return `${(ms / 1000).toFixed(1)} s/step`;
+  }
+  return `${Math.round(ms)} ms/step`;
+}
+
+// Positions (0–100 %) of timeline events over a scrubber that spans
+// [base, max]. Events outside the range are dropped; several events on one
+// step collapse to one mark whose kind follows the most important event
+// (verdict > leader > action) and whose text lists them all.
+export function timelineMarks(events, base, max) {
+  const span = max - base;
+  if (!(span > 0)) {
+    return [];
+  }
+  const rank = { verdict: 3, leader: 2, action: 1 };
+  const byStep = new Map();
+  for (const event of events || []) {
+    if (event.step < base || event.step > max) {
+      continue;
+    }
+    const mark = byStep.get(event.step);
+    if (!mark) {
+      byStep.set(event.step, { step: event.step, kind: event.kind, texts: [event.text] });
+      continue;
+    }
+    mark.texts.push(event.text);
+    if ((rank[event.kind] ?? 0) > (rank[mark.kind] ?? 0)) {
+      mark.kind = event.kind;
+    }
+  }
+  return [...byStep.values()]
+    .sort((a, b) => a.step - b.step)
+    .map((mark) => ({
+      step: mark.step,
+      kind: mark.kind,
+      percent: ((mark.step - base) / span) * 100,
+      text: `step ${mark.step}: ${mark.texts.join("; ")}`,
+    }));
+}
+
+// What changed between two snapshots of the same run: per-node election and
+// log fields, link states, per-node key checksums, the leader, and committed
+// entries. Only engine fields are compared; the step counter itself is not a
+// "change". Returns null when there is nothing to compare against.
+const NODE_FIELDS = [
+  ["status", (node) => nodeStatus(node)],
+  ["term", (node) => node.term],
+  ["commit", (node) => node.commit_index],
+  ["applied", (node) => node.applied_index],
+];
+
+export function stepChanges(previous, next) {
+  if (!previous || !next || previous.seed !== next.seed) {
+    return null;
+  }
+  const before = new Map((previous.nodes || []).map((node) => [node.id, node]));
+  const nodes = new Map();
+  for (const node of next.nodes || []) {
+    const old = before.get(node.id);
+    if (!old) {
+      nodes.set(node.id, [{ field: "added", from: null, to: nodeStatus(node) }]);
+      continue;
+    }
+    const fields = [];
+    for (const [field, read] of NODE_FIELDS) {
+      const from = read(old);
+      const to = read(node);
+      if (from !== to && from !== undefined && to !== undefined) {
+        fields.push({ field, from, to });
+      }
+    }
+    if (fields.length) {
+      nodes.set(node.id, fields);
+    }
+  }
+  const oldLinks = new Map((previous.links || []).map((link) => [`${link.from}>${link.to}`, link.state]));
+  const links = (next.links || [])
+    .filter((link) => oldLinks.has(`${link.from}>${link.to}`) && oldLinks.get(`${link.from}>${link.to}`) !== link.state)
+    .map((link) => ({ from: link.from, to: link.to, before: oldLinks.get(`${link.from}>${link.to}`), after: link.state }));
+  const versions = (snapshot) => {
+    const map = new Map();
+    for (const key of snapshot.keys || []) {
+      for (const replica of key.replicas || []) {
+        map.set(`${key.key}|${replica.node_id}`, replica.version ?? null);
+      }
+    }
+    return map;
+  };
+  const oldVersions = versions(previous);
+  const keys = [];
+  for (const [id, version] of versions(next)) {
+    const old = oldVersions.has(id) ? oldVersions.get(id) : null;
+    if (String(old) !== String(version)) {
+      const [key, node] = id.split("|");
+      keys.push({ key, node, before: old, after: version });
+    }
+  }
+  const leaderBefore = leaderOf(previous);
+  const leaderAfter = leaderOf(next);
+  const leader = leaderBefore !== leaderAfter ? { from: leaderBefore, to: leaderAfter } : null;
+  const committedBefore = previous.progress?.committed_entries;
+  const committedAfter = next.progress?.committed_entries;
+  const committed =
+    committedBefore !== committedAfter && committedAfter !== undefined
+      ? { from: committedBefore ?? 0, to: committedAfter }
+      : null;
+
+  const summary = [];
+  if (leader) {
+    summary.push(leader.to ? `leader ${leader.from ?? "none"} → ${leader.to}` : `leader ${leader.from} lost`);
+  }
+  for (const [id, fields] of nodes) {
+    summary.push(
+      `${id}: ${fields
+        .map((change) => (change.field === "added" ? "added" : `${change.field} ${change.from} → ${change.to}`))
+        .join(", ")}`,
+    );
+  }
+  for (const link of links) {
+    summary.push(`link ${link.from} → ${link.to} ${link.before} → ${link.after}`);
+  }
+  if (committed) {
+    summary.push(`committed ${committed.from} → ${committed.to}`);
+  }
+  if (keys.length) {
+    summary.push(`${keys.length} key replica checksum(s) changed`);
+  }
+  return { nodes, links, keys, leader, committed, summary };
+}
+
+// What the violation card shows: the engine's own invariant name and detail,
+// where it was first reported, and which node ids the detail text names (the
+// engine does not attach node ids to a violation, so nothing else is implied).
+export function violationFocus(snapshot) {
+  if (!snapshot || snapshot.verdict?.status === "holding" || !snapshot.verdict) {
+    return null;
+  }
+  const detail = String(snapshot.verdict.detail ?? "");
+  const named = (snapshot.nodes || [])
+    .map((node) => node.id)
+    .filter((id) => new RegExp(`(^|[^A-Za-z0-9_-])${escapeRegExp(id)}($|[^A-Za-z0-9_-])`).test(detail));
+  const first = snapshot.first_violation_step;
+  return {
+    invariant: String(snapshot.verdict.invariant ?? "invariant"),
+    detail,
+    step: snapshot.step,
+    firstStep: first === null || first === undefined ? snapshot.step : first,
+    nodes: named,
+  };
+}
+
+function escapeRegExp(text) {
+  return String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Rows for the node popover: engine fields only, plus how far its commit index
+// trails the current leader's (when there is one).
+export function nodeDetails(snapshot, id) {
+  const node = (snapshot?.nodes || []).find((candidate) => candidate.id === id);
+  if (!node) {
+    return null;
+  }
+  const leaderId = leaderOf(snapshot);
+  const leader = (snapshot.nodes || []).find((candidate) => candidate.id === leaderId);
+  const rows = [
+    ["status", nodeStatus(node)],
+    ["term", node.term],
+    ["voted for", node.voted_for ?? "—"],
+    ["votes received", node.votes_received],
+    ["commit index", node.commit_index],
+    ["applied index", node.applied_index],
+  ];
+  if (leader && leader.id !== node.id) {
+    const lag = Number(leader.commit_index) - Number(node.commit_index);
+    rows.push(["behind leader", lag > 0 ? `${lag} entr${lag === 1 ? "y" : "ies"}` : "caught up"]);
+  }
+  if (node.region || node.zone) {
+    rows.push(["placement", [node.region, node.zone].filter(Boolean).join(" / ")]);
+  }
+  return { id: node.id, status: nodeStatus(node), crashed: Boolean(node.crashed), disabled: Boolean(node.disabled), rows };
+}
+
+// Hue (0–359) for a stored checksum, so equal checksums share a colour in the
+// keys heatmap. Missing replicas have no hue.
+export function versionHue(version) {
+  if (version === null || version === undefined) {
+    return null;
+  }
+  const hex = shortVersion(version);
+  let hash = 0;
+  for (const char of hex) {
+    hash = (hash * 31 + char.charCodeAt(0)) % 3600;
+  }
+  return Math.round(hash / 10) % 360;
+}
+
+const EVENT_ICONS = { action: "▸", leader: "★", verdict: "✕" };
+
+export function eventIcon(event) {
+  if (event.kind === "verdict" && /holds again/.test(event.text)) {
+    return "✓";
+  }
+  return EVENT_ICONS[event.kind] ?? "•";
+}
+
+// Timeline events grouped by step (ascending), each item with its icon; a
+// group is `current` at the visible step and `future` past it (rewound view).
+export function groupEvents(events, currentStep) {
+  const groups = new Map();
+  for (const event of events || []) {
+    if (!groups.has(event.step)) {
+      groups.set(event.step, []);
+    }
+    groups.get(event.step).push({ kind: event.kind, text: event.text, icon: eventIcon(event) });
+  }
+  return [...groups.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([step, items]) => ({
+      step,
+      items,
+      current: step === currentStep,
+      future: step > currentStep,
+    }));
+}
+
+// Keyboard shortcut for a keydown, or null. `target` is "field" (typing),
+// "control" (a focused button, tab, slider, or checkbox, which owns Space and
+// the arrow keys), or "page".
+export function shortcutFor(event, target = "page") {
+  if (!event || event.ctrlKey || event.metaKey || event.altKey || target === "field") {
+    return null;
+  }
+  const key = event.key;
+  if (key === "?") {
+    return "help";
+  }
+  if (key === ".") {
+    return "step";
+  }
+  if (key === "f" || key === "F") {
+    return "fit";
+  }
+  if (key === "p" || key === "P") {
+    return "present";
+  }
+  if (target === "control") {
+    return null;
+  }
+  if (key === " " || key === "Spacebar") {
+    return "toggle-play";
+  }
+  if (key === "ArrowLeft") {
+    return event.shiftKey ? "back-10" : "back";
+  }
+  if (key === "ArrowRight") {
+    return event.shiftKey ? "forward-10" : "forward";
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Guide outcomes. After "Do it" the guide states what the engine actually
+// did, from the snapshot alone; `ok` is false when the step's claim did not
+// happen, and the guide says so instead of moving on as if it had.
+// ---------------------------------------------------------------------------
+function plural(count, noun) {
+  return `${count} ${noun}${count === 1 ? "" : "s"}`;
+}
+
+export function quorumSize(snapshot) {
+  return Math.floor((snapshot.nodes || []).length / 2) + 1;
+}
+
+export function predictionHolds(when, snapshot) {
+  switch (when) {
+    case "leader":
+      return leaderOf(snapshot) !== null;
+    case "no_leader":
+      return leaderOf(snapshot) === null;
+    default:
+      throw new Error(`unknown guide prediction '${when}'`);
+  }
+}
+
+export function tourOutcome(report, snapshot, ctx = {}) {
+  const total = (snapshot.nodes || []).length;
+  const live = liveNodeIds(snapshot).length;
+  const quorum = quorumSize(snapshot);
+  const leader = leaderOf(snapshot);
+  const committed = snapshot.progress?.committed_entries ?? 0;
+  switch (report?.kind) {
+    case "leader": {
+      if (!leader) return { ok: false, text: `No leader at step ${snapshot.step}.` };
+      const node = snapshot.nodes.find((candidate) => candidate.id === leader);
+      const previous = ctx.before ? leaderOf(ctx.before) : null;
+      const change = previous && previous !== leader ? ` (was ${previous})` : "";
+      return { ok: true, text: `Leader ${leader}${change}, term ${node.term}, at step ${snapshot.step}.` };
+    }
+    case "subscribed": {
+      const sub = (snapshot.subscribers || []).find(
+        (candidate) => candidate.client_id === report.client && candidate.namespace === report.ns,
+      );
+      return sub
+        ? { ok: true, text: `${report.client} is subscribed to ${report.ns}, attached to ${sub.connected_node}.` }
+        : { ok: false, text: `${report.client} is not subscribed to ${report.ns}.` };
+    }
+    case "delivered": {
+      const fullKey = `${report.ns}:${report.key}`;
+      const sub = (snapshot.subscribers || []).find(
+        (candidate) => candidate.client_id === report.client && candidate.namespace === report.ns,
+      );
+      const event = sub?.last_event;
+      if (!event || event.key !== fullKey) {
+        return { ok: false, text: `${report.key} has not been delivered to ${report.client} yet.` };
+      }
+      const replicas = (snapshot.keys || []).find((key) => key.key === fullKey)?.replicas ?? [];
+      const holding = replicas.filter((replica) => replica.version === event.version).length;
+      return {
+        ok: true,
+        text: `${report.key} committed at index ${event.commit_index} and delivered to ${report.client} at step ${event.delivered_at_step}; ${holding} of ${replicas.length} replicas hold it.`,
+      };
+    }
+    case "crashed": {
+      const node = ctx.crashed;
+      const down = (snapshot.nodes || []).find((candidate) => candidate.id === node)?.crashed;
+      if (!down) return { ok: false, text: `${node ?? "The node"} is not crashed.` };
+      const verdict = live >= quorum ? "still a quorum" : "not a quorum";
+      return { ok: true, text: `${node} crashed: ${live} of ${total} nodes live, quorum is ${quorum} (${verdict}).` };
+    }
+    case "no_leader": {
+      if (leader) return { ok: false, text: `${leader} is still leader at step ${snapshot.step}.` };
+      const unavailable = (snapshot.consistency || []).filter((level) => !level.satisfiable).map((level) => level.level);
+      const levels = unavailable.length ? ` Unavailable levels: ${unavailable.join(", ")}.` : "";
+      const before = ctx.before?.progress?.committed_entries;
+      const progress =
+        before === undefined || before === committed
+          ? `Committed entries: ${committed}.`
+          : `Committed entries ${before} → ${committed} (written before the quorum was lost).`;
+      return {
+        ok: true,
+        text: `No leader: ${live} of ${total} nodes live, a quorum needs ${quorum}. ${progress}${levels}`,
+      };
+    }
+    case "agree": {
+      const agreement = keyAgreement(snapshot);
+      return agreement.agree
+        ? { ok: true, text: `All live replicas agree on ${plural(agreement.keys.length, "sampled key")} at step ${snapshot.step}.` }
+        : { ok: false, text: `Replicas still differ at step ${snapshot.step}.` };
+    }
+    case "committed": {
+      const before = ctx.before?.progress?.committed_entries ?? committed;
+      return { ok: true, text: `Committed entries ${before} → ${committed} by step ${snapshot.step}.` };
+    }
+    case "diverged": {
+      const differing = keyAgreement(snapshot).keys.filter((key) => !key.agree).length;
+      const sampled = (snapshot.keys || []).length;
+      return {
+        ok: true,
+        text: `${differing} of ${plural(sampled, "sampled key")} ${differing === 1 ? "differs" : "differ"} between replicas at step ${snapshot.step}.`,
+      };
+    }
+    default:
+      throw new Error(`unknown guide report '${report?.kind}'`);
+  }
+}
+
+// Next unused name: client-b, client-c, ... or reader-2, reader-3, ...
+export function nextFreeName(prefix, taken) {
+  const used = new Set(taken);
+  if (prefix === "client-") {
+    for (let code = 97; code <= 122; code += 1) {
+      const name = `${prefix}${String.fromCharCode(code)}`;
+      if (!used.has(name)) return name;
+    }
+  }
+  for (let index = 1; ; index += 1) {
+    const name = `${prefix}${index}`;
+    if (!used.has(name)) return name;
+  }
+}
+
+
+// ---------------------------------------------------------------------------
+// Timeline history strip: who led at each observed step, and how committed
+// entries grew. Only steps the page rendered are known; a jump (run-until,
+// play at speed) leaves a gap instead of a guess.
+// ---------------------------------------------------------------------------
+export const HISTORY_WIDTH = 1000;
+
+export function historyStrip(observations, base, max) {
+  const span = Math.max(max - base, 1);
+  const x = (step) => Math.min(HISTORY_WIDTH, Math.max(0, ((step - base) / span) * HISTORY_WIDTH));
+  const steps = [...observations.keys()].filter((step) => step >= base && step <= max).sort((a, b) => a - b);
+  const runs = [];
+  for (const step of steps) {
+    const leader = observations.get(step).leader ?? null;
+    const last = runs.at(-1);
+    if (last && last.leader === leader && step === last.to + 1) {
+      last.to = step;
+    } else {
+      runs.push({ leader, from: step, to: step });
+    }
+  }
+  const segments = runs.map((run) => ({
+    leader: run.leader,
+    from: run.from,
+    to: run.to,
+    x0: x(run.from - 0.5),
+    x1: x(run.to + 0.5),
+  }));
+  const committed = steps
+    .map((step) => ({ step, value: observations.get(step).committed }))
+    .filter((point) => Number.isFinite(point.value));
+  const top = Math.max(1, ...committed.map((point) => point.value));
+  const lines = [];
+  for (const point of committed) {
+    const coords = `${x(point.step).toFixed(1)},${(12 - (point.value / top) * 10).toFixed(1)}`;
+    const line = lines.at(-1);
+    if (line && point.step === line.last + 1) {
+      line.points.push(coords);
+      line.last = point.step;
+    } else {
+      lines.push({ points: [coords], last: point.step });
+    }
+  }
+  const leaders = [...new Set(runs.map((run) => run.leader))];
+  const range = (run) => (run.from === run.to ? `step ${run.from}` : `steps ${run.from}–${run.to}`);
+  const described = runs.slice(-6).map((run) => `${run.leader ?? "no leader"} at ${range(run)}`);
+  const first = committed[0]?.value;
+  const last = committed.at(-1)?.value;
+  const growth = committed.length ? `; committed entries ${first} → ${last}` : "";
+  return {
+    segments,
+    lines: lines.filter((line) => line.points.length > 1).map((line) => line.points.join(" ")),
+    leaders,
+    summary: runs.length ? `Observed leaders: ${described.join(", ")}${growth}.` : "No steps observed yet.",
+  };
 }
