@@ -12,6 +12,9 @@
 - [Decision Guide](decision-guide.md)
 - [Production Checklist](production-checklist.md)
 - [Anti-patterns](anti-patterns.md)
+- [Recipes](recipes.md)
+- [FAQ and Troubleshooting](faq.md)
+- [Glossary](glossary.md)
 
 # Concepts
 

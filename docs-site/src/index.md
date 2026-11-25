@@ -68,6 +68,8 @@ The cluster layer is developed against a deterministic simulator. The [interacti
 | See how performance is measured and what the numbers mean | [Performance](performance.md) |
 | Review production readiness | [Production Checklist](production-checklist.md) |
 | Avoid common cache mistakes | [Anti-patterns](anti-patterns.md) |
+| Copy a solution for a common problem | [Recipes](recipes.md) |
+| Debug stale data, low hit ratio, or memory | [FAQ and Troubleshooting](faq.md) |
 
 ## First Path
 
