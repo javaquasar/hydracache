@@ -127,16 +127,20 @@ guarantee.
   the next step) swells with that backlog. Graphics meet 3:1 contrast against
   the canvas in both themes (WCAG 1.4.11). Reduced motion turns the effects
   off. The client → node → replication →
-  subscriber **pulse** fired on a push is a choreographed overlay; its "fan out to
-  every node" matches the simulator's full-replication model, not the product's
-  configurable RF.
+  subscriber **pulse** fired on a push replays what the engine did: it is
+  built from the snapshot right after the push (the push step and the entry
+  node that applied it, the engine's preferred write node) and the settled
+  snapshot (each replica's `applied_at_step`, copies still in flight, copies
+  that will never arrive, each subscriber's delivery step). Only its
+  wall-clock pace (a fixed time per engine step) is cosmetic. Its "fan out to
+  every node" matches the simulator's full-replication model, not the
+  product's configurable RF.
 - **Auto-stepping after an intervention** (`settleAfterIntervention`) is a UI
   convenience so a paused cluster visibly reacts; the engine has no such
   self-advancing clock.
 
-One of these gaps has a recorded idea for closing it (push flashes timed to
-engine delivery; per-node applied writes and send-time drop counters are
-done):
+Three earlier gaps here (per-node progress, send-time drops, push timing)
+were closed as
 [TD-0015](../docs/technical-debt/TD-0015-demo-fidelity-gaps.md).
 
 ### Not represented at all — the production stack
@@ -265,10 +269,12 @@ shared link cannot make the page render another server's verdict.
   fields suggest the namespaces in use, and an existing writer or a missing
   subscription fails loud. On the graph a writer (↑) pushes when clicked, a
   subscriber (↓) opens its row, and a dotted line joins writers to the
-  subscribers of their namespace. A push lights each graph vertex up when its message
-  reaches it in the data-flow pulse: the entry node when the request
-  arrives, each replica after it, the subscriber last (a first push by a new
-  writer starts at its entry node). Reduced motion flashes them at once.
+  subscribers of their namespace. A push lights each graph vertex up when its copy
+  arrives, timed by the engine: the entry node when the request arrives,
+  each replica after as many steps as the engine took to deliver it, each
+  subscriber at its delivery step. A replica whose copy is still in flight
+  does not flash; one that will never get it (down, or behind a cut) shows
+  the copy fading with a loss marker. Reduced motion flashes at once.
 - **Keys heatmap.** A replica that takes a new value fades from its old colour to the new one; hovering a cell gives the whole checksum and the step the page saw it written. One row per sampled key, one column per node. A cell's
   colour is derived from its stored checksum, so equal checksums share a colour;
   live replicas that differ from the majority are outlined, down nodes are

@@ -1260,8 +1260,10 @@ test("push_flashes_vertices_as_the_message_reaches_them", async ({ page }) => {
     .poll(() => page.evaluate(() => Object.keys(window.__flashes).length), { timeout: 5000 })
     .toBeGreaterThanOrEqual(4);
   const flashes = await page.evaluate(() => window.__flashes);
+  // The engine writes through its preferred write node (the leader), which
+  // applies the value at the push step; the other replicas get it after.
   const entry = await page.evaluate(() =>
-    document.querySelector("[data-client='client-a'] .entity-meta").textContent.split("via ")[1].trim(),
+    document.querySelector(".vertex.node.role-leader").getAttribute("aria-label").split(",")[0],
   );
   const replicas = Object.entries(flashes).filter(([name]) => name.startsWith("node-") && name !== entry);
   // The request travels before the entry node flashes; replicas follow it,
@@ -1478,4 +1480,37 @@ test("cut_links_count_refused_traffic", async ({ page }) => {
   const hit = page.locator('.link-hit[aria-label^="link node-0 to node-1"]');
   await expect(hit).toHaveAttribute("aria-label", /refused by the cut/);
   expect(Number(await hit.getAttribute("data-dropped"))).toBeGreaterThan(0);
+});
+
+// A push replays what the engine did: a crashed replica never gets the copy,
+// so it does not flash; its copy fades with a loss marker instead.
+test("push_to_a_crashed_replica_shows_a_lost_copy", async ({ page }) => {
+  await openReady(page);
+  await page.getByTestId("tab-clients").click();
+  await page.getByTestId("add-client-button").click();
+  await page.getByTestId("tab-cluster").click();
+  await page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" }).nth(2).click();
+  await expect(page.locator('.vertex.node[aria-label^="node-2,"]')).toHaveClass(/role-crashed/);
+  await page.waitForTimeout(1500);
+  await page.evaluate(() => {
+    window.__flashed = new Set();
+    window.__bursts = 0;
+    const graph = document.querySelector("#cluster-graph");
+    new MutationObserver((records) => {
+      for (const record of records) {
+        const name = (record.target.getAttribute("aria-label") || "").split(/[ ,]/)[0];
+        if ((record.target.getAttribute("class") || "").includes("changed")) window.__flashed.add(name);
+      }
+    }).observe(graph, { attributes: true, attributeFilter: ["class"], subtree: true });
+    new MutationObserver(() => {
+      window.__bursts = Math.max(window.__bursts, graph.querySelectorAll(".loss-burst").length);
+    }).observe(graph, { childList: true, subtree: true });
+  });
+  await page.getByTestId("tab-clients").click();
+  await page.getByTestId("push-client-a").click();
+  await expect.poll(() => page.evaluate(() => window.__bursts), { timeout: 5000 }).toBeGreaterThan(0);
+  await page.waitForTimeout(1200);
+  const flashed = await page.evaluate(() => [...window.__flashed]);
+  expect(flashed).not.toContain("node-2");
+  expect(flashed.some((name) => name.startsWith("node-"))).toBe(true);
 });

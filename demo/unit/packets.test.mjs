@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { foldRoutineTraffic, nodeProgress, packetFamily, packetFlights, pairDrops, tidyTargets } from "../graph.js";
+import { foldRoutineTraffic, nodeProgress, packetFamily, packetFlights, pairDrops, pushPlan, tidyTargets } from "../graph.js";
 
 const nodes = [
   { id: "node-0", up: true, crashed: false, disabled: false },
@@ -232,5 +232,43 @@ describe("pairDrops", () => {
 
   it("reads zeros from snapshots without drop counters", () => {
     assert.deepEqual(pairDrops({ from: "a", to: "b" }, undefined), { refused: 0, injected: 0, downAt: { b: 0, a: 0 }, total: 0 });
+  });
+});
+
+describe("pushPlan", () => {
+  const node = (id, extra = {}) => ({ id, crashed: false, disabled: false, ...extra });
+  const replica = (node_id, version, applied_at_step) => ({ node_id, version, applied_at_step });
+  const after = {
+    step: 20,
+    nodes: [node("node-0"), node("node-1"), node("node-2"), node("node-3")],
+    keys: [{ key: "profiles:p", replicas: [replica("node-0", 0, null), replica("node-1", 7, 20), replica("node-2", 0, null), replica("node-3", 0, null)] }],
+  };
+  const final = {
+    step: 21,
+    nodes: [node("node-0"), node("node-1"), node("node-2", { crashed: true }), node("node-3")],
+    keys: [{ key: "profiles:p", replicas: [replica("node-0", 7, 21), replica("node-1", 7, 20), replica("node-2", 0, null), replica("node-3", 0, null)] }],
+    in_flight: [{ from: "node-1", to: "node-3", kind: "replicate_put", key: "profiles:p" }],
+    links: [],
+    subscribers: [{ id: "r@profiles", namespace: "profiles", connected_node: "node-0", last_event: { key: "profiles:p", delivered_at_step: 21 } }],
+  };
+
+  it("reads the entry node, delivery steps, waiting and lost copies from the engine", () => {
+    const plan = pushPlan(after, final, "client-a", "profiles", "p");
+    assert.equal(plan.entry, "node-1");
+    assert.deepEqual(plan.replicas, [
+      { node: "node-0", status: "applied", steps: 1 },
+      { node: "node-2", status: "lost", steps: null },
+      { node: "node-3", status: "pending", steps: null },
+    ]);
+    assert.deepEqual(plan.subscribers, [{ id: "r@profiles", node: "node-0", steps: 1 }]);
+  });
+
+  it("treats a copy in flight over a cut link as lost", () => {
+    const plan = pushPlan(after, { ...final, links: [{ from: "node-1", to: "node-3", state: "partitioned" }] }, "client-a", "profiles", "p");
+    assert.equal(plan.replicas.find((entry) => entry.node === "node-3").status, "lost");
+  });
+
+  it("returns nothing when no node applied the push at its step", () => {
+    assert.equal(pushPlan({ ...after, step: 99 }, final, "client-a", "profiles", "p"), null);
   });
 });

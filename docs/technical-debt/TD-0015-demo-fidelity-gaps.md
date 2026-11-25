@@ -2,11 +2,21 @@
 
 ## Status
 
-Open — recorded 2026-11-24 as ideas. Item 1 done on 2026-11-24 (snapshot schema 9,
-`NodeView.applied_writes`; the demo bar shows it against the most up-to-date live node, since
-writes enter through whichever node a client is attached to, not only the leader). Item 2
-done on 2026-11-24 (`LinkView.drops` by cause in schema 9; the demo shows refused counts on cut
-links and bursts loss markers as counters rise). Item 3 remains open.
+Resolved — recorded 2026-11-24, all three items done 2026-11-24/25 in the unreleased snapshot
+schema 9:
+
+1. `NodeView.applied_writes`; the demo bar shows it against the most up-to-date live node
+   (writes do not always enter through the leader).
+2. `LinkView.drops` by cause; the demo shows refused counts on cut links and bursts loss
+   markers as counters rise.
+3. `KeyReplicaView.applied_at_step`; the demo builds the push animation from the snapshot
+   right after the push and the settled one (entry node, per-replica delivery steps, copies
+   in flight, lost copies, subscriber delivery steps) and times the flashes to it. The
+   engine's entry node is its preferred write node (the leader), not the node the client is
+   drawn attached to, which the old choreography had assumed.
+
+Definition-of-done item 4 is met except `cargo xtask verify`, which was not run locally; it runs
+in CI and must pass before this branch merges to `main`.
 
 Owner: simulator / demo.
 
@@ -38,8 +48,7 @@ Idea: count the write, invalidate and flush operations each node applies in
 carry the count over when `catch_up_node` copies state to a restarted node, and report it in a
 new `NodeView` field (for example `applied_writes`), leaving `commit_index` / `applied_index`
 unchanged. The demo then draws the bar under a node as writes applied on it against the
-most up-to-date live node (writes enter through any node a client is attached to, not only
-the leader), with replica agreement kept as a second signal.
+most up-to-date live node (writes do not always enter through the leader), with replica agreement kept as a second signal.
 
 ### 2. Messages dropped at send time are invisible — done
 
@@ -52,7 +61,7 @@ Idea: count drops per directed link and per cause (partitioned at send, `drop_ne
 delivery) and report the counters in `LinkView` (for example `dropped_at_send`,
 `dropped_at_delivery`); the demo bursts a loss marker at the cut when a counter rises.
 
-### 3. Push flashes follow the animation, not the engine's delivery
+### 3. Push flashes follow the animation, not the engine's delivery — done
 
 A push is applied by the engine at once, and the page then auto-steps
 (`settleAfterIntervention`) before it renders again, so the `replicate_put` messages are
@@ -92,7 +101,8 @@ Any of:
 2. Done: `LinkView` carries per-cause drop counters (`cut_at_send`, `injected`,
    `cut_at_delivery`, `target_down`); a partitioned link with traffic shows rising
    send-time drops in the snapshot and a loss marker in the demo; tests cover each cause.
-3. Push flashes follow engine delivery (engine record or per-step settle); a test asserts the
-   flash order matches the steps the engine applied the value on each node.
+3. Done: push flashes follow engine delivery (engine record, `applied_at_step`); tests assert
+   the flash order (entry, then replicas, then subscriber) and that a crashed replica shows a
+   lost copy and does not flash.
 4. Schema bump(s) recorded in `docs/COMPAT.md`; `demo/README.md` disclosures updated; native
    and WASM snapshots still match; `cargo xtask verify` passes.

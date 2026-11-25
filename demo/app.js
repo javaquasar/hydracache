@@ -14,6 +14,7 @@ import {
   tidyGraph,
   initGraph,
   playDataFlowPulse,
+  pushPlan,
   resetGraph,
   syncGraph,
   vertexClientPoint,
@@ -1628,7 +1629,6 @@ async function runTourAction(action) {
       break;
     case "push":
       await pushWithPulse(action.client, action.ns, action.key, action.value);
-      await settleAfterIntervention();
       break;
     default:
       throw new Error(`unknown guide action '${action.type}'`);
@@ -1734,19 +1734,22 @@ async function pushEventFor(client, namespace) {
     return;
   }
   await pushWithPulse(client, namespace, el.manualKey.value, el.manualValue.value);
-  await settleAfterIntervention();
   await refresh();
 }
 
-// Push and show its data flow. For a known writer the pulse starts before the
-// engine call, so the request is seen travelling in while it commits; a first
-// push by a new writer creates it, so its pulse starts right after the push.
-// Graph vertices flash as the pulse reaches them (graph.js flashWhenReached).
+// Push, let the cluster settle, then show the data flow the engine actually
+// ran: the snapshot right after the push gives the push step and entry node,
+// the settled one when each replica applied the value (applied_at_step),
+// which copies are still on their way or lost, and when subscribers heard.
+// Graph vertices flash as their copy arrives (graph.js flashWhenReached).
 async function pushWithPulse(client, namespace, key, value) {
-  const known = (state.snapshot?.clients || []).some((entry) => entry.id === client);
-  if (known) playDataFlowPulse(client, namespace);
   await state.sim.push_event(client, namespace, key, value);
-  if (!known) playDataFlowPulse(client, namespace, JSON.parse(await state.sim.snapshot_json()));
+  const after = JSON.parse(await state.sim.snapshot_json());
+  await settleAfterIntervention();
+  const final = JSON.parse(await state.sim.snapshot_json());
+  // The animation replays what the engine did (pushPlan); the render that
+  // follows schedules each vertex's flash for when its copy arrives.
+  playDataFlowPulse(pushPlan(after, final, client, namespace, key));
 }
 
 async function settleAfterIntervention() {

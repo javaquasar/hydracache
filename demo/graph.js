@@ -542,6 +542,12 @@ function markCrashAndRecovery(group, node, status, shown, behind) {
 // flight (reduced motion, or a change of another cause) it flashes at once.
 function flashWhenReached(id, group, name) {
   const at = graphSim.pulseArrivals.get(id);
+  // The push's copy for this node is pending or lost: nothing arrived, so
+  // nothing flashes (and nothing waits for it).
+  if (at === Number.POSITIVE_INFINITY) {
+    graphSim.pulseArrivals.delete(id);
+    return;
+  }
   if (at !== undefined && at > performance.now()) {
     graphSim.pendingFlashes.set(id, { at, group, name });
     return;
@@ -579,9 +585,9 @@ function reducedMotion() {
 }
 
 // A node's write progress: writes it applied, writes in flight to it, and the
-// reference it is measured against: the most up-to-date live node. (Writes
-// enter through whichever node a client is attached to, not only the leader,
-// and every write reaches every replica, so the furthest node is the target.)
+// reference it is measured against: the most up-to-date live node. (Writes do
+// not always enter through the leader, and every write reaches every replica,
+// so the furthest node is the target.)
 // Older snapshots without applied_writes fall back to replica agreement.
 export function nodeProgress(snapshot, node) {
   if (node.applied_writes === undefined) {
@@ -1201,8 +1207,17 @@ function updatePulses(now) {
         continue;
       }
       const progress = t / mover.durMs;
-      if (progress >= 1) {
+      // A pending copy stops short and lingers faintly; a lost one fades out
+      // before its target and leaves a loss marker.
+      const linger = mover.hold ? 900 : 0;
+      if (progress >= 1 + linger / mover.durMs) {
         mover.dot.setAttribute("opacity", "0");
+        if (mover.lost && !mover.burst) {
+          mover.burst = true;
+          const pa = P.get(mover.fromId);
+          const pb = P.get(mover.toId);
+          if (pa && pb) spawnLossBurst(pa.x + (pb.x - pa.x) * mover.end, pa.y + (pb.y - pa.y) * mover.end);
+        }
         continue;
       }
       alive = true;
@@ -1211,9 +1226,11 @@ function updatePulses(now) {
       if (!pa || !pb) {
         continue;
       }
-      mover.dot.setAttribute("opacity", "1");
-      mover.dot.setAttribute("cx", pa.x + (pb.x - pa.x) * progress);
-      mover.dot.setAttribute("cy", pa.y + (pb.y - pa.y) * progress);
+      const along = Math.min(progress, 1) * mover.end;
+      const fade = mover.lost ? 1 - 0.8 * Math.min(progress, 1) : mover.hold && progress >= 1 ? 0.45 : 1;
+      mover.dot.setAttribute("opacity", String(fade));
+      mover.dot.setAttribute("cx", pa.x + (pb.x - pa.x) * along);
+      mover.dot.setAttribute("cy", pa.y + (pb.y - pa.y) * along);
     }
     if (alive) {
       remaining.push(pulse);
@@ -1224,61 +1241,124 @@ function updatePulses(now) {
   graphSim.pulses = remaining;
 }
 
-// `snapshot` defaults to the one on screen; a first push by a new writer
-// passes the snapshot taken right after the push, where the writer exists
-// (it has no vertex yet, so the pulse starts at its entry node).
-export function playDataFlowPulse(clientId, namespace, snapshot = host?.getSnapshot()) {
-  if (!graphSim.dom || !snapshot) {
+// What a push did, read from the engine (schema 9 applied_at_step): which
+// node took it first, when each replica applied it, which are still waiting
+// for it, which will never get it, and when each subscriber was told.
+//   after:  snapshot right after the push call (the push step)
+//   final:  snapshot after the cluster settled
+export function pushPlan(after, final, clientId, namespace, key) {
+  const fullKey = `${namespace}:${key}`;
+  const replicasAt = (snapshot) =>
+    new Map(((snapshot?.keys || []).find((view) => view.key === fullKey)?.replicas || []).map((replica) => [replica.node_id, replica]));
+  const pushStep = after.step;
+  const atPush = replicasAt(after);
+  const entry = [...atPush.values()].find((replica) => replica.applied_at_step === pushStep)?.node_id ?? null;
+  if (!entry) return null;
+  const version = atPush.get(entry).version;
+  const finalReplicas = replicasAt(final);
+  const cut = new Set((final.links || []).filter((link) => link.state === "partitioned").map((link) => `${link.from}>${link.to}`));
+  const replicas = (final.nodes || [])
+    .filter((node) => node.id !== entry)
+    .map((node) => {
+      const replica = finalReplicas.get(node.id);
+      if (replica && replica.version === version && Number.isFinite(replica.applied_at_step) && replica.applied_at_step > pushStep) {
+        return { node: node.id, status: "applied", steps: replica.applied_at_step - pushStep };
+      }
+      // Still on its way only if a write is in flight to it and will arrive.
+      const waiting =
+        !node.crashed &&
+        !node.disabled &&
+        (final.in_flight || []).some(
+          (message) =>
+            message.to === node.id &&
+            message.key === fullKey &&
+            String(message.kind).startsWith("replicate_") &&
+            !cut.has(`${message.from}>${message.to}`),
+        );
+      return { node: node.id, status: waiting ? "pending" : "lost", steps: null };
+    });
+  const subscribers = (final.subscribers || [])
+    .filter((subscriber) => subscriber.namespace === namespace && subscriber.last_event?.key === fullKey)
+    .map((subscriber) => ({
+      id: subscriber.id,
+      node: subscriber.connected_node,
+      steps: Math.max(0, subscriber.last_event.delivered_at_step - pushStep),
+    }));
+  return { clientId, entry, pushStep, replicas, subscribers };
+}
+
+const PULSE_STEP_MS = 420;
+const PULSE_REQUEST_MS = 460;
+
+// Play a push as the engine ran it (pushPlan): the request reaches the entry
+// node, each replica's copy travels as many steps as the engine took to
+// deliver it, a copy still on its way stops short, a lost one fades with a
+// loss marker, and subscribers hear about it when their event was delivered.
+// Vertices flash when their message arrives (flashWhenReached).
+export function playDataFlowPulse(plan) {
+  if (!graphSim.dom || !plan) {
     return;
   }
   if (document.documentElement.dataset.reducedMotion === "true") {
     return;
   }
-  const clientVertexId = `client:${clientId}`;
-  const client = (snapshot.clients || []).find((c) => c.id === clientId);
-  const entryNode = client?.connected_node;
-  if (!entryNode || !graphSim.pos.has(entryNode)) {
-    return;
-  }
-  const peers = (snapshot.nodes || [])
-    .filter((n) => !n.crashed && !n.disabled && n.id !== entryNode)
-    .map((n) => n.id);
-  const subscribers = (snapshot.subscribers || []).filter(
-    (s) => s.namespace === namespace && s.connected_node,
-  );
-
   const movers = [];
-  const add = (fromId, toId, startMs, durMs, kind) => {
+  const add = (fromId, toId, startMs, durMs, kind, extra = {}) => {
     if (!graphSim.pos.has(fromId) || !graphSim.pos.has(toId)) {
       return;
     }
     const dot = svg("circle", { class: `pulse ${kind}`, r: 6, opacity: 0, cx: 0, cy: 0 });
     graphSim.dom.pulseLayer.append(dot);
-    movers.push({ fromId, toId, startMs, durMs, kind, dot });
+    movers.push({ fromId, toId, startMs, durMs, kind, dot, end: 1, ...extra });
   };
 
-  // 1) request into the cluster
-  add(clientVertexId, entryNode, 0, 460, "data");
-  // 2) replication across the live cluster
-  peers.forEach((peer, index) => add(entryNode, peer, 340 + index * 45, 460, "data"));
-  const replicationEnd = 340 + Math.max(0, peers.length - 1) * 45 + 460;
-  // 3) delivery to each subscriber on the namespace
-  subscribers.forEach((sub, index) =>
-    add(sub.connected_node, `sub:${sub.id}`, replicationEnd + index * 70, 520, "event"),
-  );
+  const clientVertex = `client:${plan.clientId}`;
+  const requestMs = graphSim.pos.has(clientVertex) ? PULSE_REQUEST_MS : 0;
+  // 1) the request into the cluster (a brand-new writer has no vertex yet)
+  if (requestMs) add(clientVertex, plan.entry, 0, requestMs, "data");
+  // 2) replication, timed by the steps the engine took
+  const replicationStart = Math.max(0, requestMs - 100);
+  for (const replica of plan.replicas) {
+    if (replica.status === "applied") {
+      const steps = Math.min(replica.steps, 6);
+      add(plan.entry, replica.node, replicationStart, PULSE_STEP_MS * steps, "data");
+    } else if (replica.status === "pending") {
+      add(plan.entry, replica.node, replicationStart, PULSE_STEP_MS * 2, "data pending", { end: 0.55, hold: true });
+    } else {
+      add(plan.entry, replica.node, replicationStart, PULSE_STEP_MS, "data doomed", { end: 0.8, lost: true });
+    }
+  }
+  // 3) delivery to each subscriber, from its node, when the engine delivered
+  for (const subscriber of plan.subscribers) {
+    const start = replicationStart + PULSE_STEP_MS * Math.max(1, Math.min(subscriber.steps, 6));
+    add(subscriber.node, `sub:${subscriber.id}`, start, 520, "event");
+  }
 
   if (movers.length === 0) {
     return;
   }
   const t0 = performance.now();
   graphSim.pulses.push({ t0, movers });
-  // Each vertex lights up when the message reaches it (flashWhenReached).
+  if (requestMs) {
+    graphSim.pulseArrivals.set(plan.entry, t0 + requestMs);
+  } else {
+    graphSim.pulseArrivals.delete(plan.entry);
+  }
+  // Each vertex lights up when its message arrives; pending and lost
+  // copies never arrive, so their nodes do not flash.
   for (const mover of movers) {
+    if (mover.end < 1) continue;
     const at = t0 + mover.startMs + mover.durMs;
     graphSim.pulseArrivals.set(mover.toId, Math.max(graphSim.pulseArrivals.get(mover.toId) ?? 0, at));
     if (mover.toId.startsWith("sub:")) {
       const group = graphSim.dom.vertices.get(mover.toId)?.group;
       if (group) graphSim.pendingFlashes.set(mover.toId, { at, group, name: "received" });
+    }
+  }
+  // A node whose copy is pending or lost must not flash on this push.
+  for (const mover of movers) {
+    if (mover.end < 1 && !movers.some((other) => other.toId === mover.toId && other.end === 1)) {
+      graphSim.pulseArrivals.set(mover.toId, Number.POSITIVE_INFINITY);
     }
   }
   startGraphSim();
