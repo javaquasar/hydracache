@@ -58,9 +58,13 @@ The cluster layer is developed against a deterministic simulator. The [interacti
 | Cache ordinary async functions | [Cacheable Functions](guides/cacheable-functions.md) |
 | Use function and entity macros | [Macros](guides/macros.md) |
 | Cache repository or query results | [Database Query Caching](guides/database-query-caching.md) |
+| Invalidate after commit, or durably through an outbox | [Invalidation After Commit](guides/invalidation-after-commit.md) |
+| Catch cached queries that read undeclared tables | [SQL Dependency Lint](guides/sql-lint.md) |
 | Pick SQLx, Diesel, or SeaORM integration | [SQLx](guides/sqlx-adapter.md), [Diesel](guides/diesel-adapter.md), [SeaORM](guides/seaorm-adapter.md) |
 | Share invalidation across processes | [Distributed Invalidation](guides/distributed-invalidation.md) |
+| Choose between embedded, cluster, and server shapes | [Cluster Topology](guides/cluster-topology.md) |
 | Run members, clients, and a cluster | [Client and Member Cluster](guides/client-member-cluster.md) |
+| Run a shared cache server, or connect from Python or Java | [Server and Deployment](guides/server-and-deployment.md), [Client SDKs](guides/client-sdks.md) |
 | Expose a Redis-compatible RESP edge | [Redis API](guides/redis-api.md) |
 | Inspect logical memory ownership and retained-byte estimates | [Memory Accounting](guides/memory-accounting.md) |
 | Understand what is guaranteed and how it is checked | [Consistency Model](concepts/consistency-model.md), [How We Test Correctness](concepts/how-we-test-correctness.md) |
