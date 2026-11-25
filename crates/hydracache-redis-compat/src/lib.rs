@@ -1413,9 +1413,27 @@ impl RedisRespServer {
         }
     }
 
-    async fn execute_plan(&self, plan: RedisExecutionPlan, identity: &ClientIdentity) -> RespValue {
-        let mut responses = Vec::with_capacity(plan.initial_requests().len());
-        for request in plan.initial_requests().iter().cloned() {
+    async fn execute_plan(
+        &self,
+        mut plan: RedisExecutionPlan,
+        identity: &ClientIdentity,
+    ) -> RespValue {
+        let mut initial = std::mem::take(&mut plan.initial_requests).into_iter();
+        if initial.len() == 1 && matches!(plan.followup, RedisFollowup::None) {
+            let mut response = self
+                .dispatcher
+                .dispatch_verified_request(identity, initial.next().expect("one initial request"))
+                .await;
+            if matches!(plan.reducer, RedisResponseReducer::Get) {
+                if let Ok(ClientResponse::Value { value }) = &mut response.result {
+                    return optional_bulk(value.take());
+                }
+            }
+            return self.reduce_plan(&plan, std::slice::from_ref(&response));
+        }
+
+        let mut responses = Vec::with_capacity(initial.len());
+        for request in initial {
             responses.push(
                 self.dispatcher
                     .dispatch_verified_request(identity, request)
@@ -1436,7 +1454,15 @@ impl RedisRespServer {
                     .await,
             );
         }
-        match plan.reduce(&responses) {
+        self.reduce_plan(&plan, &responses)
+    }
+
+    fn reduce_plan(
+        &self,
+        plan: &RedisExecutionPlan,
+        responses: &[ClientResponseEnvelope],
+    ) -> RespValue {
+        match plan.reduce(responses) {
             Ok(value) => value,
             Err(error) => {
                 self.errors.fetch_add(1, Ordering::SeqCst);
@@ -6549,6 +6575,40 @@ mod tests {
                 lagged_event_subscribers: 0,
             }
         );
+    }
+
+    #[tokio::test]
+    async fn ten_pipelined_commands_preserve_binary_values_and_followup_order() {
+        use hydracache_client_transport_axum::LocalDispatchVariant;
+
+        for variant in [
+            LocalDispatchVariant::Static,
+            LocalDispatchVariant::BoxedFuture,
+        ] {
+            let state = Arc::new(
+                ClientSurfaceState::with_dispatch_variant(Default::default(), variant).unwrap(),
+            );
+            let server = RedisRespServer::new(state.clone(), Default::default()).unwrap();
+            let output = exchange(
+                &server,
+                b"*2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+                  *3\r\n$3\r\nSET\r\n$1\r\nk\r\n$2\r\n\x00\xff\r\n\
+                  *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+                  *6\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nx\r\n$2\r\nNX\r\n$2\r\nPX\r\n$4\r\n5000\r\n\
+                  *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+                  *3\r\n$3\r\nSET\r\n$1\r\nk\r\n$2\r\n\xff\x00\r\n\
+                  *3\r\n$4\r\nMGET\r\n$1\r\nk\r\n$1\r\nm\r\n\
+                  *3\r\n$3\r\nDEL\r\n$1\r\nk\r\n$1\r\nm\r\n\
+                  *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+                  *1\r\n$4\r\nQUIT\r\n",
+            )
+            .await;
+            assert_eq!(output, b"$-1\r\n+OK\r\n$2\r\n\x00\xff\r\n$-1\r\n$2\r\n\x00\xff\r\n+OK\r\n*2\r\n$2\r\n\xff\x00\r\n$-1\r\n:1\r\n$-1\r\n+OK\r\n");
+            assert_eq!(state.dispatch_attempts(), 10);
+            assert_eq!(state.state_mutations(), 3);
+            assert_eq!(server.metrics().commands, 10);
+            assert_eq!(server.metrics().errors, 0);
+        }
     }
 
     #[tokio::test]

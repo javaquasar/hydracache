@@ -1543,11 +1543,14 @@ fn live_value(
     key: &StoreKey,
     now_ms: u64,
 ) -> (Option<Vec<u8>>, bool) {
-    if store.get(key).is_some_and(|entry| entry.is_expired(now_ms)) {
-        store.remove(key);
-        return (None, true);
+    match store.get(key) {
+        Some(entry) if entry.is_expired(now_ms) => {
+            store.remove(key);
+            (None, true)
+        }
+        Some(entry) => (Some(entry.value.clone()), false),
+        None => (None, false),
     }
-    (store.get(key).map(|entry| entry.value.clone()), false)
 }
 
 fn stored_value(value: Vec<u8>, now_ms: u64, ttl_ms: Option<u64>) -> StoredValue {
@@ -1843,10 +1846,72 @@ mod retention_tests {
         assert_eq!(metrics.dispatches, 2);
         assert_eq!(metrics.identity_validations, 2);
         assert_eq!(metrics.protocol_validations, 2);
-        assert_eq!(metrics.audit_context_bytes_cloned, 20);
+        assert_eq!(metrics.audit_context_bytes_cloned, 0);
         assert_eq!(metrics.put_value_bytes_moved, 64);
         assert_eq!(metrics.get_value_bytes_cloned, 64);
         assert_eq!(metrics.live_get_hits, 1);
+    }
+
+    #[tokio::test]
+    async fn static_dispatch_preserves_read_lifecycle_and_correlation() {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+        state.set_cache_time_for_tests(Some(1_000));
+        state.set_profile_instrumentation_enabled(true);
+        let dispatcher = state.dispatcher();
+        let identity = ClientIdentity::new("client", "tenant").unwrap();
+        let ns = Namespace::new("audit").unwrap();
+        let key = StructuredKey::new(vec!["key".to_owned()]).unwrap();
+        let value = vec![0, 255, 4];
+        let get = |id| {
+            let mut request = ClientRequestEnvelope::new(
+                id,
+                ClientRequest::Get {
+                    ns: ns.clone(),
+                    key: key.clone(),
+                },
+            );
+            request.protocol_version = 1;
+            request
+        };
+
+        let put = ClientRequestEnvelope::new(
+            "write",
+            ClientRequest::Put {
+                ns: ns.clone(),
+                key: key.clone(),
+                value: value.clone(),
+                ttl_ms: Some(10),
+                dimensions: Vec::new(),
+            },
+        );
+        assert_eq!(
+            dispatcher
+                .dispatch_verified_request(&identity, put)
+                .await
+                .result,
+            Ok(ClientResponse::Stored)
+        );
+        for (id, expected) in [("hit", Some(value)), ("expired", None), ("miss", None)] {
+            if id == "expired" {
+                state.advance_cache_time_for_tests(10);
+            }
+            let response = dispatcher
+                .dispatch_verified_request(&identity, get(id))
+                .await;
+            assert_eq!(response.request_id, id);
+            assert_eq!(response.protocol_version, 1);
+            assert_eq!(
+                response.result,
+                Ok(ClientResponse::Value { value: expected })
+            );
+        }
+        let metrics = state.profile_metrics();
+        assert_eq!(metrics.audit_context_bytes_cloned, 0);
+        assert_eq!(metrics.live_get_hits, 1);
+        assert_eq!(metrics.expired_get_removals, 1);
+        assert_eq!(metrics.missing_gets, 1);
+        assert_eq!(state.retained_state_for_diagnostics().store_entries, 0);
+        assert!(state.audit_events_for_tests().is_empty());
     }
 
     fn put(
@@ -2074,6 +2139,7 @@ mod retention_tests {
             CLIENT_SURFACE_IDEMPOTENCY_CAPACITY
         );
 
+        state.set_profile_instrumentation_enabled(true);
         let saturated = put(
             &state,
             &identity,
@@ -2084,6 +2150,15 @@ mod retention_tests {
         assert_eq!(error.code, ClientErrorCode::RateLimited);
         assert!(error.retryable);
         assert!(error.retry_after_ms.is_some());
+        assert_eq!(
+            state.audit_events_for_tests(),
+            vec![AuditEvent::QuotaRejected {
+                tenant: "tenant".to_owned(),
+                namespace: "retention".to_owned(),
+                request_id: Some("saturated".to_owned()),
+            }]
+        );
+        assert_eq!(state.profile_metrics().audit_context_bytes_cloned, 9);
         assert_eq!(
             state.state_mutations(),
             CLIENT_SURFACE_IDEMPOTENCY_CAPACITY as u64

@@ -169,10 +169,9 @@ impl ClientSurfaceDispatcher {
         identity: &ClientIdentity,
         envelope: ClientRequestEnvelope,
     ) -> ClientResponseEnvelope {
-        let envelope = match self.admit(identity, envelope) {
-            Ok(envelope) => envelope,
-            Err(response) => return response,
-        };
+        if !self.admit(identity, &envelope) {
+            return unauthorized_response(envelope);
+        }
         self.dispatch_admitted_request(identity, envelope).await
     }
 
@@ -193,23 +192,13 @@ impl ClientSurfaceDispatcher {
             )
             .with_protocol_version(response_version(envelope.protocol_version));
         };
-        let envelope = match self.admit(identity, envelope) {
-            Ok(envelope) => envelope,
-            Err(response) => return response,
-        };
-        let (request, context) = match self.prepare(identity, envelope) {
-            Ok(prepared) => prepared,
-            Err(response) => return response,
-        };
-        let outcome = local.execute_inline(request);
-        self.finish(identity, context, outcome)
+        if !self.admit(identity, &envelope) {
+            return unauthorized_response(envelope);
+        }
+        self.dispatch_static_admitted(local, identity, envelope)
     }
 
-    fn admit(
-        &self,
-        identity: &ClientIdentity,
-        envelope: ClientRequestEnvelope,
-    ) -> Result<ClientRequestEnvelope, ClientResponseEnvelope> {
+    fn admit(&self, identity: &ClientIdentity, envelope: &ClientRequestEnvelope) -> bool {
         let profiling = self.edge.profile_instrumentation.enabled();
         let started = profiling.then(Instant::now);
         let validation = self.edge.validate_tenant_identity(
@@ -228,46 +217,17 @@ impl ClientSurfaceDispatcher {
                 .fetch_add(elapsed_nanoseconds(started), Ordering::Relaxed);
         }
         if validation.is_err() {
-            let version = response_version(envelope.protocol_version);
-            return Err(ClientResponseEnvelope::error(
-                envelope.request_id,
-                ClientErrorEnvelope::new(
-                    ClientErrorCode::Unauthorized,
-                    false,
-                    "client identity is not authorized for this tenant",
-                ),
-            )
-            .with_protocol_version(version));
+            return false;
         }
         self.edge.record_dispatch();
-        Ok(envelope)
+        true
     }
 
-    fn prepare<'a>(
-        &'a self,
-        identity: &'a ClientIdentity,
-        envelope: ClientRequestEnvelope,
-    ) -> Result<(VerifiedClientRequest<'a>, ResponseContext), ClientResponseEnvelope> {
-        let profiling = self.edge.profile_instrumentation.enabled();
-        if profiling {
-            self.edge
-                .profile_instrumentation
-                .audit_context_bytes_cloned
-                .fetch_add(
-                    envelope
-                        .request_id
-                        .len()
-                        .saturating_add(request_namespace(&envelope.request).as_str().len())
-                        as u64,
-                    Ordering::Relaxed,
-                );
-        }
-        let context = ResponseContext {
-            request_id: envelope.request_id.clone(),
-            namespace: request_namespace(&envelope.request).as_str().to_owned(),
-            audit_auth_failure: !matches!(&envelope.request, ClientRequest::ForceUnlock { .. }),
-            protocol_version: response_version(envelope.protocol_version),
-        };
+    fn validate_request(
+        &self,
+        envelope: &ClientRequestEnvelope,
+        profiling: bool,
+    ) -> Result<(), ClientErrorEnvelope> {
         let started = profiling.then(Instant::now);
         let validation = envelope.validate_protocol();
         if let Some(started) = started {
@@ -280,31 +240,63 @@ impl ClientSurfaceDispatcher {
                 .protocol_validation_nanoseconds
                 .fetch_add(elapsed_nanoseconds(started), Ordering::Relaxed);
         }
-        if let Err(error) = validation {
-            return Err(ClientResponseEnvelope::error(envelope.request_id, error)
-                .with_protocol_version(context.protocol_version));
-        }
+        validation?;
         if envelope.deadline_expired(0) {
-            return Err(ClientResponseEnvelope::error(
-                envelope.request_id,
-                ClientErrorEnvelope::new(
-                    ClientErrorCode::DeadlineExceeded,
-                    true,
-                    "request deadline expired",
-                )
-                .with_retry_after_ms(1),
+            return Err(ClientErrorEnvelope::new(
+                ClientErrorCode::DeadlineExceeded,
+                true,
+                "request deadline expired",
             )
-            .with_protocol_version(context.protocol_version));
+            .with_retry_after_ms(1));
         }
-        Ok((
-            VerifiedClientRequest {
-                edge: &self.edge,
+        Ok(())
+    }
+
+    fn dispatch_static_admitted(
+        &self,
+        local: &LocalClientDataBackend,
+        identity: &ClientIdentity,
+        envelope: ClientRequestEnvelope,
+    ) -> ClientResponseEnvelope {
+        let profiling = self.edge.profile_instrumentation.enabled();
+        if let Err(error) = self.validate_request(&envelope, profiling) {
+            return rejected_response(envelope, error);
+        }
+        let version = envelope.protocol_version;
+        // Unisolated reads and ordinary writes have no quota, rate or authorization
+        // rejection to audit. The write exception is a retained idempotency outcome,
+        // whose capacity can be exhausted even when tenant isolation is disabled.
+        let needs_audit = self.edge.isolation.is_some()
+            || !matches!(
+                &envelope.request,
+                ClientRequest::Get { .. } | ClientRequest::Put { .. }
+            )
+            || (matches!(&envelope.request, ClientRequest::Put { .. })
+                && envelope.idempotency_key.is_some());
+        let audit = needs_audit.then(|| {
+            let namespace = request_namespace(&envelope.request).as_str();
+            self.record_audit_context_copy(profiling, namespace.len());
+            (
+                namespace.to_owned(),
+                !matches!(&envelope.request, ClientRequest::ForceUnlock { .. }),
+            )
+        });
+        let response = local.execute_inline(VerifiedClientRequest {
+            edge: &self.edge,
+            identity,
+            envelope,
+            profiling,
+        });
+        if let Some((namespace, audit_auth_failure)) = audit {
+            self.edge.record_rejection_audit(
                 identity,
-                envelope,
-                profiling,
-            },
-            context,
-        ))
+                &namespace,
+                &response.request_id,
+                &response,
+                audit_auth_failure,
+            );
+        }
+        response.with_protocol_version(version)
     }
 
     async fn dispatch_admitted_request(
@@ -312,31 +304,73 @@ impl ClientSurfaceDispatcher {
         identity: &ClientIdentity,
         envelope: ClientRequestEnvelope,
     ) -> ClientResponseEnvelope {
-        let (request, context) = match self.prepare(identity, envelope) {
-            Ok(prepared) => prepared,
-            Err(response) => return response,
+        match &self.backend {
+            BackendDispatch::Local(local) => {
+                self.dispatch_static_admitted(local, identity, envelope)
+            }
+            BackendDispatch::Async {
+                backend,
+                local_maintenance,
+            } => {
+                self.dispatch_async_admitted(
+                    backend.as_ref(),
+                    local_maintenance.as_deref(),
+                    identity,
+                    envelope,
+                )
+                .await
+            }
+        }
+    }
+
+    async fn dispatch_async_admitted(
+        &self,
+        backend: &dyn ClientDataBackend,
+        local_maintenance: Option<&LocalClientDataBackend>,
+        identity: &ClientIdentity,
+        envelope: ClientRequestEnvelope,
+    ) -> ClientResponseEnvelope {
+        let profiling = self.edge.profile_instrumentation.enabled();
+        if let Err(error) = self.validate_request(&envelope, profiling) {
+            return rejected_response(envelope, error);
+        }
+        let namespace = request_namespace(&envelope.request).as_str();
+        self.record_audit_context_copy(
+            profiling,
+            namespace.len().saturating_add(envelope.request_id.len()),
+        );
+        let context = ResponseContext {
+            request_id: envelope.request_id.clone(),
+            namespace: namespace.to_owned(),
+            audit_auth_failure: !matches!(&envelope.request, ClientRequest::ForceUnlock { .. }),
+            protocol_version: envelope.protocol_version,
         };
-        let outcome = if is_control_request(&request.envelope.request) {
-            let local = match &self.backend {
-                BackendDispatch::Local(local) => Some(local),
-                BackendDispatch::Async {
-                    local_maintenance, ..
-                } => local_maintenance.as_ref(),
-            };
-            if let Some(local) = local {
+        let outcome = if is_control_request(&envelope.request) {
+            if let Some(local) = local_maintenance {
                 let execution = LocalBackendExecution::new(local, &self.edge);
                 execution.sweep_expired_entries(execution.now_ms(), false);
             }
-            self.edge
-                .handle_control_request(identity, request.envelope)
-                .result
+            self.edge.handle_control_request(identity, envelope).result
         } else {
-            match &self.backend {
-                BackendDispatch::Local(local) => local.execute_inline(request),
-                BackendDispatch::Async { backend, .. } => backend.execute(request).await,
-            }
+            backend
+                .execute(VerifiedClientRequest {
+                    edge: &self.edge,
+                    identity,
+                    envelope,
+                    profiling,
+                })
+                .await
         };
         self.finish(identity, context, outcome)
+    }
+
+    fn record_audit_context_copy(&self, profiling: bool, bytes: usize) {
+        if profiling {
+            self.edge
+                .profile_instrumentation
+                .audit_context_bytes_cloned
+                .fetch_add(bytes as u64, Ordering::Relaxed);
+        }
     }
 
     fn finish(
@@ -392,6 +426,25 @@ impl ClientSurfaceDispatcher {
             .route(CLIENT_SUBSCRIPTIONS_PATH, post(client_subscription))
             .with_state(Arc::clone(self))
     }
+}
+
+fn unauthorized_response(envelope: ClientRequestEnvelope) -> ClientResponseEnvelope {
+    rejected_response(
+        envelope,
+        ClientErrorEnvelope::new(
+            ClientErrorCode::Unauthorized,
+            false,
+            "client identity is not authorized for this tenant",
+        ),
+    )
+}
+
+fn rejected_response(
+    envelope: ClientRequestEnvelope,
+    error: ClientErrorEnvelope,
+) -> ClientResponseEnvelope {
+    ClientResponseEnvelope::error(envelope.request_id, error)
+        .with_protocol_version(response_version(envelope.protocol_version))
 }
 
 fn response_version(version: u16) -> u16 {

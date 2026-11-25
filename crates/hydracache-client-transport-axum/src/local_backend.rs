@@ -21,16 +21,18 @@ impl LocalClientDataBackend {
     pub(super) fn execute_inline(
         &self,
         request: VerifiedClientRequest<'_>,
-    ) -> ClientBackendOutcome {
-        LocalBackendExecution::new(self, request.edge)
-            .handle_request(request.identity, request.envelope, request.profiling)
-            .result
+    ) -> ClientResponseEnvelope {
+        LocalBackendExecution::new(self, request.edge).handle_request(
+            request.identity,
+            request.envelope,
+            request.profiling,
+        )
     }
 }
 
 impl ClientDataBackend for LocalClientDataBackend {
     fn execute<'a>(&'a self, request: VerifiedClientRequest<'a>) -> ClientBackendFuture<'a> {
-        Box::pin(async move { self.execute_inline(request) })
+        Box::pin(async move { self.execute_inline(request).result })
     }
 }
 
