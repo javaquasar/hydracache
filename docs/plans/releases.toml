@@ -356,6 +356,15 @@ theme = "RESP and Native Throughput and Pipeline Efficiency - begin only after t
 depends_on = ["0.73.0"]
 
 [[release]]
+version = "0.74.1"
+file = "docs/plans/V0_74_1_REGISTRY_MAINTENANCE_PLAN.md"
+status = "shipped"
+networked_control_plane = true
+work_items = ["W0", "W1", "W2"]
+theme = "Registry maintenance release with reviewed, exact registry dependency forks and clean consumer checks on Rust 1.88."
+depends_on = ["0.74.0"]
+
+[[release]]
 version = "0.75.0"
 file = "docs/plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md"
 status = "planned"

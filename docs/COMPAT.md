@@ -62,6 +62,25 @@ they are persisted or transmitted across processes.
 - Forward-only migrations must be idempotent: applying the same migration twice
   leaves the artifact at the same version.
 
+## Raft hash tables in the 0.74 maintenance line
+
+The 0.74.0 Raft build uses `rustc-hash` 1.1.0 in place of `fxhash` 0.2.1.
+On x86-64 with Rust 1.88, the comparison matched all 65,544 tested `u64`
+keys used for peer IDs. Of the byte keys with lengths 0 through 256, the
+128 inputs with lengths congruent to 2, 3, 6, or 7 modulo 8 differed.
+The two hashers group tail bytes differently. This comparison is scoped
+to 64-bit builds.
+
+Raft indexes pending ReadIndex acknowledgements by the original context
+bytes. The hash selects an in-process table bucket. The original context
+is carried on the wire and the queue retains the contexts in insertion
+order. The sled log uses explicit prefixes and big-endian entry indexes.
+The hasher change leaves these wire and storage formats unchanged.
+The signed v0.74.0 release was exercised in a three-member rolling
+upgrade from v0.73.0 and in rollback with the same persistent volumes.
+The registry-package candidate still requires its own artifact-level
+compatibility check.
+
 ## Server Configuration Reader Policy
 
 `ServerConfig` TOML is an additive, human-authored startup document rather than a

@@ -951,6 +951,17 @@ fn publish_order_keeps_workspace_dev_and_build_dependencies() {
         .iter()
         .any(|problem| problem.contains("dev/build dependencies")));
 
+    let path_only = workflow.replacen(
+        "package[\"id\"] in workspace_members",
+        "package.get(\"source\") is None",
+        1,
+    );
+    assert!(
+        xtask::release_governance::publish_workflow_problems(&path_only)
+            .iter()
+            .any(|problem| problem.contains("in workspace_members"))
+    );
+
     let client_manifest =
         std::fs::read_to_string(root.join("crates/hydracache-client/Cargo.toml")).unwrap();
     assert!(client_manifest.contains("[dev-dependencies]"));
@@ -966,6 +977,13 @@ fn post_publish_consumer_tracks_the_current_public_api() {
         std::fs::read_to_string(root.join("tests/post-publish-consumer/src/lib.rs")).unwrap();
     let problems = xtask::release_governance::post_publish_contract_problems(&workflow, &fixture);
     assert!(problems.is_empty(), "{problems:#?}");
+
+    let stable_only = workflow.replacen("[stable, '1.88.0']", "[stable]", 1);
+    assert!(
+        xtask::release_governance::post_publish_contract_problems(&stable_only, &fixture)
+            .iter()
+            .any(|problem| problem.contains("1.88.0"))
+    );
 
     let stale = fixture
         .replacen(".diesel_one(", ".diesel_first(", 1)
