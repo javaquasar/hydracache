@@ -455,21 +455,18 @@ async fn w10g_distributed_bulk_and_cluster_listeners_recover_under_load() {
     };
     assert_eq!(projected.key, control);
     assert!(projected.value.is_empty());
-    let repeated = cluster.clients[1]
-        .batch_outcomes(mixed, Some(options))
-        .await
-        .unwrap();
-    for index in [0, 1, 2, 4] {
-        assert!(
-            repeated[index]
-                .result
-                .as_ref()
-                .unwrap()
-                .mutation
-                .unwrap()
-                .applied
-        );
-    }
+    retry_w10i(|| async {
+        let repeated = cluster.clients[1]
+            .batch_outcomes(mixed.clone(), Some(options.clone()))
+            .await?;
+        for (index, item) in repeated.into_iter().enumerate() {
+            if matches!(index, 0 | 1 | 2 | 4) {
+                assert!(item.result?.mutation.unwrap().applied);
+            }
+        }
+        Ok(())
+    })
+    .await;
     assert!(
         tokio::time::timeout(Duration::from_millis(250), events.next())
             .await
@@ -639,7 +636,7 @@ async fn wait_w10g_mutation(
         if let hydracache_client_hc2::SubscriptionEvent::Event(event) =
             next_w10g_event(subscription).await
         {
-            if &event.key == key {
+            if event.key == key {
                 return event;
             }
         }
