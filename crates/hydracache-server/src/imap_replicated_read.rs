@@ -66,7 +66,7 @@ impl ReplicaReadScope {
     fn admits_storage_key(&self, storage_key: &str, partition: PartitionId) -> bool {
         let bounds = CanonicalMapKeyBounds::default();
         if storage_key.len() > bounds.max_frame_bytes * 2
-            || storage_key.len() % 2 != 0
+            || !storage_key.len().is_multiple_of(2)
             || !storage_key
                 .bytes()
                 .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
