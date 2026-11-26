@@ -1,9 +1,9 @@
 use super::*;
 use crate::imap_value_journal::CapturedTransfer;
 use crate::imap_value_repair::{
-    admits_repair, admits_transfer, bytes_digest, is_prefix_at_most, version, RepairManifest,
-    RepairStep, ReplicaRepairOutcome, CHUNK_BYTES, FINAL_CUT_WAIT, FINAL_DELTA_BYTES,
-    FINAL_DELTA_ROWS, REPAIR_WAIT,
+    admits_repair, admits_transfer, bytes_digest, is_prefix_at_most, version, BackupTransfer,
+    RepairManifest, RepairStep, ReplicaRepairOutcome, CHUNK_BYTES, FINAL_CUT_WAIT,
+    FINAL_DELTA_BYTES, FINAL_DELTA_ROWS, REPAIR_WAIT,
 };
 use hydracache::PartitionReplicaRepair;
 
@@ -40,6 +40,14 @@ impl ValueReplica {
         let receive = |snapshot: RaftPartitionSnapshot| {
             if !admits_transfer(&snapshot, &request.manifest.plan) {
                 return Err(repair_error("recipient has no matching applied cut"));
+            }
+            if request.manifest.plan.wave.is_some()
+                && snapshot
+                    .primary_rebalance
+                    .as_ref()
+                    .is_none_or(|wave| wave.scope != request.manifest.scope)
+            {
+                return Err(repair_error("primary wave has a different value scope"));
             }
             let latest = snapshot.value_prefixes.get(&partition).copied();
             match &request.step {
@@ -86,6 +94,33 @@ impl ValueReplica {
         replaced: PartitionMember,
         target: PartitionMember,
     ) -> CacheResult<ReplicaRepairOutcome> {
+        self.transfer_backup(
+            raft,
+            raft_transport,
+            transport,
+            BackupTransfer {
+                partition,
+                replaced,
+                target,
+                wave: None,
+            },
+        )
+        .await
+    }
+
+    pub(super) async fn transfer_backup<S: RaftLogStore>(
+        &self,
+        raft: &RaftMetadataRuntime<S>,
+        raft_transport: &Arc<dyn RaftMessageSink>,
+        transport: &dyn ReplicaTransport,
+        slot: BackupTransfer,
+    ) -> CacheResult<ReplicaRepairOutcome> {
+        let BackupTransfer {
+            partition,
+            replaced,
+            target,
+            wave,
+        } = slot;
         let _transfer = self
             .repair_sender
             .try_acquire()
@@ -104,6 +139,7 @@ impl ValueReplica {
                     prior.owner == self.local
                         && prior.replaced == replaced
                         && prior.target == target
+                        && prior.wave == wave
                         && admitted(&snapshot, &self.local)
                         && admitted(&snapshot, &target)
                 }) {
@@ -129,6 +165,7 @@ impl ValueReplica {
                     snapshot_digest: [0; 32],
                     prior_backups: (!snapshot.value_promotions.contains_key(&partition))
                         .then_some(placement.backups),
+                    wave,
                 };
                 if !admits_repair(&snapshot, &plan) {
                     return Err(repair_error("owner has no matching replacement slot"));
@@ -266,9 +303,10 @@ fn matches_slot(left: &PartitionReplicaRepair, right: &PartitionReplicaRepair) -
         && left.owner == right.owner
         && left.replaced == right.replaced
         && left.target == right.target
+        && left.wave == right.wave
 }
 
-async fn acquire_writer(
+pub(super) async fn acquire_writer(
     lane: &Lane,
     deadline: Instant,
 ) -> CacheResult<tokio::sync::SemaphorePermit<'_>> {

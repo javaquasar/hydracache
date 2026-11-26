@@ -73,6 +73,14 @@ impl ValueReplica {
         let Some(snapshot) = raft.partition_snapshot() else {
             return;
         };
+        if snapshot
+            .primary_rebalance
+            .as_ref()
+            .is_some_and(|wave| wave.head().is_some())
+        {
+            *samples = BackupObservations::default();
+            return;
+        }
         let Ok(topology) =
             PartitionTopology::from_snapshot(snapshot, D2_PARTITION_COUNT, self.replication)
         else {
@@ -122,7 +130,11 @@ impl ValueReplica {
         );
     }
 
-    fn candidate_probe(&self, candidate: PartitionMember, epoch: ClusterEpoch) -> ReplicaReady {
+    pub(super) fn candidate_probe(
+        &self,
+        candidate: PartitionMember,
+        epoch: ClusterEpoch,
+    ) -> ReplicaReady {
         ReplicaReady {
             candidate,
             owner: self.local.clone(),
@@ -170,6 +182,13 @@ impl ValueReplica {
         let snapshot = raft
             .partition_snapshot()
             .ok_or_else(|| repair_error("no applied placement"))?;
+        if snapshot
+            .primary_rebalance
+            .as_ref()
+            .is_some_and(|wave| wave.head().is_some())
+        {
+            return Err(repair_error("primary rebalance owns the transfer slot"));
+        }
         let initial =
             PartitionTopology::from_snapshot(snapshot, D2_PARTITION_COUNT, self.replication)
                 .map_err(|_| repair_error("no coherent placement for rebalance"))?;
@@ -378,6 +397,7 @@ mod tests {
             new_owner: owner.clone(),
             backups,
             required: None,
+            wave: None,
         };
         let members = [
             ("owner", 1),
@@ -430,6 +450,7 @@ mod tests {
                 ),
             ]),
             value_repairs: BTreeMap::new(),
+            primary_rebalance: None,
         };
         let profile = ReplicationConfig {
             replication_factor: 3,

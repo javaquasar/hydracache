@@ -86,6 +86,13 @@ pub struct ReplicaRepairOutcome {
     pub deltas: u64,
 }
 
+pub(super) struct BackupTransfer {
+    pub partition: hydracache::PartitionId,
+    pub replaced: PartitionReplicaIdentity,
+    pub target: PartitionReplicaIdentity,
+    pub wave: Option<ClusterEpoch>,
+}
+
 /// Exact member, value scope and profile a replacement must support.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub(crate) struct ReplicaReady {

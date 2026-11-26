@@ -99,6 +99,7 @@ use hydracache::{
     RaftMetadataSnapshot,
 };
 mod log_store;
+mod primary_rebalance;
 mod read_index;
 
 pub use read_index::{RaftReadIndexError, RaftReadIndexProof, RaftReadIndexRequest};
@@ -359,6 +360,8 @@ pub struct RaftPartitionSnapshot {
     pub value_promotions: BTreeMap<hydracache::PartitionId, hydracache::PartitionPromotion>,
     /// Latest committed repair for each active override.
     pub value_repairs: BTreeMap<hydracache::PartitionId, hydracache::PartitionReplicaRepair>,
+    /// The active or most recently finished primary rebalance wave.
+    pub primary_rebalance: Option<hydracache::PrimaryRebalanceWave>,
 }
 
 impl RaftPartitionSnapshot {
@@ -383,7 +386,15 @@ impl RaftPartitionSnapshot {
         repair: &hydracache::PartitionReplicaRepair,
         required: Option<hydracache::PartitionValuePrefix>,
     ) -> Option<usize> {
-        if self.applied_index != self.commit_index {
+        if self.applied_index != self.commit_index
+            || !primary_rebalance::allows_transfer(
+                self.primary_rebalance.as_ref(),
+                repair.wave,
+                repair.partition,
+                &repair.owner,
+                &repair.target,
+            )
+        {
             return None;
         }
         value_repair_slot(
@@ -665,6 +676,7 @@ struct StagedMetadataSnapshot {
     value_prefixes: BTreeMap<hydracache::PartitionId, hydracache::PartitionValuePrefix>,
     value_promotions: BTreeMap<hydracache::PartitionId, hydracache::PartitionPromotion>,
     value_repairs: BTreeMap<hydracache::PartitionId, hydracache::PartitionReplicaRepair>,
+    primary_rebalance: Option<hydracache::PrimaryRebalanceWave>,
 }
 
 const RAFT_METADATA_SNAPSHOT_PAYLOAD_MAGIC: &[u8; 8] = b"HCMETA01";
@@ -858,6 +870,7 @@ where
     value_promotions: BTreeMap<hydracache::PartitionId, hydracache::PartitionPromotion>,
     reads: read_index::ReadIndexes,
     value_repairs: BTreeMap<hydracache::PartitionId, hydracache::PartitionReplicaRepair>,
+    primary_rebalance: Option<hydracache::PrimaryRebalanceWave>,
     snapshot_installs: u64,
     max_wire_bytes: u64,
     #[cfg(test)]
@@ -1069,6 +1082,7 @@ where
             value_prefixes: BTreeMap::new(),
             value_promotions: BTreeMap::new(),
             value_repairs: BTreeMap::new(),
+            primary_rebalance: None,
             reads: read_index::ReadIndexes::default(),
             snapshot_installs: 0,
             max_wire_bytes,
@@ -1195,6 +1209,16 @@ where
         repair: hydracache::PartitionReplicaRepair,
     ) -> CacheResult<()> {
         let command = RaftMetadataCommand::ReplaceValueReplica(repair);
+        self.commit_command(command_id_for(&command), command)?;
+        Ok(())
+    }
+
+    /// Submit a staged primary wave control operation for Raft application.
+    pub fn propose_primary_rebalance(
+        &self,
+        operation: hydracache::PrimaryRebalanceCommand,
+    ) -> CacheResult<()> {
+        let command = RaftMetadataCommand::PrimaryRebalance(operation);
         self.commit_command(command_id_for(&command), command)?;
         Ok(())
     }
@@ -1479,6 +1503,7 @@ where
             state.value_prefixes.clear();
             state.value_promotions.clear();
             state.value_repairs.clear();
+            state.primary_rebalance = None;
             state.applied_command_ids.clear();
             state.results.clear();
             state.applied_index = 0;
@@ -1565,6 +1590,7 @@ where
                 &mut state.value_prefixes,
                 &mut state.value_promotions,
                 &mut state.value_repairs,
+                &mut state.primary_rebalance,
                 &envelope.command,
             );
             state.commands.push(envelope);
@@ -1638,6 +1664,10 @@ fn command_id_for(command: &RaftMetadataCommand) -> String {
             let bytes = serde_json::to_vec(plan).expect("replica repair serializes");
             format!("w10f-repair-{:02x?}", bytes)
         }
+        RaftMetadataCommand::PrimaryRebalance(operation) => {
+            let bytes = serde_json::to_vec(operation).expect("primary wave serializes");
+            format!("w10f-primary-wave-{:02x?}", bytes)
+        }
     }
 }
 
@@ -1646,6 +1676,7 @@ fn apply_partition_metadata(
     prefixes: &mut BTreeMap<hydracache::PartitionId, hydracache::PartitionValuePrefix>,
     promotions: &mut BTreeMap<hydracache::PartitionId, hydracache::PartitionPromotion>,
     repairs: &mut BTreeMap<hydracache::PartitionId, hydracache::PartitionReplicaRepair>,
+    wave: &mut Option<hydracache::PrimaryRebalanceWave>,
     command: &RaftMetadataCommand,
 ) {
     if let RaftMetadataCommand::CommitValuePrefix(prefix) = command {
@@ -1664,6 +1695,13 @@ fn apply_partition_metadata(
         if plan.partition.value() < 271
             && cluster.epoch() == plan.old_epoch
             && prefixes.get(&plan.partition).copied() == plan.required
+            && primary_rebalance::allows_handoff(
+                wave.as_ref(),
+                plan,
+                &cluster.members(),
+                promotions.get(&plan.partition),
+                repairs.get(&plan.partition),
+            )
             && valid_promotion(
                 &cluster.members(),
                 promotions.get(&plan.partition),
@@ -1674,9 +1712,24 @@ fn apply_partition_metadata(
         {
             promotions.insert(plan.partition, plan.clone());
             repairs.remove(&plan.partition);
+            if let Some(current) = wave
+                .as_mut()
+                .filter(|current| Some(current.id) == plan.wave)
+            {
+                current.completed += 1;
+            }
         }
     }
     if let RaftMetadataCommand::ReplaceValueReplica(repair) = command {
+        if !primary_rebalance::allows_transfer(
+            wave.as_ref(),
+            repair.wave,
+            repair.partition,
+            &repair.owner,
+            &repair.target,
+        ) {
+            return;
+        }
         let slot = value_repair_slot(
             &cluster.members(),
             cluster.epoch(),
@@ -1693,6 +1746,9 @@ fn apply_partition_metadata(
             }
             repairs.insert(repair.partition, repair.clone());
         }
+    }
+    if let RaftMetadataCommand::PrimaryRebalance(operation) = command {
+        primary_rebalance::apply_control(cluster, wave, prefixes, promotions, repairs, operation);
     }
 }
 
@@ -1868,6 +1924,7 @@ fn stage_metadata_snapshot(
     let mut value_prefixes = BTreeMap::new();
     let mut value_promotions = BTreeMap::new();
     let mut value_repairs = BTreeMap::new();
+    let mut primary_rebalance = None;
     for (offset, envelope) in snapshot.commands.iter().enumerate() {
         let tail_index = offset + 1;
         materialize_snapshot_command(&staged_cluster, &envelope.command).map_err(|error| {
@@ -1883,6 +1940,7 @@ fn stage_metadata_snapshot(
             &mut value_prefixes,
             &mut value_promotions,
             &mut value_repairs,
+            &mut primary_rebalance,
             &envelope.command,
         );
         if !applied_command_ids.insert(envelope.command_id.clone()) {
@@ -1902,6 +1960,7 @@ fn stage_metadata_snapshot(
         value_prefixes,
         value_promotions,
         value_repairs,
+        primary_rebalance,
     })
 }
 
@@ -2065,7 +2124,8 @@ fn materialize_command(
         RaftMetadataCommand::CommitTopology { .. }
         | RaftMetadataCommand::CommitValuePrefix(_)
         | RaftMetadataCommand::PromoteValuePartition(_)
-        | RaftMetadataCommand::ReplaceValueReplica(_) => Ok(None),
+        | RaftMetadataCommand::ReplaceValueReplica(_)
+        | RaftMetadataCommand::PrimaryRebalance(_) => Ok(None),
     }
 }
 
@@ -2132,7 +2192,8 @@ fn materialize_committed_command(
         RaftMetadataCommand::CommitTopology { .. }
         | RaftMetadataCommand::CommitValuePrefix(_)
         | RaftMetadataCommand::PromoteValuePartition(_)
-        | RaftMetadataCommand::ReplaceValueReplica(_) => return Ok(()),
+        | RaftMetadataCommand::ReplaceValueReplica(_)
+        | RaftMetadataCommand::PrimaryRebalance(_) => return Ok(()),
     }
     materialize_command(cluster, command).map(|_| ())
 }
@@ -2159,6 +2220,7 @@ where
         self.value_prefixes = staged.value_prefixes;
         self.value_promotions = staged.value_promotions;
         self.value_repairs = staged.value_repairs;
+        self.primary_rebalance = staged.primary_rebalance;
         self.results.clear();
         self.applied_index = staged.applied_index;
         // The cluster names were checked above, so replacement has no
@@ -2440,6 +2502,7 @@ where
                             &mut self.value_prefixes,
                             &mut self.value_promotions,
                             &mut self.value_repairs,
+                            &mut self.primary_rebalance,
                             &envelope.command,
                         );
                         self.commands.push(envelope);
@@ -2704,6 +2767,11 @@ fn encode_command(command: &RaftMetadataCommand) -> Vec<u8> {
             serde_json::to_string(plan).expect("replica repair serializes")
         )
         .into_bytes(),
+        RaftMetadataCommand::PrimaryRebalance(operation) => format!(
+            "w10f-primary-wave|{}",
+            serde_json::to_string(operation).expect("primary wave serializes")
+        )
+        .into_bytes(),
     }
 }
 
@@ -2746,6 +2814,11 @@ fn decode_command(data: &[u8]) -> CacheResult<RaftMetadataCommand> {
         return serde_json::from_str(plan)
             .map(RaftMetadataCommand::ReplaceValueReplica)
             .map_err(|error| CacheError::Decode(format!("invalid replica repair: {error}")));
+    }
+    if let Some(operation) = text.strip_prefix("w10f-primary-wave|") {
+        return serde_json::from_str(operation)
+            .map(RaftMetadataCommand::PrimaryRebalance)
+            .map_err(|error| CacheError::Decode(format!("invalid primary wave: {error}")));
     }
     let parts = text.split('|').collect::<Vec<_>>();
     match parts.as_slice() {

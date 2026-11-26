@@ -202,7 +202,8 @@ impl ReferenceMetadataModel {
             }
             RaftMetadataCommand::CommitValuePrefix(_)
             | RaftMetadataCommand::PromoteValuePartition(_)
-            | RaftMetadataCommand::ReplaceValueReplica(_) => {}
+            | RaftMetadataCommand::ReplaceValueReplica(_)
+            | RaftMetadataCommand::PrimaryRebalance(_) => {}
         }
         Ok(())
     }
@@ -336,6 +337,10 @@ fn expected_command_id(command: &RaftMetadataCommand) -> String {
         RaftMetadataCommand::ReplaceValueReplica(plan) => {
             let bytes = serde_json::to_vec(plan).expect("replica repair serializes");
             format!("w10f-repair-{:02x?}", bytes)
+        }
+        RaftMetadataCommand::PrimaryRebalance(operation) => {
+            let bytes = serde_json::to_vec(operation).expect("primary wave serializes");
+            format!("w10f-primary-wave-{:02x?}", bytes)
         }
     }
 }

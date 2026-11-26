@@ -109,6 +109,8 @@ pub enum RaftMetadataCommand {
     PromoteValuePartition(PartitionPromotion),
     /// Replace one synchronous backup with a verified snapshot recipient.
     ReplaceValueReplica(PartitionReplicaRepair),
+    /// Open or cancel the cluster's staged primary rebalance wave.
+    PrimaryRebalance(PrimaryRebalanceCommand),
 }
 
 /// A replicated commitment for one partition. Value bytes stay on the value plane.
@@ -138,6 +140,8 @@ pub struct PartitionPromotion {
     pub new_owner: PartitionReplicaIdentity,
     pub backups: Vec<PartitionReplicaIdentity>,
     pub required: Option<PartitionValuePrefix>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub wave: Option<ClusterEpoch>,
 }
 
 /// A repair bound to one active owner, backup slot and certified image.
@@ -154,6 +158,56 @@ pub struct PartitionReplicaRepair {
     /// Exact pre-repair backups for a partition without an owner promotion.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub prior_backups: Option<Vec<PartitionReplicaIdentity>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub wave: Option<ClusterEpoch>,
+}
+
+/// One primary movement in an ordered, generation-bound rebalance wave.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct PrimaryTransferTask {
+    pub partition: super::PartitionId,
+    pub source: PartitionReplicaIdentity,
+    pub target: PartitionReplicaIdentity,
+}
+
+/// Raft authority for an ordered group of primary transfers.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct PrimaryRebalanceWave {
+    pub id: ClusterEpoch,
+    pub scope: [u8; 32],
+    pub sync_backups: usize,
+    pub tasks: Vec<PrimaryTransferTask>,
+    pub completed: usize,
+    pub cancelled: bool,
+}
+
+impl PrimaryRebalanceWave {
+    /// A deliberately bounded number of tasks held by the control plane.
+    pub const MAX_TASKS: usize = 16;
+
+    /// Only this task can seed a destination or advance ownership.
+    pub fn head(&self) -> Option<&PrimaryTransferTask> {
+        if self.cancelled {
+            None
+        } else {
+            self.tasks.get(self.completed)
+        }
+    }
+}
+
+/// Raft commands for starting and cancelling a primary rebalance wave.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum PrimaryRebalanceCommand {
+    Start {
+        id: ClusterEpoch,
+        scope: [u8; 32],
+        sync_backups: usize,
+        tasks: Vec<PrimaryTransferTask>,
+    },
+    Cancel {
+        id: ClusterEpoch,
+        at_epoch: ClusterEpoch,
+    },
 }
 
 impl PartitionReplicaRepair {

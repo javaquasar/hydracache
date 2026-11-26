@@ -400,6 +400,7 @@ mod tests {
                 required,
                 snapshot_digest: bytes_digest(bytes),
                 prior_backups: None,
+                wave: None,
             },
             scope: [2; 32],
             image_len: bytes.len(),

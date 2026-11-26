@@ -173,6 +173,7 @@ impl<S: RaftLogStore> RaftRuntimeState<S> {
             value_prefixes: self.value_prefixes.clone(),
             value_promotions: self.value_promotions.clone(),
             value_repairs: self.value_repairs.clone(),
+            primary_rebalance: self.primary_rebalance.clone(),
         })
     }
 

@@ -11,7 +11,7 @@ use std::time::{Instant, SystemTime};
 use hydracache::{
     ClusterGeneration, ClusterMember, ClusterNodeId, ClusterReplicationStrategy, ClusterRole,
     ClusterTimeAuthority, DurableValueStore, PartitionPromotion, PartitionReplicaRepair,
-    PartitionValuePrefix, RendezvousClusterOwnership, TimeObservation,
+    PartitionValuePrefix, PrimaryRebalanceWave, RendezvousClusterOwnership, TimeObservation,
 };
 use hydracache_client_protocol::{
     CasExpectation, ClientErrorCode, ClientFrame, ClientRequest, ClientRequestEnvelope,
@@ -49,6 +49,8 @@ struct Status {
     owner_applies: u64,
     backup: Option<String>,
     repairs: BTreeMap<PartitionId, PartitionReplicaRepair>,
+    promotions: BTreeMap<PartitionId, PartitionPromotion>,
+    wave: Option<PrimaryRebalanceWave>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -62,6 +64,24 @@ struct PromotionRequest {
 struct RebalanceCommand {
     partitions: Vec<PartitionId>,
     drained: BTreeSet<ClusterNodeId>,
+}
+
+#[derive(Serialize, Deserialize)]
+enum WaveCommand {
+    Start(Vec<(PartitionId, PartitionMember)>),
+    Cancel(ClusterEpoch),
+}
+
+#[derive(Serialize, Deserialize)]
+struct WaveRequest {
+    serial: u32,
+    command: WaveCommand,
+}
+
+#[derive(Serialize, Deserialize)]
+struct WaveResponse {
+    serial: u32,
+    result: Result<PrimaryRebalanceWave, String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -172,6 +192,8 @@ async fn imap_replica_child() {
                     owner_applies: 0,
                     backup: None,
                     repairs: BTreeMap::new(),
+                    promotions: BTreeMap::new(),
+                    wave: None,
                 },
             );
         }
@@ -213,7 +235,25 @@ async fn run_live(
     let mut repair_serial = 0;
     let mut rebalanced = false;
     let mut automatic = false;
+    let mut wave_serial = 0;
     loop {
+        if let Some(request) = read_json::<WaveRequest>(&root.join("wave.json")) {
+            if request.serial > wave_serial {
+                let result = match request.command {
+                    WaveCommand::Start(targets) => host.start_primary_rebalance(&targets).await,
+                    WaveCommand::Cancel(id) => host.cancel_primary_rebalance(id).await,
+                }
+                .map_err(|error| error.to_string());
+                wave_serial = request.serial;
+                publish_json(
+                    &root.join("wave-reply.json"),
+                    &WaveResponse {
+                        serial: wave_serial,
+                        result,
+                    },
+                );
+            }
+        }
         if let Some(request) = read_json::<PromotionRequest>(&root.join("promotion.json")) {
             if request.serial > promotion_serial {
                 let plan = host
@@ -297,6 +337,8 @@ async fn run_live(
                     owner_applies: values.owner_applies(),
                     backup,
                     repairs: snapshot.value_repairs,
+                    promotions: snapshot.value_promotions,
+                    wave: snapshot.primary_rebalance,
                 },
             );
         }
@@ -315,6 +357,18 @@ struct Node {
 }
 
 impl Node {
+    fn wave(&self, serial: u32, command: WaveCommand) -> Result<PrimaryRebalanceWave, String> {
+        publish_json(
+            &self.root.join("wave.json"),
+            &WaveRequest { serial, command },
+        );
+        wait_for("primary wave control reply", || {
+            read_json::<WaveResponse>(&self.root.join("wave-reply.json"))
+                .filter(|reply| reply.serial == serial)
+        })
+        .result
+    }
+
     fn start(&mut self) {
         assert!(self.child.is_none());
         let log = File::options()
@@ -685,16 +739,10 @@ fn with_rebalance_load<T>(
     })
 }
 
-#[test]
-fn w10f_balances_three_live_partitions_and_repairs_a_failed_backup_automatically() {
-    if std::env::var(RUN).as_deref() != Ok("1") {
-        return;
-    }
-    let mut nodes = start_node_count(true, 4);
-    let initial = wait_for("four W10f members", || all_members(&nodes, 0));
-    let members: Vec<_> = nodes
+fn fixture_members(nodes: &[Node], statuses: &[Status]) -> Vec<ClusterMember> {
+    nodes
         .iter()
-        .zip(&initial)
+        .zip(statuses)
         .map(|(node, status)| ClusterMember {
             node_id: ClusterNodeId::new(&node.identity),
             generation: ClusterGeneration::new(status.generation),
@@ -703,7 +751,252 @@ fn w10f_balances_three_live_partitions_and_repairs_a_failed_backup_automatically
             endpoints: Default::default(),
             metadata: Default::default(),
         })
-        .collect();
+        .collect()
+}
+
+#[test]
+fn w10f_primary_wave_moves_two_owners_and_fences_a_cancelled_copy_under_load() {
+    if std::env::var(RUN).as_deref() != Ok("1") {
+        return;
+    }
+    let nodes = start_node_count(true, 4);
+    let initial = wait_for("four primary wave members", || all_members(&nodes, 0));
+    let members = fixture_members(&nodes, &initial);
+    let key_for = |source: usize, target: usize, seed_needed: bool| {
+        (0..5000)
+            .find_map(|index| {
+                let key = format!("primary-wave-{index}").into_bytes();
+                let partition = scope().locate(key.clone()).unwrap().0;
+                let placement = RendezvousClusterOwnership
+                    .replicas_for_key(&format!("partition-{}", partition.value()), &members, 2)
+                    .unwrap();
+                (placement.primary == members[source].node_id
+                    && placement.backups.contains(&members[target].node_id) != seed_needed)
+                    .then_some((partition, key))
+            })
+            .unwrap()
+    };
+    let first = key_for(0, 2, true);
+    let second = key_for(1, 3, false);
+    let routes = [
+        (
+            first.0,
+            first.1.as_slice(),
+            [nodes[0].address, nodes[2].address],
+        ),
+        (
+            second.0,
+            second.1.as_slice(),
+            [nodes[1].address, nodes[3].address],
+        ),
+    ];
+    for (index, (_, key, addresses)) in routes.iter().enumerate() {
+        assert_eq!(
+            resp(addresses[0], &[b"SET", key, b"seed"]).unwrap(),
+            b"+OK\r\n"
+        );
+        assert_eq!(
+            nodes[index]
+                .hc1(
+                    compare_and_set_for_key(key, b"seed", b"base"),
+                    &format!("wave-seed-{index}")
+                )
+                .unwrap(),
+            ClientResponse::CasApplied { new_version: 2 }
+        );
+    }
+    let targets = vec![
+        (first.0, nodes[2].member(initial[2].generation)),
+        (second.0, nodes[3].member(initial[3].generation)),
+    ];
+    let set_fault = |source: usize, target: usize, generation: u32, action: serde_json::Value| {
+        publish_json(
+            &nodes[source].root.join("fault.json"),
+            &json!({
+                "schema_version": 1, "generation": generation, "rules": [{
+                    "from": nodes[source].identity, "to": nodes[target].identity, "action": action
+                }]
+            }),
+        );
+    };
+    set_fault(0, 2, 1, json!({"kind":"value_drop"}));
+    let wave = nodes[3]
+        .wave(1, WaveCommand::Start(targets.clone()))
+        .unwrap();
+    assert_eq!(wave.tasks[0].source.node, members[0].node_id);
+    assert_eq!(wave.tasks[1].source.node, members[1].node_id);
+    assert_eq!(nodes[1].wave(1, WaveCommand::Start(targets)).unwrap(), wave);
+    assert!(nodes[3]
+        .promote_key(1, Some(second.0), vec![wave.tasks[1].source.clone()])
+        .is_none());
+
+    let stop = AtomicBool::new(false);
+    let writes_at_destination = [AtomicBool::new(false), AtomicBool::new(false)];
+    let acknowledgements = std::thread::scope(|threads| {
+        let writer = threads.spawn(|| {
+            let deadline = Instant::now() + Duration::from_secs(15);
+            let mut counts = [[0; 2]; 2];
+            while !stop.load(Ordering::Acquire) && Instant::now() < deadline {
+                for (index, (_, key, addresses)) in routes.iter().enumerate() {
+                    for (side, address) in addresses.iter().enumerate() {
+                        match resp(*address, &[b"SET", key, b"load"]) {
+                            Ok(reply) if reply == b"+OK\r\n" => {
+                                counts[index][side] += 1;
+                                if side == 1 {
+                                    writes_at_destination[index].store(true, Ordering::Release);
+                                }
+                                break;
+                            }
+                            Ok(reply) => assert!(reply.starts_with(b"-ERR "), "{reply:?}"),
+                            Err(error)
+                                if matches!(
+                                    error.kind(),
+                                    io::ErrorKind::TimedOut | io::ErrorKind::WouldBlock
+                                ) => {}
+                            Err(error) => panic!("wave load lost its client transport: {error}"),
+                        }
+                    }
+                }
+                std::thread::sleep(Duration::from_millis(18));
+            }
+            counts
+        });
+        wait_for(
+            "both owners accept writes while the head is blocked",
+            || {
+                routes
+                    .iter()
+                    .all(|(_, key, addresses)| {
+                        resp(addresses[0], &[b"GET", key])
+                            .is_ok_and(|reply| reply == b"$4\r\nload\r\n")
+                    })
+                    .then_some(())
+            },
+        );
+        let blocked = nodes[1].refreshed_status();
+        assert_eq!(blocked.wave.as_ref().unwrap().completed, 0);
+        assert!(blocked.promotions.is_empty());
+        set_fault(
+            0,
+            2,
+            2,
+            json!({"kind":"value_chunk_delay","index":0,"millis":650}),
+        );
+        wait_for(
+            "both new primary endpoints accept foreground writes",
+            || {
+                writes_at_destination
+                    .iter()
+                    .all(|seen| seen.load(Ordering::Acquire))
+                    .then_some(())
+            },
+        );
+        stop.store(true, Ordering::Release);
+        writer.join().unwrap()
+    });
+    for counts in acknowledgements {
+        assert!(counts[0] > 0 && counts[1] > 0);
+    }
+    let completed = wait_for("the committed wave moves both owners", || {
+        let status = nodes[3].status()?;
+        let completed = status.wave.as_ref()?;
+        (completed.id == wave.id && completed.completed == 2).then_some(status)
+    });
+    let first_cut = &completed.promotions[&first.0];
+    let second_cut = &completed.promotions[&second.0];
+    assert_eq!(first_cut.wave, Some(wave.id));
+    assert_eq!(second_cut.wave, Some(wave.id));
+    assert_eq!(first_cut.new_epoch, second_cut.old_epoch);
+    assert!(first_cut.required.unwrap().version > 2 && second_cut.required.unwrap().version > 2);
+    assert_eq!(first_cut.backups, vec![wave.tasks[0].source.clone()]);
+    assert_eq!(second_cut.backups, vec![wave.tasks[1].source.clone()]);
+    assert!(fs::read_to_string(nodes[0].root.join("child.log"))
+        .unwrap()
+        .contains("ValueChunkDelay { index: 0, millis: 650 }"));
+    for (index, (partition, key, addresses)) in routes.iter().enumerate() {
+        wait_for(
+            "the former owner is fenced by its applied Raft view",
+            || {
+                (nodes[index].status()?.promotions.get(partition)?.new_owner
+                    == wave.tasks[index].target)
+                    .then_some(())
+            },
+        );
+        assert_eq!(resp(addresses[0], &[b"GET", key]).unwrap(), UNAVAILABLE);
+        assert!(resp(addresses[0], &[b"SET", key, b"stale"])
+            .unwrap()
+            .starts_with(b"-ERR "));
+        assert_eq!(
+            nodes[index + 2]
+                .hc1(
+                    compare_and_set_for_key(key, b"seed", b"base"),
+                    &format!("wave-seed-{index}")
+                )
+                .unwrap(),
+            ClientResponse::CasApplied { new_version: 2 }
+        );
+        let request = compare_and_set_for_key(key, b"load", b"verified");
+        let id = format!("w10e:{}:after-wave-{}", completed.epoch, partition.value());
+        let result = nodes[index + 2].hc1(request.clone(), &id).unwrap();
+        assert!(matches!(result, ClientResponse::CasApplied { .. }));
+        assert_eq!(nodes[index + 2].hc1(request, &id).unwrap(), result);
+    }
+
+    set_fault(
+        2,
+        3,
+        1,
+        json!({"kind":"value_chunk_delay","index":0,"millis":900}),
+    );
+    let next = nodes[3]
+        .wave(
+            2,
+            WaveCommand::Start(vec![(first.0, nodes[3].member(initial[3].generation))]),
+        )
+        .unwrap();
+    wait_for("a new snapshot is in flight before cancellation", || {
+        fs::read_to_string(nodes[2].root.join("child.log"))
+            .ok()?
+            .contains("ValueChunkDelay { index: 0, millis: 900 }")
+            .then_some(())
+    });
+    assert_eq!(
+        resp(nodes[2].address, &[b"SET", &first.1, b"cancel-safe"]).unwrap(),
+        b"+OK\r\n"
+    );
+    let cancelled = nodes[1].wave(2, WaveCommand::Cancel(next.id)).unwrap();
+    assert!(cancelled.cancelled);
+    assert_eq!(cancelled.completed, 0);
+    assert_eq!(
+        nodes[1].wave(3, WaveCommand::Cancel(next.id)).unwrap(),
+        cancelled
+    );
+    std::thread::sleep(Duration::from_secs(1));
+    let latest = nodes[2].refreshed_status();
+    assert!(latest
+        .wave
+        .is_some_and(|wave| wave.cancelled && wave.id == next.id));
+    assert_eq!(latest.promotions[&first.0].new_owner, wave.tasks[0].target);
+    assert_eq!(
+        resp(nodes[2].address, &[b"GET", &first.1]).unwrap(),
+        b"$11\r\ncancel-safe\r\n"
+    );
+    assert_eq!(
+        resp(nodes[3].address, &[b"GET", &first.1]).unwrap(),
+        UNAVAILABLE
+    );
+    println!("W10f primary wave={} first={} second={} cut_epochs=[{},{}] acknowledged={acknowledgements:?} cancelled_wave={} old_owner_fenced=true",
+        wave.id.value(), first.0.value(), second.0.value(), first_cut.new_epoch.value(), second_cut.new_epoch.value(), next.id.value());
+}
+
+#[test]
+fn w10f_balances_three_live_partitions_and_repairs_a_failed_backup_automatically() {
+    if std::env::var(RUN).as_deref() != Ok("1") {
+        return;
+    }
+    let mut nodes = start_node_count(true, 4);
+    let initial = wait_for("four W10f members", || all_members(&nodes, 0));
+    let members = fixture_members(&nodes, &initial);
     let mut keys = BTreeMap::new();
     let mut failure_case = None;
     for index in 0..5_000 {

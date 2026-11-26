@@ -349,6 +349,7 @@ async fn promotion_requires_exact_committed_cut_and_fences_delayed_certificate_a
         new_owner: new_owner.clone(),
         backups: vec![old_owner],
         required: Some(first),
+        wave: None,
     };
     let wrong_backup = PartitionReplicaIdentity {
         node: plan.old_owner.node.clone(),
@@ -441,6 +442,7 @@ async fn promotion_requires_exact_committed_cut_and_fences_delayed_certificate_a
         required: Some(next),
         snapshot_digest: [8; 32],
         prior_backups: None,
+        wave: None,
     };
     for invalid in [
         PartitionReplicaRepair {
@@ -562,6 +564,7 @@ async fn a_natural_repair_pins_the_committed_backup_and_controls_a_later_promoti
         required: Some(prefix),
         snapshot_digest: [4; 32],
         prior_backups: Some(vec![backup.clone()]),
+        wave: None,
     };
     for wrong in [
         PartitionReplicaRepair {
@@ -601,6 +604,7 @@ async fn a_natural_repair_pins_the_committed_backup_and_controls_a_later_promoti
         new_owner: target.clone(),
         backups: vec![owner.clone()],
         required: Some(prefix),
+        wave: None,
     };
     raft.propose_value_promotion(PartitionPromotion {
         new_owner: backup,
@@ -616,4 +620,200 @@ async fn a_natural_repair_pins_the_committed_backup_and_controls_a_later_promoti
         Some((target, vec![owner]))
     );
     assert!(final_view.value_repairs.is_empty());
+}
+
+#[tokio::test]
+async fn primary_wave_fences_other_owners_and_recovers_head_progress_and_cancellation() {
+    use hydracache::{
+        ClusterEpoch, ClusterReplicationStrategy, PartitionId, PartitionPromotion,
+        PartitionReplicaIdentity, PartitionReplicaRepair, PartitionValuePrefix,
+        PrimaryRebalanceCommand, PrimaryTransferTask, RendezvousClusterOwnership,
+    };
+    use hydracache_cluster_raft::RaftMetadataRuntime;
+
+    let raft = RaftMetadataRuntime::single_node("primary-wave", 1).unwrap();
+    for node in ["a", "b", "c", "d"] {
+        raft.join_member(ClusterCandidate::member(node))
+            .await
+            .unwrap();
+    }
+    let initial = raft.partition_snapshot().unwrap();
+    let identify = |node| {
+        let entry = initial
+            .members
+            .iter()
+            .find(|entry| entry.node_id == node)
+            .unwrap();
+        PartitionReplicaIdentity {
+            node,
+            generation: entry.generation,
+        }
+    };
+    let natural = |partition: PartitionId| {
+        let ranked = RendezvousClusterOwnership
+            .replicas_for_key(
+                &format!("partition-{}", partition.value()),
+                &initial.members,
+                2,
+            )
+            .unwrap();
+        (
+            identify(ranked.primary),
+            identify(ranked.backups[0].clone()),
+        )
+    };
+    let first = PartitionId::new(1);
+    let (source, backup) = natural(first);
+    let target = identify(
+        initial
+            .members
+            .iter()
+            .find(|entry| entry.node_id != source.node && entry.node_id != backup.node)
+            .unwrap()
+            .node_id
+            .clone(),
+    );
+    let second = (2..271)
+        .map(PartitionId::new)
+        .find(|partition| natural(*partition).0 != source)
+        .unwrap();
+    let (next_source, next_target) = natural(second);
+    let tasks = vec![
+        PrimaryTransferTask {
+            partition: first,
+            source: source.clone(),
+            target: target.clone(),
+        },
+        PrimaryTransferTask {
+            partition: second,
+            source: next_source,
+            target: next_target,
+        },
+    ];
+    let certificate = |partition, epoch, version, previous| PartitionValuePrefix {
+        partition,
+        epoch,
+        version,
+        previous,
+        digest: [version as u8; 32],
+    };
+    let first_prefix = certificate(first, initial.epoch, 1, [0; 32]);
+    let second_prefix = certificate(second, initial.epoch, 1, [0; 32]);
+    raft.propose_value_prefix(first_prefix).unwrap();
+    raft.propose_value_prefix(second_prefix).unwrap();
+    let bump = |epoch: ClusterEpoch| ClusterEpoch::new(epoch.value() + 1);
+    let id = bump(initial.epoch);
+    let start = |id, tasks| PrimaryRebalanceCommand::Start {
+        id,
+        scope: [3; 32],
+        sync_backups: 1,
+        tasks,
+    };
+    raft.propose_primary_rebalance(start(id, vec![tasks[0].clone(), tasks[0].clone()]))
+        .unwrap();
+    assert!(raft
+        .partition_snapshot()
+        .unwrap()
+        .primary_rebalance
+        .is_none());
+    raft.propose_primary_rebalance(start(id, tasks.clone()))
+        .unwrap();
+    let view = raft.partition_snapshot().unwrap();
+    assert_eq!(view.epoch, id);
+    assert_eq!(view.primary_rebalance.unwrap().head(), Some(&tasks[0]));
+    raft.propose_primary_rebalance(start(bump(id), vec![tasks[1].clone()]))
+        .unwrap();
+    assert_eq!(raft.partition_snapshot().unwrap().epoch, id);
+    let plan = |task: &PrimaryTransferTask, epoch, prefix, wave| PartitionPromotion {
+        partition: task.partition,
+        old_epoch: epoch,
+        new_epoch: bump(epoch),
+        old_owner: task.source.clone(),
+        new_owner: task.target.clone(),
+        backups: vec![task.source.clone()],
+        required: Some(prefix),
+        wave,
+    };
+    for blocked in [
+        plan(&tasks[1], id, second_prefix, Some(id)),
+        plan(&tasks[1], id, second_prefix, None),
+        plan(&tasks[0], id, first_prefix, Some(id)),
+    ] {
+        raft.propose_value_promotion(blocked).unwrap();
+        assert_eq!(raft.partition_snapshot().unwrap().epoch, id);
+    }
+    let seed_epoch = bump(id);
+    let seed = PartitionReplicaRepair {
+        partition: first,
+        old_epoch: id,
+        new_epoch: seed_epoch,
+        owner: source.clone(),
+        replaced: backup.clone(),
+        target: target.clone(),
+        required: Some(first_prefix),
+        snapshot_digest: [8; 32],
+        prior_backups: Some(vec![backup.clone()]),
+        wave: Some(id),
+    };
+    raft.propose_value_repair(PartitionReplicaRepair {
+        wave: None,
+        ..seed.clone()
+    })
+    .unwrap();
+    assert_eq!(raft.partition_snapshot().unwrap().epoch, id);
+    raft.propose_value_repair(seed).unwrap();
+    let newer = certificate(first, seed_epoch, 2, first_prefix.digest);
+    raft.propose_value_prefix(newer).unwrap();
+    for invalid in [
+        plan(&tasks[0], seed_epoch, first_prefix, Some(id)),
+        PartitionPromotion {
+            backups: vec![backup],
+            ..plan(&tasks[0], seed_epoch, newer, Some(id))
+        },
+    ] {
+        raft.propose_value_promotion(invalid).unwrap();
+        assert_eq!(raft.partition_snapshot().unwrap().epoch, seed_epoch);
+    }
+    let first_cut = plan(&tasks[0], seed_epoch, newer, Some(id));
+    raft.propose_value_promotion(first_cut.clone()).unwrap();
+    let restored = RaftMetadataRuntime::from_snapshot(raft.export_snapshot()).unwrap();
+    for runtime in [&raft, &restored] {
+        let view = runtime.partition_snapshot().unwrap();
+        assert_eq!(
+            view.value_assignment(first),
+            Some((target.clone(), vec![source.clone()]))
+        );
+        let wave = view.primary_rebalance.unwrap();
+        assert_eq!(wave.completed, 1);
+        assert_eq!(wave.head(), Some(&tasks[1]));
+    }
+    let second_cut = plan(&tasks[1], first_cut.new_epoch, second_prefix, Some(id));
+    raft.propose_primary_rebalance(PrimaryRebalanceCommand::Cancel {
+        id,
+        at_epoch: first_cut.new_epoch,
+    })
+    .unwrap();
+    raft.propose_value_promotion(second_cut).unwrap();
+    let stopped = raft.partition_snapshot().unwrap();
+    assert_eq!(stopped.epoch, bump(first_cut.new_epoch));
+    let closed = stopped.primary_rebalance.unwrap();
+    assert!(closed.cancelled);
+    assert_eq!(closed.completed, 1);
+    assert!(stopped.value_assignment(second).is_none());
+
+    let next_wave = bump(stopped.epoch);
+    raft.propose_primary_rebalance(start(next_wave, vec![tasks[1].clone()]))
+        .unwrap();
+    raft.propose_value_promotion(plan(&tasks[1], next_wave, second_prefix, Some(id)))
+        .unwrap();
+    assert_eq!(raft.partition_snapshot().unwrap().epoch, next_wave);
+    raft.propose_value_promotion(plan(&tasks[1], next_wave, second_prefix, Some(next_wave)))
+        .unwrap();
+    let complete = raft
+        .partition_snapshot()
+        .unwrap()
+        .primary_rebalance
+        .unwrap();
+    assert_eq!(complete.completed, 1);
+    assert!(!complete.cancelled && complete.head().is_none());
 }

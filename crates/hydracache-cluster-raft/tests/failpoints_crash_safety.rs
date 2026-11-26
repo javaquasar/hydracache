@@ -102,7 +102,8 @@ async fn replay_tail_with_canary(
             RaftMetadataCommand::CommitTopology { .. }
             | RaftMetadataCommand::CommitValuePrefix(_)
             | RaftMetadataCommand::PromoteValuePartition(_)
-            | RaftMetadataCommand::ReplaceValueReplica(_) => {}
+            | RaftMetadataCommand::ReplaceValueReplica(_)
+            | RaftMetadataCommand::PrimaryRebalance(_) => {}
         }
     }
 }

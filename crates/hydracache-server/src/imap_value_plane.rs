@@ -39,6 +39,8 @@ use crate::imap_value_journal::{
 };
 use crate::imap_value_repair::{repair_error, RepairReceipt, RepairRequest, ReplicaReady};
 
+#[path = "imap_value_primary.rs"]
+mod primary;
 #[path = "imap_value_rebalance.rs"]
 mod rebalance;
 #[path = "imap_value_repair_owner.rs"]
@@ -86,6 +88,8 @@ pub(crate) struct ReplicaPrefix {
     pub epoch: ClusterEpoch,
     pub partition: PartitionId,
     required: Option<PartitionValuePrefix>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub wave: Option<ClusterEpoch>,
 }
 
 #[derive(Deserialize)]
@@ -309,6 +313,17 @@ impl ValueReplica {
             || request.epoch != snapshot.epoch
             || request.epoch.value() != epoch
             || snapshot.value_prefixes.get(&request.partition).copied() != request.required
+            || request.wave.is_some_and(|id| {
+                snapshot.primary_rebalance.as_ref().is_none_or(|wave| {
+                    wave.id != id
+                        || wave.scope != self.repair_scope()
+                        || wave.head().is_none_or(|head| {
+                            head.partition != request.partition
+                                || head.target != self.local
+                                || head.source != placement.primary
+                        })
+                })
+            })
         {
             return Err(replica_rejected());
         }
@@ -341,6 +356,13 @@ impl ValueReplica {
             let _guard = lane.storage.try_lock().map_err(|_| promotion_refused())?;
             proof
                 .with_snapshot(|snapshot, _| {
+                    if snapshot
+                        .primary_rebalance
+                        .as_ref()
+                        .is_some_and(|wave| wave.head().is_some())
+                    {
+                        return Err(promotion_refused());
+                    }
                     let required = snapshot.value_prefixes.get(&partition).copied();
                     if !self.journal.load(partition)?.covers(required) {
                         return Err(promotion_refused());
@@ -383,6 +405,7 @@ impl ValueReplica {
                             new_owner: self.local.clone(),
                             backups,
                             required,
+                            wave: None,
                         },
                         false,
                     ))
@@ -788,6 +811,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
                 epoch: cut.epoch,
                 partition: input.partition,
                 required: cut.prefix,
+                wave: None,
             };
             let ack = timeout_at(deadline, transport.probe(expected.clone()))
                 .await
@@ -834,7 +858,9 @@ impl<S: RaftLogStore> ValueBackend<S> {
         if !new_identity(
             input.identity.as_deref(),
             snapshot.epoch,
-            !snapshot.value_promotions.is_empty() || !snapshot.value_repairs.is_empty(),
+            !snapshot.value_promotions.is_empty()
+                || !snapshot.value_repairs.is_empty()
+                || snapshot.primary_rebalance.is_some(),
         ) {
             return Err(write_error(false, "W10e outcome_unknown"));
         }

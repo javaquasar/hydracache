@@ -10653,6 +10653,16 @@ fn raft_command_report(command: &RaftMetadataCommand) -> RaftMetadataCommandRepo
             generation: Some(plan.target.generation.value()),
             epoch: plan.new_epoch.value(),
         },
+        RaftMetadataCommand::PrimaryRebalance(operation) => RaftMetadataCommandReport {
+            kind: "primary-rebalance",
+            node_id: String::new(),
+            role: None,
+            generation: None,
+            epoch: match operation {
+                hydracache::PrimaryRebalanceCommand::Start { id, .. } => id.value(),
+                hydracache::PrimaryRebalanceCommand::Cancel { at_epoch, .. } => at_epoch.value(),
+            },
+        },
     }
 }
 

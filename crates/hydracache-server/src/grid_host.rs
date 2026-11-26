@@ -2562,6 +2562,39 @@ impl MemberReadHost {
         self.0.raft.partition_snapshot()
     }
 
+    /// Queue generation-bound primary transfers in the supplied order.
+    pub async fn start_primary_rebalance(
+        &self,
+        targets: &[(
+            hydracache::PartitionId,
+            crate::imap_topology::PartitionMember,
+        )],
+    ) -> CacheResult<hydracache::PrimaryRebalanceWave> {
+        let replica = self
+            .0
+            .value_replica
+            .get()
+            .ok_or_else(|| CacheError::Backend("staged value plane is not attached".into()))?;
+        replica
+            .start_primary_wave(&self.0.raft, &self.0._message_sink, targets)
+            .await
+    }
+
+    /// Fence the unfinished part of a wave, preserving committed movements.
+    pub async fn cancel_primary_rebalance(
+        &self,
+        id: hydracache::ClusterEpoch,
+    ) -> CacheResult<hydracache::PrimaryRebalanceWave> {
+        let replica = self
+            .0
+            .value_replica
+            .get()
+            .ok_or_else(|| CacheError::Backend("staged value plane is not attached".into()))?;
+        replica
+            .cancel_primary_wave(&self.0.raft, &self.0._message_sink, id)
+            .await
+    }
+
     /// Request a staged cutover on the successor's host. The successor must
     /// prove its local committed journal before proposing the Raft change.
     pub async fn promote_partition(
@@ -2765,6 +2798,30 @@ impl MemberReadHost {
             .value_replica
             .set(replica.clone())
             .map_err(|_| CacheError::Backend("value plane already attached".into()))?;
+        if let Some(transport) = self.0.network_sink.clone() {
+            let values = replica.clone();
+            let raft = self.0.raft.clone();
+            let sink = self.0._message_sink.clone();
+            let mut shutdown = self.0.shutdown.subscribe();
+            self.0
+                ._runtime
+                .as_ref()
+                .expect("member owns a runtime")
+                .spawn(async move {
+                    let mut ticks = tokio::time::interval(Duration::from_millis(250));
+                    ticks.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+                    while !*shutdown.borrow() {
+                        tokio::select! {
+                            _ = shutdown.changed() => return,
+                            _ = ticks.tick() => {}
+                        }
+                        tokio::select! {
+                            _ = shutdown.changed() => return,
+                            _ = values.drive_primary_wave(&raft, &sink, transport.as_ref()) => {}
+                        }
+                    }
+                });
+        }
         if schedules_expiry {
             let shutdown = self.0.shutdown.subscribe();
             self.0
@@ -3506,10 +3563,11 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
             if let Some(replica) = self.value_replica.get() {
                 let request: ReplicaMessage = serde_json::from_slice(&payload)
                     .map_err(|_| CacheError::Decode("invalid W10c application message".into()))?;
-                if matches!(
-                    request,
-                    ReplicaMessage::Ready(_) | ReplicaMessage::Repair(_)
-                ) && self.draining.load(Ordering::Acquire)
+                if self.draining.load(Ordering::Acquire)
+                    && (matches!(
+                        request,
+                        ReplicaMessage::Ready(_) | ReplicaMessage::Repair(_)
+                    ) || matches!(&request, ReplicaMessage::Prefix(probe) if probe.wave.is_some()))
                 {
                     return Err(CacheError::Backend(
                         "draining member cannot receive a repair".into(),
