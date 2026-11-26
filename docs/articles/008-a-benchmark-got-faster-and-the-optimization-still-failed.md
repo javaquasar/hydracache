@@ -875,6 +875,24 @@ bytes. The next decisions are to register the production format and hash, then b
 quorum-confirmed owner and applied prefix. The local D1 measurements cover the dispatcher and its
 local backend. The distributed read path will have its own correctness and performance gates.
 
+## Where a distributed read may look up the key
+
+The next D2 change captures the epoch, member generations, and Raft progress under the same lock
+that applies membership changes. With two separate reads, a restart could leave a caller with the
+epoch from one state and the member's generation from another. Placement declines to route until
+local apply catches up to the commit index. If applying a Raft Ready batch fails, the runtime withholds
+the placement view until recovery.
+
+The owner-lane check then compares the invocation, current owner generation, term, epoch, and
+applied prefixes before it calls the store. Tests exercise the check with supplied evidence and
+count zero lookups on stale or incomplete proofs. A real distributed read still needs to acquire
+that proof through Raft ReadIndex.
+
+The hash experiment used three sets of 100,000 keys over 271 partitions. The same FNV-1a function
+produced 365–373 entries per partition for binary integers and 321–428 for prefixed decimal keys.
+That difference matters when choosing a placement policy. A Rust/Java golden vector also covers
+unsigned remainder when the high bit of the hash is set.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

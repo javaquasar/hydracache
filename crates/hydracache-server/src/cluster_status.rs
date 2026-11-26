@@ -5,6 +5,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use hydracache::{ClusterMember, ClusterNodeId, ClusterRole, RaftMetadataSnapshot};
+use hydracache_cluster_raft::RaftPartitionSnapshot;
 use serde::Serialize;
 use thiserror::Error;
 
@@ -279,6 +280,10 @@ pub trait GridControlPlaneHandle: fmt::Debug + Send + Sync {
     fn snapshot(&self) -> RaftMetadataSnapshot;
     /// Return visible members.
     fn members(&self) -> Vec<ClusterMember>;
+    /// Return the coherent applied Raft view for partition placement, when supported.
+    fn partition_snapshot(&self) -> Option<RaftPartitionSnapshot> {
+        None
+    }
     /// Return the raft soft-state leader id, if known.
     fn raft_leader_id(&self) -> Option<String>;
     /// Return whether the live grid currently has quorum.

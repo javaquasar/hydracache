@@ -128,15 +128,17 @@ impl PartitionId {
 /// accidentally divide by zero while validating a partially built config.
 pub fn partition_for_key(key: impl AsRef<str>, partition_count: u32) -> PartitionId {
     let partition_count = partition_count.max(1);
-    PartitionId((stable_key_hash(key.as_ref()) % u64::from(partition_count)) as u32)
+    PartitionId((fnv1a64_bytes(key.as_ref().as_bytes()) % u64::from(partition_count)) as u32)
 }
 
-fn stable_key_hash(key: &str) -> u64 {
+/// The existing byte-wise FNV-1a function, exposed for D2 candidate evaluation.
+#[doc(hidden)]
+pub fn fnv1a64_bytes(key: &[u8]) -> u64 {
     const FNV_OFFSET: u64 = 0xcbf29ce484222325;
     const FNV_PRIME: u64 = 0x100000001b3;
 
     let mut hash = FNV_OFFSET;
-    for byte in key.bytes() {
+    for &byte in key {
         hash ^= u64::from(byte);
         hash = hash.wrapping_mul(FNV_PRIME);
     }

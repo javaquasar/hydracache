@@ -12,6 +12,10 @@ pub mod config;
 mod generated_console_assets;
 mod grid_host;
 pub mod hc2;
+#[doc(hidden)]
+pub mod imap_read_barrier;
+#[doc(hidden)]
+pub mod imap_topology;
 pub mod management_aggregation;
 pub mod management_history;
 mod management_http;

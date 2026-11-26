@@ -333,6 +333,25 @@ pub struct RaftMetadataRuntimeSnapshot {
     pub last_result: Option<RaftCommandResult>,
 }
 
+/// One local Raft metadata observation for partition placement.
+///
+/// Membership and epoch are captured at `applied_index` under the Raft apply lock.
+/// Consumers must fence routing while committed work is still unapplied. This view
+/// alone does not supply quorum authority for a particular read.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RaftPartitionSnapshot {
+    /// Local Raft term when the view was captured.
+    pub term: u64,
+    /// Epoch of the materialized membership.
+    pub epoch: ClusterEpoch,
+    /// Raft commit index observed in the same critical section.
+    pub commit_index: u64,
+    /// Applied log index of the materialized membership.
+    pub applied_index: u64,
+    /// Applied member records, including process generations.
+    pub members: Vec<ClusterMember>,
+}
+
 /// Read-only durable-log progress around the server compaction seam.
 ///
 /// A valid observation always has `snapshot_index <= applied_index`. The
@@ -786,6 +805,7 @@ where
     results: Vec<RaftCommandResult>,
     outbound_messages: Vec<RaftWireMessage>,
     applied_index: u64,
+    partition_view_fenced: bool,
     snapshot_installs: u64,
     max_wire_bytes: u64,
     #[cfg(test)]
@@ -993,6 +1013,7 @@ where
             results: Vec::new(),
             outbound_messages: Vec::new(),
             applied_index: 0,
+            partition_view_fenced: false,
             snapshot_installs: 0,
             max_wire_bytes,
             #[cfg(test)]
@@ -1072,6 +1093,19 @@ where
     /// Return admitted member snapshots from the runtime control plane.
     pub fn members(&self) -> Vec<ClusterMember> {
         self.cluster.members()
+    }
+
+    /// Capture the Raft indices, epoch and member generations under the apply lock.
+    /// A failed Ready cycle fences the partition view for the lifetime of this runtime.
+    pub fn partition_snapshot(&self) -> Option<RaftPartitionSnapshot> {
+        let state = self.raft.lock().expect("raft metadata state poisoned");
+        (!state.partition_view_fenced).then(|| RaftPartitionSnapshot {
+            term: state.raw_node.raft.term,
+            epoch: state.cluster.epoch(),
+            commit_index: state.raw_node.raft.hard_state().commit,
+            applied_index: state.applied_index,
+            members: state.cluster.members(),
+        })
     }
 
     /// Return connected client snapshots from the runtime control plane.
@@ -2017,6 +2051,14 @@ where
     }
 
     fn drain_ready(&mut self) -> CacheResult<Vec<RaftWireMessage>> {
+        let result = self.apply_ready();
+        if result.is_err() {
+            self.partition_view_fenced = true;
+        }
+        result
+    }
+
+    fn apply_ready(&mut self) -> CacheResult<Vec<RaftWireMessage>> {
         let mut outbound = Vec::new();
         while self.raw_node.has_ready() {
             let store = self.raw_node.raft.raft_log.store.clone();
@@ -2698,6 +2740,24 @@ mod tests {
             error.to_string().contains("past committed index"),
             "{error}"
         );
+    }
+
+    #[test]
+    fn partition_view_stays_fenced_after_a_ready_apply_failure() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        assert!(runtime.partition_snapshot().is_some());
+        {
+            let mut state = runtime.raft.lock().expect("raft metadata state poisoned");
+            state.raw_node.propose(Vec::new(), vec![0xff]).unwrap();
+        }
+        let error = runtime.drain_ready().unwrap_err();
+        assert!(
+            matches!(error, CacheError::Backend(ref detail) if detail.starts_with("invalid raft envelope utf8")),
+            "{error}"
+        );
+        assert!(runtime.partition_snapshot().is_none());
+        assert!(runtime.drain_ready().is_ok());
+        assert!(runtime.partition_snapshot().is_none());
     }
 
     #[tokio::test]

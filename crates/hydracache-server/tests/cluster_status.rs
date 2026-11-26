@@ -12,6 +12,8 @@ use hydracache::{
 use hydracache_client_transport_axum::{
     HYDRACACHE_ADMIN_HEADER, HYDRACACHE_CLIENT_ID_HEADER, HYDRACACHE_TENANT_HEADER,
 };
+use hydracache_cluster_raft::RaftPartitionSnapshot;
+use hydracache_server::imap_topology::{PartitionTopology, PartitionTopologyError};
 use hydracache_server::{
     AdminApiConfig, AdminHttpSurface, BackupConfig, ClientApiConfig, ClusterAuthConfig,
     ClusterStatusProvider, ClusterStatusRuntime, GridControlPlaneHandle, LiveClusterStatus,
@@ -219,6 +221,7 @@ fn live_provider(grid: FakeGrid) -> Arc<dyn ClusterStatusProvider> {
 struct FakeGrid {
     snapshot: RaftMetadataSnapshot,
     members: Vec<ClusterMember>,
+    partition_view: Option<RaftPartitionSnapshot>,
     leader: Option<String>,
     unreachable: BTreeSet<ClusterNodeId>,
     quorum: bool,
@@ -244,6 +247,7 @@ impl FakeGrid {
                 member("node-2", 2),
                 member("node-3", 3),
             ],
+            partition_view: None,
             leader: Some("node-2".to_owned()),
             unreachable: BTreeSet::new(),
             quorum: true,
@@ -272,6 +276,10 @@ impl GridControlPlaneHandle for FakeGrid {
 
     fn members(&self) -> Vec<ClusterMember> {
         self.members.clone()
+    }
+
+    fn partition_snapshot(&self) -> Option<RaftPartitionSnapshot> {
+        self.partition_view.clone()
     }
 
     fn raft_leader_id(&self) -> Option<String> {
@@ -313,6 +321,33 @@ impl GridControlPlaneHandle for FakeGrid {
     fn is_draining(&self) -> bool {
         self.draining
     }
+}
+
+#[test]
+fn imap_topology_requires_the_coherent_view_even_when_legacy_status_is_available() {
+    let mut grid = FakeGrid::three_members();
+    let count = std::num::NonZeroU32::new(271).unwrap();
+    let replication = hydracache::ReplicationConfig::local_first();
+    assert_eq!(
+        PartitionTopology::from_control_plane(&grid, count, replication).unwrap_err(),
+        PartitionTopologyError::MissingSnapshot,
+    );
+
+    let epoch = ClusterEpoch::new(43);
+    grid.partition_view = Some(RaftPartitionSnapshot {
+        term: 8,
+        epoch,
+        commit_index: 10,
+        applied_index: 10,
+        members: vec![member("new-owner", 4)],
+    });
+    let placed = PartitionTopology::from_control_plane(&grid, count, replication)
+        .unwrap()
+        .placement(hydracache::PartitionId::new(0))
+        .unwrap();
+    assert_eq!(placed.epoch, epoch);
+    assert_eq!(placed.primary.node.as_str(), "new-owner");
+    assert_eq!(placed.primary.generation.value(), 4);
 }
 
 fn member(node_id: &str, generation: u64) -> ClusterMember {

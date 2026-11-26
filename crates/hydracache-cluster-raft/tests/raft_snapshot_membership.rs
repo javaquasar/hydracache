@@ -14,6 +14,35 @@ fn client(id: &'static str, generation: u64) -> ClusterCandidate {
     ClusterCandidate::client(id).generation(ClusterGeneration::new(generation))
 }
 
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn partition_snapshots_keep_roster_and_epoch_together_during_restarts() {
+    let runtime = std::sync::Arc::new(RaftMetadataRuntime::single_node("orders", 1).unwrap());
+    runtime.join_member(member("a", 1)).await.unwrap();
+    let before = runtime.partition_snapshot().unwrap();
+    let writer = tokio::spawn({
+        let runtime = runtime.clone();
+        async move {
+            for generation in 2..=32 {
+                runtime.join_member(member("a", generation)).await.unwrap();
+                tokio::task::yield_now().await;
+            }
+        }
+    });
+    for _ in 0..64 {
+        let snapshot = runtime.partition_snapshot().unwrap();
+        assert_eq!(snapshot.members.len(), 1);
+        assert_eq!(snapshot.members[0].epoch, snapshot.epoch);
+        assert_eq!(snapshot.applied_index, snapshot.commit_index);
+        assert!(snapshot.applied_index >= before.applied_index);
+        tokio::task::yield_now().await;
+    }
+    writer.await.unwrap();
+    let after = runtime.partition_snapshot().unwrap();
+    assert_eq!(before.members[0].generation.value(), 1);
+    assert_eq!(after.members[0].generation.value(), 32);
+    assert!(after.epoch > before.epoch);
+}
+
 fn ids(mut members: Vec<ClusterMember>) -> Vec<String> {
     members.sort_by(|left, right| left.node_id.cmp(&right.node_id));
     members

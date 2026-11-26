@@ -208,3 +208,45 @@ fn decode_hex(value: &str) -> Vec<u8> {
         })
         .collect()
 }
+
+#[test]
+fn provisional_fnv_matches_shared_unsigned_partition_vectors() {
+    let vectors =
+        include_str!("../../../docs/testing/imap/0.75/partition-hash-fnv1a64-vectors.tsv");
+    for row in vectors.lines().skip(1) {
+        let parts: Vec<_> = row.split('\t').collect();
+        let [id, encoded, hash, partition] = parts.as_slice() else {
+            panic!("unexpected vector {row}");
+        };
+        let frame = decode_hex(encoded);
+        let bounds = ReferenceKeyBounds::default();
+        let key = ReferenceCanonicalKey::decode(&frame, bounds).unwrap();
+        assert_eq!(key.encode(bounds).unwrap(), frame, "{id}");
+        let observed = hydracache::fnv1a64_bytes(&frame);
+        assert_eq!(observed, u64::from_str_radix(hash, 16).unwrap(), "{id}");
+        assert_eq!(observed % 271, partition.parse::<u64>().unwrap(), "{id}");
+    }
+}
+
+#[test]
+fn records_provisional_fnv_distribution_for_three_key_shapes() {
+    let bounds = ReferenceKeyBounds::default();
+    let mut counts = [[0_u32; 271]; 3];
+    for key in 0_u64..100_000 {
+        let payloads = [
+            key.to_string().into_bytes(),
+            key.to_be_bytes().to_vec(),
+            format!("order:{key:06}").into_bytes(),
+        ];
+        for (counts, payload) in counts.iter_mut().zip(payloads) {
+            let key = ReferenceCanonicalKey::new("tenant-a", "orders", 1, payload);
+            let hash = hydracache::fnv1a64_bytes(&key.encode(bounds).unwrap());
+            counts[(hash % 271) as usize] += 1;
+        }
+    }
+    for (counts, (min, max)) in counts.iter().zip([(322, 413), (365, 373), (321, 428)]) {
+        assert_eq!(counts.iter().sum::<u32>(), 100_000);
+        assert_eq!(counts.iter().min().copied(), Some(min));
+        assert_eq!(counts.iter().max().copied(), Some(max));
+    }
+}

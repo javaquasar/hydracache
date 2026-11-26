@@ -3,8 +3,12 @@ package io.hydracache.imap.semantic;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HexFormat;
 import org.junit.jupiter.api.Test;
@@ -71,5 +75,29 @@ final class ReferenceCanonicalKeyCodecTest {
     frame[6] = '6';
     assertThrows(IllegalArgumentException.class,
         () -> ReferenceCanonicalKeyCodec.decode(frame, BOUNDS));
+  }
+
+  @Test
+  void matchesTheSharedProvisionalFnvAndUnsignedPartitionVectors() throws IOException {
+    Path relative = Path.of("docs/testing/imap/0.75/partition-hash-fnv1a64-vectors.tsv");
+    Path root = Path.of("").toAbsolutePath();
+    while (root != null && !Files.isRegularFile(root.resolve(relative))) {
+      root = root.getParent();
+    }
+    assertNotNull(root, "canonical partition fixture");
+    var rows = Files.readAllLines(root.resolve(relative));
+    assertEquals(6, rows.size());
+    for (String row : rows.subList(1, rows.size())) {
+      String[] fields = row.split("\t");
+      byte[] frame = HexFormat.of().parseHex(fields[1]);
+      var key = ReferenceCanonicalKeyCodec.decode(frame, BOUNDS);
+      assertArrayEquals(frame, ReferenceCanonicalKeyCodec.encode(key, BOUNDS), fields[0]);
+      long hash = 0xcbf29ce484222325L;
+      for (byte value : frame) {
+        hash = (hash ^ Byte.toUnsignedLong(value)) * 0x100000001b3L;
+      }
+      assertEquals(Long.parseUnsignedLong(fields[2], 16), hash, fields[0]);
+      assertEquals(Long.parseLong(fields[3]), Long.remainderUnsigned(hash, 271), fields[0]);
+    }
   }
 }

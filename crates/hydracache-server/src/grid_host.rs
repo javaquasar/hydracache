@@ -21,7 +21,8 @@ use hydracache::{
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
 use hydracache_cluster_raft::{
     RaftAuthorityObservation, RaftMessageSink, RaftMetadataRuntime, RaftMetadataRuntimeConfig,
-    RaftMetadataRuntimeSnapshot, RaftRuntimeRole, RaftWireMessage, SledRaftLogStore,
+    RaftMetadataRuntimeSnapshot, RaftPartitionSnapshot, RaftRuntimeRole, RaftWireMessage,
+    SledRaftLogStore,
 };
 use hydracache_cluster_transport_axum::{
     tls::TlsStartupPolicy, AllowAllAuthorizer, AxumClusterMessageService, ClusterMessageAck,
@@ -2520,6 +2521,10 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
 
     fn members(&self) -> Vec<ClusterMember> {
         self.raft.members()
+    }
+
+    fn partition_snapshot(&self) -> Option<RaftPartitionSnapshot> {
+        self.raft.partition_snapshot()
     }
 
     fn raft_leader_id(&self) -> Option<String> {

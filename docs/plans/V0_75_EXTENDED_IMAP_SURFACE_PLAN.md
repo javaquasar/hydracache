@@ -884,10 +884,12 @@ it can reuse the same contract without becoming a release dependency.
 1. Replace string-only partition input with `CanonicalMapKey::encode(tenant, namespace, key)` and
    add `partition_for_canonical_bytes`; keep the existing FNV identity only if W0 freezes it with
    cross-language golden vectors. Changing it later is a durable placement migration.
-2. Build `PartitionTopology` from `GridControlPlaneHandle::snapshot()` and `members()` plus the
-   frozen `ReplicationConfig`. Cache it by committed `ClusterEpoch`; invalidate on a higher epoch,
-   never from discovery liveness alone. `ChitchatDiscovery` supplies reachability hints, not owner
-   authority.
+2. Build `PartitionTopology` from `GridControlPlaneHandle::partition_snapshot()` and the frozen
+   `ReplicationConfig`. Raft captures term, epoch, commit and applied indices, and member generations
+   under the apply lock. Placement refuses an unapplied commit and an inconsistent roster. A failed
+   Ready cycle fences placement until a new runtime recovers the applied state. The
+   current projection computes a staged owner and backup for an explicit partition ID. When routing
+   adds a cache, invalidate it on a higher committed epoch. Discovery supplies reachability hints.
 3. Add a separate `GridValuePlaneHandle` exposing local node/generation, authoritative topology,
    endpoint resolution, route transport and local executor lookup. `NetworkedGridHandle` may
    implement it, but `GridControlPlaneHandle` remains read-only control-plane status.
@@ -1680,6 +1682,23 @@ commit introducing wire/durable bytes also updates compatibility fixtures in tha
 | D14 | Executable authority model and expanded chaos/RPO-RTO matrix | Bounded state exploration, minimized-seed regressions, clock/disk/FD/stall/full-cluster fault receipts and profile-specific recovery proof |
 | D15 | SDK/facade/package integration, migration boundary and full W10 evidence | External consumers, Java 17/21, cold-cutover/API-only migration docs, SBOM/provenance, fuzz and six-hour qualification; freeze exact candidate |
 | D16 | Exact-candidate 24-hour confirmation and admitted Hazelcast S2 comparison | All manifests/checksums/guards independently verified before final release decision |
+
+**D2 implementation checkpoint.** The canonical codec, coherent Raft partition snapshot and staged
+placement are in code. `raft_snapshot_membership` exercises concurrent snapshot reads during restarts
+with the same node ID. `imap_partition_topology_075` checks the generation on the new placement and
+refusal while committed metadata is unapplied. `partition_view_stays_fenced_after_a_ready_apply_failure`
+checks the fence after a failed Ready cycle. `imap_read_barrier_validation_075` exercises the
+owner-lane check with zero value lookups on stale or incomplete evidence. Binding that check to a
+real per-invocation Raft ReadIndex and the production protocol test target remains open.
+
+For the W0 hash decision, FNV-1a over the provisional canonical bytes was measured on three sets of
+100,000 sequential keys with tenant `tenant-a`, namespace `orders`, and generation 1. All 271
+partitions received entries. Counts ranged from 322 to 413 for decimal strings, 365 to 373 for
+big-endian `u64` keys, and 321 to 428 for `order:` plus six digits. The [shared Rust/Java vectors](../testing/imap/0.75/partition-hash-fnv1a64-vectors.tsv)
+include a hash with its high bit set. The hash identity and production version are open in W0.
+
+The AX42 OD-2 preflight reported synchronized NTP and no `chronyc` executable. Chrony qualification
+still needs a target host running the proposed provider profile and its uncertainty receipts.
 
 **D1 performance gate.** D1 puts an async dispatcher behind `Arc<dyn ClientDataBackend>`. A boxed
 future plus an indirect call per operation can cost tens of nanoseconds, which is comparable to a 2%

@@ -563,6 +563,8 @@ pub use builder::HydraCacheBuilder;
 #[cfg(not(target_arch = "wasm32"))]
 pub use cache::HydraCache;
 #[cfg(not(target_arch = "wasm32"))]
+#[doc(hidden)]
+pub use cluster::fnv1a64_bytes;
 pub use cluster::{
     partition_for_key, validate_replica_config, ChitchatStyleDiscovery, ClientAck, ClientOp,
     ClusterAdmissionBridge, ClusterAdmissionBridgeConfig, ClusterAdmissionBridgeDiagnostics,
