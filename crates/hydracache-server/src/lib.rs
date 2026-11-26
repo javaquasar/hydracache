@@ -60,8 +60,8 @@ pub use cluster_status::{
 };
 pub use config::{
     AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ClusterStartMode,
-    Hc2ClientPlaneConfig, ManagementHistoryConfig, RedisApiConfig, ServerConfig, ServerConfigError,
-    ServerRole, TlsConfig,
+    DistributedHc2Config, Hc2ClientPlaneConfig, ManagementHistoryConfig, RedisApiConfig,
+    ServerConfig, ServerConfigError, ServerRole, TlsConfig,
 };
 #[doc(hidden)]
 pub use grid_host::MemberReadHost;

@@ -43,7 +43,7 @@ pub(crate) struct OwnerCall {
 #[serde(deny_unknown_fields)]
 pub(crate) struct OwnerReply {
     fingerprint: [u8; 32],
-    outcome: ClientBackendOutcome,
+    pub(crate) outcome: ClientBackendOutcome,
 }
 
 pub(crate) struct RoutedValueBackend<S: RaftLogStore> {
@@ -303,4 +303,20 @@ fn deadline_error() -> ClientErrorEnvelope {
         true,
         "HC/2 owner deadline expired",
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn hc2_keys_are_canonical_binary_segments() {
+        let key = |parts: &[&str]| {
+            StructuredKey::new(parts.iter().map(ToString::to_string).collect()).unwrap()
+        };
+        assert_eq!(decode_key(&key(&["00ff61"])), Some(vec![0, 255, b'a']));
+        for parts in [&["0"][..], &["AB"], &["00", "ff"], &["zz"]] {
+            assert_eq!(decode_key(&key(parts)), None);
+        }
+    }
 }

@@ -116,6 +116,84 @@ fn a_scoped_id_cannot_start_an_operation_in_a_different_epoch() {
 }
 
 #[tokio::test]
+async fn forwarded_hc2_write_requires_exact_epoch_generation_principal_and_partition() {
+    use crate::config::DistributedHc2Config;
+    use crate::imap_hc2_route::{OwnerCall, RoutedValueBackend};
+    use serde_json::json;
+
+    let fixture = Fixture::new(1).await;
+    let profile = DistributedHc2Config {
+        tenant: "tenant".into(),
+        client_cert_sha256: "a".repeat(64),
+    };
+    let principal = profile.principal();
+    let backend = RoutedValueBackend::new(fixture.backend.clone(), profile, 1024);
+    let snapshot = fixture.backend.raft.partition_snapshot().unwrap();
+    let peer = fixture.transport.replicas[0].local.clone();
+    let (ns, key) = parts();
+    let envelope = ClientRequestEnvelope::new(
+        "forward",
+        ClientRequest::Put {
+            ns,
+            key,
+            value: b"forwarded".to_vec(),
+            ttl_ms: None,
+            dimensions: Vec::new(),
+        },
+    );
+    let original = json!({
+        "version": 1, "epoch": snapshot.epoch, "target": fixture.owner.local,
+        "source": peer, "partition": fixture.partition, "principal": principal,
+        "tenant": "tenant", "expires_at_ms": crate::hc2::unix_time_ms() + 2_000, "envelope": envelope
+    });
+    for (field, invalid) in [
+        (
+            "epoch",
+            json!(ClusterEpoch::new(snapshot.epoch.value() - 1)),
+        ),
+        (
+            "partition",
+            json!(PartitionId::new(fixture.partition.value() + 1)),
+        ),
+        ("source", json!({"node": peer.node, "generation": 999})),
+        ("target", json!(peer)),
+        ("principal", json!("foreign")),
+        ("tenant", json!("foreign")),
+        ("expires_at_ms", json!(0)),
+        ("version", json!(2)),
+    ] {
+        let mut bad = original.clone();
+        bad[field] = invalid;
+        let call: OwnerCall = serde_json::from_value(bad).unwrap();
+        assert!(
+            backend
+                .receive(peer.node.as_str(), snapshot.epoch.value(), call)
+                .await
+                .outcome
+                .is_err(),
+            "{field}"
+        );
+    }
+    let call = serde_json::from_value(original.clone()).unwrap();
+    assert!(backend
+        .receive("unadmitted", snapshot.epoch.value(), call)
+        .await
+        .outcome
+        .is_err());
+    assert_eq!(fixture.owner.owner_applies(), 0);
+    let call = serde_json::from_value(original).unwrap();
+    assert_eq!(
+        backend
+            .receive(peer.node.as_str(), snapshot.epoch.value(), call)
+            .await
+            .outcome
+            .unwrap(),
+        ClientResponse::Stored
+    );
+    assert_eq!(fixture.version(), 1);
+}
+
+#[tokio::test]
 async fn promotion_refuses_a_designated_backup_without_the_exact_prefix() {
     let fixture = Fixture::new(1).await;
     let raft = &fixture.backend.raft;

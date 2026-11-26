@@ -28,6 +28,8 @@ use tokio::sync::{Mutex, MutexGuard};
 #[path = "support/hc2_pki.rs"]
 mod hc2_pki;
 use hc2_pki::{pki, write_pki};
+#[path = "support/imap_hc2_campaign.rs"]
+mod imap_hc2_campaign;
 
 // These tests release reserved ports before a child process binds them. Keep
 // the hand-off and the post-exit availability assertions isolated from the
@@ -64,6 +66,14 @@ fn test_root(label: &str) -> PathBuf {
         "target/test-hc2-daemon-{label}-{}-{unique}",
         std::process::id()
     ))
+}
+
+fn sha256_hex(bytes: &[u8]) -> String {
+    hex_digest(&Sha256::digest(bytes))
+}
+
+fn hex_digest(bytes: &[u8]) -> String {
+    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
 fn daemon_command(
@@ -122,11 +132,69 @@ fn wait_success(child: &mut Child, timeout: Duration) {
     }
 }
 
+#[test]
+fn member_hc2_has_no_node_local_fallback() {
+    use hydracache_server::{
+        ClusterAuthConfig, DistributedHc2Config, Hc2ClientPlaneConfig, ServerConfig,
+        ServerConfigError, ServerRole, TlsConfig,
+    };
+
+    let root = test_root("distributed-hc2-config");
+    std::fs::create_dir_all(&root).unwrap();
+    let token = root.join("cluster-token");
+    std::fs::write(&token, "configuration-test-token").unwrap();
+    let mut config = ServerConfig {
+        role: ServerRole::Member,
+        seeds: vec!["127.0.0.1:7000".into()],
+        storage_dir: Some(PathBuf::from("member-store")),
+        hc2_client_plane: Hc2ClientPlaneConfig {
+            enabled: true,
+            ..Default::default()
+        },
+        tls: TlsConfig {
+            enabled: true,
+            cert_path: Some("server.pem".into()),
+            key_path: Some("server.key".into()),
+            ca_path: Some("ca.pem".into()),
+            ..Default::default()
+        },
+        cluster_auth: ClusterAuthConfig {
+            key_id: Some("key".into()),
+            token_file: Some(token.clone()),
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    assert!(matches!(
+        config.validate(),
+        Err(ServerConfigError::InvalidDistributedHc2(_))
+    ));
+    config.distributed_hc2 = Some(DistributedHc2Config {
+        tenant: "tenant-a".into(),
+        client_cert_sha256: "a".repeat(64),
+    });
+    config.validate().unwrap();
+    config.redis_api.enabled = true;
+    assert!(matches!(
+        config.validate(),
+        Err(ServerConfigError::InvalidDistributedHc2(_))
+    ));
+    config.redis_api.enabled = false;
+    config.distributed_hc2.as_mut().unwrap().client_cert_sha256 = "BAD".into();
+    assert!(matches!(
+        config.validate(),
+        Err(ServerConfigError::InvalidDistributedHc2(_))
+    ));
+    std::fs::remove_file(token).unwrap();
+    std::fs::remove_dir(root).unwrap();
+}
+
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() {
     if std::env::var("HYDRACACHE_RUN_DAEMON_PROCESS_E2E").as_deref() != Ok("1") {
         return;
     }
+    let profile = imap_hc2_campaign::Profile::from_env();
     let _guard = async_daemon_process_guard().await;
     let root = test_root("distributed-imap");
     let pki = pki();
@@ -137,12 +205,12 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
             &mut pem,
         )
         .unwrap();
-    let profile = root.join("imap.toml");
+    let profile_path = root.join("imap.toml");
     std::fs::write(
-        &profile,
+        &profile_path,
         format!(
-            "tenant = \"w10i\"\nclient_cert_sha256 = \"{:x}\"\n",
-            Sha256::digest(&leaf)
+            "tenant = \"w10i\"\nclient_cert_sha256 = \"{}\"\n",
+            sha256_hex(leaf.as_ref())
         ),
     )
     .unwrap();
@@ -186,7 +254,7 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
                 .env("HYDRACACHE_STORAGE_DIR", root.join(&names[index]))
                 .env("HYDRACACHE_CLUSTER_AUTH_KEY_ID", "w10i-fixture")
                 .env("HYDRACACHE_CLUSTER_AUTH_TOKEN_FILE", &token)
-                .env("HYDRACACHE_DISTRIBUTED_HC2_CONFIG", &profile)
+                .env("HYDRACACHE_DISTRIBUTED_HC2_CONFIG", &profile_path)
                 .stdout(Stdio::from(log.try_clone().unwrap()))
                 .stderr(Stdio::from(log))
                 .spawn()
@@ -291,7 +359,11 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
     );
     let not_admitted = connect_w10i(&adapters[2], "different-tenant").await;
     assert_eq!(
-        not_admitted.get(hot.clone(), None).await.unwrap_err().code,
+        not_admitted
+            .get(hot.clone(), None)
+            .await
+            .unwrap_err()
+            .code(),
         ErrorCode::Unauthorized
     );
     assert_eq!(
@@ -304,7 +376,7 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
             )
             .await
             .unwrap_err()
-            .code,
+            .code(),
         ErrorCode::Unsupported
     );
     let options = RequestOptions {
@@ -332,33 +404,32 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
             .applied
     );
 
-    let control_client = clients[2].clone();
-    let load = tokio::spawn(async move {
-        let mut acknowledgements = 0;
-        let end = tokio::time::Instant::now() + Duration::from_secs(5);
-        while tokio::time::Instant::now() < end {
-            if control_client
-                .put(control.clone(), Bytes::from_static(b"load"), None, None)
-                .await
-                .is_ok_and(|reply| reply.applied)
-            {
-                acknowledgements += 1;
-            }
-            tokio::time::sleep(Duration::from_millis(10)).await;
-        }
-        acknowledgements
-    });
+    let started = tokio::time::Instant::now();
+    let load = tokio::spawn(imap_hc2_campaign::exercise_control(
+        clients[2].clone(),
+        clients[1].clone(),
+        control,
+        started,
+        profile.duration,
+        profile.ledger().unwrap(),
+    ));
+    tokio::time::sleep_until(started + profile.duration / 3).await;
     let killed = daemons[0].0.id();
+    let killed_at_ms = started.elapsed().as_millis() as u64;
     daemons[0].0.kill().unwrap();
     daemons[0].0.wait().unwrap();
     wait_w10i_get(&clients[2], hot.clone(), Some(&winner)).await;
-    assert!(
-        clients[1]
-            .compare_and_set(hot.clone(), initial, winner.clone(), None, Some(options))
-            .await
-            .unwrap()
-            .applied
-    );
+    let replay = retry_w10i(|| {
+        clients[1].compare_and_set(
+            hot.clone(),
+            initial.clone(),
+            winner.clone(),
+            None,
+            Some(options.clone()),
+        )
+    })
+    .await;
+    assert!(replay.applied);
     let ready = tokio::time::Instant::now() + Duration::from_secs(18);
     loop {
         match clients[2]
@@ -366,7 +437,10 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
             .await
         {
             Ok(result) => {
-                assert!(result.applied);
+                if !result.applied {
+                    // An earlier unacknowledged conditional write can already have committed.
+                    wait_w10i_get(&clients[1], hot.clone(), Some(&recovered)).await;
+                }
                 break;
             }
             Err(error) if tokio::time::Instant::now() < ready => {
@@ -379,7 +453,7 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
                 }
                 assert!(
                     matches!(
-                        error.code,
+                        error.code(),
                         ErrorCode::Unavailable | ErrorCode::DeadlineExceeded
                     ),
                     "{error}"
@@ -389,22 +463,31 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
             Err(error) => panic!("fresh write was still blocked after owner kill: {error}"),
         }
     }
-    assert!(load.await.unwrap() > 0);
+    let recovered_at_ms = started.elapsed().as_millis() as u64;
     daemons[0] = spawn(0);
     clients[0] = connect_w10i(&adapters[0], "w10i").await;
     wait_w10i_get(&clients[0], hot.clone(), Some(&recovered)).await;
-    assert!(
-        clients[2]
-            .remove_if_value(hot.clone(), recovered, None)
-            .await
-            .unwrap()
-            .applied
-    );
+    let _removed =
+        retry_w10i(|| clients[2].remove_if_value(hot.clone(), recovered.clone(), None)).await;
     wait_w10i_get(&clients[0], hot, None).await;
-    println!(
-        "W10i public HC/2 killed_pid={killed} rejoined_pid={} retained_cas_and_tombstone=true",
-        daemons[0].0.id()
-    );
+    let rejoined = daemons[0].0.id();
+    let rejoined_at_ms = started.elapsed().as_millis() as u64;
+    let counts = load.await.unwrap();
+    assert!(counts.acknowledgements > 0);
+    profile
+        .receipt(
+            started,
+            &counts,
+            imap_hc2_campaign::Fault {
+                killed_pid: killed,
+                killed_at_ms,
+                recovered_at_ms,
+                rejoined_pid: rejoined,
+                rejoined_at_ms,
+            },
+        )
+        .unwrap();
+    println!("W10i public HC/2 killed_pid={killed} rejoined_pid={rejoined} checks={counts:?} retained_cas_and_tombstone=true");
 }
 
 async fn connect_w10i(adapter: &GrpcMtlsAdapter, tenant: &str) -> Hc2Client {
@@ -420,6 +503,28 @@ async fn connect_w10i(adapter: &GrpcMtlsAdapter, tenant: &str) -> Hc2Client {
             ),
         }
         tokio::time::sleep(Duration::from_millis(70)).await;
+    }
+}
+
+async fn retry_w10i<T, F>(mut call: impl FnMut() -> F) -> T
+where
+    F: std::future::Future<Output = Result<T, hydracache_client_hc2::ClientError>>,
+{
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(18);
+    loop {
+        match call().await {
+            Ok(reply) => return reply,
+            Err(error)
+                if tokio::time::Instant::now() < deadline
+                    && matches!(
+                        error.code(),
+                        ErrorCode::Unavailable | ErrorCode::DeadlineExceeded
+                    ) =>
+            {
+                tokio::time::sleep(Duration::from_millis(70)).await;
+            }
+            Err(error) => panic!("HC/2 did not recover after owner change: {error}"),
+        }
     }
 }
 

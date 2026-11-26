@@ -527,6 +527,11 @@ async fn serve_connection(
                 }
             }
             Some(client_envelope::Message::SessionOpen(_)) => {
+                if service.member.is_some() {
+                    return Err(Status::unimplemented(
+                        "clustered HC/2 fenced sessions are unavailable",
+                    ));
+                }
                 let sequence = service
                     .accounting
                     .next_session
@@ -1332,6 +1337,44 @@ mod tests {
             closed_outbound.byte_budget.available_permits(),
             HC2_OUTBOUND_QUEUE_BYTE_BUDGET
         );
+    }
+
+    #[test]
+    fn distributed_hc2_rejects_unavailable_operations_and_checks_epoch_tokens() {
+        use hydracache_client_hc2::wire::{CompareAndSetRequest, GetRequest, PutRequest};
+        use invocation_request::Operation;
+        assert!(admitted_distributed_operation(&Operation::Get(
+            GetRequest {
+                key: Bytes::from_static(b"k"),
+            }
+        )));
+        assert!(!admitted_distributed_operation(&Operation::Put(
+            PutRequest {
+                key: Bytes::from_static(b"k"),
+                value: Bytes::from_static(b"value"),
+                ttl_ms: 1,
+            }
+        )));
+        assert!(!admitted_distributed_operation(&Operation::CompareAndSet(
+            CompareAndSetRequest {
+                key: Bytes::from_static(b"k"),
+                expected: Bytes::from_static(b"old"),
+                replacement: Bytes::from_static(b"new"),
+                ttl_ms: 1,
+            }
+        )));
+        assert_eq!(
+            scoped_identity(b"w10e:3:valid_0-a").as_deref(),
+            Some("w10e:3:valid_0-a")
+        );
+        for invalid in [
+            b"w10e:0:nonce".as_slice(),
+            b"w10e:3:",
+            b"w10e:3:bad:tag",
+            b"Opaque",
+        ] {
+            assert_eq!(scoped_identity(invalid), None);
+        }
     }
 
     #[test]

@@ -35,6 +35,7 @@ pub mod imap_contract;
 pub mod imap_coverage_075;
 pub mod imap_daemon_probe_075;
 pub mod imap_distributed_correctness;
+pub mod imap_distributed_run_075;
 pub mod imap_extended_concurrent_075;
 pub mod imap_extended_differential_075;
 pub mod imap_extended_receipt_075;

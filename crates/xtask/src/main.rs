@@ -98,6 +98,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("imap-distributed-correctness") => {
             xtask::imap_distributed_correctness::run(args.collect())?
         }
+        Some("imap-distributed-qualification") => xtask::imap_distributed_run_075::run(
+            args.collect(),
+            xtask::imap_distributed_run_075::Mode::Qualification,
+        )?,
+        Some("imap-distributed-confirmation") => xtask::imap_distributed_run_075::run(
+            args.collect(),
+            xtask::imap_distributed_run_075::Mode::Confirmation,
+        )?,
         Some("imap-foundation-evidence-check") => {
             xtask::imap_foundation_evidence::run(args.collect())?
         }
@@ -217,6 +225,8 @@ fn print_usage() {
          cargo xtask imap-cluster-chaos --release 0.75 [--seed <u64>] [--rounds <1..6>|--schedule <path>]  # execute/replay bounded actual-service histories\n  \
          cargo xtask imap-semantic-audit --release 0.75  # check provisional signatures, typed helpers and shared-owner semantic adapters\n  \
          cargo xtask imap-distributed-correctness --release 0.75 [--evidence <new-dir>]  # run every locally available distributed simulator/security/key proof and optionally emit receipts\n  \
+         cargo xtask imap-distributed-qualification --release 0.75 --duration <6h|10-60s> --diagnostic --output <new-dir>\n  \
+         cargo xtask imap-distributed-confirmation --release 0.75 --duration 24h --diagnostic --qualification <six-hour-dir> --output <new-dir>\n  \
          cargo xtask imap-value-plane-model --release 0.75 [--seed <u64>] [--max-depth <n>] [--max-states <n>] [--output <path>]  # explore the bounded authority model and emit an exact-source receipt\n  \
          cargo xtask imap-foundation-evidence-check --release 0.75 [--receipt <path>|--receipts <dir>]  # validate schemas, one receipt, or a complete exact-source evidence set\n  \
          cargo xtask imap-foundation-evidence-generate --release 0.75 --output <dir> [--seed <u64>]  # execute all local foundation probes and emit thirteen receipts\n  \
