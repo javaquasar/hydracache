@@ -1578,13 +1578,12 @@ fn apply_partition_metadata(
     promotions: &mut BTreeMap<hydracache::PartitionId, hydracache::PartitionPromotion>,
     command: &RaftMetadataCommand,
 ) {
-    let epoch = cluster.epoch();
     if let RaftMetadataCommand::CommitValuePrefix(prefix) = command {
         let (version, digest) = prefixes
             .get(&prefix.partition)
             .map_or((0, [0; 32]), |old| (old.version, old.digest));
         if prefix.partition.value() < 271
-            && epoch == prefix.epoch
+            && cluster.epoch() == prefix.epoch
             && version.checked_add(1) == Some(prefix.version)
             && digest == prefix.previous
         {
@@ -1593,7 +1592,7 @@ fn apply_partition_metadata(
     }
     if let RaftMetadataCommand::PromoteValuePartition(plan) = command {
         if plan.partition.value() < 271
-            && epoch == plan.old_epoch
+            && cluster.epoch() == plan.old_epoch
             && prefixes.get(&plan.partition).copied() == plan.required
             && valid_promotion(&cluster.members(), promotions.get(&plan.partition), plan)
             && cluster.apply_partition_epoch(plan.old_epoch, plan.new_epoch)

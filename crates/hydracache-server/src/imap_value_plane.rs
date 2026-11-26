@@ -604,8 +604,8 @@ fn new_identity(identity: Option<&str>, epoch: ClusterEpoch, promotion_started: 
     match identity {
         None => true,
         Some(identity) => match identity.strip_prefix("w10e:") {
-            Some(scoped) => scoped.split_once(':').is_some_and(|(epoch, nonce)| {
-                !nonce.is_empty() && epoch == epoch_value(epoch_placeholder)
+            Some(scoped) => scoped.split_once(':').is_some_and(|(issued, nonce)| {
+                !nonce.is_empty() && issued.parse::<u64>() == Ok(epoch.value())
             }),
             None => !promotion_started,
         },

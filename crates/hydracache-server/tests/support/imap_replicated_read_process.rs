@@ -8,7 +8,7 @@ use std::time::{Instant, SystemTime};
 
 use hydracache::{
     ClusterGeneration, ClusterNodeId, ClusterTimeAuthority, DurableValueStore, PartitionPromotion,
-    TimeObservation,
+    PartitionValuePrefix, TimeObservation,
 };
 use hydracache_client_protocol::{
     CasExpectation, ClientErrorCode, ClientFrame, ClientRequest, ClientRequestEnvelope,
@@ -39,6 +39,7 @@ struct Status {
     receipt: u32,
     lookups: u64,
     version: u64,
+    certificate: Option<PartitionValuePrefix>,
     applies: u64,
     owner_applies: u64,
     backup: Option<String>,
@@ -140,6 +141,7 @@ async fn imap_replica_child() {
                     receipt: serial,
                     lookups: values.store_lookups(),
                     version: 0,
+                    certificate: None,
                     applies: 0,
                     owner_applies: 0,
                     backup: None,
@@ -229,6 +231,7 @@ async fn run_live(
                         .value_prefixes
                         .get(&partition)
                         .map_or(0, |prefix| prefix.version),
+                    certificate: snapshot.value_prefixes.get(&partition).copied(),
                     applies: values.replica_applies(),
                     owner_applies: values.owner_applies(),
                     backup,
@@ -545,7 +548,7 @@ fn w10e_fences_old_owner_and_replays_only_certified_retry_across_cutover() {
     if std::env::var(RUN).as_deref() != Ok("1") {
         return;
     }
-    let nodes = start_nodes(true);
+    let mut nodes = start_nodes(true);
     let initial = wait_for("three W10e members", || all_members(&nodes, 0));
     let owner = expect_owner(&nodes, b"$-1\r\n");
     let backup = nodes
@@ -660,14 +663,35 @@ fn w10e_fences_old_owner_and_replays_only_certified_retry_across_cutover() {
     let result = wait_for("synchronous prefix is available after healing", || {
         successor.hc1(fresh.clone(), &fresh_id).ok()
     });
+    let cut_ms = cut_started.elapsed().as_millis();
     assert_eq!(result, ClientResponse::CasApplied { new_version: 3 });
     assert_eq!(successor.hc1(fresh, &fresh_id).unwrap(), result);
     assert_eq!(successor.read().unwrap(), b"$13\r\nafter-cutover\r\n");
     let healed = successor.refreshed_status();
     assert_eq!((healed.version, healed.owner_applies), (3, 1));
     let digest = activation.required.unwrap().digest;
-    println!("W10e old_pid={} successor_pid={} spare_pid={} epoch={epoch} required_prefix=2 required_digest={digest:02x?} final_prefix=3 isolated_old_lookups=0 duplicate_applies=0 observed_partition_write_unavailable_ms={}",
-        initial[owner].pid, initial[backup].pid, initial[spare].pid, cut_started.elapsed().as_millis());
+    let final_digest = healed.certificate.unwrap().digest;
+    nodes[owner].stop();
+    nodes[owner].start();
+    let restarted = wait_for("former owner rejoined with a different incarnation", || {
+        all_members(&nodes, epoch)
+            .filter(|status| status[owner].generation > initial[owner].generation)
+    });
+    assert_ne!(restarted[owner].pid, initial[owner].pid);
+    assert_eq!(nodes[owner].read().unwrap(), UNAVAILABLE);
+    assert_eq!(nodes[backup].read().unwrap(), b"$13\r\nafter-cutover\r\n");
+    let restarted_id = format!("w10e:{}:after-restart", restarted[owner].epoch);
+    assert!(nodes[backup]
+        .hc1(
+            compare_and_set(b"after-cutover", b"stale-backup"),
+            &restarted_id
+        )
+        .is_err());
+    let after_restart = nodes[backup].refreshed_status();
+    assert_eq!((after_restart.version, after_restart.owner_applies), (3, 1));
+    assert_eq!(after_restart.certificate, healed.certificate);
+    println!("W10e old_pid={} restarted_pid={} successor_pid={} spare_pid={} epoch={epoch} required_prefix=2 required_digest={digest:02x?} final_prefix=3 final_digest={final_digest:02x?} isolated_old_lookups=0 duplicate_applies=0 observed_partition_write_unavailable_ms={cut_ms}",
+        initial[owner].pid, restarted[owner].pid, initial[backup].pid, initial[spare].pid);
 }
 
 #[test]

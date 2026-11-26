@@ -97,6 +97,53 @@ struct Fixture {
     clock: Arc<ManualClock>,
 }
 
+#[test]
+fn a_scoped_id_cannot_start_an_operation_in_a_different_epoch() {
+    let epoch = ClusterEpoch::new(4);
+    assert!(new_identity(None, epoch, true));
+    assert!(new_identity(Some("opaque"), epoch, false));
+    assert!(!new_identity(Some("opaque"), epoch, true));
+    assert!(new_identity(Some("w10e:4:nonce"), epoch, true));
+    for id in [
+        "w10e:3:nonce",
+        "w10e:5:nonce",
+        "w10e:4:",
+        "w10e:4",
+        "w10e:invalid:nonce",
+    ] {
+        assert!(!new_identity(Some(id), epoch, true));
+    }
+}
+
+#[tokio::test]
+async fn promotion_refuses_a_designated_backup_without_the_exact_prefix() {
+    let fixture = Fixture::new(1).await;
+    let raft = &fixture.backend.raft;
+    let epoch = raft.partition_snapshot().unwrap().epoch;
+    let first = PartitionValuePrefix {
+        partition: fixture.partition,
+        epoch,
+        version: 1,
+        previous: [0; 32],
+        digest: [1; 32],
+    };
+    raft.propose_value_prefix(first).unwrap();
+    let designated = &fixture.transport.replicas[0];
+    assert!(designated
+        .promote(
+            raft,
+            &fixture.backend.raft_transport,
+            fixture.partition,
+            vec![fixture.owner.local.clone()]
+        )
+        .await
+        .is_err());
+    let snapshot = raft.partition_snapshot().unwrap();
+    assert_eq!(snapshot.epoch, epoch);
+    assert_eq!(snapshot.value_prefixes[&fixture.partition], first);
+    assert!(snapshot.value_promotions.is_empty());
+}
+
 #[derive(Default)]
 struct ManualClock(Mutex<Option<TimeObservation>>);
 
