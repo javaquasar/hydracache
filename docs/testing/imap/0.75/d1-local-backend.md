@@ -86,6 +86,23 @@ configuration's comparison receipts and the newer calibration receipts remain av
 The verified archive is `target/imap-075/d1-put-clock-20261125/d1-isolated-confirm-20261126.zip`
 with SHA-256 `fc7fd124b126bdd093d7cb8b9b060d9566828fe99586618837d68672b2cd6461`.
 
+## AX42 placement recalibration
+
+The next preregistered campaign retained the binaries, the split-core placement and the measurement
+lengths. Raw embedded `GET` used forty fresh pairs, split evenly between both orders, and typed
+embedded `PUT` used twenty. Raw embedded `GET` p99 cleared the frozen ±3% A/A band with a 95%
+interval of -2.15% to +0.50%. Both cells passed all four controls without run-queue flags.
+
+The full ten-cell A/B matrix ran on the same split-core profile. Independent verification checked
+540 receipts against the B74 and `89ec8970c` build records. All ten A/A controls passed and nine
+cells cleared all four A/B bounds. Raw embedded `GET` p99 passed with a 95% interval of -2.30%
+to +0.12%. The remaining raw embedded `PUT` intervals crossed the goodput and CPU/op limits.
+Goodput was -1.90% with an interval of -3.06% to -1.37% against a -2% floor. CPU/op was +1.93%
+with an interval of +1.39% to +3.19% against a +3% ceiling. Raw `PUT` p99 and allocation passed.
+
+The verified archive is `target/imap-075/d1-put-clock-20261125/d1-isolated-recalibration-20261126.zip`
+with SHA-256 `71a49123a4eb37584a5202dfcb40b9fc64a490f53ead2d1f4ee79e86140c1812`.
+
 ## Open admission gates
 
 The owner explicitly chose to leave W0 public scope open on 25 November 2026. OD-6 and OD-9

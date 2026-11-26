@@ -828,10 +828,25 @@ roughly 1.28%, crossing the 1% boundary that determines p99. The diagnostic hist
 why a longer measurement and a fresh same-binary control matter even after CPU placement
 improves.
 
+B74's Moka version can run read-log maintenance on the lookup path at a threshold of 64
+queued reads. One diagnostic run spent about 1.6% of its calls above 2.15 µs, close to one in
+64. That makes the maintenance path a specific hypothesis for operation-level profiling.
+
 The confirmation used twenty fresh A/A pairs per cell with the original release executable.
 Every attempt cleared the scheduler limit. The typed `PUT` control passed all four bands.
 The raw `GET` p99 interval ran from -1.39% to +3.04%, just above the frozen +3% limit.
 That calibration outcome kept D1 open and stopped the new campaign before A/B.
+
+We kept the release executable, placement, warmup and operation count per attempt, then
+preregistered forty fresh raw `GET` pairs. The A/A p99 interval narrowed to -2.15% to +0.50%.
+The typed `PUT` control cleared its bands as well. Both focus workloads therefore admitted
+the candidate comparison on that profile.
+
+The full matrix cleared the raw embedded `GET` p99 bound. Its candidate interval ran from
+-2.30% to +0.12%. Nine cells passed all four limits. The remaining cell was raw embedded `PUT`.
+Its goodput estimate was -1.90%, with an interval of -3.06% to -1.37% against a -2% floor.
+CPU per operation was +1.93%, with an interval of +1.39% to +3.19% against a +3% ceiling. The
+new placement and extra pairs resolved the read calibration. The write intervals kept D1 open.
 
 ## The practical rule
 
