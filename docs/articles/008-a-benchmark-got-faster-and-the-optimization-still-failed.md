@@ -1065,6 +1065,29 @@ optimized binary produced this result. The six-hour production campaign through
 packaged HC/2 clients and the 24-hour confirmation are still pending.
 [Release plan](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#w10f-implement-bounded-rebalance-and-replica-repair)
 
+## Putting the replicated path behind HC/2
+
+A public HC/2 request can now enter through any member in the explicit RF=2 profile.
+The accepting member derives the partition from the admitted tenant, namespace and
+binary key. If the primary is elsewhere, the receiver forwards the request once.
+The owner checks the original principal and the current placement before it uses
+ReadIndex or applies a mutation. The daemon attaches the durable value journal at
+startup and enables automatic recovery.
+
+A continuous diagnostic keeps the same three-member cluster through foreground traffic,
+an owner kill, recovery, restart and readback. It records a separate ledger of
+acknowledged control-partition writes and the readbacks that verify them. A confirmation
+uses the same code and binary digests as its six-hour parent run. Production admission
+also needs clock-qualified expiry, cluster-wide listener and bulk behavior, and a
+larger campaign through both packaged SDKs.
+
+The 30-second release diagnostic on AX42 verified 386 acknowledged mutations by
+readback and recorded three outcomes as unknown. The promoted owner replayed the
+CAS that had been acknowledged before the kill and accepted a fresh write. A
+read through the restarted member confirmed that the key was absent after deletion. The production
+six-hour and 24-hour campaigns remain pending.
+[Release plan](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#w10i-build-the-correctness-and-compatibility-safety-net)
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

@@ -1523,11 +1523,8 @@ Reproduce with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test --release --locke
 The verified `artifacts.sha256` manifest has SHA-256
 `3a1f387e1364a4580e61a5cd2777d4f06f38b857a4938796b29612b9fc2d86e2`.
 
-Production admission remains open at W10i. The staged member attachment has no
-production HC/2 routing integration, and `xtask` does not register the six-hour
-`imap-distributed-qualification` or the 24-hour confirmation command. The public
-SDK mixed-workload campaign, acknowledged-mutation reconciliation at scale and the
-OD-2/OD-3 acceptance thresholds still require evidence.
+Production admission remains open at W10i. The public HC/2 checkpoint below covers
+the RF=2 single-key member profile and records the remaining mixed-workload requirements.
 
 ### W10g. Make bulk operations and listeners cluster-wide
 
@@ -1691,6 +1688,54 @@ Every real-process test records cluster/member binary SHA, config hash, route/wi
 partition map before/after, injected seed/schedule, responses with certainty, final per-replica
 digests, resource owners and nested SHA-256. A passed assertion without this receipt is diagnostic,
 not release evidence.
+
+**Public HC/2 checkpoint.** A member enabling HC/2 must explicitly configure
+`HYDRACACHE_DISTRIBUTED_HC2_CONFIG` with a TOML file containing `tenant` and the lowercase
+`client_cert_sha256` of the admitted leaf certificate in DER form. It also needs durable
+member storage, the existing authenticated cluster transport and public mTLS. This profile
+uses namespace `hc2`, namespace generation 1 and one synchronous backup. HC/1 and RESP are
+disabled in this profile so a second protocol cannot reach a separate local value owner.
+
+The listener offers the HC/2 Data capability. It serves GET, persistent PUT, DELETE, CAS
+and conditional removal. The receiving member forwards a non-owner invocation once, using
+the existing authenticated cluster transport. The owner recomputes the partition and checks
+the caller's scope, sender and destination generations, applied epoch and request deadline.
+The existing ReadIndex and replicated write path still authorize the operation. A lost
+forwarded response has an unknown outcome. Opaque retries with a retained outcome replay it.
+Without a retained outcome after a placement change, a fresh idempotent mutation requires
+a `w10e:<epoch>:<nonce>` idempotency key bound to the current epoch. The handshake and
+responses carry the observing member's applied topology epoch.
+
+The `imap-distributed-qualification` and `imap-distributed-confirmation` commands provide
+continuous diagnostics for this profile. Qualification accepts `6h` and a bounded 10-60s
+smoke. Confirmation accepts `24h` and requires a completed six-hour report from the same
+source and exact daemon and test-runner binaries. The runner keeps the same cluster during
+the active interval, stops a primary under traffic and verifies recovery and rejoin. It
+reconciles acknowledged control-partition PUT, CAS and DELETE operations through HC/2
+readback and binds the ledger with SHA-256. The confirmation verifies its source and
+candidate binary hashes before starting the daemons.
+
+On AX42, source `dcd487da1d7e9eb7e7da78d35c0823960d8244c9` passed 26 focused server
+unit tests, 22 server integration tests and three controller tests. Clippy passed for the
+server and controller. The 30-second release diagnostic ran for 30.265 seconds with three
+actual member daemons. It verified all 386 acknowledged control-partition mutations by
+readback and recorded three client outcomes as unknown. The owner was killed at 10.000 s
+and the affected partition accepted a fresh write by 17.897 s. After rejoin, a GET through
+the former owner's public endpoint confirmed that the deleted key was absent. The retained CAS was replayed
+through HC/2 during recovery.
+
+The controller refused the production six-hour request and rejected the smoke report as a
+24-hour confirmation parent. The 6h and 24h profiles have no completed runs. Logs and the
+verified report are under `development/w10i-dcd487da1d7e9eb7e7da78d35c0823960d8244c9` in
+the AX42 [qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
+The verified `diagnostic.sha256` manifest has SHA-256
+`05b7b38267d4a7a68d83ccd2b3315090b63b2fd6dd08f5480d94bd282eb27b58`.
+
+The commands require `--diagnostic` for this profile and produce `production_admitted=false`.
+The production gate still requires distributed TTL with an admitted OD-2 provider,
+cluster-wide bulk and listeners, a live-drain and interrupted-copy schedule exposed to the
+daemon harness, the packaged Rust and Java SDK workload, replica-by-replica reconciliation,
+and accepted OD-3 recovery bounds.
 
 #### Under-load failover and rebalance qualification
 
