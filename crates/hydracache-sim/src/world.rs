@@ -27,6 +27,7 @@ use hydracache::{
 };
 
 const BUS_EVENT_UPSERTED: &str = "upserted";
+const BUS_EVENT_INVALIDATED: &str = "invalidated";
 
 /// Configuration for a deterministic simulation run.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -105,8 +106,10 @@ struct PendingSubscriberEvent {
     key: String,
     version: u64,
     commit_index: u64,
-    /// Routed write this event waits for (delivered once it is acknowledged).
+    /// Routed write this event is about.
     write: Option<u64>,
+    /// Step of the push, for the full-broadcast rule.
+    pushed_at_step: u64,
 }
 
 /// A client process the cluster knows about, and the member it is connected to.
@@ -2237,60 +2240,81 @@ impl SimWorld {
                 version,
                 commit_index,
                 write,
+                pushed_at_step: self.steps,
             });
         }
     }
 
+    /// A subscriber hears from the member its client is connected to, as a
+    /// product cache event stream does: the event is delivered once that
+    /// member applied the write (`upserted`) or, in `local_first`, the
+    /// invalidation (`invalidated`). A newer write of the key covers an older
+    /// event. In `replicated`, a member that does not own the key never stores
+    /// it, so its subscribers get no event for it (the event is dropped from
+    /// their queue and traced).
     fn deliver_subscriber_events(&mut self) {
-        let live_count = self.live_node_ids().len();
-        let completed = self.history.completed().count() as u64;
-        let storage_versions = self
-            .nodes
-            .iter()
-            .filter(|(node_id, _)| {
-                !self.crashed_nodes.contains(*node_id)
-                    && !self.disabled_nodes.contains(*node_id)
-                    && !self.isolated_nodes.contains(*node_id)
-            })
-            .map(|(node_id, sim_node)| (node_id.clone(), sim_node.storage.visible_checksums()))
-            .collect::<Vec<_>>();
-        for subscriber in self.subscribers.values_mut() {
-            let Some(event) = subscriber.pending.front() else {
-                continue;
-            };
-            if let Some(id) = event.write {
-                // A routed write reaches its subscribers once acknowledged.
-                let acknowledged = self
-                    .grid_writes
-                    .get(&id)
-                    .is_some_and(|write| write.status == GridWriteStatus::Acknowledged);
-                if acknowledged {
-                    let event = subscriber.pending.pop_front().expect("front event exists");
-                    subscriber.last_event = Some(SubscriberEventView {
-                        kind: event.kind,
-                        key: event.key,
-                        version: event.version,
-                        commit_index: event.commit_index,
-                        delivered_at_step: self.steps,
-                    });
-                }
-                continue;
-            }
-            if completed < event.commit_index {
-                continue;
-            }
-            let matching = storage_versions
-                .iter()
-                .filter(|(_, values)| values.get(&event.key).copied() == Some(event.version))
-                .count();
-            if live_count > 0 && matching == live_count {
+        let step = self.steps;
+        let ids = self.subscribers.keys().cloned().collect::<Vec<_>>();
+        for id in ids {
+            loop {
+                let Some(subscriber) = self.subscribers.get(&id) else {
+                    break;
+                };
+                let Some(event) = subscriber.pending.front() else {
+                    break;
+                };
+                let Some(member) = self
+                    .sessions
+                    .get(&subscriber.client_id)
+                    .and_then(|session| session.attached.clone())
+                else {
+                    break;
+                };
+                let outcome = match event.write {
+                    Some(write_id) => match self
+                        .applied_write
+                        .get(&(member.clone(), event.key.clone()))
+                    {
+                        Some((applied, tombstone)) if *applied >= write_id => Some(if *tombstone {
+                            BUS_EVENT_INVALIDATED
+                        } else {
+                            BUS_EVENT_UPSERTED
+                        }),
+                        _ => {
+                            let owns = self.grid_writes.get(&write_id).is_none_or(|write| {
+                                self.replication == SimReplicationModel::LocalFirst
+                                    || write.replicas.all_nodes().contains(&member)
+                            });
+                            if owns {
+                                None
+                            } else {
+                                Some("")
+                            }
+                        }
+                    },
+                    None => self
+                        .nodes
+                        .get(&member)
+                        .and_then(|node| node.applied_at.get(&event.key))
+                        .filter(|applied| **applied >= event.pushed_at_step)
+                        .map(|_| BUS_EVENT_UPSERTED),
+                };
+                let Some(kind) = outcome else {
+                    break;
+                };
+                let subscriber = self.subscribers.get_mut(&id).expect("subscriber exists");
                 let event = subscriber.pending.pop_front().expect("front event exists");
+                if kind.is_empty() {
+                    self.trace
+                        .push(format!("event_not_on_member:{id}:{}:{member}", event.key));
+                    continue;
+                }
                 subscriber.last_event = Some(SubscriberEventView {
-                    kind: event.kind,
+                    kind: kind.to_owned(),
                     key: event.key,
                     version: event.version,
                     commit_index: event.commit_index,
-                    delivered_at_step: self.steps,
+                    delivered_at_step: step,
                 });
             }
         }

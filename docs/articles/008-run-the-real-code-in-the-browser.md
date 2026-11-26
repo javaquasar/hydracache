@@ -253,13 +253,14 @@ product's `InMemoryHintStore`, `apply_hint` and `MerkleTree::diff`.
 That last point is the general lesson. When a simulator is ahead of the product, it is a design
 tool, which is fine, but the page has to say so.
 
-## Step 4: emit events where they actually happen (planned)
+## Step 4: emit events where they actually happen (done)
 
 Today a subscriber in the simulator receives an event only after *every* live node holds the new
 version. That is an all-replicas convergence rule, and no real subscriber works that way. In the
 product, a subscriber hears from the cache event or invalidation stream of the node it is attached
-to. The fix is small: deliver an event when the subscriber's own node applies the write or
-receives the invalidation.
+to. The fix was small: an event is delivered when the subscriber's own member applies the write
+(`upserted`) or, in local-first, the invalidation (`invalidated`). In the replicated path, a member
+that does not own the key never stores it, so its subscribers hear nothing, as in the product.
 
 This step shows why the demo cannot be fixed alone. The demo already times a subscriber's flash to
 the engine's recorded delivery step, so it is honest about *when*. The engine was wrong about

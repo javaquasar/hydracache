@@ -27,14 +27,18 @@ fn subscriber_receives_event_after_push() {
         .subscribe("client-a", NS)
         .expect("subscribe admits the client");
 
+    // The subscriber's client is the writer, so its member is the one that
+    // applies the write: it hears about it at the push step (TD-0016 step 4).
+    let push_step = world.outcome().steps;
     world
         .push_event("client-a", NS, KEY, "fresh")
         .expect("manual push applies");
-    assert!(world
-        .snapshot()
-        .subscribers
-        .iter()
-        .all(|subscriber| subscriber.last_event.is_none()));
+    let at_push = world.snapshot();
+    let event = at_push.subscribers[0]
+        .last_event
+        .as_ref()
+        .expect("delivered at once");
+    assert_eq!(event.delivered_at_step, push_step);
 
     world.run(2);
     let snapshot = world.snapshot();
@@ -93,9 +97,30 @@ fn subscriber_only_sees_bus_carried_event_kinds() {
 #[test]
 fn slow_subscriber_drops_with_counter() {
     let mut world = manual_world();
-    world
-        .subscribe("client-a", NS)
-        .expect("subscribe admits the client");
+    world.add_client("client-a", NS).expect("writer admitted");
+    let member = |world: &SimWorld, client: &str| {
+        world
+            .snapshot()
+            .admitted_clients
+            .iter()
+            .find(|entry| entry.id == client)
+            .and_then(|entry| entry.connected_node.clone())
+    };
+    let writer_member = member(&world, "client-a");
+    // A reader on another member hears only when that member applies the
+    // write, so pushes without steps pile up in its bounded buffer.
+    let reader = (0..64)
+        .map(|index| format!("reader-{index}"))
+        .find(|name| {
+            world.subscribe(name, NS).expect("reader admitted");
+            if member(&world, name) == writer_member {
+                world.unsubscribe(name, NS).expect("unsubscribe");
+                false
+            } else {
+                true
+            }
+        })
+        .expect("a reader on another member");
 
     for index in 0..(MAX_SUBSCRIBER_BUFFER + 3) {
         world
@@ -107,7 +132,7 @@ fn slow_subscriber_drops_with_counter() {
     let subscriber = snapshot
         .subscribers
         .iter()
-        .find(|subscriber| subscriber.id == "client-a@profiles")
+        .find(|subscriber| subscriber.client_id == reader)
         .expect("subscriber is visible");
     assert_eq!(subscriber.lag, MAX_SUBSCRIBER_BUFFER as u64);
     assert_eq!(subscriber.dropped, 3);

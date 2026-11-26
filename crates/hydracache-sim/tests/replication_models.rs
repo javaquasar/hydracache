@@ -197,25 +197,82 @@ fn a_pending_write_fails_loud_when_its_owners_go_down() {
 }
 
 #[test]
-fn subscribers_hear_about_a_routed_write_once_it_is_acknowledged() {
+fn subscribers_hear_from_their_own_member() {
+    // TD-0016 step 4: an event comes from the subscriber's member when that
+    // member applies the write; a member that does not own the key never
+    // stores it, so its subscribers get nothing for it.
     let mut world = world_with(replicated(2, ConsistencyLevel::All));
     world.add_client("writer", NS).expect("admitted");
-    world.subscribe("reader", NS).expect("reader");
-    world.push_event("writer", NS, "p", "v1").expect("push");
-    let at_push = world.snapshot();
-    let write = at_push.writes.last().expect("write").clone();
-    if write.status != "acknowledged" {
-        assert!(at_push.subscribers[0].last_event.is_none());
+    let snapshot = world.snapshot();
+    let ids = nodes(&snapshot)
+        .into_iter()
+        .map(ClusterNodeId::from)
+        .collect::<Vec<_>>();
+    let owners = rank_replicas("profiles:p", ids.iter(), 2).expect("owners");
+    let mut on_owner = None;
+    let mut off_owner = None;
+    for index in 0..64 {
+        let name = format!("reader-{index}");
+        world.subscribe(&name, NS).expect("reader");
+        let member = connected(&world.snapshot(), &name);
+        if owners
+            .all_nodes()
+            .iter()
+            .any(|node| node.as_str() == member)
+        {
+            on_owner.get_or_insert(name);
+        } else {
+            off_owner.get_or_insert(name);
+        }
+        if on_owner.is_some() && off_owner.is_some() {
+            break;
+        }
     }
+    let (on_owner, off_owner) = (on_owner.expect("on owner"), off_owner.expect("off owner"));
+    world.push_event("writer", NS, "p", "v1").expect("push");
     world.run(6);
     let settled = world.snapshot();
-    let write = settled.writes.last().expect("write");
-    let event = settled.subscribers[0]
-        .last_event
-        .as_ref()
-        .expect("delivered");
-    assert_eq!(event.key, "profiles:p");
-    assert!(event.delivered_at_step >= write.acknowledged_at_step.expect("acked"));
+    let event_of = |client: &str| {
+        settled
+            .subscribers
+            .iter()
+            .find(|subscriber| subscriber.client_id == client)
+            .expect("subscriber")
+            .clone()
+    };
+    let heard = event_of(&on_owner);
+    let event = heard.last_event.expect("an owner's subscriber hears it");
+    assert_eq!(
+        (event.kind.as_str(), event.key.as_str()),
+        ("upserted", "profiles:p")
+    );
+    let silent = event_of(&off_owner);
+    assert!(silent.last_event.is_none());
+    assert_eq!(silent.lag, 0, "the event left its queue");
+}
+
+#[test]
+fn local_first_subscribers_on_other_members_hear_an_invalidation() {
+    let mut world = world_with(SimReplicationModel::LocalFirst);
+    world.add_client("writer", NS).expect("admitted");
+    let writer_member = connected(&world.snapshot(), "writer");
+    let reader = (0..64)
+        .map(|index| format!("reader-{index}"))
+        .find(|name| {
+            world.subscribe(name, NS).expect("reader");
+            connected(&world.snapshot(), name) != writer_member
+        })
+        .expect("a reader elsewhere");
+    world.push_event("writer", NS, "p", "v1").expect("push");
+    world.run(3);
+    let snapshot = world.snapshot();
+    let event = snapshot
+        .subscribers
+        .iter()
+        .find(|subscriber| subscriber.client_id == reader)
+        .and_then(|subscriber| subscriber.last_event.clone())
+        .expect("heard");
+    assert_eq!(event.kind, "invalidated");
 }
 
 #[test]

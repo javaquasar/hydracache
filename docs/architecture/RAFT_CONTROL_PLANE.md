@@ -251,7 +251,6 @@ gap moves to the history list below, with its commit.
 | --- | --- | --- | --- | --- |
 | G3″ | Default model and the workload | `full_broadcast` is still the default. The built-in workload and its read-your-writes invariants run only there, so `set_replication` is refused while the workload is on. The simulator has no read path for a cache miss (read-through from a source, or a peer fetch from an owner), so under a routed model the history checker would report misses as stale reads. | Default: local-first with invalidation; a miss reads through or fetches from the owner. | TD-0016 |
 | G4‴ | Repair and failure-detection driver | Hints, versioned apply and the repair diff are product code (`InMemoryHintStore`, `apply_hint`, `ReplicatedValueRecord::merge`, `MerkleTree::diff`). The simulator drives them with three simplifications: a perfect failure detector (live set plus link state), one partition, and a repair pass every 5 steps without the `RepairSession` watermark. Promotion picks the first live owner; the product rule `select_backup_promotion` is the first backup, whose phases are data with no runtime driver. | A phi-accrual detector, partitioned trees, and a scheduled incremental `RepairSession`. | TD-0016 |
-| G5 | Subscriber delivery | In `full_broadcast`, an event is delivered only once **every** live node holds the version (`deliver_subscriber_events`). In the routed models it is delivered once the write is acknowledged. | Events come from the cache event or invalidation stream of the node the subscriber is attached to. | TD-0016 |
 | G7′ | Admission details | `ClientUpsert` commits at once when a live leader exists (no log round trip, no forwarded-apply wait). The built-in workload fleet is treated as admitted with the cluster. Removing a writer or subscriber keeps the client admitted (`NodeLeft` is not modeled). | Proposal, forward to the leader, commit, apply; a stopped process proposes `NodeLeft`. | TD-0016 |
 
 Closed gaps:
@@ -292,6 +291,11 @@ Closed gaps:
     `consistency_scope` says so (schema 13).
 
   What remains is G3″ and G4‴.
+- G5 / TD-0016 step 4: a subscriber hears from the member its client is connected
+  to, once that member applies the write (`upserted`) or, in `local_first`, the
+  invalidation (`invalidated`). In `replicated`, a member that does not own the key
+  never stores it, so its subscribers get no event for it.
+  `deliver_subscriber_events` no longer waits for every live node.
 - G4′ / TD-0016 step 3b (snapshot schema 12):
   - a primary that cannot reach a backup keeps a hint and replays it when the backup
     is reachable again;
@@ -329,7 +333,7 @@ with its own tests.
        write is refused when the level cannot be met.
    - The snapshot gains the owners of each key and an acknowledgement record per
      write. This bumps the snapshot schema and needs a `docs/COMPAT.md` entry.
-4. **Subscriber events from the attached node** (G5). An event is delivered when the
+4. **Done: subscriber events from the attached node** (G5). An event is delivered when the
    subscriber's node applies the write or receives the invalidation.
 5. **Demo**. The demo draws:
    - client → coordinator → primary → backups, then acknowledgements back;

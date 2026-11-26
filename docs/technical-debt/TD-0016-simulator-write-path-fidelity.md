@@ -15,8 +15,9 @@ Open — recorded 2026-11-25.
   - a routed restart is cold;
   - the simulator runs the product hint store, versioned records and merkle diff;
   - the consistency panel uses key owners.
+- Step 4 is done (2026-11-26). It closes G5: subscribers hear from their own member.
 - Still open: G3″ (no read path, so the workload stays in `full_broadcast`), G4‴ (driver
-  simplifications), G5 and G7′.
+  simplifications) and G7′.
 
 Owner: simulator / demo.
 
@@ -26,7 +27,7 @@ The simulator gets elections right: real raft-rs on native targets, a labelled m
 in wasm. Its data plane does not follow the product. The full comparison, with code
 references, is the gap register in
 [`docs/architecture/RAFT_CONTROL_PLANE.md`](../architecture/RAFT_CONTROL_PLANE.md#gap-register)
-(gaps G3″, G4‴, G5 and G7′ are open; G1–G4, G3′, G4′, G4″, G6, G7 and G8 are closed).
+(gaps G3″, G4‴ and G7′ are open; G1–G5, G3′, G4′, G4″, G6, G7 and G8 are closed).
 
 In short:
 
