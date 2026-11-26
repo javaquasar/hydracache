@@ -24,6 +24,8 @@ mod imap_value_decision;
 mod imap_value_journal;
 mod imap_value_repair;
 #[doc(hidden)]
+pub use imap_value_plane::ReplicaRebalanceReport;
+#[doc(hidden)]
 pub use imap_value_repair::ReplicaRepairOutcome;
 #[doc(hidden)]
 pub mod imap_value_plane;

@@ -151,6 +151,9 @@ pub struct PartitionReplicaRepair {
     pub target: PartitionReplicaIdentity,
     pub required: Option<PartitionValuePrefix>,
     pub snapshot_digest: [u8; 32],
+    /// Exact pre-repair backups for a partition without an owner promotion.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prior_backups: Option<Vec<PartitionReplicaIdentity>>,
 }
 
 impl PartitionReplicaRepair {
@@ -158,7 +161,8 @@ impl PartitionReplicaRepair {
     #[doc(hidden)]
     pub fn replacement_slot(
         &self,
-        active: &PartitionPromotion,
+        owner: &PartitionReplicaIdentity,
+        backups: &[PartitionReplicaIdentity],
         epoch: ClusterEpoch,
         required: Option<PartitionValuePrefix>,
         members: &[ClusterMember],
@@ -168,8 +172,7 @@ impl PartitionReplicaRepair {
                 member.node_id == identity.node && member.generation == identity.generation
             })
         };
-        if self.partition != active.partition
-            || self.owner != active.new_owner
+        if &self.owner != owner
             || self.old_epoch != epoch
             || epoch.value().checked_add(1) != Some(self.new_epoch.value())
             || self.required != required
@@ -180,16 +183,23 @@ impl PartitionReplicaRepair {
         {
             return None;
         }
-        let slot = active
-            .backups
-            .iter()
-            .position(|backup| backup == &self.replaced)?;
-        active
-            .backups
+        let slot = backups.iter().position(|backup| backup == &self.replaced)?;
+        backups
             .iter()
             .enumerate()
             .all(|(index, backup)| index == slot || backup.node != self.target.node)
             .then_some(slot)
+    }
+
+    /// Effective backups after a repair of a partition with no promotion.
+    #[doc(hidden)]
+    pub fn repaired_backups(&self) -> Option<Vec<PartitionReplicaIdentity>> {
+        let mut backups = self.prior_backups.clone()?;
+        let slot = backups
+            .iter_mut()
+            .find(|backup| **backup == self.replaced)?;
+        *slot = self.target.clone();
+        Some(backups)
     }
 }
 

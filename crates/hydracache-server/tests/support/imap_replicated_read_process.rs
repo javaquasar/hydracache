@@ -1,14 +1,17 @@
 use super::*;
 
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs::{self, File};
 use std::net::TcpListener as PortReservation;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Instant, SystemTime};
 
 use hydracache::{
-    ClusterGeneration, ClusterNodeId, ClusterTimeAuthority, DurableValueStore, PartitionPromotion,
-    PartitionValuePrefix, TimeObservation,
+    ClusterGeneration, ClusterMember, ClusterNodeId, ClusterReplicationStrategy, ClusterRole,
+    ClusterTimeAuthority, DurableValueStore, PartitionPromotion, PartitionReplicaRepair,
+    PartitionValuePrefix, RendezvousClusterOwnership, TimeObservation,
 };
 use hydracache_client_protocol::{
     CasExpectation, ClientErrorCode, ClientFrame, ClientRequest, ClientRequestEnvelope,
@@ -19,7 +22,9 @@ use hydracache_client_transport_axum::{
 };
 use hydracache_server::imap_topology::PartitionMember;
 use hydracache_server::imap_value_plane::ReplicaClock;
-use hydracache_server::{MemberReadHost, ReplicaRepairOutcome, ServerConfig, ServerRole};
+use hydracache_server::{
+    MemberReadHost, ReplicaRebalanceReport, ReplicaRepairOutcome, ServerConfig, ServerRole,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -43,12 +48,20 @@ struct Status {
     applies: u64,
     owner_applies: u64,
     backup: Option<String>,
+    repairs: BTreeMap<PartitionId, PartitionReplicaRepair>,
 }
 
 #[derive(Serialize, Deserialize)]
 struct PromotionRequest {
     serial: u32,
+    partition: Option<PartitionId>,
     backups: Vec<PartitionMember>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct RebalanceCommand {
+    partitions: Vec<PartitionId>,
+    drained: BTreeSet<ClusterNodeId>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -158,6 +171,7 @@ async fn imap_replica_child() {
                     applies: 0,
                     owner_applies: 0,
                     backup: None,
+                    repairs: BTreeMap::new(),
                 },
             );
         }
@@ -197,11 +211,13 @@ async fn run_live(
     let mut sample = 0;
     let mut promotion_serial = 0;
     let mut repair_serial = 0;
+    let mut rebalanced = false;
+    let mut automatic = false;
     loop {
         if let Some(request) = read_json::<PromotionRequest>(&root.join("promotion.json")) {
             if request.serial > promotion_serial {
                 let plan = host
-                    .promote_partition(partition, request.backups)
+                    .promote_partition(request.partition.unwrap_or(partition), request.backups)
                     .await
                     .ok();
                 promotion_serial = request.serial;
@@ -213,6 +229,21 @@ async fn run_live(
                     },
                 );
             }
+        }
+        if !rebalanced {
+            if let Some(command) = read_json::<RebalanceCommand>(&root.join("rebalance.json")) {
+                let result = host
+                    .rebalance_partition_backups(&command.partitions, &command.drained)
+                    .await
+                    .map_err(|error| error.to_string());
+                publish_json(&root.join("rebalance-reply.json"), &result);
+                rebalanced = true;
+            }
+        }
+        if !automatic && root.join("automatic-rebalance.json").is_file() {
+            host.start_automatic_replica_rebalance().unwrap();
+            host.start_automatic_replica_rebalance().unwrap();
+            automatic = true;
         }
         if let Some(command) = read_json::<RepairCommand>(&root.join("repair.json")) {
             if command.serial > repair_serial {
@@ -265,6 +296,7 @@ async fn run_live(
                     applies: values.replica_applies(),
                     owner_applies: values.owner_applies(),
                     backup,
+                    repairs: snapshot.value_repairs,
                 },
             );
         }
@@ -363,9 +395,22 @@ impl Node {
     }
 
     fn promote(&self, serial: u32, backups: Vec<PartitionMember>) -> Option<PartitionPromotion> {
+        self.promote_key(serial, None, backups)
+    }
+
+    fn promote_key(
+        &self,
+        serial: u32,
+        partition: Option<PartitionId>,
+        backups: Vec<PartitionMember>,
+    ) -> Option<PartitionPromotion> {
         publish_json(
             &self.root.join("promotion.json"),
-            &PromotionRequest { serial, backups },
+            &PromotionRequest {
+                serial,
+                partition,
+                backups,
+            },
         );
         wait_for("promotion control reply", || {
             read_json::<PromotionResponse>(&self.root.join("promotion-reply.json"))
@@ -533,6 +578,10 @@ fn fault_generation(nodes: &[Node], isolated: Option<usize>, generation: u32) {
 }
 
 fn start_nodes(live: bool) -> Vec<Node> {
+    start_node_count(live, 3)
+}
+
+fn start_node_count(live: bool, count: usize) -> Vec<Node> {
     let timestamp = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap()
@@ -541,15 +590,15 @@ fn start_nodes(live: bool) -> Vec<Node> {
         .map_or_else(std::env::temp_dir, PathBuf::from)
         .join(format!("imap-replica-{}-{timestamp}", std::process::id()));
     fs::create_dir_all(&root).unwrap();
-    let reservations: Vec<_> = (0..9)
+    let reservations: Vec<_> = (0..3 * count)
         .map(|_| PortReservation::bind("127.0.0.1:0").unwrap())
         .collect();
     let addresses: Vec<_> = reservations
         .iter()
         .map(|socket| socket.local_addr().unwrap())
         .collect();
-    let seeds: Vec<_> = addresses[..3].iter().map(ToString::to_string).collect();
-    let mut nodes: Vec<_> = addresses[..3]
+    let seeds: Vec<_> = addresses[..count].iter().map(ToString::to_string).collect();
+    let mut nodes: Vec<_> = addresses[..count]
         .iter()
         .enumerate()
         .map(|(index, address)| {
@@ -561,13 +610,13 @@ fn start_nodes(live: bool) -> Vec<Node> {
                 node_id: Some(identity.clone()),
                 cluster_addr: *address,
                 cluster_advertise_addr: Some(address.to_string()),
-                listen_addr: addresses[index + 3],
+                listen_addr: addresses[index + count],
                 seeds: seeds.clone(),
                 storage_dir: Some(node_root.clone()),
                 ..ServerConfig::default()
             };
             publish_json(&node_root.join("config.json"), &config);
-            let hc1_address = addresses[index + 6];
+            let hc1_address = addresses[index + 2 * count];
             publish_json(&node_root.join("hc1-address.json"), &hc1_address);
             Node {
                 root: node_root,
@@ -589,7 +638,11 @@ fn start_nodes(live: bool) -> Vec<Node> {
 }
 
 fn compare_and_set(expected: &[u8], value: &[u8]) -> ClientRequest {
-    let encoded = KEY
+    compare_and_set_for_key(KEY, expected, value)
+}
+
+fn compare_and_set_for_key(key: &[u8], expected: &[u8], value: &[u8]) -> ClientRequest {
+    let encoded = key
         .iter()
         .map(|byte| format!("{byte:02x}"))
         .collect::<String>();
@@ -600,6 +653,181 @@ fn compare_and_set(expected: &[u8], value: &[u8]) -> ClientRequest {
         new_value: value.to_vec(),
         level: LockConsistency::Quorum,
     }
+}
+
+#[test]
+fn w10f_balances_three_live_partitions_and_repairs_a_failed_backup_automatically() {
+    if std::env::var(RUN).as_deref() != Ok("1") {
+        return;
+    }
+    let mut nodes = start_node_count(true, 4);
+    let initial = wait_for("four W10f members", || all_members(&nodes, 0));
+    let members: Vec<_> = nodes
+        .iter()
+        .zip(&initial)
+        .map(|(node, status)| ClusterMember {
+            node_id: ClusterNodeId::new(&node.identity),
+            generation: ClusterGeneration::new(status.generation),
+            role: ClusterRole::Member,
+            epoch: ClusterEpoch::new(status.epoch),
+            endpoints: Default::default(),
+            metadata: Default::default(),
+        })
+        .collect();
+    let mut keys = BTreeMap::new();
+    let mut failure_case = None;
+    for index in 0..5_000 {
+        let key = format!("rebalance-key-{index}").into_bytes();
+        let partition = scope().locate(key.clone()).unwrap().0;
+        let assignment = RendezvousClusterOwnership
+            .replicas_for_key(&format!("partition-{}", partition.value()), &members, 2)
+            .unwrap();
+        if assignment.primary == members[0].node_id
+            && assignment.backups == [members[1].node_id.clone()]
+        {
+            if keys.len() < 3 {
+                keys.entry(partition).or_insert(key);
+            }
+        } else if assignment.primary == members[1].node_id
+            && assignment.backups == [members[0].node_id.clone()]
+        {
+            failure_case = Some((partition, key));
+        }
+        if keys.len() == 3 && failure_case.is_some() {
+            break;
+        }
+    }
+    assert_eq!(keys.len(), 3);
+    let (failure_partition, failure_key) = failure_case.unwrap();
+    for key in keys.values() {
+        assert_eq!(
+            resp(nodes[0].address, &[b"SET", key, b"base"]).unwrap(),
+            b"+OK\r\n"
+        );
+    }
+    assert_eq!(
+        resp(nodes[1].address, &[b"SET", &failure_key, b"base"]).unwrap(),
+        b"+OK\r\n"
+    );
+    let old_backup = nodes[1].member(initial[1].generation);
+    let promotion = nodes[0]
+        .promote_key(1, Some(failure_partition), vec![old_backup.clone()])
+        .unwrap();
+    wait_for("members see the fixture promotion", || {
+        all_members(&nodes, promotion.old_epoch.value())
+    });
+    let rules: Vec<_> = nodes[2..]
+        .iter()
+        .map(|target| {
+            json!({
+                "from": nodes[0].identity, "to": target.identity,
+                "action": {"kind": "value_chunk_delay", "index": 0, "millis": 650}
+            })
+        })
+        .collect();
+    publish_json(
+        &nodes[0].root.join("fault.json"),
+        &json!({
+            "schema_version": 1, "generation": 1, "rules": rules
+        }),
+    );
+
+    let stop = AtomicBool::new(false);
+    let write_address = nodes[0].address;
+    let (report, accepted) = std::thread::scope(|scope| {
+        let writer = scope.spawn(|| {
+            let mut accepted = BTreeMap::new();
+            let deadline = Instant::now() + Duration::from_secs(10);
+            while !stop.load(Ordering::Acquire) && Instant::now() < deadline {
+                for (partition, key) in &keys {
+                    match resp(write_address, &[b"SET", key, b"workload"]) {
+                        Ok(reply) if reply == b"+OK\r\n" => {
+                            *accepted.entry(*partition).or_insert(0usize) += 1
+                        }
+                        Ok(reply) => assert!(reply.starts_with(b"-ERR "), "{reply:?}"),
+                        Err(error) => panic!("client transport failed: {error}"),
+                    }
+                    std::thread::sleep(Duration::from_millis(15));
+                }
+            }
+            accepted
+        });
+        publish_json(
+            &nodes[0].root.join("rebalance.json"),
+            &RebalanceCommand {
+                partitions: keys.keys().copied().collect(),
+                drained: BTreeSet::from([old_backup.node.clone()]),
+            },
+        );
+        let reply: Result<ReplicaRebalanceReport, String> =
+            wait_for("three planned replica transfers", || {
+                read_json(&nodes[0].root.join("rebalance-reply.json"))
+            });
+        stop.store(true, Ordering::Release);
+        (reply.unwrap(), writer.join().unwrap())
+    });
+    assert!(report.deferred.is_empty(), "{report:?}");
+    assert_eq!(report.committed.len(), 3, "{report:?}");
+    assert_eq!(accepted.len(), 3);
+    let targets: BTreeSet<_> = report
+        .committed
+        .iter()
+        .map(|repair| repair.plan.target.node.clone())
+        .collect();
+    assert_eq!(
+        targets,
+        BTreeSet::from([members[2].node_id.clone(), members[3].node_id.clone()])
+    );
+    let mut epoch = promotion.new_epoch;
+    for repair in &report.committed {
+        assert_eq!(repair.plan.replaced, old_backup);
+        assert_eq!(repair.plan.old_epoch, epoch);
+        assert!(repair.plan.prior_backups.is_some());
+        assert!(
+            repair.deltas > 0,
+            "missing foreground deltas for {repair:?}"
+        );
+        epoch = repair.plan.new_epoch;
+    }
+
+    fault_generation(&nodes, None, 2);
+    nodes[1].stop();
+    assert!(nodes[1].read().is_err());
+    publish_json(&nodes[0].root.join("automatic-rebalance.json"), &true);
+    let automatic = wait_for("automatic repair after discovery loses the backup", || {
+        nodes[0].status()?.repairs.get(&failure_partition).cloned()
+    });
+    assert_eq!(automatic.replaced, old_backup);
+    assert!(targets.contains(&automatic.target.node));
+    let epoch = automatic.new_epoch.value();
+    for (partition, key) in keys
+        .iter()
+        .chain(std::iter::once((&failure_partition, &failure_key)))
+    {
+        let previous = if *partition == failure_partition {
+            b"base".as_slice()
+        } else {
+            b"workload"
+        };
+        let cas = compare_and_set_for_key(key, previous, b"verified");
+        let id = format!("w10e:{epoch}:verified-{}", partition.value());
+        let res = wait_for("writes with only replacement backups", || {
+            match nodes[0].hc1(cas.clone(), &id) {
+                Ok(response) => Some(response),
+                Err(error) if error.retryable => None,
+                Err(error) => panic!("post-rebalance CAS failed: {error:?}"),
+            }
+        });
+        assert!(matches!(res, ClientResponse::CasApplied { .. }), "{res:?}");
+        assert_eq!(nodes[0].hc1(cas, &id).unwrap(), res);
+        assert_eq!(
+            resp(nodes[0].address, &[b"GET", key]).unwrap(),
+            b"$8\r\nverified\r\n"
+        );
+    }
+    println!("W10f multi initial_partitions=3 targets={} accepted={accepted:?} deltas={:?} automatic_partition={} stopped_backup_pid={} verified_partitions=4",
+        targets.len(), report.committed.iter().map(|repair| repair.deltas).collect::<Vec<_>>(),
+        failure_partition.value(), initial[1].pid);
 }
 
 #[test]

@@ -113,11 +113,10 @@ impl PartitionTopology {
             return Err(PartitionTopologyError::UnknownPartition(partition.value()));
         }
         let members = &self.snapshot.members;
-        if let Some(promotion) = self.snapshot.value_promotions.get(&partition) {
-            if self.replication_factor != promotion.backups.len() + 1
+        if let Some((primary, backups)) = self.snapshot.value_assignment(partition) {
+            if self.replication_factor != backups.len() + 1
                 || !members.iter().any(|member| {
-                    member.node_id == promotion.new_owner.node
-                        && member.generation == promotion.new_owner.generation
+                    member.node_id == primary.node && member.generation == primary.generation
                 })
             {
                 return Err(PartitionTopologyError::UnavailablePromotion);
@@ -125,8 +124,8 @@ impl PartitionTopology {
             return Ok(PartitionPlacement {
                 partition,
                 epoch: self.snapshot.epoch,
-                primary: promotion.new_owner.clone(),
-                backups: promotion.backups.clone(),
+                primary,
+                backups,
             });
         }
         let ranked = RendezvousClusterOwnership

@@ -2,7 +2,7 @@
 
 use std::fmt;
 use std::path::Path;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Duration;
 
@@ -37,10 +37,14 @@ use crate::imap_value_journal::{
     hash, next_record, ApplyResult, CachedDecision, Mutation, PartitionJournal, StoredEntry,
     ValueJournal,
 };
-use crate::imap_value_repair::{repair_error, RepairReceipt, RepairRequest};
+use crate::imap_value_repair::{repair_error, RepairReceipt, RepairRequest, ReplicaReady};
 
+#[path = "imap_value_rebalance.rs"]
+mod rebalance;
 #[path = "imap_value_repair_owner.rs"]
 mod repair_owner;
+pub use rebalance::ReplicaRebalanceReport;
+pub(crate) use rebalance::{RebalanceHealth, RebalanceRequest};
 
 const MAX_VALUE_BYTES: usize = 128 * 1024;
 const MAX_KEY_HEX_BYTES: usize = 64 * 1024;
@@ -90,6 +94,7 @@ pub(crate) enum ReplicaMessage {
     Apply(ReplicaApply),
     Prefix(ReplicaPrefix),
     Repair(RepairRequest),
+    Ready(ReplicaReady),
 }
 
 #[async_trait::async_trait]
@@ -98,6 +103,9 @@ pub(crate) trait ReplicaTransport: Send + Sync {
     async fn probe(&self, request: ReplicaPrefix) -> CacheResult<ReplicaPrefix>;
     async fn repair(&self, _request: RepairRequest) -> CacheResult<RepairReceipt> {
         Err(repair_error("snapshot transport unavailable"))
+    }
+    async fn check_candidate(&self, _request: ReplicaReady) -> CacheResult<ReplicaReady> {
+        Err(repair_error("candidate transport unavailable"))
     }
 }
 
@@ -117,6 +125,8 @@ pub struct ValueReplica {
     writes: Semaphore,
     repair_sender: Semaphore,
     repair_receiver: Mutex<()>,
+    rebalance_pass: Semaphore,
+    pub(crate) rebalance_started: AtomicBool,
     lookups: AtomicU64,
     applies: AtomicU64,
     owner_applies: AtomicU64,
@@ -165,6 +175,8 @@ impl ValueReplica {
             writes: Semaphore::new(MAX_WRITES),
             repair_sender: Semaphore::new(1),
             repair_receiver: Mutex::new(()),
+            rebalance_pass: Semaphore::new(1),
+            rebalance_started: AtomicBool::new(false),
             lookups: AtomicU64::new(0),
             applies: AtomicU64::new(0),
             owner_applies: AtomicU64::new(0),
@@ -608,11 +620,11 @@ struct PromotionWriteCut {
 
 impl PromotionWriteCut {
     fn from_snapshot(snapshot: &RaftPartitionSnapshot, partition: PartitionId) -> Option<Self> {
-        let plan = snapshot.value_promotions.get(&partition)?;
+        let (_, backups) = snapshot.value_assignment(partition)?;
         Some(Self {
             epoch: snapshot.epoch,
             prefix: snapshot.value_prefixes.get(&partition).copied(),
-            backups: plan.backups.clone(),
+            backups,
         })
     }
 }
@@ -751,8 +763,8 @@ impl<S: RaftLogStore> ValueBackend<S> {
         deadline: Instant,
     ) -> Option<PromotionWriteCut> {
         let snapshot = self.raft.partition_snapshot()?;
-        let plan = snapshot.value_promotions.get(&input.partition)?;
-        if plan.new_owner != self.replica.local {
+        let (primary, _) = snapshot.value_assignment(input.partition)?;
+        if primary != self.replica.local {
             return None;
         }
         let cut = PromotionWriteCut::from_snapshot(&snapshot, input.partition)?;
@@ -822,7 +834,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
         if !new_identity(
             input.identity.as_deref(),
             snapshot.epoch,
-            !snapshot.value_promotions.is_empty(),
+            !snapshot.value_promotions.is_empty() || !snapshot.value_repairs.is_empty(),
         ) {
             return Err(write_error(false, "W10e outcome_unknown"));
         }

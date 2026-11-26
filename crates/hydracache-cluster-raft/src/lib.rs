@@ -361,6 +361,42 @@ pub struct RaftPartitionSnapshot {
     pub value_repairs: BTreeMap<hydracache::PartitionId, hydracache::PartitionReplicaRepair>,
 }
 
+impl RaftPartitionSnapshot {
+    /// Effective pinned assignment after a promotion or a backup replacement.
+    pub fn value_assignment(
+        &self,
+        partition: hydracache::PartitionId,
+    ) -> Option<(
+        hydracache::PartitionReplicaIdentity,
+        Vec<hydracache::PartitionReplicaIdentity>,
+    )> {
+        if let Some(promotion) = self.value_promotions.get(&partition) {
+            return Some((promotion.new_owner.clone(), promotion.backups.clone()));
+        }
+        let repair = self.value_repairs.get(&partition)?;
+        Some((repair.owner.clone(), repair.repaired_backups()?))
+    }
+
+    /// Compare a replacement against the current applied slot and membership.
+    pub fn value_repair_slot(
+        &self,
+        repair: &hydracache::PartitionReplicaRepair,
+        required: Option<hydracache::PartitionValuePrefix>,
+    ) -> Option<usize> {
+        if self.applied_index != self.commit_index {
+            return None;
+        }
+        value_repair_slot(
+            &self.members,
+            self.epoch,
+            required,
+            self.value_promotions.get(&repair.partition),
+            self.value_repairs.get(&repair.partition),
+            repair,
+        )
+    }
+}
+
 /// Read-only durable-log progress around the server compaction seam.
 ///
 /// A valid observation always has `snapshot_index <= applied_index`. The
@@ -1628,7 +1664,12 @@ fn apply_partition_metadata(
         if plan.partition.value() < 271
             && cluster.epoch() == plan.old_epoch
             && prefixes.get(&plan.partition).copied() == plan.required
-            && valid_promotion(&cluster.members(), promotions.get(&plan.partition), plan)
+            && valid_promotion(
+                &cluster.members(),
+                promotions.get(&plan.partition),
+                repairs.get(&plan.partition),
+                plan,
+            )
             && cluster.apply_partition_epoch(plan.old_epoch, plan.new_epoch)
         {
             promotions.insert(plan.partition, plan.clone());
@@ -1636,26 +1677,82 @@ fn apply_partition_metadata(
         }
     }
     if let RaftMetadataCommand::ReplaceValueReplica(repair) = command {
-        if let Some(active) = promotions.get_mut(&repair.partition) {
-            let slot = repair.replacement_slot(
-                active,
-                cluster.epoch(),
-                prefixes.get(&repair.partition).copied(),
-                &cluster.members(),
-            );
-            if let Some(slot) =
-                slot.filter(|_| cluster.apply_partition_epoch(repair.old_epoch, repair.new_epoch))
-            {
+        let slot = value_repair_slot(
+            &cluster.members(),
+            cluster.epoch(),
+            prefixes.get(&repair.partition).copied(),
+            promotions.get(&repair.partition),
+            repairs.get(&repair.partition),
+            repair,
+        );
+        if let Some(slot) =
+            slot.filter(|_| cluster.apply_partition_epoch(repair.old_epoch, repair.new_epoch))
+        {
+            if let Some(active) = promotions.get_mut(&repair.partition) {
                 active.backups[slot] = repair.target.clone();
-                repairs.insert(repair.partition, repair.clone());
             }
+            repairs.insert(repair.partition, repair.clone());
         }
     }
+}
+
+fn value_repair_slot(
+    members: &[ClusterMember],
+    epoch: ClusterEpoch,
+    required: Option<hydracache::PartitionValuePrefix>,
+    promotion: Option<&hydracache::PartitionPromotion>,
+    previous: Option<&hydracache::PartitionReplicaRepair>,
+    repair: &hydracache::PartitionReplicaRepair,
+) -> Option<usize> {
+    use hydracache::ClusterReplicationStrategy;
+    if repair.partition.value() >= 271 {
+        return None;
+    }
+    if let Some(promotion) = promotion {
+        if repair.prior_backups.is_some() {
+            return None;
+        }
+        return repair.replacement_slot(
+            &promotion.new_owner,
+            &promotion.backups,
+            epoch,
+            required,
+            members,
+        );
+    }
+    let before = repair.prior_backups.as_ref()?;
+    if !(1..=2).contains(&before.len()) {
+        return None;
+    }
+    if let Some(previous) = previous {
+        if previous.owner != repair.owner || previous.repaired_backups().as_ref() != Some(before) {
+            return None;
+        }
+    } else {
+        let ranked = hydracache::RendezvousClusterOwnership.replicas_for_key(
+            &format!("partition-{}", repair.partition.value()),
+            members,
+            before.len() + 1,
+        )?;
+        if ranked.primary != repair.owner.node
+            || ranked.backups.len() != before.len()
+            || ranked.backups.iter().zip(before).any(|(id, identity)| {
+                id != &identity.node
+                    || !members.iter().any(|member| {
+                        member.node_id == identity.node && member.generation == identity.generation
+                    })
+            })
+        {
+            return None;
+        }
+    }
+    repair.replacement_slot(&repair.owner, before, epoch, required, members)
 }
 
 fn valid_promotion(
     members: &[ClusterMember],
     previous: Option<&hydracache::PartitionPromotion>,
+    repair: Option<&hydracache::PartitionReplicaRepair>,
     plan: &hydracache::PartitionPromotion,
 ) -> bool {
     use hydracache::ClusterReplicationStrategy;
@@ -1678,6 +1775,12 @@ fn valid_promotion(
         return previous.backups.len() == plan.backups.len()
             && previous.new_owner == plan.old_owner
             && previous.backups.contains(&plan.new_owner);
+    }
+    if let Some(repair) = repair {
+        return repair.owner == plan.old_owner
+            && repair.repaired_backups().is_some_and(|backups| {
+                backups.len() == plan.backups.len() && backups.contains(&plan.new_owner)
+            });
     }
     let Some(ranked) = hydracache::RendezvousClusterOwnership.replicas_for_key(
         &format!("partition-{}", plan.partition.value()),

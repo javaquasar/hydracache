@@ -2,7 +2,10 @@
 
 use std::time::Duration;
 
-use hydracache::{CacheError, PartitionReplicaRepair, PartitionValuePrefix};
+use hydracache::{
+    CacheError, ClusterEpoch, PartitionReplicaIdentity, PartitionReplicaRepair,
+    PartitionValuePrefix,
+};
 use hydracache_cluster_raft::RaftPartitionSnapshot;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -83,23 +86,23 @@ pub struct ReplicaRepairOutcome {
     pub deltas: u64,
 }
 
+/// Exact member, value scope and profile a replacement must support.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub(crate) struct ReplicaReady {
+    pub candidate: PartitionReplicaIdentity,
+    pub owner: PartitionReplicaIdentity,
+    pub epoch: ClusterEpoch,
+    pub scope: [u8; 32],
+    pub sync_backups: usize,
+}
+
 pub(crate) fn admits_repair(
     snapshot: &RaftPartitionSnapshot,
     plan: &PartitionReplicaRepair,
 ) -> bool {
-    snapshot.applied_index == snapshot.commit_index
-        && snapshot
-            .value_promotions
-            .get(&plan.partition)
-            .is_some_and(|active| {
-                plan.replacement_slot(
-                    active,
-                    snapshot.epoch,
-                    snapshot.value_prefixes.get(&plan.partition).copied(),
-                    &snapshot.members,
-                )
-                .is_some()
-            })
+    snapshot
+        .value_repair_slot(plan, snapshot.value_prefixes.get(&plan.partition).copied())
+        .is_some()
 }
 
 /// The installed snapshot may trail the latest certificate until final seal.
@@ -108,15 +111,8 @@ pub(crate) fn admits_transfer(
     plan: &PartitionReplicaRepair,
 ) -> bool {
     let latest = snapshot.value_prefixes.get(&plan.partition).copied();
-    snapshot.applied_index == snapshot.commit_index
-        && is_prefix_at_most(plan.required, latest)
-        && snapshot
-            .value_promotions
-            .get(&plan.partition)
-            .is_some_and(|active| {
-                plan.replacement_slot(active, snapshot.epoch, plan.required, &snapshot.members)
-                    .is_some()
-            })
+    is_prefix_at_most(plan.required, latest)
+        && snapshot.value_repair_slot(plan, plan.required).is_some()
 }
 
 pub(crate) fn version(prefix: Option<PartitionValuePrefix>) -> u64 {

@@ -440,6 +440,7 @@ async fn promotion_requires_exact_committed_cut_and_fences_delayed_certificate_a
         target: target.clone(),
         required: Some(next),
         snapshot_digest: [8; 32],
+        prior_backups: None,
     };
     for invalid in [
         PartitionReplicaRepair {
@@ -501,4 +502,118 @@ async fn promotion_requires_exact_committed_cut_and_fences_delayed_certificate_a
         raft.with_applied_partition_snapshot(|snapshot| snapshot.value_repairs[&partition].clone()),
         Some(repair)
     );
+}
+
+#[tokio::test]
+async fn a_natural_repair_pins_the_committed_backup_and_controls_a_later_promotion() {
+    use hydracache::{
+        ClusterEpoch, ClusterReplicationStrategy, PartitionId, PartitionPromotion,
+        PartitionReplicaIdentity, PartitionReplicaRepair, PartitionValuePrefix,
+        RendezvousClusterOwnership,
+    };
+    use hydracache_cluster_raft::RaftMetadataRuntime;
+    let raft = RaftMetadataRuntime::single_node("natural-repair", 1).unwrap();
+    for node in ["a", "b", "c", "d"] {
+        raft.join_member(ClusterCandidate::member(node))
+            .await
+            .unwrap();
+    }
+    let view = raft.partition_snapshot().unwrap();
+    let partition = PartitionId::new(1);
+    let ranked = RendezvousClusterOwnership
+        .replicas_for_key("partition-1", &view.members, 2)
+        .unwrap();
+    let identity = |node| {
+        let entry = view
+            .members
+            .iter()
+            .find(|member| member.node_id == node)
+            .unwrap();
+        PartitionReplicaIdentity {
+            node,
+            generation: entry.generation,
+        }
+    };
+    let owner = identity(ranked.primary);
+    let backup = identity(ranked.backups[0].clone());
+    let target = identity(
+        view.members
+            .iter()
+            .find(|member| member.node_id != owner.node && member.node_id != backup.node)
+            .unwrap()
+            .node_id
+            .clone(),
+    );
+    let prefix = PartitionValuePrefix {
+        partition,
+        epoch: view.epoch,
+        version: 1,
+        previous: [0; 32],
+        digest: [1; 32],
+    };
+    raft.propose_value_prefix(prefix).unwrap();
+    let repair = PartitionReplicaRepair {
+        partition,
+        old_epoch: view.epoch,
+        new_epoch: ClusterEpoch::new(view.epoch.value() + 1),
+        owner: owner.clone(),
+        replaced: backup.clone(),
+        target: target.clone(),
+        required: Some(prefix),
+        snapshot_digest: [4; 32],
+        prior_backups: Some(vec![backup.clone()]),
+    };
+    for wrong in [
+        PartitionReplicaRepair {
+            prior_backups: None,
+            ..repair.clone()
+        },
+        PartitionReplicaRepair {
+            prior_backups: Some(vec![target.clone()]),
+            replaced: target.clone(),
+            target: backup.clone(),
+            ..repair.clone()
+        },
+    ] {
+        raft.propose_value_repair(wrong).unwrap();
+        assert!(raft
+            .partition_snapshot()
+            .unwrap()
+            .value_assignment(partition)
+            .is_none());
+    }
+    raft.propose_value_repair(repair.clone()).unwrap();
+    let restored = RaftMetadataRuntime::from_snapshot(raft.export_snapshot()).unwrap();
+    for runtime in [&raft, &restored] {
+        assert_eq!(
+            runtime
+                .partition_snapshot()
+                .unwrap()
+                .value_assignment(partition),
+            Some((owner.clone(), vec![target.clone()]))
+        );
+    }
+    let promote = PartitionPromotion {
+        partition,
+        old_epoch: repair.new_epoch,
+        new_epoch: ClusterEpoch::new(repair.new_epoch.value() + 1),
+        old_owner: owner.clone(),
+        new_owner: target.clone(),
+        backups: vec![owner.clone()],
+        required: Some(prefix),
+    };
+    raft.propose_value_promotion(PartitionPromotion {
+        new_owner: backup,
+        ..promote.clone()
+    })
+    .unwrap();
+    assert_eq!(raft.partition_snapshot().unwrap().epoch, repair.new_epoch);
+    raft.propose_value_promotion(promote.clone()).unwrap();
+    let final_view = raft.partition_snapshot().unwrap();
+    assert_eq!(final_view.epoch, promote.new_epoch);
+    assert_eq!(
+        final_view.value_assignment(partition),
+        Some((target, vec![owner]))
+    );
+    assert!(final_view.value_repairs.is_empty());
 }

@@ -45,7 +45,9 @@ impl ValueReplica {
             match &request.step {
                 RepairStep::Delta { mutation } => {
                     if !is_prefix_at_most(Some(mutation.certificate()), latest)
-                        || snapshot.value_promotions[&partition].backups != mutation.backups
+                        || self
+                            .placement(&snapshot, partition)
+                            .is_none_or(|placement| placement.backups != mutation.backups)
                         || !self.admits_mutation(mutation)
                     {
                         return Err(repair_error(
@@ -112,6 +114,10 @@ impl ValueReplica {
                     .value()
                     .checked_add(1)
                     .ok_or_else(|| repair_error("epoch exhausted"))?;
+                let placement = self
+                    .placement(&snapshot, partition)
+                    .filter(|placement| placement.primary == self.local)
+                    .ok_or_else(|| repair_error("local member does not own the partition"))?;
                 let plan = PartitionReplicaRepair {
                     partition,
                     old_epoch: snapshot.epoch,
@@ -121,6 +127,8 @@ impl ValueReplica {
                     target,
                     required: snapshot.value_prefixes.get(&partition).copied(),
                     snapshot_digest: [0; 32],
+                    prior_backups: (!snapshot.value_promotions.contains_key(&partition))
+                        .then_some(placement.backups),
                 };
                 if !admits_repair(&snapshot, &plan) {
                     return Err(repair_error("owner has no matching replacement slot"));
@@ -247,7 +255,7 @@ impl ValueReplica {
         self.journal.finish_capture(manifest)
     }
 
-    fn repair_scope(&self) -> [u8; 32] {
+    pub(super) fn repair_scope(&self) -> [u8; 32] {
         let (tenant, namespace, generation) = self.scope.identity();
         hash((1u16, tenant, namespace.as_str(), generation.get()))
     }

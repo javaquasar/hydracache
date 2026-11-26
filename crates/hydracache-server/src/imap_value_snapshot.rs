@@ -399,6 +399,7 @@ mod tests {
                 target: member("replacement"),
                 required,
                 snapshot_digest: bytes_digest(bytes),
+                prior_backups: None,
             },
             scope: [2; 32],
             image_len: bytes.len(),

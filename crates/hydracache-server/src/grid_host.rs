@@ -39,10 +39,12 @@ use crate::cluster_status::{
 };
 use crate::config::{ClusterStartMode, ServerConfig, ServerConfigError};
 use crate::imap_value_plane::{
-    ReplicaApply, ReplicaApplyAck, ReplicaMessage, ReplicaPrefix, ReplicaTransport, ValueBackend,
-    ValueReplica,
+    RebalanceHealth, RebalanceRequest, ReplicaApply, ReplicaApplyAck, ReplicaMessage,
+    ReplicaPrefix, ReplicaRebalanceReport, ReplicaTransport, ValueBackend, ValueReplica,
 };
-use crate::imap_value_repair::{RepairReceipt, RepairRequest, RepairStep, ReplicaRepairOutcome};
+use crate::imap_value_repair::{
+    RepairReceipt, RepairRequest, RepairStep, ReplicaReady, ReplicaRepairOutcome,
+};
 use crate::management_aggregation::{
     HttpManagementPeerTransport, LocalManagementSnapshotProvider, ManagementConsensusObservation,
     ManagementMemberSnapshot, ManagementPeerTarget, ManagementPeerTransport,
@@ -267,6 +269,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
             raft_peers: raft_peers.clone(),
             drive_diagnostics: drive_diagnostics.clone(),
             value_replica: value_replica.clone(),
+            draining: draining.clone(),
         },
         route_auth.clone(),
         test_snapshot_handler_delay,
@@ -455,6 +458,7 @@ struct ClusterTransportHandles {
     raft_peers: SharedRaftPeers,
     drive_diagnostics: Arc<GridDriveDiagnostics>,
     value_replica: Arc<OnceLock<Arc<ValueReplica>>>,
+    draining: Arc<AtomicBool>,
 }
 
 #[derive(Debug)]
@@ -532,6 +536,7 @@ async fn spawn_cluster_transport(
             raft_peers: handles.raft_peers,
             drive_diagnostics: handles.drive_diagnostics,
             value_replica: handles.value_replica,
+            draining: handles.draining,
             test_snapshot_handler_delay,
         }),
         auth.clone(),
@@ -1495,6 +1500,7 @@ enum TestRaftOutboundFaultAction {
     Drop,
     ValueDrop,
     ValueChunkDrop { index: u32 },
+    ValueChunkDelay { index: u32, millis: u64 },
     ValueDeltaDelay { version: u64, millis: u64 },
     Delay { millis: u64 },
     SnapshotDelay { millis: u64 },
@@ -1581,7 +1587,9 @@ impl TestRaftOutboundFaultController {
         if rule.action == TestRaftOutboundFaultAction::ValueDrop && !is_value {
             return Ok(());
         }
-        if let TestRaftOutboundFaultAction::ValueChunkDrop { index } = rule.action {
+        if let TestRaftOutboundFaultAction::ValueChunkDrop { index }
+        | TestRaftOutboundFaultAction::ValueChunkDelay { index, .. } = rule.action
+        {
             if value_send != Some(TestValueSend::Chunk(index)) {
                 return Ok(());
             }
@@ -1621,6 +1629,7 @@ impl TestRaftOutboundFaultController {
             }
             TestRaftOutboundFaultAction::Delay { millis }
             | TestRaftOutboundFaultAction::SnapshotDelay { millis }
+            | TestRaftOutboundFaultAction::ValueChunkDelay { millis, .. }
             | TestRaftOutboundFaultAction::ValueDeltaDelay { millis, .. } => {
                 let expected_generation = document.generation;
                 let expected_rule = rule.clone();
@@ -1666,6 +1675,7 @@ fn validate_test_raft_outbound_fault_document(
         }
         if let TestRaftOutboundFaultAction::Delay { millis }
         | TestRaftOutboundFaultAction::SnapshotDelay { millis }
+        | TestRaftOutboundFaultAction::ValueChunkDelay { millis, .. }
         | TestRaftOutboundFaultAction::ValueDeltaDelay { millis, .. } = rule.action
         {
             if !(1..=MAX_TEST_RAFT_OUTBOUND_DELAY_MS).contains(&millis) {
@@ -2006,6 +2016,16 @@ impl ReplicaTransport for HttpRaftMessageSink {
             request.manifest.plan.old_epoch.value(),
             &request,
             value_send,
+        )
+        .await
+    }
+
+    async fn check_candidate(&self, request: ReplicaReady) -> CacheResult<ReplicaReady> {
+        self.send_value_message(
+            &request.candidate.node,
+            request.epoch.value(),
+            &request,
+            None,
         )
         .await
     }
@@ -2558,7 +2578,7 @@ impl MemberReadHost {
             .await
     }
 
-    /// Repair one backup of an already promoted partition from the live owner.
+    /// Repair one backup from the live owner.
     pub async fn repair_partition_backup(
         &self,
         partition: hydracache::PartitionId,
@@ -2585,6 +2605,91 @@ impl MemberReadHost {
                 target,
             )
             .await
+    }
+
+    /// Reconcile the local owner's certified slots affected by the supplied
+    /// drain list or by current discovery failures. An empty partition list
+    /// considers all locally owned certified partitions.
+    pub async fn rebalance_partition_backups(
+        &self,
+        partitions: &[hydracache::PartitionId],
+        drained: &BTreeSet<ClusterNodeId>,
+    ) -> CacheResult<ReplicaRebalanceReport> {
+        let replica = self
+            .0
+            .value_replica
+            .get()
+            .ok_or_else(|| CacheError::Backend("staged value plane is not attached".into()))?;
+        let transport = self
+            .0
+            .network_sink
+            .as_deref()
+            .ok_or_else(|| CacheError::Backend("snapshot transport unavailable".into()))?;
+        replica
+            .rebalance_backups(
+                &self.0.raft,
+                &self.0._message_sink,
+                transport,
+                RebalanceRequest {
+                    partitions,
+                    drained,
+                    health: &rebalance_health(&self.0.discovery),
+                },
+            )
+            .await
+    }
+
+    /// Enable periodic owner-local repair of failed backup slots on this staged host.
+    pub fn start_automatic_replica_rebalance(&self) -> CacheResult<()> {
+        let replica = self
+            .0
+            .value_replica
+            .get()
+            .cloned()
+            .ok_or_else(|| CacheError::Backend("staged value plane is not attached".into()))?;
+        let transport = self
+            .0
+            .network_sink
+            .clone()
+            .ok_or_else(|| CacheError::Backend("snapshot transport unavailable".into()))?;
+        if replica.rebalance_started.swap(true, Ordering::AcqRel) {
+            return Ok(());
+        }
+        let raft = self.0.raft.clone();
+        let raft_transport = self.0._message_sink.clone();
+        let discovery = self.0.discovery.clone();
+        let mut shutdown = self.0.shutdown.subscribe();
+        self.0
+            ._runtime
+            .as_ref()
+            .expect("member owns a runtime")
+            .spawn(async move {
+                let mut ticks = tokio::time::interval(Duration::from_secs(2));
+                ticks.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+                let drained = BTreeSet::new();
+                while !*shutdown.borrow() {
+                    tokio::select! {
+                        _ = shutdown.changed() => return,
+                        _ = ticks.tick() => {}
+                    }
+                    let health = rebalance_health(&discovery);
+                    let pass = replica.rebalance_backups(
+                        &raft,
+                        &raft_transport,
+                        transport.as_ref(),
+                        RebalanceRequest {
+                            partitions: &[],
+                            drained: &drained,
+                            health: &health,
+                        },
+                    );
+                    tokio::select! {
+                        _ = shutdown.changed() => return,
+                        _ = pass => {}
+                    }
+                }
+            });
+        Ok(())
     }
 
     /// Attach the experimental synchronous value plane to this live member.
@@ -3332,6 +3437,22 @@ fn reachability_from_discovery_liveness(
     }
 }
 
+fn rebalance_health(discovery: &ChitchatDiscovery) -> RebalanceHealth {
+    let mut health = RebalanceHealth::default();
+    for (id, liveness) in discovery.liveness() {
+        match liveness {
+            ClusterDiscoveryLiveness::Dead => {
+                health.failed.insert(id);
+            }
+            ClusterDiscoveryLiveness::Suspect => {
+                health.suspect.insert(id);
+            }
+            ClusterDiscoveryLiveness::Live => {}
+        }
+    }
+    health
+}
+
 fn raft_voter_majority_reachable(total_voters: usize, reachable_voters: usize) -> bool {
     total_voters > 0 && reachable_voters >= (total_voters / 2).saturating_add(1)
 }
@@ -3346,6 +3467,7 @@ struct RaftClusterMessageHandler {
     drive_diagnostics: Arc<GridDriveDiagnostics>,
     test_snapshot_handler_delay: Option<Duration>,
     value_replica: Arc<OnceLock<Arc<ValueReplica>>>,
+    draining: Arc<AtomicBool>,
 }
 
 impl fmt::Debug for RaftClusterMessageHandler {
@@ -3375,6 +3497,15 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
             if let Some(replica) = self.value_replica.get() {
                 let request: ReplicaMessage = serde_json::from_slice(&payload)
                     .map_err(|_| CacheError::Decode("invalid W10c application message".into()))?;
+                if matches!(
+                    request,
+                    ReplicaMessage::Ready(_) | ReplicaMessage::Repair(_)
+                ) && self.draining.load(Ordering::Acquire)
+                {
+                    return Err(CacheError::Backend(
+                        "draining member cannot receive a repair".into(),
+                    ));
+                }
                 let snapshot = self.raft.partition_snapshot().ok_or_else(|| {
                     CacheError::Backend("value replica topology unavailable".into())
                 })?;
@@ -3390,6 +3521,9 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
                     ),
                     ReplicaMessage::Repair(request) => serde_json::to_value(
                         replica.receive_repair(&self.raft, &message.from, message.term, request)?,
+                    ),
+                    ReplicaMessage::Ready(request) => serde_json::to_value(
+                        replica.check_candidate(&snapshot, &message.from, message.term, request)?,
                     ),
                 };
                 ack.application = Some(
@@ -4640,6 +4774,7 @@ mod tests {
             drive_diagnostics: Arc::new(GridDriveDiagnostics::default()),
             test_snapshot_handler_delay: None,
             value_replica: Arc::new(OnceLock::new()),
+            draining: Arc::new(AtomicBool::new(false)),
         }
     }
 
