@@ -7,8 +7,8 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Duration;
 
 use hydracache::{
-    CacheError, CacheResult, ClusterTimeAuthority, PartitionId, PartitionValuePrefix,
-    ReplicatedSlot, ReplicationConfig,
+    CacheError, CacheResult, ClusterEpoch, ClusterTimeAuthority, PartitionId, PartitionPromotion,
+    PartitionValuePrefix, ReplicatedSlot, ReplicationConfig,
 };
 use hydracache_client_protocol::{
     ClientErrorCode, ClientErrorEnvelope, ClientRequest, ClientResponse, Namespace, StructuredKey,
@@ -72,9 +72,25 @@ pub(crate) struct ReplicaApplyAck {
     prefix: PartitionValuePrefix,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub(crate) struct ReplicaPrefix {
+    pub target: PartitionMember,
+    pub epoch: ClusterEpoch,
+    pub partition: PartitionId,
+    required: Option<PartitionValuePrefix>,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+pub(crate) enum ReplicaMessage {
+    Apply(ReplicaApply),
+    Prefix(ReplicaPrefix),
+}
+
 #[async_trait::async_trait]
 pub(crate) trait ReplicaTransport: Send + Sync {
     async fn apply(&self, request: ReplicaApply) -> CacheResult<ReplicaApplyAck>;
+    async fn probe(&self, request: ReplicaPrefix) -> CacheResult<ReplicaPrefix>;
 }
 
 struct Lane {
@@ -93,6 +109,7 @@ pub struct ValueReplica {
     writes: Semaphore,
     lookups: AtomicU64,
     applies: AtomicU64,
+    owner_applies: AtomicU64,
     clock: Option<ReplicaClock>,
 }
 
@@ -138,6 +155,7 @@ impl ValueReplica {
             writes: Semaphore::new(MAX_WRITES),
             lookups: AtomicU64::new(0),
             applies: AtomicU64::new(0),
+            owner_applies: AtomicU64::new(0),
             clock: None,
         })
     }
@@ -161,6 +179,10 @@ impl ValueReplica {
 
     pub fn replica_applies(&self) -> u64 {
         self.applies.load(Ordering::Relaxed)
+    }
+
+    pub fn owner_applies(&self) -> u64 {
+        self.owner_applies.load(Ordering::Relaxed)
     }
 
     fn lane(&self, partition: PartitionId) -> Option<&Lane> {
@@ -207,6 +229,7 @@ impl ValueReplica {
             || placement.primary != mutation.owner
             || placement.backups != mutation.backups
             || !placement.backups.contains(&self.local)
+            || !admitted(snapshot, &self.local)
             || expected_version != Some(record.version)
             || slot_version != record.version
             || (record.is_tombstone() && mutation.expires_not_before_ms.is_some())
@@ -239,6 +262,142 @@ impl ValueReplica {
             prefix,
         })
     }
+
+    pub(crate) fn prove_replica(
+        &self,
+        snapshot: &RaftPartitionSnapshot,
+        source: &str,
+        epoch: u64,
+        request: ReplicaPrefix,
+    ) -> CacheResult<ReplicaPrefix> {
+        let placement = self
+            .placement(snapshot, request.partition)
+            .ok_or_else(replica_rejected)?;
+        if request.target != self.local
+            || placement.primary.node.as_str() != source
+            || !placement.backups.contains(&self.local)
+            || !admitted(snapshot, &self.local)
+            || request.epoch != snapshot.epoch
+            || request.epoch.value() != epoch
+            || snapshot.value_prefixes.get(&request.partition).copied() != request.required
+        {
+            return Err(replica_rejected());
+        }
+        let lane = self.lane(request.partition).ok_or_else(replica_rejected)?;
+        let _guard = lane.storage.try_lock().map_err(|_| replica_rejected())?;
+        if !self
+            .journal
+            .load(request.partition)?
+            .covers(request.required)
+        {
+            return Err(replica_rejected());
+        }
+        Ok(request)
+    }
+
+    pub(crate) async fn promote<S: RaftLogStore>(
+        &self,
+        raft: &RaftMetadataRuntime<S>,
+        transport: &Arc<dyn RaftMessageSink>,
+        partition: PartitionId,
+        backups: Vec<PartitionMember>,
+    ) -> CacheResult<PartitionPromotion> {
+        let lane = self.lane(partition).ok_or_else(promotion_refused)?;
+        let _writer = lane.writer.try_acquire().map_err(|_| promotion_refused())?;
+        let deadline = Instant::now() + WRITE_WAIT;
+        let proof = request_read_index(raft, transport, deadline)
+            .await
+            .map_err(|_| promotion_refused())?;
+        let plan = {
+            let _guard = lane.storage.try_lock().map_err(|_| promotion_refused())?;
+            proof
+                .with_snapshot(|snapshot, _| {
+                    let required = snapshot.value_prefixes.get(&partition).copied();
+                    if !self.journal.load(partition)?.covers(required) {
+                        return Err(promotion_refused());
+                    }
+                    if !admitted(&snapshot, &self.local) {
+                        return Err(promotion_refused());
+                    }
+                    let (old_owner, old_backups) =
+                        if let Some(active) = snapshot.value_promotions.get(&partition) {
+                            if active.new_owner == self.local && active.backups == backups {
+                                return Ok((active.clone(), true));
+                            }
+                            (active.new_owner.clone(), active.backups.clone())
+                        } else {
+                            let placement = self
+                                .placement(&snapshot, partition)
+                                .ok_or_else(promotion_refused)?;
+                            (placement.primary, placement.backups)
+                        };
+                    let mut nodes = std::collections::BTreeSet::from([&self.local.node]);
+                    if !old_backups.contains(&self.local)
+                        || backups.len() != self.replication.sync_backups
+                        || backups.iter().any(|backup| {
+                            !nodes.insert(&backup.node) || !admitted(&snapshot, backup)
+                        })
+                    {
+                        return Err(promotion_refused());
+                    }
+                    let next = snapshot
+                        .epoch
+                        .value()
+                        .checked_add(1)
+                        .ok_or_else(promotion_refused)?;
+                    Ok((
+                        PartitionPromotion {
+                            partition,
+                            old_epoch: snapshot.epoch,
+                            new_epoch: ClusterEpoch::new(next),
+                            old_owner,
+                            new_owner: self.local.clone(),
+                            backups,
+                            required,
+                        },
+                        false,
+                    ))
+                })
+                .map_err(|_| promotion_refused())??
+        };
+        let (plan, already_active) = plan;
+        if already_active {
+            return Ok(plan);
+        }
+        raft.propose_value_promotion(plan.clone())?;
+        timeout_at(deadline, async {
+            let _ =
+                send_raft_messages_with_diagnostics(transport, raft.take_outbound_messages(), None)
+                    .await;
+            loop {
+                let snapshot = raft.partition_snapshot().ok_or_else(promotion_unknown)?;
+                if snapshot.value_promotions.get(&partition) == Some(&plan) {
+                    return Ok(plan);
+                }
+                if snapshot.epoch != plan.old_epoch {
+                    return Err(promotion_unknown());
+                }
+                sleep(Duration::from_millis(5)).await;
+            }
+        })
+        .await
+        .map_err(|_| promotion_unknown())?
+    }
+}
+
+fn admitted(snapshot: &RaftPartitionSnapshot, identity: &PartitionMember) -> bool {
+    snapshot
+        .members
+        .iter()
+        .any(|member| member.node_id == identity.node && member.generation == identity.generation)
+}
+
+fn promotion_refused() -> CacheError {
+    CacheError::Backend("W10e promotion refused before proposal".into())
+}
+
+fn promotion_unknown() -> CacheError {
+    CacheError::Backend("W10e promotion has no confirmed result".into())
 }
 
 fn replica_rejected() -> CacheError {
@@ -423,6 +582,36 @@ struct WriteInput<'a> {
     operation: WriteOp<'a>,
 }
 
+#[derive(PartialEq, Eq)]
+struct PromotionWriteCut {
+    epoch: ClusterEpoch,
+    prefix: Option<PartitionValuePrefix>,
+    backups: Vec<PartitionMember>,
+}
+
+impl PromotionWriteCut {
+    fn from_snapshot(snapshot: &RaftPartitionSnapshot, partition: PartitionId) -> Option<Self> {
+        let plan = snapshot.value_promotions.get(&partition)?;
+        Some(Self {
+            epoch: snapshot.epoch,
+            prefix: snapshot.value_prefixes.get(&partition).copied(),
+            backups: plan.backups.clone(),
+        })
+    }
+}
+
+fn new_identity(identity: Option<&str>, epoch: ClusterEpoch, promotion_started: bool) -> bool {
+    match identity {
+        None => true,
+        Some(identity) => match identity.strip_prefix("w10e:") {
+            Some(scoped) => scoped.split_once(':').is_some_and(|(epoch, nonce)| {
+                !nonce.is_empty() && epoch == epoch_value(epoch_placeholder)
+            }),
+            None => !promotion_started,
+        },
+    }
+}
+
 impl<S: RaftLogStore> ValueBackend<S> {
     async fn write(&self, request: VerifiedClientRequest<'_>) -> ClientBackendOutcome {
         let envelope = request.envelope();
@@ -480,6 +669,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
             .ok_or_else(before_apply)?;
         let _partition = lane.writer.try_acquire().map_err(|_| before_apply())?;
         let proof = request_read_index(&self.raft, &self.raft_transport, deadline).await?;
+        let ready = self.ready_to_write(lane, &input, deadline).await;
         let (mutation, response) = {
             let _guard = lane.storage.try_lock().map_err(|_| before_apply())?;
             proof
@@ -487,7 +677,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
                     if Instant::now() >= deadline {
                         return Err(before_apply());
                     }
-                    self.prepare(input, &snapshot)
+                    self.prepare(input, &snapshot, ready)
                 })
                 .map_err(|_| before_apply())??
         };
@@ -524,11 +714,11 @@ impl<S: RaftLogStore> ValueBackend<S> {
             let _ = send_raft_messages_with_diagnostics(&self.raft_transport, outbound, None).await;
             loop {
                 let snapshot = self.raft.partition_snapshot().ok_or_else(ambiguous)?;
-                if snapshot.value_prefixes.get(&prefix.partition) == Some(&prefix) {
-                    return Ok(response);
-                }
                 if snapshot.epoch != prefix.epoch {
                     return Err(ambiguous());
+                }
+                if snapshot.value_prefixes.get(&prefix.partition) == Some(&prefix) {
+                    return Ok(response);
                 }
                 sleep(Duration::from_millis(5)).await;
             }
@@ -537,10 +727,55 @@ impl<S: RaftLogStore> ValueBackend<S> {
         .map_err(|_| ambiguous())?
     }
 
+    async fn ready_to_write(
+        &self,
+        lane: &Lane,
+        input: &WriteInput<'_>,
+        deadline: Instant,
+    ) -> Option<PromotionWriteCut> {
+        let snapshot = self.raft.partition_snapshot()?;
+        let plan = snapshot.value_promotions.get(&input.partition)?;
+        if plan.new_owner != self.replica.local {
+            return None;
+        }
+        let cut = PromotionWriteCut::from_snapshot(&snapshot, input.partition)?;
+        let identity = input.identity.as_deref();
+        if !new_identity(identity, cut.epoch, true) {
+            return None;
+        }
+        {
+            let _guard = lane.storage.try_lock().ok()?;
+            let meta = self.replica.journal.load(input.partition).ok()?;
+            if !meta.covers(cut.prefix)
+                || identity.is_some_and(|id| meta.retained(cut.prefix, id).is_some())
+            {
+                return None;
+            }
+        }
+        let transport = self.value_transport.as_ref()?;
+        for target in &cut.backups {
+            let expected = ReplicaPrefix {
+                target: target.clone(),
+                epoch: cut.epoch,
+                partition: input.partition,
+                required: cut.prefix,
+            };
+            let ack = timeout_at(deadline, transport.probe(expected.clone()))
+                .await
+                .ok()?
+                .ok()?;
+            if ack != expected {
+                return None;
+            }
+        }
+        Some(cut)
+    }
+
     fn prepare(
         &self,
         input: WriteInput<'_>,
         snapshot: &RaftPartitionSnapshot,
+        ready: Option<PromotionWriteCut>,
     ) -> Result<(Option<Mutation>, ClientResponse), ClientErrorEnvelope> {
         let placement = self
             .replica
@@ -565,6 +800,17 @@ impl<S: RaftLogStore> ValueBackend<S> {
             } else {
                 Err(identity_conflict())
             };
+        }
+        let cut = PromotionWriteCut::from_snapshot(snapshot, input.partition);
+        if !new_identity(
+            input.identity.as_deref(),
+            snapshot.epoch,
+            !snapshot.value_promotions.is_empty(),
+        ) {
+            return Err(write_error(false, "W10e outcome_unknown"));
+        }
+        if cut.is_some() && cut != ready {
+            return Err(before_apply());
         }
         let time = self.replica.time();
         if let WriteOp::ExpireDue(ticket) = input.operation {
@@ -628,7 +874,10 @@ impl<S: RaftLogStore> ValueBackend<S> {
             .apply(prior, mutation.clone(), true)
             .map_err(|_| ambiguous())?
         {
-            ApplyResult::Flushed => Ok((Some(mutation), response)),
+            ApplyResult::Flushed => {
+                self.replica.owner_applies.fetch_add(1, Ordering::Relaxed);
+                Ok((Some(mutation), response))
+            }
             ApplyResult::Replay => Ok((None, response)),
             ApplyResult::Busy => Err(before_apply()),
             ApplyResult::Conflict => Err(identity_conflict()),

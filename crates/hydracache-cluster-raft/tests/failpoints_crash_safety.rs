@@ -99,7 +99,9 @@ async fn replay_tail_with_canary(
                     .expect("tail leave target must exist before replay");
                 runtime.leave(node_id, generation).await.unwrap();
             }
-            RaftMetadataCommand::CommitTopology { .. } | RaftMetadataCommand::CommitValuePrefix(_) => {}
+            RaftMetadataCommand::CommitTopology { .. }
+            | RaftMetadataCommand::CommitValuePrefix(_)
+            | RaftMetadataCommand::PromoteValuePartition(_) => {}
         }
     }
 }

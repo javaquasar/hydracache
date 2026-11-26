@@ -583,9 +583,10 @@ pub use cluster::{
     ClusterStagingCounters, ClusterStagingHealth, ClusterStorage, HydraCacheClientBuilder,
     HydraCacheMemberBuilder, InMemoryCluster, InMemoryClusterDiscovery, InMemoryClusterStorage,
     InMemoryPeerFetch, LogicalDuration, LogicalTime, ManualClusterClock, MetaDataContainer,
-    NearCacheRepairAction, OutboundClusterMessage, PartitionId, PartitionValuePrefix, RaftMetadataCommand,
-    RaftMetadataSnapshot, RaftStyleMetadataControlPlane, RendezvousClusterOwnership, RoutingMode,
-    StorageOp, StorageOpKind, StorageResult, TopologyFence, TransportPosture,
+    NearCacheRepairAction, OutboundClusterMessage, PartitionId, PartitionPromotion,
+    PartitionReplicaIdentity, PartitionValuePrefix, RaftMetadataCommand, RaftMetadataSnapshot,
+    RaftStyleMetadataControlPlane, RendezvousClusterOwnership, RoutingMode, StorageOp,
+    StorageOpKind, StorageResult, TopologyFence, TransportPosture,
     CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
 };
 #[cfg(target_arch = "wasm32")]
@@ -632,7 +633,6 @@ pub use grid::conditional::{
     LockHold, LockOwner, ReplicaAppliedPrefix, ReplicatedRecordApply, SingleKeyConditionalStore,
     TombstoneGcError, TombstoneGcWatermark,
 };
-pub use grid::time_authority::{ClusterTimeAuthority, TimeObservation};
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::consistency_level::{
     AckRequirement, ConsistencyLevel, ConsistencyReadiness, ConsistencyUnsatisfiable, ReadOptions,
@@ -776,6 +776,7 @@ pub use grid::session_ryw::{
     resolve_session_read, serve_session_read, ReadEscalation, SessionGuaranteeUnmet,
     SessionReadBudget, SessionRywMetrics,
 };
+pub use grid::time_authority::{ClusterTimeAuthority, TimeObservation};
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::{
     cluster_grid_metric_descriptors, diff_effective_maps, prepare_replicated_payload,

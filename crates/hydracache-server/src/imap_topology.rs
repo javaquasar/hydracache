@@ -4,7 +4,7 @@ use std::collections::BTreeSet;
 use std::num::NonZeroU32;
 
 use hydracache::{
-    ClusterEpoch, ClusterGeneration, ClusterNodeId, ClusterReplicationStrategy, PartitionId,
+    ClusterEpoch, ClusterNodeId, ClusterReplicationStrategy, PartitionId,
     RendezvousClusterOwnership, ReplicationConfig, ReplicationConfigError,
 };
 use hydracache_cluster_raft::RaftPartitionSnapshot;
@@ -20,12 +20,7 @@ pub struct PartitionTopology {
     replication_factor: usize,
 }
 
-/// A logical member identity bound to a specific process incarnation.
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct PartitionMember {
-    pub node: ClusterNodeId,
-    pub generation: ClusterGeneration,
-}
+pub use hydracache::PartitionReplicaIdentity as PartitionMember;
 
 /// Placement projected from one applied topology epoch.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -51,6 +46,10 @@ pub enum PartitionTopologyError {
     InsufficientMembers { available: usize, required: usize },
     #[error("partition {0} is outside the configured partition count")]
     UnknownPartition(u32),
+    #[error(
+        "committed promotion does not have an admitted primary and matching replication factor"
+    )]
+    UnavailablePromotion,
 }
 
 impl PartitionTopology {
@@ -114,6 +113,22 @@ impl PartitionTopology {
             return Err(PartitionTopologyError::UnknownPartition(partition.value()));
         }
         let members = &self.snapshot.members;
+        if let Some(promotion) = self.snapshot.value_promotions.get(&partition) {
+            if self.replication_factor != promotion.backups.len() + 1
+                || !members.iter().any(|member| {
+                    member.node_id == promotion.new_owner.node
+                        && member.generation == promotion.new_owner.generation
+                })
+            {
+                return Err(PartitionTopologyError::UnavailablePromotion);
+            }
+            return Ok(PartitionPlacement {
+                partition,
+                epoch: self.snapshot.epoch,
+                primary: promotion.new_owner.clone(),
+                backups: promotion.backups.clone(),
+            });
+        }
         let ranked = RendezvousClusterOwnership
             .replicas_for_key(
                 &format!("partition-{}", partition.value()),

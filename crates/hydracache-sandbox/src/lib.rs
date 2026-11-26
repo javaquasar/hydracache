@@ -10639,6 +10639,13 @@ fn raft_command_report(command: &RaftMetadataCommand) -> RaftMetadataCommandRepo
             generation: None,
             epoch: prefix.epoch.value(),
         },
+        RaftMetadataCommand::PromoteValuePartition(plan) => RaftMetadataCommandReport {
+            kind: "promote-value-partition",
+            node_id: plan.new_owner.node.to_string(),
+            role: Some("member"),
+            generation: Some(plan.new_owner.generation.value()),
+            epoch: plan.new_epoch.value(),
+        },
     }
 }
 

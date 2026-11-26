@@ -200,7 +200,8 @@ impl ReferenceMetadataModel {
                 }
                 self.committed_topology = Some((*epoch, members));
             }
-            RaftMetadataCommand::CommitValuePrefix(_) => {}
+            RaftMetadataCommand::CommitValuePrefix(_)
+            | RaftMetadataCommand::PromoteValuePartition(_) => {}
         }
         Ok(())
     }
@@ -321,7 +322,15 @@ fn expected_command_id(command: &RaftMetadataCommand) -> String {
             members.iter().map(escaped).collect::<Vec<_>>().join(",")
         ),
         RaftMetadataCommand::CommitValuePrefix(prefix) => {
-            format!("w10c-prefix-{}-{:02x?}", prefix.partition.value(), prefix.digest)
+            format!(
+                "w10c-prefix-{}-{:02x?}",
+                prefix.partition.value(),
+                prefix.digest
+            )
+        }
+        RaftMetadataCommand::PromoteValuePartition(plan) => {
+            let bytes = serde_json::to_vec(plan).expect("promotion serializes");
+            format!("w10e-promotion-{:02x?}", bytes)
         }
     }
 }

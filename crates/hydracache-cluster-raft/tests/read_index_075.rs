@@ -299,3 +299,124 @@ async fn committed_value_prefix_requires_exact_predecessor_and_recovers_from_sna
         second
     );
 }
+
+#[tokio::test]
+async fn promotion_requires_exact_committed_cut_and_fences_delayed_certificate_after_recovery() {
+    use hydracache::{
+        ClusterEpoch, ClusterGeneration, ClusterReplicationStrategy, PartitionId,
+        PartitionPromotion, PartitionReplicaIdentity, PartitionValuePrefix,
+        RendezvousClusterOwnership,
+    };
+    use hydracache_cluster_raft::RaftMetadataRuntime;
+
+    let raft = RaftMetadataRuntime::single_node("w10e", 1).unwrap();
+    for node in ["old|separator", "potential-backup", "spare"] {
+        raft.join_member(ClusterCandidate::member(node))
+            .await
+            .unwrap();
+    }
+    let before = raft.partition_snapshot().unwrap();
+    let partition = PartitionId::new(6);
+    let ranked = RendezvousClusterOwnership
+        .replicas_for_key("partition-6", &before.members, 2)
+        .unwrap();
+    let identity = |node| {
+        let member = before
+            .members
+            .iter()
+            .find(|member| member.node_id == node)
+            .unwrap();
+        PartitionReplicaIdentity {
+            node,
+            generation: member.generation,
+        }
+    };
+    let old_owner = identity(ranked.primary);
+    let new_owner = identity(ranked.backups[0].clone());
+    let first = PartitionValuePrefix {
+        partition,
+        epoch: before.epoch,
+        version: 1,
+        previous: [0; 32],
+        digest: [1; 32],
+    };
+    raft.propose_value_prefix(first).unwrap();
+    let plan = PartitionPromotion {
+        partition,
+        old_epoch: before.epoch,
+        new_epoch: ClusterEpoch::new(before.epoch.value() + 1),
+        old_owner: old_owner.clone(),
+        new_owner: new_owner.clone(),
+        backups: vec![old_owner],
+        required: Some(first),
+    };
+    let wrong_backup = PartitionReplicaIdentity {
+        node: plan.old_owner.node.clone(),
+        generation: ClusterGeneration::new(plan.old_owner.generation.value() + 1),
+    };
+    for invalid in [
+        PartitionPromotion {
+            required: None,
+            ..plan.clone()
+        },
+        PartitionPromotion {
+            required: Some(PartitionValuePrefix {
+                digest: [9; 32],
+                ..first
+            }),
+            ..plan.clone()
+        },
+        PartitionPromotion {
+            new_epoch: before.epoch,
+            ..plan.clone()
+        },
+        PartitionPromotion {
+            backups: vec![wrong_backup],
+            ..plan.clone()
+        },
+        PartitionPromotion {
+            backups: vec![new_owner],
+            ..plan.clone()
+        },
+    ] {
+        raft.propose_value_promotion(invalid).unwrap();
+        let snapshot = raft.partition_snapshot().unwrap();
+        assert_eq!(snapshot.epoch, before.epoch);
+        assert!(snapshot.value_promotions.is_empty());
+    }
+    let (pending, _) = raft.begin_read_index().unwrap();
+    let old_proof = pending.complete().await.unwrap();
+    raft.propose_value_promotion(plan.clone()).unwrap();
+    assert!(matches!(
+        old_proof.with_snapshot(|_, _| panic!("old proof crossed the cut")),
+        Err(RaftReadIndexError::Unavailable)
+    ));
+    let recovered = RaftMetadataRuntime::from_snapshot(raft.export_snapshot()).unwrap();
+    for runtime in [&raft, &recovered] {
+        let view = runtime.partition_snapshot().unwrap();
+        assert_eq!(view.epoch, plan.new_epoch);
+        assert_eq!(view.value_promotions[&partition], plan);
+        assert_eq!(view.value_prefixes[&partition], first);
+    }
+    let delayed = PartitionValuePrefix {
+        version: 2,
+        previous: first.digest,
+        digest: [2; 32],
+        ..first
+    };
+    raft.propose_value_prefix(delayed).unwrap();
+    assert_eq!(
+        raft.partition_snapshot().unwrap().value_prefixes[&partition],
+        first
+    );
+    let next = PartitionValuePrefix {
+        epoch: plan.new_epoch,
+        digest: [3; 32],
+        ..delayed
+    };
+    raft.propose_value_prefix(next).unwrap();
+    assert_eq!(
+        raft.partition_snapshot().unwrap().value_prefixes[&partition],
+        next
+    );
+}

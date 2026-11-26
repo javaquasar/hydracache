@@ -105,6 +105,8 @@ pub enum RaftMetadataCommand {
     },
     /// W10c's staged commitment to one consecutively applied replica write.
     CommitValuePrefix(PartitionValuePrefix),
+    /// Staged cutover to a prefix-certified replica.
+    PromoteValuePartition(PartitionPromotion),
 }
 
 /// A replicated commitment for one partition. Value bytes stay on the value plane.
@@ -115,6 +117,25 @@ pub struct PartitionValuePrefix {
     pub version: u64,
     pub previous: [u8; 32],
     pub digest: [u8; 32],
+}
+
+/// The logical node and process incarnation bound to a partition assignment.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct PartitionReplicaIdentity {
+    pub node: ClusterNodeId,
+    pub generation: ClusterGeneration,
+}
+
+/// A promotion conditional on the exact previous authority and value prefix.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct PartitionPromotion {
+    pub partition: super::PartitionId,
+    pub old_epoch: ClusterEpoch,
+    pub new_epoch: ClusterEpoch,
+    pub old_owner: PartitionReplicaIdentity,
+    pub new_owner: PartitionReplicaIdentity,
+    pub backups: Vec<PartitionReplicaIdentity>,
+    pub required: Option<PartitionValuePrefix>,
 }
 
 /// Snapshot of the raft-style metadata journal.
@@ -395,6 +416,18 @@ impl InMemoryCluster {
     /// Return the current simulated cluster epoch.
     pub fn epoch(&self) -> ClusterEpoch {
         self.state.lock().expect("cluster state poisoned").epoch
+    }
+
+    /// Advance the shared fence when the metadata log applies a cutover.
+    #[doc(hidden)]
+    pub fn apply_partition_epoch(&self, previous: ClusterEpoch, next: ClusterEpoch) -> bool {
+        let mut state = self.state.lock().expect("cluster state poisoned");
+        if state.epoch != previous || previous.value().checked_add(1) != Some(next.value()) {
+            return false;
+        }
+        state.epoch = next;
+        state.topology_stamp = state.topology_stamp.saturating_add(1);
+        true
     }
 
     /// Admit or update a member candidate.

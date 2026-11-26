@@ -6,7 +6,18 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::time::{Instant, SystemTime};
 
-use hydracache::{ClusterTimeAuthority, DurableValueStore, TimeObservation};
+use hydracache::{
+    ClusterGeneration, ClusterNodeId, ClusterTimeAuthority, DurableValueStore, PartitionPromotion,
+    TimeObservation,
+};
+use hydracache_client_protocol::{
+    CasExpectation, ClientErrorCode, ClientFrame, ClientRequest, ClientRequestEnvelope,
+    ClientResponse, ClientWireMessage, LockConsistency, StructuredKey,
+};
+use hydracache_client_transport_axum::{
+    CLIENT_DATA_PATH, HYDRACACHE_CLIENT_ID_HEADER, HYDRACACHE_TENANT_HEADER,
+};
+use hydracache_server::imap_topology::PartitionMember;
 use hydracache_server::imap_value_plane::ReplicaClock;
 use hydracache_server::{MemberReadHost, ServerConfig, ServerRole};
 use serde::{Deserialize, Serialize};
@@ -29,7 +40,20 @@ struct Status {
     lookups: u64,
     version: u64,
     applies: u64,
+    owner_applies: u64,
     backup: Option<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct PromotionRequest {
+    serial: u32,
+    backups: Vec<PartitionMember>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct PromotionResponse {
+    serial: u32,
+    plan: Option<PartitionPromotion>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -117,6 +141,7 @@ async fn imap_replica_child() {
                     lookups: values.store_lookups(),
                     version: 0,
                     applies: 0,
+                    owner_applies: 0,
                     backup: None,
                 },
             );
@@ -145,10 +170,34 @@ async fn run_live(
             }),
         )
         .unwrap();
-    let task = start_resp(TcpListener::bind(address).await.unwrap(), dispatcher);
+    let task = start_resp(
+        TcpListener::bind(address).await.unwrap(),
+        dispatcher.clone(),
+    );
+    let http_address: SocketAddr = read_json(&root.join("hc1-address.json")).unwrap();
+    let http = TcpListener::bind(http_address).await.unwrap();
+    let http_task =
+        tokio::spawn(async move { axum::serve(http, dispatcher.routes()).await.unwrap() });
     let partition = scope().locate(KEY.to_vec()).unwrap().0;
     let mut sample = 0;
+    let mut promotion_serial = 0;
     loop {
+        if let Some(request) = read_json::<PromotionRequest>(&root.join("promotion.json")) {
+            if request.serial > promotion_serial {
+                let plan = host
+                    .promote_partition(partition, request.backups)
+                    .await
+                    .ok();
+                promotion_serial = request.serial;
+                publish_json(
+                    &root.join("promotion-reply.json"),
+                    &PromotionResponse {
+                        serial: promotion_serial,
+                        plan,
+                    },
+                );
+            }
+        }
         if let Some(snapshot) = host.partition_snapshot() {
             sample += 1;
             let backup =
@@ -181,11 +230,12 @@ async fn run_live(
                         .get(&partition)
                         .map_or(0, |prefix| prefix.version),
                     applies: values.replica_applies(),
+                    owner_applies: values.owner_applies(),
                     backup,
                 },
             );
         }
-        assert!(!task.is_finished());
+        assert!(!task.is_finished() && !http_task.is_finished());
         tokio::time::sleep(Duration::from_millis(25)).await;
     }
 }
@@ -193,6 +243,7 @@ async fn run_live(
 struct Node {
     root: PathBuf,
     address: SocketAddr,
+    hc1_address: SocketAddr,
     identity: String,
     child: Option<Child>,
     live: bool,
@@ -269,6 +320,78 @@ impl Node {
 
     fn read(&self) -> io::Result<Vec<u8>> {
         resp(self.address, &[b"GET", KEY])
+    }
+
+    fn member(&self, generation: u64) -> PartitionMember {
+        PartitionMember {
+            node: ClusterNodeId::new(self.identity.as_str()),
+            generation: ClusterGeneration::new(generation),
+        }
+    }
+
+    fn promote(&self, serial: u32, backups: Vec<PartitionMember>) -> Option<PartitionPromotion> {
+        publish_json(
+            &self.root.join("promotion.json"),
+            &PromotionRequest { serial, backups },
+        );
+        wait_for("promotion control reply", || {
+            read_json::<PromotionResponse>(&self.root.join("promotion-reply.json"))
+                .filter(|reply| reply.serial == serial)
+        })
+        .plan
+    }
+
+    fn send_hc1(&self, request: ClientRequest, id: &str) -> TcpStream {
+        let mut envelope = ClientRequestEnvelope::new(id, request);
+        envelope.idempotency_key = Some(id.into());
+        let frame = ClientFrame::from_message(&ClientWireMessage::Request(envelope))
+            .unwrap()
+            .encode()
+            .unwrap();
+        let mut stream = TcpStream::connect(self.hc1_address).unwrap();
+        stream
+            .set_read_timeout(Some(Duration::from_secs(5)))
+            .unwrap();
+        write!(stream,
+            "POST {CLIENT_DATA_PATH} HTTP/1.1\r\nHost: {}\r\n{HYDRACACHE_CLIENT_ID_HEADER}: w10e\r\n{HYDRACACHE_TENANT_HEADER}: redis\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+            self.hc1_address, frame.len(),
+        ).unwrap();
+        stream.write_all(&frame).unwrap();
+        stream
+    }
+
+    fn hc1(
+        &self,
+        request: ClientRequest,
+        id: &str,
+    ) -> hydracache_client_transport_axum::ClientBackendOutcome {
+        let mut reader = BufReader::new(self.send_hc1(request, id));
+        let mut status = String::new();
+        reader.read_line(&mut status).unwrap();
+        assert!(status.starts_with("HTTP/1.1 200 "), "{status}");
+        let mut length = None;
+        loop {
+            let mut header = String::new();
+            assert_ne!(reader.read_line(&mut header).unwrap(), 0);
+            if header == "\r\n" {
+                break;
+            }
+            if let Some((name, value)) = header.split_once(':') {
+                if name.eq_ignore_ascii_case("content-length") {
+                    length = Some(value.trim().parse().unwrap());
+                }
+            }
+        }
+        let mut body = vec![0; length.unwrap()];
+        reader.read_exact(&mut body).unwrap();
+        let ClientWireMessage::Response(response) = ClientFrame::decode(&body, 1 << 20)
+            .unwrap()
+            .to_message()
+            .unwrap()
+        else {
+            panic!("expected HC/1 response");
+        };
+        response.result
     }
 }
 
@@ -356,7 +479,7 @@ fn start_nodes(live: bool) -> Vec<Node> {
         .map_or_else(std::env::temp_dir, PathBuf::from)
         .join(format!("imap-replica-{}-{timestamp}", std::process::id()));
     fs::create_dir_all(&root).unwrap();
-    let reservations: Vec<_> = (0..6)
+    let reservations: Vec<_> = (0..9)
         .map(|_| PortReservation::bind("127.0.0.1:0").unwrap())
         .collect();
     let addresses: Vec<_> = reservations
@@ -382,10 +505,13 @@ fn start_nodes(live: bool) -> Vec<Node> {
                 ..ServerConfig::default()
             };
             publish_json(&node_root.join("config.json"), &config);
+            let hc1_address = addresses[index + 6];
+            publish_json(&node_root.join("hc1-address.json"), &hc1_address);
             Node {
                 root: node_root,
                 address: config.listen_addr,
                 identity,
+                hc1_address,
                 child: None,
                 live,
             }
@@ -398,6 +524,150 @@ fn start_nodes(live: bool) -> Vec<Node> {
     }
     println!("D2 process artifacts {}", root.display());
     nodes
+}
+
+fn compare_and_set(expected: &[u8], value: &[u8]) -> ClientRequest {
+    let encoded = KEY
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    ClientRequest::CompareAndSet {
+        ns: Namespace::new("redis").unwrap(),
+        key: StructuredKey::new(vec![format!("redis-binary-v1-{encoded}")]).unwrap(),
+        expected: CasExpectation::Exact(expected.to_vec()),
+        new_value: value.to_vec(),
+        level: LockConsistency::Quorum,
+    }
+}
+
+#[test]
+fn w10e_fences_old_owner_and_replays_only_certified_retry_across_cutover() {
+    if std::env::var(RUN).as_deref() != Ok("1") {
+        return;
+    }
+    let nodes = start_nodes(true);
+    let initial = wait_for("three W10e members", || all_members(&nodes, 0));
+    let owner = expect_owner(&nodes, b"$-1\r\n");
+    let backup = nodes
+        .iter()
+        .position(|node| Some(&node.identity) == initial[owner].backup.as_ref())
+        .unwrap();
+    let spare = (0..nodes.len())
+        .find(|index| *index != owner && *index != backup)
+        .unwrap();
+    let old = &nodes[owner];
+    let successor = &nodes[backup];
+    let old_identity = old.member(initial[owner].generation);
+    let fallback = vec![old_identity.clone()];
+    let seed = b"before-cutover";
+    assert_eq!(resp(old.address, &[b"SET", KEY, seed]).unwrap(), b"+OK\r\n");
+    let retained = compare_and_set(seed, VALUE);
+    let unread = old.send_hc1(retained.clone(), "certified-with-lost-reply");
+    wait_for(
+        "certification despite the client leaving the reply unread",
+        || (old.status()?.version == 2 && successor.status()?.version == 2).then_some(()),
+    );
+    drop(unread);
+    assert!(nodes[spare].promote(1, fallback.clone()).is_none());
+    let wrong_generation = old.member(initial[owner].generation + 1);
+    assert!(successor.promote(1, vec![wrong_generation]).is_none());
+
+    publish_json(
+        &old.root.join("fault.json"),
+        &json!({
+            "schema_version": 1, "generation": 1, "rules": [{
+                "from": old.identity, "to": successor.identity, "action": {"kind": "value_drop"}
+            }]
+        }),
+    );
+    let unknown = compare_and_set(VALUE, b"uncertified");
+    let failed = old
+        .hc1(unknown.clone(), "uncertified-at-old-owner")
+        .unwrap_err();
+    assert_eq!(failed.code, ClientErrorCode::BackendUnavailable);
+    assert!(!failed.retryable);
+    let failed_old = old.refreshed_status();
+    assert_eq!(failed_old.version, 2);
+    assert_eq!(failed_old.owner_applies, 3);
+    assert_eq!(successor.refreshed_status().applies, 2);
+
+    let cut_started = Instant::now();
+    fault_generation(&nodes, Some(owner), 2);
+    let mut serial = 2;
+    let activation = wait_for("durable backup promotion on the majority side", || {
+        serial += 1;
+        successor.promote(serial, fallback.clone())
+    });
+    assert_eq!(activation.old_owner, old_identity);
+    assert_eq!(
+        activation.new_owner,
+        successor.member(initial[backup].generation)
+    );
+    assert_eq!(activation.required.unwrap().version, 2);
+    let epoch = activation.new_epoch.value();
+    assert!(epoch > initial[owner].epoch);
+    assert_eq!(
+        successor.promote(serial + 1, fallback),
+        Some(activation.clone())
+    );
+    assert_eq!(successor.read().unwrap(), expected_value());
+    assert!(matches!(
+        old.read().unwrap().as_slice(),
+        UNAVAILABLE | DEADLINE
+    ));
+    assert_eq!(old.refreshed_status().lookups, failed_old.lookups);
+
+    assert_eq!(
+        successor
+            .hc1(retained, "certified-with-lost-reply")
+            .unwrap(),
+        ClientResponse::CasApplied { new_version: 2 }
+    );
+    assert_eq!(
+        successor
+            .hc1(unknown.clone(), "certified-with-lost-reply")
+            .unwrap_err()
+            .code,
+        ClientErrorCode::Conflict
+    );
+    for id in [
+        "uncertified-at-old-owner".to_owned(),
+        format!("w10e:{}:old", activation.old_epoch.value()),
+    ] {
+        let error = successor.hc1(unknown.clone(), &id).unwrap_err();
+        assert_eq!(error.code, ClientErrorCode::BackendUnavailable);
+        assert!(!error.retryable);
+        assert!(error.message.contains("outcome_unknown"), "{error:?}");
+    }
+    let fresh_id = format!("w10e:{epoch}:fresh");
+    let fresh = compare_and_set(VALUE, b"after-cutover");
+    assert!(successor.hc1(fresh.clone(), &fresh_id).is_err());
+    let cut = successor.refreshed_status();
+    assert_eq!((cut.version, cut.owner_applies), (2, 0));
+    assert_eq!(successor.read().unwrap(), expected_value());
+    assert!(old
+        .hc1(unknown.clone(), "uncertified-at-old-owner")
+        .is_err());
+    assert_eq!(old.refreshed_status().owner_applies, 3);
+
+    fault_generation(&nodes, None, 3);
+    wait_for("former owner applied its fence", || {
+        (old.status()?.epoch == epoch).then_some(())
+    });
+    assert_eq!(old.read().unwrap(), UNAVAILABLE);
+    assert!(old.hc1(unknown, "uncertified-at-old-owner").is_err());
+    assert_eq!(old.refreshed_status().owner_applies, 3);
+    let result = wait_for("synchronous prefix is available after healing", || {
+        successor.hc1(fresh.clone(), &fresh_id).ok()
+    });
+    assert_eq!(result, ClientResponse::CasApplied { new_version: 3 });
+    assert_eq!(successor.hc1(fresh, &fresh_id).unwrap(), result);
+    assert_eq!(successor.read().unwrap(), b"$13\r\nafter-cutover\r\n");
+    let healed = successor.refreshed_status();
+    assert_eq!((healed.version, healed.owner_applies), (3, 1));
+    let digest = activation.required.unwrap().digest;
+    println!("W10e old_pid={} successor_pid={} spare_pid={} epoch={epoch} required_prefix=2 required_digest={digest:02x?} final_prefix=3 isolated_old_lookups=0 duplicate_applies=0 observed_partition_write_unavailable_ms={}",
+        initial[owner].pid, initial[backup].pid, initial[spare].pid, cut_started.elapsed().as_millis());
 }
 
 #[test]

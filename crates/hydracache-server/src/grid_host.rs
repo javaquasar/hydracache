@@ -39,7 +39,8 @@ use crate::cluster_status::{
 };
 use crate::config::{ClusterStartMode, ServerConfig, ServerConfigError};
 use crate::imap_value_plane::{
-    ReplicaApply, ReplicaApplyAck, ReplicaTransport, ValueBackend, ValueReplica,
+    ReplicaApply, ReplicaApplyAck, ReplicaMessage, ReplicaPrefix, ReplicaTransport, ValueBackend,
+    ValueReplica,
 };
 use crate::management_aggregation::{
     HttpManagementPeerTransport, LocalManagementSnapshotProvider, ManagementConsensusObservation,
@@ -1890,27 +1891,30 @@ impl HttpRaftMessageSink {
     }
 }
 
-#[async_trait::async_trait]
-impl ReplicaTransport for HttpRaftMessageSink {
-    async fn apply(&self, request: ReplicaApply) -> CacheResult<ReplicaApplyAck> {
-        let target = request.target.node.clone();
+impl HttpRaftMessageSink {
+    async fn send_value_message<T: serde::Serialize + Sync, R: serde::de::DeserializeOwned>(
+        &self,
+        target: &ClusterNodeId,
+        epoch: u64,
+        request: &T,
+    ) -> CacheResult<R> {
         let endpoint = self
             .peers
             .read()
             .expect("raft peer map poisoned")
-            .get(&raft_node_id(&target))
-            .filter(|peer| peer.node_id == target)
+            .get(&raft_node_id(target))
+            .filter(|peer| &peer.node_id == target)
             .map(|peer| peer.endpoint.clone())
             .ok_or_else(|| CacheError::Backend("value replica peer unavailable".into()))?;
         if let Some(faults) = &self.test_outbound_faults {
-            faults.apply_for_route(&target, false, true).await?;
+            faults.apply_for_route(target, false, true).await?;
         }
-        let payload = serde_json::to_vec(&request)
+        let payload = serde_json::to_vec(request)
             .map_err(|_| CacheError::Encode("W10c replica request".into()))?;
         let wire = ClusterOpaqueMessage::new(
             self.local_node_id.to_string(),
             target.to_string(),
-            request.epoch(),
+            epoch,
             &payload,
         );
         let body = wire.encode_json()?;
@@ -1949,6 +1953,19 @@ impl ReplicaTransport for HttpRaftMessageSink {
                 .ok_or_else(|| CacheError::Decode("typed replica ACK missing".into()))?,
         )
         .map_err(|_| CacheError::Decode("invalid W10c application acknowledgement".into()))
+    }
+}
+
+#[async_trait::async_trait]
+impl ReplicaTransport for HttpRaftMessageSink {
+    async fn apply(&self, request: ReplicaApply) -> CacheResult<ReplicaApplyAck> {
+        self.send_value_message(&request.target.node, request.epoch(), &request)
+            .await
+    }
+
+    async fn probe(&self, request: ReplicaPrefix) -> CacheResult<ReplicaPrefix> {
+        self.send_value_message(&request.target.node, request.epoch.value(), &request)
+            .await
     }
 }
 
@@ -2480,6 +2497,23 @@ impl MemberReadHost {
 
     pub fn partition_snapshot(&self) -> Option<RaftPartitionSnapshot> {
         self.0.raft.partition_snapshot()
+    }
+
+    /// Request a staged cutover on the successor's host. The successor must
+    /// prove its local committed journal before proposing the Raft change.
+    pub async fn promote_partition(
+        &self,
+        partition: hydracache::PartitionId,
+        backups: Vec<crate::imap_topology::PartitionMember>,
+    ) -> CacheResult<hydracache::PartitionPromotion> {
+        let replica = self
+            .0
+            .value_replica
+            .get()
+            .ok_or_else(|| CacheError::Backend("staged value plane is not attached".into()))?;
+        replica
+            .promote(&self.0.raft, &self.0._message_sink, partition, backups)
+            .await
     }
 
     /// Attach the experimental synchronous value plane to this live member.
@@ -3268,16 +3302,25 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
         if matches!(route, ClusterRoute::Replicate) {
             let mut ack = ClusterMessageAck::new(route, self.node_id.to_string(), payload.len());
             if let Some(replica) = self.value_replica.get() {
-                let request = serde_json::from_slice(&payload)
+                let request: ReplicaMessage = serde_json::from_slice(&payload)
                     .map_err(|_| CacheError::Decode("invalid W10c application message".into()))?;
                 let snapshot = self.raft.partition_snapshot().ok_or_else(|| {
                     CacheError::Backend("value replica topology unavailable".into())
                 })?;
-                let applied =
-                    replica.apply_replica(&snapshot, &message.from, message.term, request)?;
+                let encoded = match request {
+                    ReplicaMessage::Apply(request) => serde_json::to_value(replica.apply_replica(
+                        &snapshot,
+                        &message.from,
+                        message.term,
+                        request,
+                    )?),
+                    ReplicaMessage::Prefix(request) => serde_json::to_value(
+                        replica.prove_replica(&snapshot, &message.from, message.term, request)?,
+                    ),
+                };
                 ack.application = Some(
-                    serde_json::to_value(applied)
-                        .map_err(|_| CacheError::Encode("invalid W10c acknowledgement".into()))?,
+                    encoded
+                        .map_err(|_| CacheError::Encode("invalid value acknowledgement".into()))?,
                 );
             }
             return Ok(ack);

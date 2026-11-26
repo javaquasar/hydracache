@@ -171,6 +171,7 @@ impl<S: RaftLogStore> RaftRuntimeState<S> {
             applied_index: self.applied_index,
             members: self.cluster.members(),
             value_prefixes: self.value_prefixes.clone(),
+            value_promotions: self.value_promotions.clone(),
         })
     }
 

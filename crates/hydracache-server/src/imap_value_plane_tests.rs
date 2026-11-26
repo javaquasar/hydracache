@@ -64,6 +64,28 @@ impl ReplicaTransport for PeerTransport {
         }
         Ok(ack)
     }
+
+    async fn probe(&self, message: ReplicaPrefix) -> CacheResult<ReplicaPrefix> {
+        let snapshot = self
+            .raft
+            .partition_snapshot()
+            .ok_or_else(replica_rejected)?;
+        let plan = snapshot
+            .value_promotions
+            .get(&message.partition)
+            .ok_or_else(replica_rejected)?;
+        let peer = self
+            .replicas
+            .iter()
+            .find(|peer| peer.local == message.target)
+            .ok_or_else(replica_rejected)?;
+        peer.prove_replica(
+            &snapshot,
+            plan.new_owner.node.as_str(),
+            message.epoch.value(),
+            message,
+        )
+    }
 }
 
 struct Fixture {
