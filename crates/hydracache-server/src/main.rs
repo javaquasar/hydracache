@@ -5,8 +5,8 @@ use hydracache_client_transport_axum::{
     AxumClientSurface, CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS,
 };
 use hydracache_server::{
-    serve_hc2_listener, serve_redis_listener, AdminHttpSurface, Hc2ClientPlaneService,
-    Hc2ListenerTls, ServerConfig, ServerRuntime,
+    serve_hc2_listener, serve_redis_listener, AdminHttpSurface, Hc2ListenerTls, ServerConfig,
+    ServerRuntime,
 };
 use tokio::net::TcpListener;
 use tokio::sync::{mpsc, watch};
@@ -22,7 +22,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let redis_addr = config.redis_api.listen_addr;
     let hc2_enabled = config.hc2_client_plane.enabled;
     let hc2_addr = config.hc2_client_plane.listen_addr;
-    let hc2_cluster_id = config.hc2_client_plane.cluster_id.clone();
     let drain_timeout = config.drain_timeout();
     let hc2_tls = hc2_enabled
         .then(|| Hc2ListenerTls::from_server_config(&config.tls))
@@ -110,11 +109,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     if let Some(listener) = hc2_listener {
-        let state = dispatch_state
-            .as_ref()
-            .map(Arc::clone)
-            .expect("HC/2 has shared dispatch state");
-        let service = Hc2ClientPlaneService::new(state, hc2_cluster_id);
+        let service = shared_runtime
+            .lock()
+            .expect("server runtime mutex")
+            .hc2_client_service()
+            .expect("enabled HC/2 has an attached dispatcher");
         hc2_observer = Some(service.clone());
         admin_surface = admin_surface.with_hc2_metrics(service.clone());
         let shutdown = shutdown_rx.clone();

@@ -275,6 +275,8 @@ pub struct ServerRuntime {
     flushed: bool,
     client_surface: Option<ClientSurfaceRuntime>,
     client_dispatch_state: Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>>,
+    distributed_hc2_dispatcher:
+        Option<Arc<hydracache_client_transport_axum::ClientSurfaceDispatcher>>,
     management_client_state: Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>>,
     redis_listener_config: Option<RedisListenerConfig>,
     redis_surface: Option<RedisSurfaceRuntime>,
@@ -317,24 +319,23 @@ impl ServerRuntime {
     /// Validate config and construct a runtime.
     pub fn new(config: ServerConfig) -> Result<Self, ServerConfigError> {
         config.validate()?;
-        let (cache, cluster_status, grid_control): (
-            HydraCache,
-            Arc<dyn ClusterStatusProvider>,
-            Option<Arc<dyn GridControlPlaneHandle>>,
-        ) = match config.role {
+        let (cache, cluster_status, grid_control, distributed_hc2_dispatcher) = match config.role {
             ServerRole::Member => {
-                let (cache, grid) = crate::grid_host::build_member(&config)?;
+                let member = crate::grid_host::build_member(&config)?;
                 (
-                    cache,
-                    Arc::new(LiveClusterStatus::new(Arc::clone(&grid))),
-                    Some(grid),
+                    member.cache,
+                    Arc::new(LiveClusterStatus::new(Arc::clone(&member.grid)))
+                        as Arc<dyn ClusterStatusProvider>,
+                    Some(member.grid),
+                    member.hc2,
                 )
             }
             ServerRole::Local | ServerRole::Client => (
                 HydraCache::local()
                     .memory_instrumentation_mode(config.memory_instrumentation_mode)
                     .build(),
-                Arc::new(ModeledClusterStatus),
+                Arc::new(ModeledClusterStatus) as Arc<dyn ClusterStatusProvider>,
+                None,
                 None,
             ),
         };
@@ -346,7 +347,9 @@ impl ServerRuntime {
         } else {
             None
         };
-        let client_dispatch_state = if config.redis_api.enabled || config.hc2_client_plane.enabled {
+        let client_dispatch_state = if config.redis_api.enabled
+            || (config.hc2_client_plane.enabled && distributed_hc2_dispatcher.is_none())
+        {
             Some(match &client_surface {
                 Some(surface) => surface.state(),
                 None => Arc::new(
@@ -380,6 +383,7 @@ impl ServerRuntime {
             flushed: false,
             client_surface,
             client_dispatch_state,
+            distributed_hc2_dispatcher,
             management_client_state: None,
             redis_listener_config,
             redis_surface,
@@ -621,6 +625,25 @@ impl ServerRuntime {
             .as_ref()
             .map(ClientSurfaceRuntime::state)
             .or_else(|| self.client_dispatch_state.as_ref().map(Arc::clone))
+    }
+
+    /// Construct the HC/2 service for the selected member or local profile.
+    pub fn hc2_client_service(&self) -> Option<crate::Hc2ClientPlaneService> {
+        let cluster_id = &self.config.hc2_client_plane.cluster_id;
+        if !self.config.hc2_client_plane.enabled {
+            return None;
+        }
+        match &self.distributed_hc2_dispatcher {
+            Some(dispatcher) => Some(crate::Hc2ClientPlaneService::distributed(
+                dispatcher.clone(),
+                cluster_id,
+                self.grid_control.as_ref()?.clone(),
+                self.config.distributed_hc2.as_ref()?.principal(),
+            )),
+            None => self
+                .client_dispatch_state()
+                .map(|state| crate::Hc2ClientPlaneService::new(state, cluster_id)),
+        }
     }
 
     /// Return whether the local-only destructive diagnostic reset is enabled.

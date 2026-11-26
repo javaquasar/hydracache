@@ -15,7 +15,7 @@ use hydracache_client_hc2::wire::invocation_request;
 use hydracache_client_hc2::wire::invocation_response;
 use hydracache_client_hc2::wire::server_envelope;
 use hydracache_client_hc2::wire::{
-    BatchResult, CacheEvent, ClientEnvelope, EventGap, HandshakeAck, InvocationRequest,
+    BatchResult, CacheEvent, Capability, ClientEnvelope, EventGap, HandshakeAck, InvocationRequest,
     InvocationResponse, LockOwnershipResult, LockResult, MutationResult, RequestMeta, ResponseMeta,
     ServerEnvelope, SessionHeartbeat, SessionLost, StableErrorCode, SubscriptionAck, ValueResult,
 };
@@ -37,6 +37,7 @@ use tonic::transport::server::{TcpConnectInfo, TlsConnectInfo};
 use tonic::transport::{Certificate, Identity, Server, ServerTlsConfig};
 use tonic::{Request, Response, Status, Streaming};
 
+use crate::cluster_status::GridControlPlaneHandle;
 use crate::config::TlsConfig;
 
 /// Opaque, eagerly validated TLS policy for the production HC/2 listener.
@@ -118,6 +119,13 @@ pub struct Hc2ClientPlaneService {
     state: Arc<ClientSurfaceDispatcher>,
     cluster_id: Arc<str>,
     accounting: Arc<Accounting>,
+    member: Option<DistributedMember>,
+}
+
+#[derive(Debug, Clone)]
+struct DistributedMember {
+    grid: Arc<dyn GridControlPlaneHandle>,
+    principal: String,
 }
 
 impl Hc2ClientPlaneService {
@@ -135,7 +143,30 @@ impl Hc2ClientPlaneService {
             state,
             cluster_id: Arc::from(cluster_id.into()),
             accounting: Arc::new(Accounting::default()),
+            member: None,
         }
+    }
+
+    pub(crate) fn distributed(
+        dispatcher: Arc<ClientSurfaceDispatcher>,
+        cluster_id: impl Into<String>,
+        grid: Arc<dyn GridControlPlaneHandle>,
+        principal: String,
+    ) -> Self {
+        Self {
+            member: Some(DistributedMember { grid, principal }),
+            ..Self::from_dispatcher(dispatcher, cluster_id)
+        }
+    }
+
+    fn topology_epoch(&self) -> u64 {
+        self.member.as_ref().map_or(1, |member| {
+            member
+                .grid
+                .partition_snapshot()
+                .filter(|snapshot| snapshot.applied_index == snapshot.commit_index)
+                .map_or(0, |snapshot| snapshot.epoch.value())
+        })
     }
 
     /// Return bounded, secret-free listener accounting.
@@ -245,6 +276,15 @@ impl ClientPlaneAlpha for Hc2ClientPlaneService {
         request: Request<Streaming<ClientEnvelope>>,
     ) -> Result<Response<Self::OpenStream>, Status> {
         let peer_id = verified_peer_id(&request)?;
+        if self
+            .member
+            .as_ref()
+            .is_some_and(|member| member.principal != peer_id)
+        {
+            return Err(Status::permission_denied(
+                "HC/2 client certificate is outside the member profile",
+            ));
+        }
         let mut inbound = request.into_inner();
         let (outbound, receiver) =
             OutboundQueue::new(self.state.limits().max_streams_per_connection);
@@ -382,8 +422,14 @@ async fn serve_connection(
             server_envelope::Message::Handshake(HandshakeAck {
                 generation: identity.protocol_generation,
                 cluster_id: service.cluster_id.to_string(),
-                accepted: handshake.requested,
-                topology_epoch: 1,
+                accepted: handshake
+                    .requested
+                    .into_iter()
+                    .filter(|capability| {
+                        service.member.is_none() || *capability == Capability::Data as i32
+                    })
+                    .collect(),
+                topology_epoch: service.topology_epoch(),
                 connection_generation: identity.connection_generation,
                 minimum_generation: HC2_MINIMUM_GENERATION,
                 preferred_generation: HC2_GENERATION,
@@ -408,7 +454,7 @@ async fn serve_connection(
         match envelope.message {
             Some(client_envelope::Message::Invocation(invocation)) => {
                 let event = mutation_event(&invocation);
-                let response = dispatch_invocation_until_closed(
+                let mut response = dispatch_invocation_until_closed(
                     service,
                     peer_id,
                     envelope.correlation_id,
@@ -416,6 +462,9 @@ async fn serve_connection(
                     outbound,
                 )
                 .await?;
+                if let Some(meta) = &mut response.meta {
+                    meta.topology_epoch = service.topology_epoch();
+                }
                 let mutation_applied = matches!(
                     response.result.as_ref(),
                     Some(invocation_response::Result::Mutation(MutationResult {
@@ -443,6 +492,11 @@ async fn serve_connection(
                 }
             }
             Some(client_envelope::Message::Subscribe(subscribe)) => {
+                if service.member.is_some() {
+                    return Err(Status::unimplemented(
+                        "clustered HC/2 subscriptions are unavailable",
+                    ));
+                }
                 if subscriptions.contains_key(&subscribe.subscription_id)
                     || subscriptions.len() >= service.state.limits().max_streams_per_connection
                 {
@@ -564,6 +618,12 @@ async fn dispatch_invocation_async(
         Ok(prepared) => prepared,
         Err(response) => return response,
     };
+    if service.member.is_some() && !admitted_distributed_operation(&operation) {
+        return wire_error(
+            StableErrorCode::StableErrorUnsupported,
+            "operation is outside the distributed HC/2 profile",
+        );
+    }
     if let invocation_request::Operation::Batch(batch) = operation {
         let mut items = Vec::with_capacity(batch.items.len());
         for item in batch.items {
@@ -649,7 +709,12 @@ async fn execute_invocation(
         tokio::time::Instant::now().checked_add(std::time::Duration::from_millis(remaining_ms))
     };
     if !meta.idempotency_key.is_empty() {
-        envelope = envelope.with_idempotency_key(hex(&meta.idempotency_key));
+        let issued = service
+            .member
+            .as_ref()
+            .and_then(|_| scoped_identity(&meta.idempotency_key));
+        envelope =
+            envelope.with_idempotency_key(issued.unwrap_or_else(|| hex(&meta.idempotency_key)));
     }
     from_dispatch_response(
         service
@@ -657,6 +722,31 @@ async fn execute_invocation(
             .dispatch_verified_request_with_deadline(&identity, envelope, deadline)
             .await,
     )
+}
+
+fn scoped_identity(bytes: &[u8]) -> Option<String> {
+    let token = std::str::from_utf8(bytes).ok()?;
+    let (epoch, nonce) = token.strip_prefix("w10e:")?.split_once(':')?;
+    if epoch.parse::<u64>().ok()? == 0
+        || nonce.is_empty()
+        || token.len() > 128
+        || !nonce
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || b"-_".contains(&byte))
+    {
+        return None;
+    }
+    Some(token.to_owned())
+}
+
+fn admitted_distributed_operation(operation: &invocation_request::Operation) -> bool {
+    use invocation_request::Operation;
+    match operation {
+        Operation::Get(_) | Operation::Delete(_) | Operation::RemoveIfValue(_) => true,
+        Operation::Put(value) => value.ttl_ms == 0,
+        Operation::CompareAndSet(value) => value.ttl_ms == 0,
+        _ => false,
+    }
 }
 
 // Existing synchronous characterization cases exercise only the immediately-ready local backend.
@@ -959,7 +1049,7 @@ fn hex(bytes: &[u8]) -> String {
     encoded
 }
 
-fn unix_time_ms() -> u64 {
+pub(crate) fn unix_time_ms() -> u64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()

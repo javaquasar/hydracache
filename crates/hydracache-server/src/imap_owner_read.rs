@@ -119,17 +119,6 @@ impl<S: RaftLogStore, V: OwnerReadValues> RaftOwnerReadBackend<S, V> {
 
     async fn read(&self, request: VerifiedClientRequest<'_>) -> ClientBackendOutcome {
         let envelope = request.envelope();
-        let (ns, key, ttl) = match &envelope.request {
-            ClientRequest::Get { ns, key } => (ns, key, false),
-            ClientRequest::GetTtl { ns, key } => (ns, key, true),
-            _ => {
-                return Err(ClientErrorEnvelope::new(
-                    ClientErrorCode::BackendUnavailable,
-                    false,
-                    "the owner-read backend only supports value and TTL reads",
-                ))
-            }
-        };
         let now = Instant::now();
         let deadline = request
             .transport_deadline()
@@ -141,9 +130,36 @@ impl<S: RaftLogStore, V: OwnerReadValues> RaftOwnerReadBackend<S, V> {
                 now + budget.min(MAX_READ_WAIT)
             })
             .min(now + MAX_READ_WAIT);
+        self.read_at(
+            request.identity().tenant(),
+            &envelope.request,
+            deadline,
+            None,
+        )
+        .await
+    }
+
+    pub(crate) async fn read_at(
+        &self,
+        tenant: &str,
+        request: &ClientRequest,
+        deadline: Instant,
+        routed_epoch: Option<ClusterEpoch>,
+    ) -> ClientBackendOutcome {
+        let (ns, key, ttl) = match request {
+            ClientRequest::Get { ns, key } => (ns, key, false),
+            ClientRequest::GetTtl { ns, key } => (ns, key, true),
+            _ => {
+                return Err(ClientErrorEnvelope::new(
+                    ClientErrorCode::BackendUnavailable,
+                    false,
+                    "the owner-read backend only supports value and TTL reads",
+                ))
+            }
+        };
+        let deadline = deadline.min(Instant::now() + MAX_READ_WAIT);
         check_deadline(deadline)?;
 
-        let tenant = request.identity().tenant();
         let route = self.values.route(tenant, ns, key).ok_or_else(unavailable)?;
         let invocation_id = self
             .next_invocation
@@ -161,6 +177,9 @@ impl<S: RaftLogStore, V: OwnerReadValues> RaftOwnerReadBackend<S, V> {
 
         let snapshot = self.raft.partition_snapshot().ok_or_else(unavailable)?;
         let (term, epoch) = (snapshot.term, snapshot.epoch);
+        if routed_epoch.is_some_and(|routed| routed != epoch) {
+            return Err(unavailable());
+        }
         let placement =
             PartitionTopology::from_snapshot(snapshot, self.partition_count, self.replication)
                 .and_then(|topology| topology.placement(invocation.partition))

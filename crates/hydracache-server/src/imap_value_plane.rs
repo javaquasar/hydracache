@@ -11,8 +11,8 @@ use hydracache::{
     PartitionValuePrefix, ReplicatedSlot, ReplicationConfig,
 };
 use hydracache_client_protocol::{
-    ClientErrorCode, ClientErrorEnvelope, ClientRequest, ClientResponse, Namespace, StructuredKey,
-    TtlState,
+    ClientErrorCode, ClientErrorEnvelope, ClientRequest, ClientRequestEnvelope, ClientResponse,
+    Namespace, StructuredKey, TtlState,
 };
 use hydracache_client_transport_axum::{
     ClientBackendFuture, ClientBackendOutcome, ClientDataBackend, VerifiedClientRequest,
@@ -25,6 +25,7 @@ use tokio::sync::{watch, Semaphore};
 use tokio::time::{sleep, timeout_at, Instant};
 
 use crate::grid_host::send_raft_messages_with_diagnostics;
+use crate::imap_hc2_route::{transport_unavailable, OwnerCall, OwnerReply};
 use crate::imap_owner_read::{
     request_read_index, unavailable, OwnerReadLane, OwnerReadProgress, OwnerReadRoute,
     OwnerReadValues, RaftOwnerReadBackend,
@@ -97,6 +98,7 @@ pub(crate) struct ReplicaPrefix {
 #[derive(Deserialize)]
 #[serde(untagged)]
 pub(crate) enum ReplicaMessage {
+    Owner(OwnerCall),
     Apply(ReplicaApply),
     Prefix(ReplicaPrefix),
     Repair(RepairRequest),
@@ -112,6 +114,10 @@ pub(crate) trait ReplicaTransport: Send + Sync {
     }
     async fn check_candidate(&self, _request: ReplicaReady) -> CacheResult<ReplicaReady> {
         Err(repair_error("candidate transport unavailable"))
+    }
+
+    async fn call_owner(&self, _request: &OwnerCall) -> CacheResult<OwnerReply> {
+        Err(transport_unavailable())
     }
 }
 
@@ -221,7 +227,7 @@ impl ValueReplica {
         self.lanes.get(partition.value() as usize)
     }
 
-    fn placement(
+    pub(crate) fn placement(
         &self,
         snapshot: &RaftPartitionSnapshot,
         partition: PartitionId,
@@ -229,6 +235,21 @@ impl ValueReplica {
         PartitionTopology::from_snapshot(snapshot.clone(), D2_PARTITION_COUNT, self.replication)
             .and_then(|topology| topology.placement(partition))
             .ok()
+    }
+
+    pub(crate) fn local_member(&self) -> &PartitionMember {
+        &self.local
+    }
+
+    pub(crate) fn route_partition(
+        &self,
+        tenant: &str,
+        ns: &Namespace,
+        key: &StructuredKey,
+    ) -> Option<PartitionId> {
+        self.scope
+            .route_key(tenant, ns, key)
+            .map(|(route, _)| route.partition)
     }
 
     pub(crate) fn apply_replica(
@@ -636,6 +657,7 @@ struct WriteInput<'a> {
     identity: Option<String>,
     fingerprint: [u8; 32],
     operation: WriteOp<'a>,
+    routed_epoch: Option<ClusterEpoch>,
 }
 
 #[derive(PartialEq, Eq)]
@@ -671,15 +693,41 @@ fn new_identity(identity: Option<&str>, epoch: ClusterEpoch, promotion_started: 
 impl<S: RaftLogStore> ValueBackend<S> {
     async fn write(&self, request: VerifiedClientRequest<'_>) -> ClientBackendOutcome {
         let envelope = request.envelope();
+        let now = Instant::now();
+        let relative = envelope
+            .deadline_ms
+            .map(Duration::from_millis)
+            .unwrap_or(WRITE_WAIT);
+        let deadline = request
+            .transport_deadline()
+            .unwrap_or(now + relative.min(WRITE_WAIT));
+        self.write_at(
+            request.identity().tenant(),
+            envelope,
+            request.limits().max_value_bytes,
+            deadline,
+            None,
+        )
+        .await
+    }
+
+    pub(crate) async fn write_at(
+        &self,
+        tenant: &str,
+        envelope: &ClientRequestEnvelope,
+        max_value_bytes: usize,
+        deadline: Instant,
+        routed_epoch: Option<ClusterEpoch>,
+    ) -> ClientBackendOutcome {
         let (ns, key, operation) = WriteOp::request(&envelope.request)
             .ok_or_else(|| write_error(false, "unsupported W10d mutation or consistency"))?;
         let (route, key) = self
             .replica
             .scope
-            .route_key(request.identity().tenant(), ns, key)
+            .route_key(tenant, ns, key)
             .ok_or_else(|| write_error(false, "value scope unavailable"))?;
         if key.len() > MAX_KEY_HEX_BYTES
-            || !operation.fits(MAX_VALUE_BYTES.min(request.limits().max_value_bytes))
+            || !operation.fits(MAX_VALUE_BYTES.min(max_value_bytes))
             || envelope
                 .idempotency_key
                 .as_ref()
@@ -691,15 +739,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
                 "mutation exceeds W10d limits",
             ));
         }
-        let now = Instant::now();
-        let relative = envelope
-            .deadline_ms
-            .map(Duration::from_millis)
-            .unwrap_or(WRITE_WAIT);
-        let deadline = request
-            .transport_deadline()
-            .unwrap_or(now + relative.min(WRITE_WAIT))
-            .min(now + WRITE_WAIT);
+        let deadline = deadline.min(Instant::now() + WRITE_WAIT);
         self.write_to(
             WriteInput {
                 partition: route.partition,
@@ -707,6 +747,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
                 identity: envelope.idempotency_key.clone(),
                 fingerprint: hash(&envelope.request),
                 operation,
+                routed_epoch,
             },
             deadline,
         )
@@ -834,6 +875,12 @@ impl<S: RaftLogStore> ValueBackend<S> {
         snapshot: &RaftPartitionSnapshot,
         ready: Option<PromotionWriteCut>,
     ) -> Result<(Option<Mutation>, ClientResponse), ClientErrorEnvelope> {
+        if input
+            .routed_epoch
+            .is_some_and(|epoch| epoch != snapshot.epoch)
+        {
+            return Err(before_apply());
+        }
         let placement = self
             .replica
             .placement(snapshot, input.partition)
@@ -983,6 +1030,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
                         identity: None,
                         fingerprint: hash(&candidate),
                         operation: WriteOp::ExpireDue(&candidate),
+                        routed_epoch: None,
                     },
                     Instant::now() + EXPIRY_TICK,
                 )

@@ -12,6 +12,7 @@ pub mod config;
 mod generated_console_assets;
 mod grid_host;
 pub mod hc2;
+mod imap_hc2_route;
 #[doc(hidden)]
 pub mod imap_owner_read;
 #[doc(hidden)]

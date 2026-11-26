@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use hydracache::MemoryInstrumentationMode;
-use hydracache_client_transport_axum::ClientSurfaceLimits;
+use hydracache_client_transport_axum::{ClientIdentity, ClientSurfaceLimits};
 use hydracache_redis_compat::{
     RedisAuthConfig, RedisKeyspaceEventConfig, RedisListenerConfig,
     DEFAULT_REDIS_EVENT_SUBSCRIPTIONS_PER_CONNECTION,
@@ -143,6 +143,22 @@ pub struct Hc2ClientPlaneConfig {
     pub cluster_id: String,
 }
 
+/// One explicitly admitted HC/2 IMap scope and its certificate principal.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DistributedHc2Config {
+    /// The only tenant served by this IMap attachment.
+    pub tenant: String,
+    /// Lowercase SHA-256 of the admitted client leaf certificate in DER form.
+    pub client_cert_sha256: String,
+}
+
+impl DistributedHc2Config {
+    pub(crate) fn principal(&self) -> String {
+        format!("mtls-sha256:{}", self.client_cert_sha256)
+    }
+}
+
 impl Default for Hc2ClientPlaneConfig {
     fn default() -> Self {
         Self {
@@ -269,6 +285,8 @@ pub struct ServerConfig {
     pub client_api: ClientApiConfig,
     /// Optional production HC/2 gRPC client plane.
     pub hc2_client_plane: Hc2ClientPlaneConfig,
+    /// Explicit distributed mode for the HC/2 member listener.
+    pub distributed_hc2: Option<DistributedHc2Config>,
     /// Internal operator/admin HTTP policy.
     pub admin_api: AdminApiConfig,
     /// Optional Redis RESP edge facade policy.
@@ -310,6 +328,7 @@ impl Default for ServerConfig {
             management_api_enabled: true,
             client_api: ClientApiConfig::default(),
             hc2_client_plane: Hc2ClientPlaneConfig::default(),
+            distributed_hc2: None,
             admin_api: AdminApiConfig::default(),
             redis_api: RedisApiConfig::default(),
             memory_instrumentation_mode: MemoryInstrumentationMode::Production,
@@ -455,6 +474,13 @@ impl ServerConfig {
         if let Ok(cluster_id) = env::var("HYDRACACHE_HC2_CLUSTER_ID") {
             config.hc2_client_plane.cluster_id = cluster_id;
         }
+        if let Some(path) = env::var_os("HYDRACACHE_DISTRIBUTED_HC2_CONFIG") {
+            let path = PathBuf::from(path);
+            let text = fs::read_to_string(&path)
+                .map_err(|source| ServerConfigError::ConfigRead { path, source })?;
+            config.distributed_hc2 =
+                Some(toml::from_str(&text).map_err(ServerConfigError::ConfigParse)?);
+        }
         if let Ok(enabled) = env::var("HYDRACACHE_ADMIN_API_ENABLED") {
             config.admin_api.enabled = enabled != "false";
         }
@@ -565,6 +591,44 @@ impl ServerConfig {
             return Err(ServerConfigError::IncompleteTlsMaterial);
         }
         self.cluster_auth.validate()?;
+        if self.role == ServerRole::Member
+            && self.hc2_client_plane.enabled
+            && self.distributed_hc2.is_none()
+        {
+            return Err(ServerConfigError::InvalidDistributedHc2(
+                "member HC/2 requires an explicit IMap profile",
+            ));
+        }
+        if let Some(profile) = &self.distributed_hc2 {
+            if self.role != ServerRole::Member
+                || !self.hc2_client_plane.enabled
+                || !self.tls.enabled
+                || self.cluster_auth.key_id.is_none()
+                || self.client_api.enabled
+                || self.redis_api.enabled
+            {
+                return Err(ServerConfigError::InvalidDistributedHc2(
+                    "requires a member with authenticated cluster transport and HC/2 as its client surface",
+                ));
+            }
+            if profile.client_cert_sha256.len() != 64
+                || !profile
+                    .client_cert_sha256
+                    .bytes()
+                    .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+                || ClientIdentity::new(profile.principal(), &profile.tenant).is_err()
+                || profile.tenant.len() > 128
+                || profile.tenant.chars().any(char::is_control)
+            {
+                return Err(ServerConfigError::InvalidDistributedHc2(
+                    "invalid tenant or client certificate fingerprint",
+                ));
+            }
+            self.client_api
+                .limits
+                .validate()
+                .map_err(|error| ServerConfigError::InvalidClientApi(error.to_string()))?;
+        }
         if self.exposes_non_loopback() && !self.tls.enabled && !self.tls.acknowledge_insecure {
             return Err(ServerConfigError::NonLoopbackWithoutTls);
         }
@@ -746,6 +810,9 @@ fn validate_management_history(history: &ManagementHistoryConfig) -> Result<(), 
 /// Fail-loud configuration errors.
 #[derive(Debug, Error)]
 pub enum ServerConfigError {
+    /// The explicit distributed HC/2 profile is invalid.
+    #[error("invalid distributed HC/2 profile: {0}")]
+    InvalidDistributedHc2(&'static str),
     /// Config file could not be read.
     #[error("failed to read config {path}: {source}")]
     ConfigRead {

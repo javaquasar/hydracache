@@ -18,6 +18,7 @@ use hydracache::{
     ClusterRole, HydraCache, RaftMetadataCommand, RaftMetadataSnapshot,
     RaftStyleMetadataControlPlane,
 };
+use hydracache_client_transport_axum::ClientSurfaceDispatcher;
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
 use hydracache_cluster_raft::{
     RaftAuthorityObservation, RaftMessageSink, RaftMetadataRuntime, RaftMetadataRuntimeConfig,
@@ -38,6 +39,9 @@ use crate::cluster_status::{
     Reachability, ReshardPhase,
 };
 use crate::config::{ClusterStartMode, ServerConfig, ServerConfigError};
+use crate::imap_hc2_route::{
+    decode_key, transport_unavailable, OwnerCall, OwnerReply, RoutedValueBackend,
+};
 use crate::imap_value_plane::{
     BackupObservations, RebalanceHealth, RebalanceRequest, ReplicaApply, ReplicaApplyAck,
     ReplicaMessage, ReplicaPrefix, ReplicaRebalanceReport, ReplicaTransport, ValueBackend,
@@ -80,38 +84,54 @@ static NODE_IDENTITY_TEMP_SEQ: AtomicU64 = AtomicU64::new(0);
 type NetworkedRaftRuntime = RaftMetadataRuntime<SledRaftLogStore>;
 type SharedRaftPeers = Arc<RwLock<BTreeMap<u64, RaftPeer>>>;
 type SharedRaftVoterSet = Arc<RwLock<BTreeSet<u64>>>;
+type OwnerService = Arc<OnceLock<Arc<RoutedValueBackend<SledRaftLogStore>>>>;
+
+pub(crate) struct MemberServices {
+    pub cache: HydraCache,
+    pub grid: Arc<dyn GridControlPlaneHandle>,
+    pub hc2: Option<Arc<ClientSurfaceDispatcher>>,
+}
 
 /// Build the grid-mode cache used by a member-role daemon.
-pub(crate) fn build_member(
-    config: &ServerConfig,
-) -> Result<(HydraCache, Arc<dyn GridControlPlaneHandle>), ServerConfigError> {
+pub(crate) fn build_member(config: &ServerConfig) -> Result<MemberServices, ServerConfigError> {
     if use_inprocess_grid() {
+        if config.distributed_hc2.is_some() {
+            return Err(ServerConfigError::InvalidDistributedHc2(
+                "requires the networked grid",
+            ));
+        }
         return build_inprocess_member(config);
     }
     build_networked_member(config)
 }
 
-fn build_inprocess_member(
-    config: &ServerConfig,
-) -> Result<(HydraCache, Arc<dyn GridControlPlaneHandle>), ServerConfigError> {
+fn build_inprocess_member(config: &ServerConfig) -> Result<MemberServices, ServerConfigError> {
     let control_plane =
         Arc::new(RaftStyleMetadataControlPlane::new(DEFAULT_CLUSTER_NAME).with_term(1));
     let (cache, runtime) = start_inprocess_member_cache(config, control_plane.clone())?;
-    Ok((
+    Ok(MemberServices {
         cache,
-        Arc::new(InProcessGridHandle::new(control_plane, runtime)),
-    ))
+        grid: Arc::new(InProcessGridHandle::new(control_plane, runtime)),
+        hc2: None,
+    })
 }
 
-fn build_networked_member(
-    config: &ServerConfig,
-) -> Result<(HydraCache, Arc<dyn GridControlPlaneHandle>), ServerConfigError> {
+fn build_networked_member(config: &ServerConfig) -> Result<MemberServices, ServerConfigError> {
     let (stack, runtime) = start_networked_member_stack(config)?;
     let cache = stack.cache.clone();
-    Ok((
+    let host = MemberReadHost(Arc::new(NetworkedGridHandle::new(stack, Some(runtime))));
+    let hc2 = match &config.distributed_hc2 {
+        Some(profile) => Some(
+            host.attach_distributed_hc2(config, profile.clone())
+                .map_err(|error| ServerConfigError::GridHostStart(error.to_string()))?,
+        ),
+        None => None,
+    };
+    Ok(MemberServices {
         cache,
-        Arc::new(NetworkedGridHandle::new(stack, Some(runtime))),
-    ))
+        grid: host.0,
+        hc2,
+    })
 }
 
 fn start_networked_member_stack(
@@ -236,6 +256,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         None => Arc::new(NoopRaftMessageSink),
     };
     let value_replica = Arc::new(OnceLock::new());
+    let owner_service = OwnerService::default();
     let draining = Arc::new(AtomicBool::new(false));
     let drain_remove_proposed = Arc::new(AtomicBool::new(false));
     let (shutdown, _) = watch::channel(false);
@@ -270,6 +291,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
             raft_peers: raft_peers.clone(),
             drive_diagnostics: drive_diagnostics.clone(),
             value_replica: value_replica.clone(),
+            owner_service: owner_service.clone(),
             draining: draining.clone(),
         },
         route_auth.clone(),
@@ -323,6 +345,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         message_sink,
         network_sink,
         value_replica,
+        owner_service,
         drive_diagnostics,
         draining,
         drain_remove_proposed,
@@ -459,6 +482,7 @@ struct ClusterTransportHandles {
     raft_peers: SharedRaftPeers,
     drive_diagnostics: Arc<GridDriveDiagnostics>,
     value_replica: Arc<OnceLock<Arc<ValueReplica>>>,
+    owner_service: OwnerService,
     draining: Arc<AtomicBool>,
 }
 
@@ -537,6 +561,7 @@ async fn spawn_cluster_transport(
             raft_peers: handles.raft_peers,
             drive_diagnostics: handles.drive_diagnostics,
             value_replica: handles.value_replica,
+            owner_service: handles.owner_service,
             draining: handles.draining,
             test_snapshot_handler_delay,
         }),
@@ -2030,6 +2055,11 @@ impl ReplicaTransport for HttpRaftMessageSink {
         )
         .await
     }
+
+    async fn call_owner(&self, request: &OwnerCall) -> CacheResult<OwnerReply> {
+        self.send_value_message(&request.target.node, request.epoch.value(), request, None)
+            .await
+    }
 }
 
 #[async_trait::async_trait]
@@ -2513,6 +2543,7 @@ struct NetworkedMemberStack {
     message_sink: Arc<dyn RaftMessageSink>,
     network_sink: Option<Arc<HttpRaftMessageSink>>,
     value_replica: Arc<OnceLock<Arc<ValueReplica>>>,
+    owner_service: OwnerService,
     drive_diagnostics: Arc<GridDriveDiagnostics>,
     draining: Arc<AtomicBool>,
     drain_remove_proposed: Arc<AtomicBool>,
@@ -2532,6 +2563,7 @@ struct NetworkedGridHandle {
     _message_sink: Arc<dyn RaftMessageSink>,
     network_sink: Option<Arc<HttpRaftMessageSink>>,
     value_replica: Arc<OnceLock<Arc<ValueReplica>>>,
+    owner_service: OwnerService,
     drive_diagnostics: Arc<GridDriveDiagnostics>,
     draining: Arc<AtomicBool>,
     drain_remove_proposed: Arc<AtomicBool>,
@@ -2544,7 +2576,7 @@ struct NetworkedGridHandle {
 /// The staged value-read attachment to a member's real Raft transport.
 /// Kept separate from control-plane status and ordinary daemon readiness.
 #[doc(hidden)]
-pub struct MemberReadHost(NetworkedGridHandle);
+pub struct MemberReadHost(Arc<NetworkedGridHandle>);
 
 impl MemberReadHost {
     pub fn start(config: &ServerConfig) -> Result<Self, ServerConfigError> {
@@ -2555,11 +2587,52 @@ impl MemberReadHost {
             ));
         }
         let (stack, runtime) = start_networked_member_stack(config)?;
-        Ok(Self(NetworkedGridHandle::new(stack, Some(runtime))))
+        Ok(Self(Arc::new(NetworkedGridHandle::new(
+            stack,
+            Some(runtime),
+        ))))
     }
 
     pub fn partition_snapshot(&self) -> Option<RaftPartitionSnapshot> {
         self.0.raft.partition_snapshot()
+    }
+
+    fn attach_distributed_hc2(
+        &self,
+        config: &ServerConfig,
+        profile: crate::config::DistributedHc2Config,
+    ) -> CacheResult<Arc<ClientSurfaceDispatcher>> {
+        let storage = config
+            .storage_dir
+            .as_ref()
+            .ok_or_else(transport_unavailable)?;
+        let scope = crate::imap_replicated_read::ReplicaReadScope::new(
+            profile.tenant.clone(),
+            hydracache_client_protocol::Namespace::new("hc2").expect("valid HC/2 namespace"),
+            std::num::NonZeroU64::MIN,
+            decode_key,
+        );
+        let replication = hydracache::ReplicationConfig {
+            replication_factor: 2,
+            sync_backups: 1,
+            ..hydracache::ReplicationConfig::local_first()
+        };
+        let backend =
+            self.attach_value_backend(&storage.join("imap-hc2"), replication, scope, None)?;
+        let limits = config.client_api.limits;
+        let routed = Arc::new(RoutedValueBackend::new(
+            backend,
+            profile,
+            limits.max_value_bytes,
+        ));
+        let dispatcher = ClientSurfaceDispatcher::from_backend(limits, routed.clone())
+            .map_err(|error| CacheError::Backend(error.to_string()))?;
+        self.0
+            .owner_service
+            .set(routed)
+            .map_err(|_| transport_unavailable())?;
+        self.start_automatic_primary_failover()?;
+        Ok(Arc::new(dispatcher))
     }
 
     /// Queue generation-bound primary transfers in the supplied order.
@@ -2839,10 +2912,23 @@ impl MemberReadHost {
         Arc<hydracache_client_transport_axum::ClientSurfaceDispatcher>,
         Arc<ValueReplica>,
     )> {
+        let backend = self.attach_value_backend(journal, replication, scope, clock)?;
+        let replica = backend.replica.clone();
+        let dispatcher = ClientSurfaceDispatcher::from_backend(limits, backend)
+            .map_err(|error| CacheError::Backend(error.to_string()))?;
+        Ok((Arc::new(dispatcher), replica))
+    }
+
+    fn attach_value_backend(
+        &self,
+        journal: &Path,
+        replication: hydracache::ReplicationConfig,
+        scope: crate::imap_replicated_read::ReplicaReadScope,
+        clock: Option<crate::imap_value_plane::ReplicaClock>,
+    ) -> CacheResult<Arc<ValueBackend<SledRaftLogStore>>> {
         use crate::imap_owner_read::RaftOwnerReadBackend;
         use crate::imap_replicated_read::D2_PARTITION_COUNT;
         use crate::imap_topology::PartitionMember;
-        use hydracache_client_transport_axum::ClientSurfaceDispatcher;
 
         let local = PartitionMember {
             node: self.0.node_id.clone(),
@@ -2871,8 +2957,6 @@ impl MemberReadHost {
             read,
             replica: replica.clone(),
         });
-        let dispatcher = ClientSurfaceDispatcher::from_backend(limits, backend.clone())
-            .map_err(|error| CacheError::Backend(error.to_string()))?;
         self.0
             .value_replica
             .set(replica.clone())
@@ -2903,6 +2987,7 @@ impl MemberReadHost {
         }
         if schedules_expiry {
             let shutdown = self.0.shutdown.subscribe();
+            let backend = backend.clone();
             self.0
                 ._runtime
                 .as_ref()
@@ -2911,7 +2996,7 @@ impl MemberReadHost {
                     backend.run_expiry(shutdown).await;
                 });
         }
-        Ok((Arc::new(dispatcher), replica))
+        Ok(backend)
     }
 
     pub fn dispatcher<S: hydracache::ReplicatedValueStore + 'static>(
@@ -2956,6 +3041,7 @@ impl NetworkedGridHandle {
             _message_sink: stack.message_sink,
             network_sink: stack.network_sink,
             value_replica: stack.value_replica,
+            owner_service: stack.owner_service,
             drive_diagnostics: stack.drive_diagnostics,
             draining: stack.draining,
             drain_remove_proposed: stack.drain_remove_proposed,
@@ -3612,6 +3698,7 @@ struct RaftClusterMessageHandler {
     drive_diagnostics: Arc<GridDriveDiagnostics>,
     test_snapshot_handler_delay: Option<Duration>,
     value_replica: Arc<OnceLock<Arc<ValueReplica>>>,
+    owner_service: OwnerService,
     draining: Arc<AtomicBool>,
 }
 
@@ -3645,7 +3732,9 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
                 if self.draining.load(Ordering::Acquire)
                     && (matches!(
                         request,
-                        ReplicaMessage::Ready(_) | ReplicaMessage::Repair(_)
+                        ReplicaMessage::Ready(_)
+                            | ReplicaMessage::Repair(_)
+                            | ReplicaMessage::Owner(_)
                     ) || matches!(&request, ReplicaMessage::Prefix(probe) if probe.wave.is_some()))
                 {
                     return Err(CacheError::Backend(
@@ -3656,6 +3745,13 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
                     CacheError::Backend("value replica topology unavailable".into())
                 })?;
                 let encoded = match request {
+                    ReplicaMessage::Owner(call) => serde_json::to_value(
+                        self.owner_service
+                            .get()
+                            .ok_or_else(transport_unavailable)?
+                            .receive(&message.from, message.term, call)
+                            .await,
+                    ),
                     ReplicaMessage::Apply(request) => serde_json::to_value(replica.apply_replica(
                         &snapshot,
                         &message.from,
@@ -4920,6 +5016,7 @@ mod tests {
             drive_diagnostics: Arc::new(GridDriveDiagnostics::default()),
             test_snapshot_handler_delay: None,
             value_replica: Arc::new(OnceLock::new()),
+            owner_service: OwnerService::default(),
             draining: Arc::new(AtomicBool::new(false)),
         }
     }

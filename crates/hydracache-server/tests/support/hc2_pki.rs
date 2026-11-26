@@ -17,7 +17,8 @@ pub(crate) fn pki() -> TestPki {
     ca_params.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
     let ca = CertifiedIssuer::self_signed(ca_params, KeyPair::generate().unwrap()).unwrap();
     let server_key = KeyPair::generate().unwrap();
-    let mut server_params = CertificateParams::new(vec!["localhost".to_owned()]).unwrap();
+    let mut server_params =
+        CertificateParams::new(vec!["localhost".to_owned(), "127.0.0.1".to_owned()]).unwrap();
     server_params.extended_key_usages = vec![ExtendedKeyUsagePurpose::ServerAuth];
     let server_cert = server_params.signed_by(&server_key, &ca).unwrap();
     let client_key = KeyPair::generate().unwrap();
