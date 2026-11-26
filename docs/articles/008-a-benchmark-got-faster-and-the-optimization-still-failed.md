@@ -965,6 +965,22 @@ unknown. A fresh CAS reached local apply only after the configured backup could 
 prefix again. Restarting that backup under a different generation blocked further writes
 while the promoted owner continued to serve the certified value.
 
+## Replacing a backup while the old node is down
+
+After the W10e cutover, a partition could keep serving reads while its only synchronous
+backup was unavailable. W10f lets the current owner copy the certified image to a third member.
+The copy includes the TTL and tombstone state and the outcomes needed for a caller to retry
+an earlier request. The receiver flushes each chunk with a cursor and checks the full image
+before it can be installed. It still needs a Raft decision to join the synchronous replica set.
+
+On AX42 we stopped the original owner and dropped the second of two chunks on the way to
+the third member. The promoted owner still served GET. A fresh write was refused before
+local apply. Once the link was restored, the transfer resumed at the saved cursor and Raft
+added the new backup. A new CAS advanced the certified version from 2 to 3 exactly once.
+We then promoted the repaired replica and retried the original CAS there. It returned its
+stored result at version 2 while GET returned the value at version 3. The original member
+stayed stopped throughout all four runs.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

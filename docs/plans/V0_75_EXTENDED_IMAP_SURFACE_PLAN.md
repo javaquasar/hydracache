@@ -1300,6 +1300,48 @@ tombstones, TTL metadata, versions and retained idempotency outcomes required fo
 each transfer phase; compare canonical cluster digest/cardinality before and after; verify no gap,
 duplicate apply or resurrection and no positive retained-transfer-memory trend.
 
+**Staged W10f replica-repair checkpoint.** The live owner of a promoted partition holds its
+writer permit while capturing and sending a fixed certified snapshot. The image contains
+values, tombstones, TTL metadata, versions, and retained outcomes. The owner materializes the
+certified pending record in the image and discards any uncertified record. This gives the same
+image and digest for the same prefix even after the journal materializes that record on disk.
+
+The replacement flushes numbered 64 KiB chunks and its resume cursor. Retries use the same
+epoch, member generations, prefix, scope and root digest. A changed epoch or generation calls
+for a new transfer. The recipient verifies the root and installs the journal rows, expiry
+index and receipt in one batch. Raft then replaces exactly one synchronous backup and advances
+the epoch while checking the owner, backup slot, replacement generation and current prefix.
+The normal write path still checks the replacement's prefix before local apply.
+
+The staged limits are one outgoing and one incoming transfer per member, a 4 MiB encoded image
+and 4096 persisted value rows. GET can use the certified prefix during the transfer. New writes are
+refused while the repair holds the writer permit. Transfers under active writes with an ordered delta,
+automatic placement, background repair and production resource qualification are follow-up
+work under W10f. This checkpoint does not set the OD-3 recovery targets.
+
+On AX42, source `15736ba53c7f9be4b8fd22e3342bb97335262114` passed the
+three-process RF=2 scenario four times on one binary. The test killed the original owner and
+kept it stopped. The promoted owner sent the spare a two-chunk snapshot covering prefix 2.
+Dropping chunk 1 left the old backup assignment in place. GET stayed available and an
+attempted write performed no owner apply. After restoring the link, transfer resumed at
+zero-based cursor 1. Raft installed the replacement at epoch 5. A new CAS committed at
+prefix 3 exactly once. After promoting the repaired replica, replaying the original CAS
+returned its stored version 2 and RESP returned the value at version 3. The old owner stayed
+down through every assertion.
+
+The journal tests reopen the recipient with a partial image, check duplicate and conflicting
+chunks, reject a bad root and a stale cursor, and verify that expiry, tombstones and retained
+results survive while an uncertified write is discarded. The Raft tests reject stale cuts and
+replacement generations and recover the committed backup assignment from a snapshot.
+
+Reproduce the process run with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test --locked -p
+hydracache-server --features hydracache/durable-value-store --test imap_replicated_read_075 --
+--exact processes::w10f_resumes_snapshot_and_restores_writes_with_old_owner_stopped --nocapture`.
+Logs and checksums are under `development/w10f-15736ba53c7f9be4b8fd22e3342bb97335262114`
+in the AX42 [qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
+The verified `artifacts.sha256` manifest has SHA-256
+`2b570d1d93c49dce84e0660b1683711923158883a2c5ad71c1b2da456f2adb13`.
+
 ### W10g. Make bulk operations and listeners cluster-wide
 
 W3 bulk calls partition their normalized items, dispatch groups concurrently to authoritative
