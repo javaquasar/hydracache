@@ -103,6 +103,68 @@ fn binary_frame_rejects_truncation_and_trailing_data() {
 }
 
 #[test]
+fn bounded_frame_accepts_the_exact_limit_and_reports_one_byte_over() {
+    let key = ReferenceCanonicalKey::new("é", "map", 42, vec![0, 0xff]);
+    let frame = key.encode(ReferenceKeyBounds::default()).unwrap();
+    let exact = ReferenceKeyBounds {
+        max_tenant_bytes: 2,
+        max_namespace_bytes: 3,
+        max_key_bytes: 2,
+        max_frame_bytes: frame.len(),
+    };
+    assert_eq!(key.encode(exact).unwrap(), frame);
+    assert_eq!(ReferenceCanonicalKey::decode(&frame, exact).unwrap(), key);
+
+    let smaller = ReferenceKeyBounds {
+        max_frame_bytes: frame.len() - 1,
+        ..exact
+    };
+    let too_large = ReferenceKeyError::FrameTooLarge {
+        limit: frame.len() - 1,
+        actual: frame.len(),
+    };
+    assert_eq!(key.encode(smaller), Err(too_large.clone()));
+    assert_eq!(
+        ReferenceCanonicalKey::decode(&frame, smaller),
+        Err(too_large)
+    );
+}
+
+#[test]
+fn rejects_invalid_utf8_in_names_but_preserves_the_same_bytes_in_the_key() {
+    let bounds = ReferenceKeyBounds::default();
+    let key = ReferenceCanonicalKey::new("t", "n", 1, vec![0xff]);
+    let mut frame = key.encode(bounds).unwrap();
+    assert_eq!(ReferenceCanonicalKey::decode(&frame, bounds).unwrap(), key);
+
+    let tenant_start = b"HCRK075\0".len() + 4;
+    let namespace_start = tenant_start + key.tenant.len() + 4;
+    frame[tenant_start] = 0xff;
+    assert_eq!(
+        ReferenceCanonicalKey::decode(&frame, bounds),
+        Err(ReferenceKeyError::InvalidUtf8("tenant"))
+    );
+    frame[tenant_start] = b't';
+    frame[namespace_start] = 0xff;
+    assert_eq!(
+        ReferenceCanonicalKey::decode(&frame, bounds),
+        Err(ReferenceKeyError::InvalidUtf8("namespace"))
+    );
+}
+
+#[test]
+fn boundaries_and_namespace_incarnation_distinguish_identical_key_bytes() {
+    let bounds = ReferenceKeyBounds::default();
+    let bytes = vec![0, b':', 0xff];
+    let first = ReferenceCanonicalKey::new("ab", "c", 1, bytes.clone());
+    let other_names = ReferenceCanonicalKey::new("a", "bc", 1, bytes.clone());
+    let recreated = ReferenceCanonicalKey::new("ab", "c", 2, bytes);
+    let frame = first.encode(bounds).unwrap();
+    assert_ne!(frame, other_names.encode(bounds).unwrap());
+    assert_ne!(frame, recreated.encode(bounds).unwrap());
+}
+
+#[test]
 fn checked_in_cross_language_vectors_are_generated_by_the_rust_reference() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()

@@ -6,6 +6,7 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 
 pub(crate) mod active_active;
+pub(crate) mod canonical_map_key;
 pub(crate) mod capacity;
 pub(crate) mod causal_consistency;
 pub(crate) mod checkpoint;

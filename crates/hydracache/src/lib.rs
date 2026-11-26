@@ -605,6 +605,9 @@ pub use grid::active_active::{
     ActiveActiveState, GeoWrite, GeoWriteAck, HybridLogicalClock, WriteAuthority,
 };
 #[cfg(not(target_arch = "wasm32"))]
+#[doc(hidden)]
+pub use grid::canonical_map_key::{CanonicalMapKey, CanonicalMapKeyBounds, CanonicalMapKeyError};
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::capacity::{
     admit_autoscaler_intent, evaluate_capacity, scale_in_removal_allowed,
     scale_out_counts_toward_quorum, AutoscalerAdmission, AutoscalerAdmissionPolicy,

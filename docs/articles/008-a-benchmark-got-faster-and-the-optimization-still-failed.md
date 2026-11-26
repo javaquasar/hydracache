@@ -856,6 +856,25 @@ goodput was -1.46% with an interval of -1.88% to -1.08%. CPU per operation was +
 interval of +1.11% to +1.93%. p99 and allocation also cleared their limits. The nine matching
 cells in the previous matrix and this confirmation together admitted static dispatch for D1.
 
+## The first D2 change gives a map entry a binary identity
+
+D1 put HC/1, HC/2, and RESP behind one dispatcher and gave the local backend ownership of
+values, expiry maintenance, and retained idempotency outcomes. That boundary gives the next
+backend a single place to establish which entry a request addresses.
+
+D2 starts with the key codec. The Rust runtime now owns the provisional binary framing that
+the test kit used. Each frame carries length-delimited tenant and namespace names, a namespace
+generation, and the original key bytes. For example, tenant `ab` with namespace `c` and tenant
+`a` with namespace `bc` stay distinct even when the key bytes match. A namespace recreated at a
+new generation also produces a different frame for the same key.
+
+The decoder reads borrowed slices while it checks lengths, UTF-8 names, generation, and the end
+of the frame. It copies the fields only after those checks and avoids encoding the decoded key
+a second time. Rust and the independent Java codec compare their output with the existing golden
+bytes. The next decisions are to register the production format and hash, then bind reads to a
+quorum-confirmed owner and applied prefix. The local D1 measurements cover the dispatcher and its
+local backend. The distributed read path will have its own correctness and performance gates.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
