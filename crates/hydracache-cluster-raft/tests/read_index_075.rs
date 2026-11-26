@@ -796,7 +796,7 @@ async fn primary_wave_fences_other_owners_and_recovers_head_progress_and_cancell
     raft.propose_value_promotion(second_cut).unwrap();
     let stopped = raft.partition_snapshot().unwrap();
     assert_eq!(stopped.epoch, bump(first_cut.new_epoch));
-    let closed = stopped.primary_rebalance.unwrap();
+    let closed = stopped.primary_rebalance.as_ref().unwrap();
     assert!(closed.cancelled);
     assert_eq!(closed.completed, 1);
     assert!(stopped.value_assignment(second).is_none());

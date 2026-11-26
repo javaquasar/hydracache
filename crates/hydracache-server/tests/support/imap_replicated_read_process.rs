@@ -906,6 +906,7 @@ fn w10f_primary_wave_moves_two_owners_and_fences_a_cancelled_copy_under_load() {
     let second_cut = &completed.promotions[&second.0];
     assert_eq!(first_cut.wave, Some(wave.id));
     assert_eq!(second_cut.wave, Some(wave.id));
+    assert_eq!(first_cut.old_epoch.value(), wave.id.value() + 1);
     assert_eq!(first_cut.new_epoch, second_cut.old_epoch);
     assert!(first_cut.required.unwrap().version > 2 && second_cut.required.unwrap().version > 2);
     assert_eq!(first_cut.backups, vec![wave.tasks[0].source.clone()]);
