@@ -1360,8 +1360,8 @@ The owner drains a large remaining gap with the writer released. It holds the wr
 final cut only when the tail fits within eight deltas and 512 KiB. The final cut uses a
 two-second deadline. The recipient must have applied the exact final Raft certificate and
 flushed its matching journal before sealing. Raft then changes the backup slot at that
-certificate and advances the epoch. Automatic placement, general owner rebalance and
-production bandwidth and recovery qualification remain open under W10f.
+certificate and advances the epoch. General owner rebalance and production bandwidth and recovery qualification
+remain open under W10f.
 
 On AX42, source `b252c4672d902a57fd48e9a3f3d22ca503387352` passed the three-process RF=2
 scenario in the full suite and three independent repeats of the same binary. The snapshot
@@ -1387,6 +1387,52 @@ Logs, the test binary and checksums are under
 [qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
 The verified `artifacts.sha256` manifest has SHA-256
 `bec4a514532e5c6090fe1c2ddaaa4b4750e390f8efdca027a150cf46c357e173`.
+
+**Automatic backup selection and multi-partition passes.** A staged owner can reconcile
+its certified partitions against a requested drain set or enable periodic failure repair.
+Discovery provides health hints. The periodic worker also polls assigned backups in
+rotation and confirms failure after two consecutive missed replies from the same
+incarnation. A valid reply clears that history. The candidate must be outside the owner
+and other backup slots and pass the health and drain filters. An eligible destination must
+answer a typed probe for its exact generation, value scope, replication profile, and
+applied epoch. The planner prefers the fewest current certified backup assignments and
+breaks ties by node ID.
+
+Each pass makes up to four replacement attempts with one transfer active on the owner.
+It recomputes placement and ranks candidates after each committed epoch. Partitions with
+no confirmed candidate or an interrupted transfer remain deferred. Each transfer uses
+the snapshot, delta, and final seal checks before Raft can replace the slot. A first
+repair of a rendezvous-assigned partition carries the exact prior backup order and pins
+the resulting assignment in Raft. Later repair and promotion read that pinned assignment.
+
+The worker is opt-in on the staged value-plane host. The scope covers backup movement
+while the owner stays authoritative. General primary migration, cluster-wide scheduling
+across owners, production bandwidth limits, and OD-3 qualification remain open.
+
+On AX42, source `94e9dbb8ea8a294bc2e38f3fa02b18695ae695cf` exercised four separate member
+processes with RF=2. A planned drain moved the synchronous backups of three partitions to
+two automatically selected destinations in a 2:1 split. The owner kept accepting RESP SET
+requests, and each move included a nonempty ordered delta. The test then stopped the old
+backup and kept writing to the three moved partitions while the periodic worker repaired
+a fourth. The four partitions accepted CAS through the replacements after the failure.
+Repeating each CAS returned its original result, and GET matched the committed value.
+The process scenario passed four times on one binary. It acknowledged 90-98 SET requests
+per planned pass and 113-123 while automatic repair ran. These are counts from the scripted
+scenario. Production throughput and recovery targets remain open.
+
+Unit tests exercise candidate ranking, stale generations, scope and profile mismatch, and
+consecutive failed observations. Raft tests reject a forged prior assignment, restore the
+committed replacement from a metadata snapshot, and reject the old backup as a later
+promotion candidate.
+
+Reproduce with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test --locked -p hydracache-server
+--features hydracache/durable-value-store --test imap_replicated_read_075 --
+--exact processes::w10f_balances_three_live_partitions_and_repairs_a_failed_backup_automatically
+--nocapture`. Logs, the test binary, and checksums are under
+`development/w10f-batch-94e9dbb8ea8a294bc2e38f3fa02b18695ae695cf` in the AX42
+[qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
+The verified `artifacts.sha256` manifest has SHA-256
+`16f9bd7d035b913b07be7b6c118b339503b0ef7d9eef1ec31acbd3cd68f3d797`.
 
 ### W10g. Make bulk operations and listeners cluster-wide
 

@@ -1000,6 +1000,26 @@ and committed version 18 with the replacement. After promoting the replacement, 
 returned the original outcome for each of the 15 retries and served the value at version
 18. The single-partition scenario passed four times.
 
+## Moving backups for several partitions under write load
+
+The owner can now decide where to send the next backup. It ranks the available members by
+their certified backup assignments and asks the selected process to confirm its generation,
+scope, and applied epoch. A periodic worker also checks the assigned backup directly. Two
+misses for the same process incarnation can start a repair when discovery has yet to report
+the failure.
+
+Each replacement still needs the final prefix proof and a Raft decision. The next transfer
+uses the new epoch and updated assignment counts. That allows a drain to spread several
+partitions across available members while the current owners keep accepting writes.
+
+On AX42, four member processes exercised a planned drain and a real process stop. During
+the drain, the owner accepted SET requests for all three moving partitions and sent each
+destination the changes after its snapshot. The planner split their backups two to one
+across the two available members. We then stopped the former backup. The periodic worker
+repaired a fourth partition while writes continued to the first three. After recovery,
+CAS and its retry returned the expected results on all four partitions. We repeated the
+same scenario four times on one binary.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
