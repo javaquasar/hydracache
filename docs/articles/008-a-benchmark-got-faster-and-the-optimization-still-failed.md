@@ -941,6 +941,30 @@ produced 365–373 entries per partition for binary integers and 321–428 for p
 That difference matters when choosing a placement policy. A Rust/Java golden vector also covers
 unsigned remainder when the high bit of the hash is set.
 
+## A backup can read before it can accept new writes
+
+W10e changes the owner of one partition through a Raft decision. The candidate first proves
+that its durable journal covers the exact committed prefix. Raft compares that prefix again
+when it applies the decision and advances the epoch. A delayed certificate from the previous
+epoch cannot authorize a new value. Reads on the former owner still need their own safe
+ReadIndex, including when its client port remains reachable.
+
+The new owner can read and replay a certified outcome as soon as its journal and the applied
+Raft view agree. To accept a new write it must also get a prefix proof from each configured
+synchronous backup. That distinction matters to retries. A certified compare-and-set can
+return its original result and version. If the previous owner may have applied a request
+locally and its outcome was never certified, the client gets an explicit unknown outcome.
+Evaluating the condition again could change which request wins.
+
+On AX42, three separate processes ran the same scenario four times. The client left the
+reply to a certified CAS unread. Then we cut delivery of a second CAS to the backup after
+the old owner had flushed it, and isolated the old owner from the quorum while its client
+port stayed open. The old owner refused the read with zero record lookups. The promoted
+backup returned version 2 for the certified retry and reported the second CAS outcome as
+unknown. A fresh CAS reached local apply only after the configured backup could prove its
+prefix again. Restarting that backup under a different generation blocked further writes
+while the promoted owner continued to serve the certified value.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

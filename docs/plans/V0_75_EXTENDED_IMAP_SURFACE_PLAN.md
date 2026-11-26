@@ -1201,6 +1201,50 @@ satisfies the frozen promotion rule.
 apply, after quorum acknowledgement and before response. Assert no lost acknowledged write, no
 duplicate mutation, no two conditional winners, no stale-owner success and bounded recovery time.
 
+**Staged W10e implementation.** The candidate uses a fresh Raft ReadIndex and its durable
+journal to prove the exact committed partition certificate before proposing a cutover. Raft
+compares the old epoch, certificate, eligible backup, and replica generations again at apply.
+The committed plan pins the owner and synchronous backups to specific generations. Writes with
+the former epoch cannot advance the certificate, and an outstanding read proof from that epoch
+cannot authorize a lookup. Before a new write can be evaluated, each pinned backup must return
+an exact prefix proof for the active epoch. The owner still requires a durable application
+acknowledgement and a committed certificate for that write.
+
+On AX42, source `c54653d35ee80604f708bc268a1fb245054bc30e` ran three separate RF=2 member
+processes over RESP, HC/1, and real Raft and replica HTTP links. A CAS committed at prefix 2
+and the client closed its socket with the reply unread. A second CAS flushed on the old owner
+while delivery to its backup was blocked. The backup took over at epoch 4. The old client
+endpoint refused reads and writes, with zero rejected-GET lookups. The promoted owner returned
+the original CAS result at version 2, returned `outcome_unknown` for the uncertified CAS, and
+refused a fresh write before local apply while its synchronous backup was isolated. Restoring
+the link let a fresh CAS advance the prefix to 3 exactly once. Restarting the old member with a
+new generation left GET available on the new owner and again blocked new writes before apply
+because the pinned backup generation was gone.
+
+The process schedule passed once in the full target and three more times with the same binary.
+The observed interval from fault injection to the first certified new write was 639-3429 ms
+across these runs. The interval includes the test's scripted actions and intentional downtime.
+Raft tests also reject stale cutover certificates and recover the committed owner from a snapshot.
+Logs, retained process traces, and checksums are under
+`development/w10e-c54653d35ee80604f708bc268a1fb245054bc30e` in the AX42
+[qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
+The verified `artifacts.sha256` manifest has SHA-256
+`ed9f76a924b66e8fef32222cce0a074fc806a19d306af39446a082f2f12678d9`.
+Reproduce the scenario with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test --locked -p
+hydracache-server --features hydracache/durable-value-store --test imap_replicated_read_075 --
+--exact processes::w10e_fences_old_owner_and_replays_only_certified_retry_across_cutover
+--nocapture`.
+
+A proven journal can return the original result of a certified same-ID request even while the
+partition is under-replicated. A different request with the same certified ID returns Conflict.
+After the first cutover, newly issued keyed writes carry `w10e:<current-epoch>:<nonce>` in the
+staged HC/1 envelope. Old or unscoped IDs with an uncertified outcome return non-retryable
+`outcome_unknown` without condition evaluation. The epoch is shared because Raft uses it to
+fence certificates across partitions. The protocol fixture drives promotion on the candidate
+host. Automatic failure-driven selection, production routing and SDK retries, replacement
+replica repair, and the full kill/pause and deterministic replay matrix remain release work.
+The AX42 single-partition schedule does not establish the OD-3 availability targets.
+
 ### W10f. Implement bounded rebalance and replica repair
 
 Membership change produces an explicit, inspectable transfer plan. A partition moves with values,
