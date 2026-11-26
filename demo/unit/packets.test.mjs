@@ -263,6 +263,25 @@ describe("pushPlan", () => {
     assert.deepEqual(plan.subscribers, [{ id: "r@profiles", node: "node-0", steps: 1 }]);
   });
 
+  it("takes the writer's member as the entry even when an earlier copy lands elsewhere at the push step", () => {
+    // Repeated identical pushes: node-0 applies the previous push's copy at
+    // step 20 while the writer's member node-1 applies the new push.
+    const repeat = {
+      ...after,
+      clients: [{ id: "client-a", connected_node: "node-1" }],
+      keys: [{ key: "profiles:p", replicas: [replica("node-0", 7, 20), replica("node-1", 7, 20), replica("node-2", 7, 19), replica("node-3", 7, 19)] }],
+    };
+    const settled = {
+      ...final,
+      nodes: after.nodes,
+      in_flight: [],
+      keys: [{ key: "profiles:p", replicas: [replica("node-0", 7, 21), replica("node-1", 7, 20), replica("node-2", 7, 21), replica("node-3", 7, 21)] }],
+    };
+    const plan = pushPlan(repeat, settled, "client-a", "profiles", "p");
+    assert.equal(plan.entry, "node-1");
+    assert.ok(plan.replicas.every((hop) => hop.status === "applied"), JSON.stringify(plan.replicas));
+  });
+
   it("treats a copy in flight over a cut link as lost", () => {
     const plan = pushPlan(after, { ...final, links: [{ from: "node-1", to: "node-3", state: "partitioned" }] }, "client-a", "profiles", "p");
     assert.equal(plan.replicas.find((entry) => entry.node === "node-3").status, "lost");

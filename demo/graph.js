@@ -1272,7 +1272,16 @@ export function pushPlan(after, final, clientId, namespace, key) {
   );
   if (routed) return routedPushPlan(final, routed, clientId, namespace, fullKey, replicasAt(final));
   const atPush = replicasAt(after);
-  const entry = [...atPush.values()].find((replica) => replica.applied_at_step === pushStep)?.node_id ?? null;
+  // Since schema 10 a write enters on the member the writer is connected to.
+  // Prefer it: when the same value is pushed again, an earlier push's copy can
+  // land on another node at this very step and must not be taken for the entry.
+  const member =
+    (after.clients || []).find((client) => client.id === clientId)?.connected_node ??
+    (after.admitted_clients || []).find((entry) => entry.id === clientId)?.connected_node;
+  const entry =
+    member && atPush.get(member)?.applied_at_step === pushStep
+      ? member
+      : ([...atPush.values()].find((replica) => replica.applied_at_step === pushStep)?.node_id ?? null);
   if (!entry) return null;
   const version = atPush.get(entry).version;
   const finalReplicas = replicasAt(final);
