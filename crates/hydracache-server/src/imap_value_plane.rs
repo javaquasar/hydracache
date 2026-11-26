@@ -37,6 +37,10 @@ use crate::imap_value_journal::{
     hash, next_record, ApplyResult, CachedDecision, Mutation, PartitionJournal, StoredEntry,
     ValueJournal,
 };
+use crate::imap_value_repair::{repair_error, RepairReceipt, RepairRequest};
+
+#[path = "imap_value_repair_owner.rs"]
+mod repair_owner;
 
 const MAX_VALUE_BYTES: usize = 128 * 1024;
 const MAX_KEY_HEX_BYTES: usize = 64 * 1024;
@@ -85,12 +89,16 @@ pub(crate) struct ReplicaPrefix {
 pub(crate) enum ReplicaMessage {
     Apply(ReplicaApply),
     Prefix(ReplicaPrefix),
+    Repair(RepairRequest),
 }
 
 #[async_trait::async_trait]
 pub(crate) trait ReplicaTransport: Send + Sync {
     async fn apply(&self, request: ReplicaApply) -> CacheResult<ReplicaApplyAck>;
     async fn probe(&self, request: ReplicaPrefix) -> CacheResult<ReplicaPrefix>;
+    async fn repair(&self, _request: RepairRequest) -> CacheResult<RepairReceipt> {
+        Err(repair_error("snapshot transport unavailable"))
+    }
 }
 
 struct Lane {
@@ -107,6 +115,8 @@ pub struct ValueReplica {
     journal: ValueJournal,
     lanes: Vec<Lane>,
     writes: Semaphore,
+    repair_sender: Semaphore,
+    repair_receiver: Mutex<()>,
     lookups: AtomicU64,
     applies: AtomicU64,
     owner_applies: AtomicU64,
@@ -153,6 +163,8 @@ impl ValueReplica {
                 })
                 .collect(),
             writes: Semaphore::new(MAX_WRITES),
+            repair_sender: Semaphore::new(1),
+            repair_receiver: Mutex::new(()),
             lookups: AtomicU64::new(0),
             applies: AtomicU64::new(0),
             owner_applies: AtomicU64::new(0),

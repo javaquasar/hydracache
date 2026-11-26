@@ -1,0 +1,511 @@
+use super::*;
+use crate::imap_value_repair::{
+    bytes_digest, repair_error, RepairManifest, RepairReceipt, RepairRequest, RepairStep,
+    MAX_IMAGE_BYTES, MAX_IMAGE_ROWS,
+};
+
+const TRANSFER_KEY: &[u8] = b"repair";
+
+#[derive(Serialize, Deserialize)]
+struct PartitionImage {
+    meta: PartitionJournal,
+    rows: Vec<ImageRow>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct ImageRow {
+    key: String,
+    value: JournalRecord,
+}
+
+impl ValueJournal {
+    /// Capture under the source partition lane while its writer permit is held.
+    pub(crate) fn export_image(
+        &self,
+        partition: PartitionId,
+        required: Option<PartitionValuePrefix>,
+    ) -> CacheResult<Vec<u8>> {
+        let mut meta = self.load(partition)?;
+        if !meta.covers(required) {
+            return Err(repair_error("owner lacks the certified prefix"));
+        }
+        meta.pending = meta
+            .pending
+            .take()
+            .filter(|row| Some(row.certificate()) == required);
+        let records = record_key(partition, "");
+        let mut size = serde_json::to_vec(&meta).map_err(storage_error)?.len();
+        let mut rows = Vec::new();
+        for pair in self.0.scan_prefix(&records) {
+            let (key, value) = pair.map_err(storage_error)?;
+            size += key.len() + value.len();
+            if size > MAX_IMAGE_BYTES || rows.len() == MAX_IMAGE_ROWS {
+                return Err(repair_error("partition exceeds the staged snapshot limits"));
+            }
+            let key = std::str::from_utf8(&key[records.len()..]).map_err(storage_error)?;
+            rows.push(ImageRow {
+                key: key.to_owned(),
+                value: serde_json::from_slice(&value).map_err(storage_error)?,
+            });
+        }
+        let bytes = serde_json::to_vec(&PartitionImage { meta, rows }).map_err(storage_error)?;
+        if bytes.len() > MAX_IMAGE_BYTES {
+            return Err(repair_error("encoded partition exceeds the snapshot limit"));
+        }
+        Ok(bytes)
+    }
+
+    /// Receive under the staging and partition locks. The caller validates
+    /// the current placement before publishing or acknowledging an image.
+    pub(crate) fn receive_image(
+        &self,
+        request: RepairRequest,
+        admits_key: impl Fn(&str) -> bool,
+    ) -> CacheResult<RepairReceipt> {
+        let RepairRequest { manifest, step } = request;
+        if !manifest.is_bounded() {
+            return Err(repair_error("invalid snapshot size"));
+        }
+        let chunks = manifest.chunks();
+        let previous = self
+            .0
+            .get(TRANSFER_KEY)
+            .map_err(storage_error)?
+            .map(|bytes| serde_json::from_slice::<RepairReceipt>(&bytes).map_err(storage_error))
+            .transpose()?;
+        if previous.as_ref().is_some_and(|prior| {
+            !prior.manifest.is_bounded()
+                || prior.next > prior.manifest.chunks()
+                || (prior.installed && prior.next != prior.manifest.chunks())
+        }) {
+            return Err(repair_error("invalid persisted transfer cursor"));
+        }
+        let mut batch = sled::Batch::default();
+        let mut state = match previous {
+            Some(prior) if prior.manifest == manifest => prior,
+            prior
+                if matches!(step, RepairStep::Status)
+                    && prior
+                        .as_ref()
+                        .is_none_or(|prior| supersedes(prior, &manifest)) =>
+            {
+                if let Some(prior) = prior {
+                    remove_chunks(&mut batch, prior.next);
+                }
+                RepairReceipt {
+                    manifest,
+                    next: 0,
+                    installed: false,
+                }
+            }
+            _ => return Err(repair_error("conflicting or missing staged manifest")),
+        };
+        match step {
+            RepairStep::Status => {}
+            RepairStep::Chunk {
+                index,
+                digest,
+                bytes,
+            } => {
+                if state.installed
+                    || index > state.next
+                    || state.manifest.chunk_len(index) != Some(bytes.len())
+                    || bytes_digest(&bytes) != digest
+                {
+                    return Err(repair_error("chunk does not match the manifest or cursor"));
+                }
+                let key = chunk_key(index);
+                if index == state.next {
+                    batch.insert(&key, bytes);
+                    state.next += 1;
+                } else if self.0.get(key).map_err(storage_error)?.as_deref()
+                    != Some(bytes.as_slice())
+                {
+                    return Err(repair_error("conflicting duplicate chunk"));
+                }
+            }
+            RepairStep::Install => {
+                if state.next != chunks {
+                    return Err(repair_error("snapshot is incomplete"));
+                }
+                if !state.installed {
+                    let mut bytes = Vec::with_capacity(state.manifest.image_len);
+                    for index in 0..chunks {
+                        let chunk = self
+                            .0
+                            .get(chunk_key(index))
+                            .map_err(storage_error)?
+                            .ok_or_else(|| repair_error("a verified chunk is missing"))?;
+                        if state.manifest.chunk_len(index) != Some(chunk.len()) {
+                            return Err(repair_error("stored chunk has the wrong size"));
+                        }
+                        bytes.extend_from_slice(&chunk);
+                    }
+                    if bytes_digest(&bytes) != state.manifest.plan.snapshot_digest {
+                        return Err(repair_error("snapshot root checksum mismatch"));
+                    }
+                    self.stage_image(&mut batch, &state.manifest, &bytes, admits_key)?;
+                    remove_chunks(&mut batch, chunks);
+                    state.installed = true;
+                }
+            }
+        }
+        batch.insert(
+            TRANSFER_KEY,
+            serde_json::to_vec(&state).map_err(storage_error)?,
+        );
+        self.0.apply_batch(batch).map_err(storage_error)?;
+        self.0.flush().map_err(storage_error)?;
+        Ok(state)
+    }
+
+    fn stage_image(
+        &self,
+        batch: &mut sled::Batch,
+        manifest: &RepairManifest,
+        bytes: &[u8],
+        admits_key: impl Fn(&str) -> bool,
+    ) -> CacheResult<()> {
+        let partition = manifest.plan.partition;
+        let required = manifest.plan.required;
+        let PartitionImage { meta, rows } = serde_json::from_slice(bytes).map_err(storage_error)?;
+        let valid_meta = match &meta.pending {
+            Some(pending) => {
+                Some(pending.certificate()) == required
+                    && pending.record.partition == partition
+                    && meta
+                        .visible
+                        .map_or(0, |prefix| prefix.version)
+                        .checked_add(1)
+                        == Some(pending.record.version)
+                    && meta.visible.map_or([0; 32], |prefix| prefix.digest) == pending.previous
+                    && admits_key(&pending.key)
+            }
+            None => meta.visible == required,
+        };
+        if !valid_meta
+            || rows.len() > MAX_IMAGE_ROWS
+            || meta.outcomes.len() > RETAINED_IDENTITIES
+            || meta
+                .visible
+                .is_some_and(|prefix| prefix.partition != partition)
+            || (meta.visible.is_none() && (!rows.is_empty() || !meta.outcomes.is_empty()))
+        {
+            return Err(repair_error(
+                "image does not cover the required partition prefix",
+            ));
+        }
+        for prefix in [record_key(partition, ""), expiry_key(partition, "")] {
+            for (index, key) in self.0.scan_prefix(prefix).keys().enumerate() {
+                if index == MAX_IMAGE_ROWS {
+                    return Err(repair_error(
+                        "recipient partition exceeds the snapshot limits",
+                    ));
+                }
+                batch.remove(key.map_err(storage_error)?);
+            }
+        }
+        let mut prior = None;
+        for ImageRow { key, value } in rows {
+            if prior.as_ref().is_some_and(|previous| previous >= &key) || !admits_key(&key) {
+                return Err(repair_error("invalid snapshot key order or scope"));
+            }
+            let encoded = serde_json::to_vec(&value).map_err(storage_error)?;
+            let entry = value.into_entry(partition, meta.visible)?;
+            if let Some(deadline) = entry.expires_not_before_ms {
+                let timer = ExpiryCandidate {
+                    partition,
+                    key: key.clone(),
+                    version: entry.record.version,
+                    deadline,
+                };
+                batch.insert(
+                    expiry_key(partition, &key),
+                    serde_json::to_vec(&timer).map_err(storage_error)?,
+                );
+            }
+            batch.insert(record_key(partition, &key), encoded);
+            prior = Some(key);
+        }
+        batch.insert(
+            &meta_key(partition),
+            serde_json::to_vec(&meta).map_err(storage_error)?,
+        );
+        Ok(())
+    }
+}
+
+fn supersedes(prior: &RepairReceipt, next: &RepairManifest) -> bool {
+    let old = &prior.manifest.plan;
+    let new = &next.plan;
+    prior.installed
+        || old.old_epoch < new.old_epoch
+        || (old.partition == new.partition
+            && old.owner == new.owner
+            && old.target == new.target
+            && old.required.map_or(0, |prefix| prefix.version)
+                < new.required.map_or(0, |prefix| prefix.version))
+}
+
+fn chunk_key(index: u32) -> [u8; 5] {
+    let [a, b, c, d] = index.to_be_bytes();
+    [b'x', a, b, c, d]
+}
+
+fn remove_chunks(batch: &mut sled::Batch, count: u32) {
+    for index in 0..count {
+        batch.remove(&chunk_key(index));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use hydracache::{ClusterGeneration, ClusterNodeId, PartitionReplicaRepair};
+    use std::time::SystemTime;
+
+    fn member(node: &str) -> PartitionMember {
+        PartitionMember {
+            node: ClusterNodeId::new(node),
+            generation: ClusterGeneration::new(1),
+        }
+    }
+
+    fn write(
+        journal: &ValueJournal,
+        required: Option<PartitionValuePrefix>,
+        key: &str,
+        value: Option<Vec<u8>>,
+        deadline: Option<u64>,
+    ) -> PartitionValuePrefix {
+        let epoch = ClusterEpoch::new(2);
+        let record = next_record(PartitionId::new(7), epoch, required, value).unwrap();
+        let mutation = Mutation {
+            owner: member("owner"),
+            backups: vec![member("old")],
+            previous: required.map_or([0; 32], |prefix| prefix.digest),
+            key: key.into(),
+            identity: Some(format!("request-{}", record.version)),
+            decision: Some(CachedDecision {
+                request: [0; 32],
+                response: ClientResponse::CasApplied {
+                    new_version: record.version,
+                },
+            }),
+            outcome_only: false,
+            record,
+            expires_not_before_ms: deadline,
+        };
+        let prefix = mutation.certificate();
+        assert_eq!(
+            journal.apply(required, mutation, true).unwrap(),
+            ApplyResult::Flushed
+        );
+        prefix
+    }
+
+    fn manifest(required: Option<PartitionValuePrefix>, bytes: &[u8]) -> RepairManifest {
+        RepairManifest {
+            plan: PartitionReplicaRepair {
+                partition: PartitionId::new(7),
+                old_epoch: ClusterEpoch::new(3),
+                new_epoch: ClusterEpoch::new(4),
+                owner: member("owner"),
+                replaced: member("old"),
+                target: member("replacement"),
+                required,
+                snapshot_digest: bytes_digest(bytes),
+            },
+            scope: [2; 32],
+            image_len: bytes.len(),
+        }
+    }
+
+    fn request(manifest: &RepairManifest, step: RepairStep) -> RepairRequest {
+        RepairRequest {
+            manifest: manifest.clone(),
+            step,
+        }
+    }
+
+    fn chunk(index: u32, bytes: &[u8]) -> RepairStep {
+        RepairStep::Chunk {
+            index,
+            digest: bytes_digest(bytes),
+            bytes: bytes.to_vec(),
+        }
+    }
+
+    #[test]
+    fn reopened_journal_resumes_verified_chunks_and_installs_only_certified_data() {
+        let source = ValueJournal::temporary();
+        let first = write(&source, None, "ttl", Some(vec![0xaa; 20 * 1024]), Some(90));
+        let second = write(&source, Some(first), "removed", None, None);
+        let prefix = write(
+            &source,
+            Some(second),
+            "latest",
+            Some(b"certified".to_vec()),
+            None,
+        );
+        let _uncertified = write(
+            &source,
+            Some(prefix),
+            "latest",
+            Some(b"uncertified".to_vec()),
+            None,
+        );
+        let partition = prefix.partition;
+        let image = source.export_image(partition, Some(prefix)).unwrap();
+        let manifest = manifest(Some(prefix), &image);
+        assert!(manifest.chunks() > 1);
+        assert_eq!(image, source.export_image(partition, Some(prefix)).unwrap());
+        assert!(source.export_image(partition, Some(second)).is_err());
+
+        let directory = std::env::temp_dir().join(format!(
+            "hc-w10f-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir(&directory).unwrap();
+        let accept = |key: &str| matches!(key, "ttl" | "removed" | "latest");
+        let target = ValueJournal::open(&directory).unwrap();
+        target.bind_scope("tenant", "ns", 1).unwrap();
+        let parts: Vec<_> = image
+            .chunks(crate::imap_value_repair::CHUNK_BYTES)
+            .collect();
+        assert_eq!(
+            target
+                .receive_image(request(&manifest, RepairStep::Status), accept)
+                .unwrap()
+                .next,
+            0
+        );
+        assert!(target
+            .receive_image(request(&manifest, chunk(1, parts[1])), accept)
+            .is_err());
+        assert_eq!(
+            target
+                .receive_image(request(&manifest, chunk(0, parts[0])), accept)
+                .unwrap()
+                .next,
+            1
+        );
+        assert!(target
+            .receive_image(request(&manifest, RepairStep::Install), accept)
+            .is_err());
+        assert!(!target.load(partition).unwrap().covers(Some(prefix)));
+        drop(target);
+
+        let target = ValueJournal::open(&directory).unwrap();
+        target.bind_scope("tenant", "ns", 1).unwrap();
+        assert_eq!(
+            target
+                .receive_image(request(&manifest, RepairStep::Status), accept)
+                .unwrap()
+                .next,
+            1
+        );
+        assert_eq!(
+            target
+                .receive_image(request(&manifest, chunk(0, parts[0])), accept)
+                .unwrap()
+                .next,
+            1
+        );
+        let mut wrong = parts[0].to_vec();
+        wrong[0] ^= 1;
+        assert!(target
+            .receive_image(request(&manifest, chunk(0, &wrong)), accept)
+            .is_err());
+        for (index, bytes) in parts.iter().enumerate().skip(1) {
+            let index = index as u32;
+            assert_eq!(
+                target
+                    .receive_image(request(&manifest, chunk(index, bytes)), accept)
+                    .unwrap()
+                    .next,
+                index + 1
+            );
+        }
+        assert!(target
+            .receive_image(request(&manifest, RepairStep::Install), |_| false)
+            .is_err());
+        assert!(!target.load(partition).unwrap().covers(Some(prefix)));
+        for _ in 0..2 {
+            assert!(
+                target
+                    .receive_image(request(&manifest, RepairStep::Install), accept)
+                    .unwrap()
+                    .installed
+            );
+        }
+        assert!(target.0.scan_prefix(b"x").next().is_none());
+        let meta = target.load(partition).unwrap();
+        assert!(meta.covers(Some(prefix)));
+        assert!(meta.pending.is_none());
+        assert_eq!(
+            meta.retained(Some(prefix), "request-3").unwrap().response,
+            ClientResponse::CasApplied { new_version: 3 }
+        );
+        assert!(meta.retained(Some(prefix), "request-4").is_none());
+        let latest = target
+            .read_entry(partition, "latest", &meta, Some(prefix))
+            .unwrap()
+            .unwrap();
+        assert_eq!(latest.value(), Some(b"certified".as_slice()));
+        let removed = target
+            .read_entry(partition, "removed", &meta, Some(prefix))
+            .unwrap()
+            .unwrap();
+        assert!(removed.record.is_tombstone());
+        let expiries = target.expiry_batch(&mut None, 90, 10).unwrap();
+        assert_eq!(
+            expiries,
+            vec![ExpiryCandidate {
+                partition,
+                key: "ttl".into(),
+                version: 1,
+                deadline: 90
+            }]
+        );
+        drop(target);
+        std::fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn root_mismatch_blocks_install_even_when_chunk_checksum_passes() {
+        let journal = ValueJournal::temporary();
+        let image = journal.export_image(PartitionId::new(7), None).unwrap();
+        let manifest = manifest(None, &image);
+        let mut wrong = image;
+        wrong[0] ^= 1;
+        assert_eq!(
+            journal
+                .receive_image(request(&manifest, RepairStep::Status), |_| true)
+                .unwrap()
+                .next,
+            0
+        );
+        journal
+            .receive_image(request(&manifest, chunk(0, &wrong)), |_| true)
+            .unwrap();
+        assert!(journal
+            .receive_image(request(&manifest, RepairStep::Install), |_| true)
+            .is_err());
+        assert!(
+            !journal
+                .receive_image(request(&manifest, RepairStep::Status), |_| true)
+                .unwrap()
+                .installed
+        );
+        assert!(journal
+            .0
+            .get(meta_key(PartitionId::new(7)))
+            .unwrap()
+            .is_none());
+    }
+}

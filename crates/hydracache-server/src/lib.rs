@@ -22,6 +22,9 @@ pub mod imap_replicated_read;
 pub mod imap_topology;
 mod imap_value_decision;
 mod imap_value_journal;
+mod imap_value_repair;
+#[doc(hidden)]
+pub use imap_value_repair::ReplicaRepairOutcome;
 #[doc(hidden)]
 pub mod imap_value_plane;
 pub mod management_aggregation;

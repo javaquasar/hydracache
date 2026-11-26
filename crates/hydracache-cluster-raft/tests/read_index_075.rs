@@ -304,7 +304,7 @@ async fn committed_value_prefix_requires_exact_predecessor_and_recovers_from_sna
 async fn promotion_requires_exact_committed_cut_and_fences_delayed_certificate_after_recovery() {
     use hydracache::{
         ClusterEpoch, ClusterGeneration, ClusterReplicationStrategy, PartitionId,
-        PartitionPromotion, PartitionReplicaIdentity, PartitionValuePrefix,
+        PartitionPromotion, PartitionReplicaIdentity, PartitionReplicaRepair, PartitionValuePrefix,
         RendezvousClusterOwnership,
     };
     use hydracache_cluster_raft::RaftMetadataRuntime;
@@ -419,4 +419,85 @@ async fn promotion_requires_exact_committed_cut_and_fences_delayed_certificate_a
         raft.partition_snapshot().unwrap().value_prefixes[&partition],
         next
     );
+
+    let target = identity(
+        before
+            .members
+            .iter()
+            .find(|member| {
+                member.node_id != plan.old_owner.node && member.node_id != plan.new_owner.node
+            })
+            .unwrap()
+            .node_id
+            .clone(),
+    );
+    let repair = PartitionReplicaRepair {
+        partition,
+        old_epoch: plan.new_epoch,
+        new_epoch: ClusterEpoch::new(plan.new_epoch.value() + 1),
+        owner: plan.new_owner.clone(),
+        replaced: plan.old_owner.clone(),
+        target: target.clone(),
+        required: Some(next),
+        snapshot_digest: [8; 32],
+    };
+    for invalid in [
+        PartitionReplicaRepair {
+            required: Some(first),
+            ..repair.clone()
+        },
+        PartitionReplicaRepair {
+            old_epoch: before.epoch,
+            ..repair.clone()
+        },
+        PartitionReplicaRepair {
+            replaced: target.clone(),
+            ..repair.clone()
+        },
+        PartitionReplicaRepair {
+            target: PartitionReplicaIdentity {
+                generation: ClusterGeneration::new(target.generation.value() + 1),
+                ..target.clone()
+            },
+            ..repair.clone()
+        },
+    ] {
+        raft.propose_value_repair(invalid).unwrap();
+        let snapshot = raft.partition_snapshot().unwrap();
+        assert_eq!(snapshot.epoch, plan.new_epoch);
+        assert_eq!(snapshot.value_promotions[&partition], plan);
+        assert!(snapshot.value_repairs.is_empty());
+    }
+    let (pending, _) = raft.begin_read_index().unwrap();
+    let proof = pending.complete().await.unwrap();
+    raft.propose_value_repair(repair.clone()).unwrap();
+    assert!(matches!(
+        proof.with_snapshot(|_, _| panic!("old proof crossed the replica replacement")),
+        Err(RaftReadIndexError::Unavailable)
+    ));
+    raft.propose_value_prefix(PartitionValuePrefix {
+        version: 3,
+        previous: next.digest,
+        digest: [7; 32],
+        ..next
+    })
+    .unwrap();
+    let restored = RaftMetadataRuntime::from_snapshot(raft.export_snapshot()).unwrap();
+    for runtime in [&raft, &restored] {
+        runtime
+            .with_applied_partition_snapshot(|snapshot| {
+                assert_eq!(snapshot.epoch, repair.new_epoch);
+                assert_eq!(snapshot.value_repairs[&partition], repair);
+                assert_eq!(snapshot.value_prefixes[&partition], next);
+                assert_eq!(
+                    snapshot.value_promotions[&partition].backups,
+                    vec![target.clone()]
+                );
+                assert_eq!(
+                    snapshot.value_promotions[&partition].new_owner,
+                    plan.new_owner
+                );
+            })
+            .unwrap();
+    }
 }

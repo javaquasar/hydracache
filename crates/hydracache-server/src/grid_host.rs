@@ -42,6 +42,7 @@ use crate::imap_value_plane::{
     ReplicaApply, ReplicaApplyAck, ReplicaMessage, ReplicaPrefix, ReplicaTransport, ValueBackend,
     ValueReplica,
 };
+use crate::imap_value_repair::{RepairReceipt, RepairRequest, RepairStep, ReplicaRepairOutcome};
 use crate::management_aggregation::{
     HttpManagementPeerTransport, LocalManagementSnapshotProvider, ManagementConsensusObservation,
     ManagementMemberSnapshot, ManagementPeerTarget, ManagementPeerTransport,
@@ -1493,6 +1494,7 @@ struct TestRaftOutboundFaultRule {
 enum TestRaftOutboundFaultAction {
     Drop,
     ValueDrop,
+    ValueChunkDrop { index: u32 },
     Delay { millis: u64 },
     SnapshotDelay { millis: u64 },
 }
@@ -1555,7 +1557,7 @@ impl TestRaftOutboundFaultController {
     }
 
     async fn apply(&self, to: &ClusterNodeId, is_snapshot: bool) -> CacheResult<()> {
-        self.apply_for_route(to, is_snapshot, false).await
+        self.apply_for_route(to, is_snapshot, false, None).await
     }
 
     async fn apply_for_route(
@@ -1563,6 +1565,7 @@ impl TestRaftOutboundFaultController {
         to: &ClusterNodeId,
         is_snapshot: bool,
         is_value: bool,
+        value_chunk: Option<u32>,
     ) -> CacheResult<()> {
         let document = self.load_document()?;
         let Some(rule) = document.rules.iter().find(|rule| rule.to == to.as_str()) else {
@@ -1570,6 +1573,11 @@ impl TestRaftOutboundFaultController {
         };
         if rule.action == TestRaftOutboundFaultAction::ValueDrop && !is_value {
             return Ok(());
+        }
+        if let TestRaftOutboundFaultAction::ValueChunkDrop { index } = rule.action {
+            if value_chunk != Some(index) {
+                return Ok(());
+            }
         }
         if matches!(
             rule.action,
@@ -1591,7 +1599,9 @@ impl TestRaftOutboundFaultController {
             );
         }
         match rule.action {
-            TestRaftOutboundFaultAction::Drop | TestRaftOutboundFaultAction::ValueDrop => {
+            TestRaftOutboundFaultAction::Drop
+            | TestRaftOutboundFaultAction::ValueDrop
+            | TestRaftOutboundFaultAction::ValueChunkDrop { .. } => {
                 Err(CacheError::Backend(format!(
                     "test raft outbound fault generation {} dropped message {} -> {}",
                     document.generation, rule.from, rule.to
@@ -1897,6 +1907,7 @@ impl HttpRaftMessageSink {
         target: &ClusterNodeId,
         epoch: u64,
         request: &T,
+        value_chunk: Option<u32>,
     ) -> CacheResult<R> {
         let endpoint = self
             .peers
@@ -1907,7 +1918,9 @@ impl HttpRaftMessageSink {
             .map(|peer| peer.endpoint.clone())
             .ok_or_else(|| CacheError::Backend("value replica peer unavailable".into()))?;
         if let Some(faults) = &self.test_outbound_faults {
-            faults.apply_for_route(target, false, true).await?;
+            faults
+                .apply_for_route(target, false, true, value_chunk)
+                .await?;
         }
         let payload = serde_json::to_vec(request)
             .map_err(|_| CacheError::Encode("W10c replica request".into()))?;
@@ -1959,13 +1972,27 @@ impl HttpRaftMessageSink {
 #[async_trait::async_trait]
 impl ReplicaTransport for HttpRaftMessageSink {
     async fn apply(&self, request: ReplicaApply) -> CacheResult<ReplicaApplyAck> {
-        self.send_value_message(&request.target.node, request.epoch(), &request)
+        self.send_value_message(&request.target.node, request.epoch(), &request, None)
             .await
     }
 
     async fn probe(&self, request: ReplicaPrefix) -> CacheResult<ReplicaPrefix> {
-        self.send_value_message(&request.target.node, request.epoch.value(), &request)
+        self.send_value_message(&request.target.node, request.epoch.value(), &request, None)
             .await
+    }
+
+    async fn repair(&self, request: RepairRequest) -> CacheResult<RepairReceipt> {
+        let chunk = match request.step {
+            RepairStep::Chunk { index, .. } => Some(index),
+            _ => None,
+        };
+        self.send_value_message(
+            &request.manifest.plan.target.node,
+            request.manifest.plan.old_epoch.value(),
+            &request,
+            chunk,
+        )
+        .await
     }
 }
 
@@ -2513,6 +2540,35 @@ impl MemberReadHost {
             .ok_or_else(|| CacheError::Backend("staged value plane is not attached".into()))?;
         replica
             .promote(&self.0.raft, &self.0._message_sink, partition, backups)
+            .await
+    }
+
+    /// Repair one backup of an already promoted partition from the live owner.
+    pub async fn repair_partition_backup(
+        &self,
+        partition: hydracache::PartitionId,
+        replaced: crate::imap_topology::PartitionMember,
+        target: crate::imap_topology::PartitionMember,
+    ) -> CacheResult<ReplicaRepairOutcome> {
+        let replica = self
+            .0
+            .value_replica
+            .get()
+            .ok_or_else(|| CacheError::Backend("staged value plane is not attached".into()))?;
+        let transport = self
+            .0
+            .network_sink
+            .as_deref()
+            .ok_or_else(|| CacheError::Backend("snapshot transport unavailable".into()))?;
+        replica
+            .repair_backup(
+                &self.0.raft,
+                &self.0._message_sink,
+                transport,
+                partition,
+                replaced,
+                target,
+            )
             .await
     }
 
@@ -3316,6 +3372,9 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
                     )?),
                     ReplicaMessage::Prefix(request) => serde_json::to_value(
                         replica.prove_replica(&snapshot, &message.from, message.term, request)?,
+                    ),
+                    ReplicaMessage::Repair(request) => serde_json::to_value(
+                        replica.receive_repair(&self.raft, &message.from, message.term, request)?,
                     ),
                 };
                 ack.application = Some(

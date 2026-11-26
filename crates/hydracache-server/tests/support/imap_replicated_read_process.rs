@@ -19,7 +19,7 @@ use hydracache_client_transport_axum::{
 };
 use hydracache_server::imap_topology::PartitionMember;
 use hydracache_server::imap_value_plane::ReplicaClock;
-use hydracache_server::{MemberReadHost, ServerConfig, ServerRole};
+use hydracache_server::{MemberReadHost, ReplicaRepairOutcome, ServerConfig, ServerRole};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -55,6 +55,19 @@ struct PromotionRequest {
 struct PromotionResponse {
     serial: u32,
     plan: Option<PartitionPromotion>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct RepairCommand {
+    serial: u32,
+    replaced: PartitionMember,
+    target: PartitionMember,
+}
+
+#[derive(Serialize, Deserialize)]
+struct RepairResponse {
+    serial: u32,
+    result: Result<ReplicaRepairOutcome, String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -183,6 +196,7 @@ async fn run_live(
     let partition = scope().locate(KEY.to_vec()).unwrap().0;
     let mut sample = 0;
     let mut promotion_serial = 0;
+    let mut repair_serial = 0;
     loop {
         if let Some(request) = read_json::<PromotionRequest>(&root.join("promotion.json")) {
             if request.serial > promotion_serial {
@@ -196,6 +210,22 @@ async fn run_live(
                     &PromotionResponse {
                         serial: promotion_serial,
                         plan,
+                    },
+                );
+            }
+        }
+        if let Some(command) = read_json::<RepairCommand>(&root.join("repair.json")) {
+            if command.serial > repair_serial {
+                let result = host
+                    .repair_partition_backup(partition, command.replaced, command.target)
+                    .await
+                    .map_err(|error| error.to_string());
+                repair_serial = command.serial;
+                publish_json(
+                    &root.join("repair-reply.json"),
+                    &RepairResponse {
+                        serial: repair_serial,
+                        result,
                     },
                 );
             }
@@ -342,6 +372,27 @@ impl Node {
                 .filter(|reply| reply.serial == serial)
         })
         .plan
+    }
+
+    fn repair(
+        &self,
+        serial: u32,
+        replaced: PartitionMember,
+        target: PartitionMember,
+    ) -> Result<ReplicaRepairOutcome, String> {
+        publish_json(
+            &self.root.join("repair.json"),
+            &RepairCommand {
+                serial,
+                replaced,
+                target,
+            },
+        );
+        wait_for("snapshot transfer control reply", || {
+            read_json::<RepairResponse>(&self.root.join("repair-reply.json"))
+                .filter(|reply| reply.serial == serial)
+        })
+        .result
     }
 
     fn send_hc1(&self, request: ClientRequest, id: &str) -> TcpStream {
@@ -541,6 +592,131 @@ fn compare_and_set(expected: &[u8], value: &[u8]) -> ClientRequest {
         new_value: value.to_vec(),
         level: LockConsistency::Quorum,
     }
+}
+
+#[test]
+fn w10f_resumes_snapshot_and_restores_writes_with_old_owner_stopped() {
+    if std::env::var(RUN).as_deref() != Ok("1") {
+        return;
+    }
+    let mut nodes = start_nodes(true);
+    let initial = wait_for("three W10f members", || all_members(&nodes, 0));
+    let old = expect_owner(&nodes, b"$-1\r\n");
+    let owner = nodes
+        .iter()
+        .position(|node| Some(&node.identity) == initial[old].backup.as_ref())
+        .unwrap();
+    let target = (0..nodes.len())
+        .find(|index| *index != old && *index != owner)
+        .unwrap();
+    let old_identity = nodes[old].member(initial[old].generation);
+    let next_identity = nodes[target].member(initial[target].generation);
+    assert_eq!(
+        resp(nodes[old].address, &[b"SET", KEY, b"seed"]).unwrap(),
+        b"+OK\r\n"
+    );
+    let large = vec![0xaa; 20 * 1024];
+    let retained = compare_and_set(b"seed", &large);
+    assert_eq!(
+        nodes[old].hc1(retained.clone(), "w10f-cert").unwrap(),
+        ClientResponse::CasApplied { new_version: 2 }
+    );
+    wait_for("durable initial certified snapshot", || {
+        let certificate = nodes[owner].status()?.certificate?;
+        (certificate.version == 2).then_some(certificate)
+    });
+
+    nodes[old].stop();
+    assert!(nodes[old].read().is_err());
+    let source = &nodes[owner];
+    let receiver = &nodes[target];
+    let mut serial = 0;
+    let promotion = wait_for("backup takes over while the old process is stopped", || {
+        serial += 1;
+        source.promote(serial, vec![old_identity.clone()])
+    });
+    let cut = promotion.new_epoch.value();
+    wait_for("spare applied the owner promotion", || {
+        (receiver.status()?.epoch == cut).then_some(())
+    });
+
+    publish_json(
+        &source.root.join("fault.json"),
+        &json!({
+            "schema_version": 1, "generation": 1, "rules": [{
+                "from": source.identity, "to": receiver.identity, "action": {"kind": "value_chunk_drop", "index": 1}
+            }]
+        }),
+    );
+    let interrupted = source.repair(1, old_identity.clone(), next_identity.clone());
+    assert!(interrupted.is_err(), "{interrupted:?}");
+    assert!(fs::read_to_string(source.root.join("child.log"))
+        .unwrap()
+        .contains("ValueChunkDrop { index: 1 }"));
+    let partial = source.refreshed_status();
+    assert_eq!(partial.epoch, cut);
+    assert_eq!(
+        partial.backup.as_deref(),
+        Some(nodes[old].identity.as_str())
+    );
+    let mutation = compare_and_set(&large, VALUE);
+    assert!(source
+        .hc1(mutation.clone(), &format!("w10e:{cut}:before-repair"))
+        .is_err());
+    assert_eq!(source.refreshed_status().owner_applies, 0);
+    assert_eq!(receiver.read().unwrap(), UNAVAILABLE);
+    let mut expected = format!("${}\r\n", large.len()).into_bytes();
+    expected.extend_from_slice(&large);
+    expected.extend_from_slice(b"\r\n");
+    assert_eq!(source.read().unwrap(), expected);
+
+    fault_generation(&nodes, None, 2);
+    let repair = source
+        .repair(2, old_identity.clone(), next_identity.clone())
+        .unwrap();
+    assert_eq!(repair.resumed_from, 1);
+    assert!(repair.chunks >= 2);
+    assert_eq!(repair.plan.owner, promotion.new_owner);
+    assert_eq!(repair.plan.target, next_identity);
+    assert_eq!(repair.plan.required, promotion.required);
+    assert_eq!(repair.plan.old_epoch, promotion.new_epoch);
+    let epoch = repair.plan.new_epoch.value();
+    let repeated = source.repair(3, old_identity, next_identity).unwrap();
+    assert_eq!(repeated.plan, repair.plan);
+    assert_eq!(repeated.chunks, 0);
+    wait_for("replacement applied the repair decision", || {
+        (receiver.status()?.epoch == epoch).then_some(())
+    });
+    assert_eq!(
+        source.refreshed_status().backup.as_deref(),
+        Some(receiver.identity.as_str())
+    );
+    let id = format!("w10e:{epoch}:after-repair");
+    assert_eq!(
+        source.hc1(mutation.clone(), &id).unwrap(),
+        ClientResponse::CasApplied { new_version: 3 }
+    );
+    assert_eq!(
+        source.hc1(mutation, &id).unwrap(),
+        ClientResponse::CasApplied { new_version: 3 }
+    );
+    assert_eq!(source.refreshed_status().owner_applies, 1);
+    let final_cert = wait_for("spare applied and certified version 3", || {
+        let status = receiver.status()?;
+        (status.version == 3 && status.applies == 1).then_some(status.certificate?)
+    });
+
+    let promoted_replacement = receiver.promote(1, vec![promotion.new_owner]).unwrap();
+    assert_eq!(promoted_replacement.required, Some(final_cert));
+    assert_eq!(receiver.read().unwrap(), expected_value());
+    assert_eq!(
+        receiver.hc1(retained, "w10f-cert").unwrap(),
+        ClientResponse::CasApplied { new_version: 2 }
+    );
+    assert!(nodes[old].read().is_err());
+    println!("W10f old_pid={} owner_pid={} repaired_replica_pid={} repaired_epoch={epoch} resumed_from={} chunks={} snapshot_digest={:02x?} final_prefix={} final_digest={:02x?} old_process_stopped=true",
+        initial[old].pid, initial[owner].pid, initial[target].pid, repair.resumed_from,
+        repair.chunks, repair.plan.snapshot_digest, final_cert.version, final_cert.digest);
 }
 
 #[test]

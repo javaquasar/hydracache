@@ -355,8 +355,10 @@ pub struct RaftPartitionSnapshot {
     pub members: Vec<ClusterMember>,
     /// Latest accepted value certificate of each touched partition.
     pub value_prefixes: BTreeMap<hydracache::PartitionId, hydracache::PartitionValuePrefix>,
-    /// Committed overrides pin a primary and its backups to exact generations.
+    /// Effective overrides pin a primary and its backups to exact generations.
     pub value_promotions: BTreeMap<hydracache::PartitionId, hydracache::PartitionPromotion>,
+    /// Latest committed repair for each active override.
+    pub value_repairs: BTreeMap<hydracache::PartitionId, hydracache::PartitionReplicaRepair>,
 }
 
 /// Read-only durable-log progress around the server compaction seam.
@@ -626,6 +628,7 @@ struct StagedMetadataSnapshot {
     applied_command_ids: BTreeSet<String>,
     value_prefixes: BTreeMap<hydracache::PartitionId, hydracache::PartitionValuePrefix>,
     value_promotions: BTreeMap<hydracache::PartitionId, hydracache::PartitionPromotion>,
+    value_repairs: BTreeMap<hydracache::PartitionId, hydracache::PartitionReplicaRepair>,
 }
 
 const RAFT_METADATA_SNAPSHOT_PAYLOAD_MAGIC: &[u8; 8] = b"HCMETA01";
@@ -818,6 +821,7 @@ where
     value_prefixes: BTreeMap<hydracache::PartitionId, hydracache::PartitionValuePrefix>,
     value_promotions: BTreeMap<hydracache::PartitionId, hydracache::PartitionPromotion>,
     reads: read_index::ReadIndexes,
+    value_repairs: BTreeMap<hydracache::PartitionId, hydracache::PartitionReplicaRepair>,
     snapshot_installs: u64,
     max_wire_bytes: u64,
     #[cfg(test)]
@@ -1028,6 +1032,7 @@ where
             partition_view_fenced: false,
             value_prefixes: BTreeMap::new(),
             value_promotions: BTreeMap::new(),
+            value_repairs: BTreeMap::new(),
             reads: read_index::ReadIndexes::default(),
             snapshot_installs: 0,
             max_wire_bytes,
@@ -1117,6 +1122,17 @@ where
         state.partition_snapshot()
     }
 
+    /// Inspect a fully applied view while excluding changes to Raft authority.
+    /// The callback must neither await nor call back into Raft.
+    pub fn with_applied_partition_snapshot<T>(
+        &self,
+        action: impl FnOnce(RaftPartitionSnapshot) -> T,
+    ) -> Option<T> {
+        let state = self.raft.lock().expect("raft metadata state poisoned");
+        let snapshot = state.partition_snapshot()?;
+        (snapshot.applied_index == snapshot.commit_index).then(|| action(snapshot))
+    }
+
     /// Submit an owner-issued certificate after replica application. The caller
     /// must observe this exact certificate in the applied view before replying.
     pub fn propose_value_prefix(
@@ -1132,6 +1148,17 @@ where
     /// prefix first and waits for this exact plan to appear in the applied view.
     pub fn propose_value_promotion(&self, plan: hydracache::PartitionPromotion) -> CacheResult<()> {
         let command = RaftMetadataCommand::PromoteValuePartition(plan);
+        self.commit_command(command_id_for(&command), command)?;
+        Ok(())
+    }
+
+    /// Submit a backup replacement after the target durably installs the image.
+    /// Authority changes when this exact plan appears in the applied view.
+    pub fn propose_value_repair(
+        &self,
+        repair: hydracache::PartitionReplicaRepair,
+    ) -> CacheResult<()> {
+        let command = RaftMetadataCommand::ReplaceValueReplica(repair);
         self.commit_command(command_id_for(&command), command)?;
         Ok(())
     }
@@ -1415,6 +1442,7 @@ where
             state.commands.clear();
             state.value_prefixes.clear();
             state.value_promotions.clear();
+            state.value_repairs.clear();
             state.applied_command_ids.clear();
             state.results.clear();
             state.applied_index = 0;
@@ -1500,6 +1528,7 @@ where
                 &self.cluster,
                 &mut state.value_prefixes,
                 &mut state.value_promotions,
+                &mut state.value_repairs,
                 &envelope.command,
             );
             state.commands.push(envelope);
@@ -1569,6 +1598,10 @@ fn command_id_for(command: &RaftMetadataCommand) -> String {
             let bytes = serde_json::to_vec(plan).expect("promotion serializes");
             format!("w10e-promotion-{:02x?}", bytes)
         }
+        RaftMetadataCommand::ReplaceValueReplica(plan) => {
+            let bytes = serde_json::to_vec(plan).expect("replica repair serializes");
+            format!("w10f-repair-{:02x?}", bytes)
+        }
     }
 }
 
@@ -1576,6 +1609,7 @@ fn apply_partition_metadata(
     cluster: &InMemoryCluster,
     prefixes: &mut BTreeMap<hydracache::PartitionId, hydracache::PartitionValuePrefix>,
     promotions: &mut BTreeMap<hydracache::PartitionId, hydracache::PartitionPromotion>,
+    repairs: &mut BTreeMap<hydracache::PartitionId, hydracache::PartitionReplicaRepair>,
     command: &RaftMetadataCommand,
 ) {
     if let RaftMetadataCommand::CommitValuePrefix(prefix) = command {
@@ -1598,6 +1632,23 @@ fn apply_partition_metadata(
             && cluster.apply_partition_epoch(plan.old_epoch, plan.new_epoch)
         {
             promotions.insert(plan.partition, plan.clone());
+            repairs.remove(&plan.partition);
+        }
+    }
+    if let RaftMetadataCommand::ReplaceValueReplica(repair) = command {
+        if let Some(active) = promotions.get_mut(&repair.partition) {
+            let slot = repair.replacement_slot(
+                active,
+                cluster.epoch(),
+                prefixes.get(&repair.partition).copied(),
+                &cluster.members(),
+            );
+            if let Some(slot) =
+                slot.filter(|_| cluster.apply_partition_epoch(repair.old_epoch, repair.new_epoch))
+            {
+                active.backups[slot] = repair.target.clone();
+                repairs.insert(repair.partition, repair.clone());
+            }
         }
     }
 }
@@ -1713,6 +1764,7 @@ fn stage_metadata_snapshot(
     let mut applied_command_ids = BTreeSet::new();
     let mut value_prefixes = BTreeMap::new();
     let mut value_promotions = BTreeMap::new();
+    let mut value_repairs = BTreeMap::new();
     for (offset, envelope) in snapshot.commands.iter().enumerate() {
         let tail_index = offset + 1;
         materialize_snapshot_command(&staged_cluster, &envelope.command).map_err(|error| {
@@ -1727,6 +1779,7 @@ fn stage_metadata_snapshot(
             &staged_cluster,
             &mut value_prefixes,
             &mut value_promotions,
+            &mut value_repairs,
             &envelope.command,
         );
         if !applied_command_ids.insert(envelope.command_id.clone()) {
@@ -1745,6 +1798,7 @@ fn stage_metadata_snapshot(
         applied_command_ids,
         value_prefixes,
         value_promotions,
+        value_repairs,
     })
 }
 
@@ -1907,7 +1961,8 @@ fn materialize_command(
         }
         RaftMetadataCommand::CommitTopology { .. }
         | RaftMetadataCommand::CommitValuePrefix(_)
-        | RaftMetadataCommand::PromoteValuePartition(_) => Ok(None),
+        | RaftMetadataCommand::PromoteValuePartition(_)
+        | RaftMetadataCommand::ReplaceValueReplica(_) => Ok(None),
     }
 }
 
@@ -1973,7 +2028,8 @@ fn materialize_committed_command(
         }
         RaftMetadataCommand::CommitTopology { .. }
         | RaftMetadataCommand::CommitValuePrefix(_)
-        | RaftMetadataCommand::PromoteValuePartition(_) => return Ok(()),
+        | RaftMetadataCommand::PromoteValuePartition(_)
+        | RaftMetadataCommand::ReplaceValueReplica(_) => return Ok(()),
     }
     materialize_command(cluster, command).map(|_| ())
 }
@@ -1999,6 +2055,7 @@ where
         self.applied_command_ids = staged.applied_command_ids;
         self.value_prefixes = staged.value_prefixes;
         self.value_promotions = staged.value_promotions;
+        self.value_repairs = staged.value_repairs;
         self.results.clear();
         self.applied_index = staged.applied_index;
         // The cluster names were checked above, so replacement has no
@@ -2279,6 +2336,7 @@ where
                             &self.cluster,
                             &mut self.value_prefixes,
                             &mut self.value_promotions,
+                            &mut self.value_repairs,
                             &envelope.command,
                         );
                         self.commands.push(envelope);
@@ -2538,6 +2596,11 @@ fn encode_command(command: &RaftMetadataCommand) -> Vec<u8> {
             serde_json::to_string(plan).expect("promotion serializes")
         )
         .into_bytes(),
+        RaftMetadataCommand::ReplaceValueReplica(plan) => format!(
+            "w10f-repair|{}",
+            serde_json::to_string(plan).expect("replica repair serializes")
+        )
+        .into_bytes(),
     }
 }
 
@@ -2575,6 +2638,11 @@ fn decode_command(data: &[u8]) -> CacheResult<RaftMetadataCommand> {
         return serde_json::from_str(plan)
             .map(RaftMetadataCommand::PromoteValuePartition)
             .map_err(|error| CacheError::Decode(format!("invalid partition promotion: {error}")));
+    }
+    if let Some(plan) = text.strip_prefix("w10f-repair|") {
+        return serde_json::from_str(plan)
+            .map(RaftMetadataCommand::ReplaceValueReplica)
+            .map_err(|error| CacheError::Decode(format!("invalid replica repair: {error}")));
     }
     let parts = text.split('|').collect::<Vec<_>>();
     match parts.as_slice() {

@@ -113,7 +113,8 @@ async fn replay_tail(
             }
             RaftMetadataCommand::CommitTopology { .. }
             | RaftMetadataCommand::CommitValuePrefix(_)
-            | RaftMetadataCommand::PromoteValuePartition(_) => {}
+            | RaftMetadataCommand::PromoteValuePartition(_)
+            | RaftMetadataCommand::ReplaceValueReplica(_) => {}
         }
     }
     replayed

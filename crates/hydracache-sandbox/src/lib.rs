@@ -10646,6 +10646,13 @@ fn raft_command_report(command: &RaftMetadataCommand) -> RaftMetadataCommandRepo
             generation: Some(plan.new_owner.generation.value()),
             epoch: plan.new_epoch.value(),
         },
+        RaftMetadataCommand::ReplaceValueReplica(plan) => RaftMetadataCommandReport {
+            kind: "replace-value-replica",
+            node_id: plan.target.node.to_string(),
+            role: Some("member"),
+            generation: Some(plan.target.generation.value()),
+            epoch: plan.new_epoch.value(),
+        },
     }
 }
 

@@ -584,9 +584,9 @@ pub use cluster::{
     HydraCacheMemberBuilder, InMemoryCluster, InMemoryClusterDiscovery, InMemoryClusterStorage,
     InMemoryPeerFetch, LogicalDuration, LogicalTime, ManualClusterClock, MetaDataContainer,
     NearCacheRepairAction, OutboundClusterMessage, PartitionId, PartitionPromotion,
-    PartitionReplicaIdentity, PartitionValuePrefix, RaftMetadataCommand, RaftMetadataSnapshot,
-    RaftStyleMetadataControlPlane, RendezvousClusterOwnership, RoutingMode, StorageOp,
-    StorageOpKind, StorageResult, TopologyFence, TransportPosture,
+    PartitionReplicaIdentity, PartitionReplicaRepair, PartitionValuePrefix, RaftMetadataCommand,
+    RaftMetadataSnapshot, RaftStyleMetadataControlPlane, RendezvousClusterOwnership, RoutingMode,
+    StorageOp, StorageOpKind, StorageResult, TopologyFence, TransportPosture,
     CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
 };
 #[cfg(target_arch = "wasm32")]

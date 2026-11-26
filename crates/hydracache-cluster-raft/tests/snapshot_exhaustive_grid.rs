@@ -183,7 +183,8 @@ async fn replay_command(runtime: &RaftMetadataRuntime, envelope: &RaftMetadataCo
         }
         RaftMetadataCommand::CommitTopology { .. }
         | RaftMetadataCommand::CommitValuePrefix(_)
-        | RaftMetadataCommand::PromoteValuePartition(_) => {}
+        | RaftMetadataCommand::PromoteValuePartition(_)
+        | RaftMetadataCommand::ReplaceValueReplica(_) => {}
     }
 }
 

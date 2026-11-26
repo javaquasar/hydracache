@@ -14,6 +14,9 @@ use sha2::{Digest, Sha256};
 
 use crate::imap_topology::PartitionMember;
 
+#[path = "imap_value_snapshot.rs"]
+mod snapshot;
+
 const RETAINED_IDENTITIES: usize = 128;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -68,7 +71,7 @@ struct JournalRecordV2 {
     digest: [u8; 32],
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(untagged)]
 enum JournalRecord {
     V2(JournalRecordV2),
@@ -325,21 +328,31 @@ impl ValueJournal {
         else {
             return Ok(None);
         };
-        let (sealed, expires_not_before_ms) =
-            match serde_json::from_slice::<JournalRecord>(&bytes).map_err(storage_error)? {
-                JournalRecord::Legacy(sealed) => (sealed, None),
-                JournalRecord::V2(stored) => {
-                    if stored.format != 2
-                        || stored.digest
-                            != hash((stored.format, &stored.sealed, stored.expires_not_before_ms))
-                    {
-                        return Err(storage_error(
-                            "invalid W10d journal record format or digest",
-                        ));
-                    }
-                    (stored.sealed, stored.expires_not_before_ms)
+        let stored: JournalRecord = serde_json::from_slice(&bytes).map_err(storage_error)?;
+        stored.into_entry(partition, required).map(Some)
+    }
+}
+
+impl JournalRecord {
+    fn into_entry(
+        self,
+        partition: PartitionId,
+        required: Option<PartitionValuePrefix>,
+    ) -> CacheResult<StoredEntry> {
+        let (sealed, expires_not_before_ms) = match self {
+            JournalRecord::Legacy(sealed) => (sealed, None),
+            JournalRecord::V2(stored) => {
+                if stored.format != 2
+                    || stored.digest
+                        != hash((stored.format, &stored.sealed, stored.expires_not_before_ms))
+                {
+                    return Err(storage_error(
+                        "invalid W10d journal record format or digest",
+                    ));
                 }
-            };
+                (stored.sealed, stored.expires_not_before_ms)
+            }
+        };
         sealed
             .verify()
             .map_err(|_| storage_error("stored record checksum mismatch"))?;
@@ -352,12 +365,14 @@ impl ValueJournal {
         if record.is_tombstone() && expires_not_before_ms.is_some() {
             return Err(storage_error("tombstone has a deadline"));
         }
-        Ok(Some(StoredEntry {
+        Ok(StoredEntry {
             record,
             expires_not_before_ms,
-        }))
+        })
     }
+}
 
+impl ValueJournal {
     /// Bounded rotating scan of persisted timers and still-pending entries.
     pub fn expiry_batch(
         &self,

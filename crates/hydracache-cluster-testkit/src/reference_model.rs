@@ -201,7 +201,8 @@ impl ReferenceMetadataModel {
                 self.committed_topology = Some((*epoch, members));
             }
             RaftMetadataCommand::CommitValuePrefix(_)
-            | RaftMetadataCommand::PromoteValuePartition(_) => {}
+            | RaftMetadataCommand::PromoteValuePartition(_)
+            | RaftMetadataCommand::ReplaceValueReplica(_) => {}
         }
         Ok(())
     }
@@ -331,6 +332,10 @@ fn expected_command_id(command: &RaftMetadataCommand) -> String {
         RaftMetadataCommand::PromoteValuePartition(plan) => {
             let bytes = serde_json::to_vec(plan).expect("promotion serializes");
             format!("w10e-promotion-{:02x?}", bytes)
+        }
+        RaftMetadataCommand::ReplaceValueReplica(plan) => {
+            let bytes = serde_json::to_vec(plan).expect("replica repair serializes");
+            format!("w10f-repair-{:02x?}", bytes)
         }
     }
 }

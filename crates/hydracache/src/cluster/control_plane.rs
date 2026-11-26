@@ -107,6 +107,8 @@ pub enum RaftMetadataCommand {
     CommitValuePrefix(PartitionValuePrefix),
     /// Staged cutover to a prefix-certified replica.
     PromoteValuePartition(PartitionPromotion),
+    /// Replace one synchronous backup with a verified snapshot recipient.
+    ReplaceValueReplica(PartitionReplicaRepair),
 }
 
 /// A replicated commitment for one partition. Value bytes stay on the value plane.
@@ -136,6 +138,59 @@ pub struct PartitionPromotion {
     pub new_owner: PartitionReplicaIdentity,
     pub backups: Vec<PartitionReplicaIdentity>,
     pub required: Option<PartitionValuePrefix>,
+}
+
+/// A repair bound to one active owner, backup slot and certified image.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct PartitionReplicaRepair {
+    pub partition: super::PartitionId,
+    pub old_epoch: ClusterEpoch,
+    pub new_epoch: ClusterEpoch,
+    pub owner: PartitionReplicaIdentity,
+    pub replaced: PartitionReplicaIdentity,
+    pub target: PartitionReplicaIdentity,
+    pub required: Option<PartitionValuePrefix>,
+    pub snapshot_digest: [u8; 32],
+}
+
+impl PartitionReplicaRepair {
+    /// Locate the backup slot that can be replaced in the current applied view.
+    #[doc(hidden)]
+    pub fn replacement_slot(
+        &self,
+        active: &PartitionPromotion,
+        epoch: ClusterEpoch,
+        required: Option<PartitionValuePrefix>,
+        members: &[ClusterMember],
+    ) -> Option<usize> {
+        let admitted = |identity: &PartitionReplicaIdentity| {
+            members.iter().any(|member| {
+                member.node_id == identity.node && member.generation == identity.generation
+            })
+        };
+        if self.partition != active.partition
+            || self.owner != active.new_owner
+            || self.old_epoch != epoch
+            || epoch.value().checked_add(1) != Some(self.new_epoch.value())
+            || self.required != required
+            || self.target == self.replaced
+            || self.target.node == self.owner.node
+            || !admitted(&self.owner)
+            || !admitted(&self.target)
+        {
+            return None;
+        }
+        let slot = active
+            .backups
+            .iter()
+            .position(|backup| backup == &self.replaced)?;
+        active
+            .backups
+            .iter()
+            .enumerate()
+            .all(|(index, backup)| index == slot || backup.node != self.target.node)
+            .then_some(slot)
+    }
 }
 
 /// Snapshot of the raft-style metadata journal.
