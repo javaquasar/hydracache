@@ -839,10 +839,19 @@ fn w10f_streams_versioned_changes_while_owner_keeps_accepting_writes() {
     assert!(nodes[old].read().is_err());
     let after = compare_and_set(&value, VALUE);
     let id = format!("w10e:{new_epoch}:after-live-repair");
-    assert_eq!(
-        nodes[owner].hc1(after.clone(), &id).unwrap(),
-        ClientResponse::CasApplied { new_version: 18 }
+    let expected = [format!("${}\r\n", value.len()).as_bytes(), &value, b"\r\n"].concat();
+    wait_for(
+        "remaining voters elect a leader after the former backup stops",
+        || nodes[owner].read().ok().filter(|reply| *reply == expected),
     );
+    let written = wait_for("a write through the replacement backup", || {
+        match nodes[owner].hc1(after.clone(), &id) {
+            Ok(response) => Some(response),
+            Err(error) if error.retryable => None,
+            Err(error) => panic!("post-cutover CAS failed: {error:?}"),
+        }
+    });
+    assert_eq!(written, ClientResponse::CasApplied { new_version: 18 });
     assert_eq!(
         nodes[owner].hc1(after, &id).unwrap(),
         ClientResponse::CasApplied { new_version: 18 }

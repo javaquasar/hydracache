@@ -312,10 +312,19 @@ impl<S: RaftLogStore> LiveRepair<'_, S> {
             let writer = acquire_writer(self.lane, deadline).await?;
             let cut_deadline = deadline.min(Instant::now() + FINAL_CUT_WAIT);
             let final_prefix = self.certified(cut_deadline).await?;
+            if version(final_prefix).saturating_sub(version(cursor)) > FINAL_DELTA_ROWS {
+                drop(writer);
+                let (gap, _) = self
+                    .journal
+                    .captured_deltas(self.manifest, cursor, final_prefix)?;
+                self.send_deltas(gap).await?;
+                cursor = final_prefix;
+                continue;
+            }
             let (tail, bytes) =
                 self.journal
                     .captured_deltas(self.manifest, cursor, final_prefix)?;
-            if tail.len() as u64 > FINAL_DELTA_ROWS || bytes > FINAL_DELTA_BYTES {
+            if bytes > FINAL_DELTA_BYTES {
                 drop(writer);
                 self.send_deltas(tail).await?;
                 cursor = final_prefix;
