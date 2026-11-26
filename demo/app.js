@@ -1082,8 +1082,11 @@ function renderNamespaceOptions(snapshot) {
 function renderConsistency(snapshot) {
   const note = document.createElement("p");
   note.className = "model-note";
-  note.textContent =
-    "Could an operation at each level be acknowledged right now? Computed with the product consistency rules: every node is a replica in one region and only live nodes acknowledge (isolated counts as down; single partitioned links are not considered). The simulator does not run per-level reads or writes.";
+  // Schema 13: in the replicated write path each key has its own owners, so
+  // the engine computes the panel on the owners of the last written key.
+  const scope = snapshot.consistency_scope || "every node is a replica";
+  note.setAttribute("data-testid", "consistency-scope");
+  note.textContent = `Could an operation at each level be acknowledged right now? Computed with the product consistency rules on: ${scope}, in one region; only live nodes acknowledge (isolated counts as down; single partitioned links are not considered). Reads are not run per level; writes are, in the replicated write path.`;
   const levels = document.createElement("div");
   levels.className = "metric-list";
   for (const view of snapshot.consistency || []) {
@@ -2636,6 +2639,7 @@ function verdictPanelSignature(snapshot) {
 function consistencySignature(snapshot) {
   return JSON.stringify([
     snapshot.consistency,
+    snapshot.consistency_scope,
     keyAgreement(snapshot),
     snapshot.progress?.committed_entries,
   ]);

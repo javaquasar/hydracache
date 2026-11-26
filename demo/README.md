@@ -73,15 +73,17 @@ guarantee.
 
   The product ships those primitives but no runtime replicated write path, so
   *replicated* is a model, not shipped behaviour.
-- **Hints and repair are simulator models** (snapshot schema 12; counters under
-  *Write path*):
-  - a primary keeps a hint for a backup it cannot reach, and replays it when
-    the backup returns;
-  - copies apply by version, so a late copy never overwrites a newer value;
-  - an anti-entropy pass every 5 steps repairs lost copies.
+- **Hints and repair run product code under a simulator driver** (snapshot
+  schema 12–13; counters under *Write path*):
+  - hints live in the product `InMemoryHintStore` and replay through
+    `apply_hint`;
+  - copies apply by `ReplicatedValueRecord::merge`;
+  - repair diffs product `MerkleTree`s;
+  - a routed restart is cold.
 
-  They follow the product's hinted-handoff rules, but the product hint store
-  and merkle repair are not compiled into the simulator.
+  The driver is the simulator's: a perfect failure detector, one partition, and
+  a repair pass every 5 steps. The consistency panel says which replica set it
+  was computed on.
 
 ### Visualization only — no engine meaning
 

@@ -223,3 +223,66 @@ fn an_older_invalidation_never_removes_a_newer_local_first_value() {
         "the newer write survives where it was made"
     );
 }
+
+#[test]
+fn a_restarted_owner_comes_back_cold_and_repair_refills_only_its_keys() {
+    let (mut world, key, owners) = setup(0x5607);
+    world.push_event("writer", NS, &key, "v1").expect("push");
+    world.run(4);
+    let backup = owners.backups[0].to_string();
+    let primary = owners.primary.to_string();
+    assert!(holds(&world.snapshot(), &key, &backup) > 0);
+    let non_owner = world
+        .snapshot()
+        .nodes
+        .iter()
+        .map(|node| node.id.clone())
+        .find(|node| *node != backup && *node != primary)
+        .expect("a non-owner");
+
+    assert!(world.crash_node(backup.clone()));
+    world.run(1);
+    assert!(world.restart_node(backup.clone()));
+    assert_eq!(holds(&world.snapshot(), &key, &backup), 0, "cold restart");
+    world.run(6);
+    let repaired = world.snapshot();
+    assert_eq!(
+        holds(&repaired, &key, &backup),
+        holds(&repaired, &key, &primary)
+    );
+    assert!(repaired.repair.repair_copies >= 1);
+
+    assert!(world.crash_node(non_owner.clone()));
+    world.run(1);
+    assert!(world.restart_node(non_owner.clone()));
+    world.run(6);
+    assert_eq!(
+        holds(&world.snapshot(), &key, &non_owner),
+        0,
+        "never copied to a non-owner"
+    );
+}
+
+#[test]
+fn the_consistency_panel_uses_the_last_keys_owners_in_replicated() {
+    let (mut world, key, owners) = setup(0x5608);
+    assert_eq!(
+        world.snapshot().consistency_scope,
+        "every node is a replica"
+    );
+    world.push_event("writer", NS, &key, "v1").expect("push");
+    let snapshot = world.snapshot();
+    assert_eq!(
+        snapshot.consistency_scope,
+        format!(
+            "owners of {NS}:{key} ({}, {})",
+            owners.primary, owners.backups[0]
+        )
+    );
+    let all = snapshot
+        .consistency
+        .iter()
+        .find(|view| view.level == "all")
+        .expect("all");
+    assert_eq!(all.total_replicas, 2);
+}

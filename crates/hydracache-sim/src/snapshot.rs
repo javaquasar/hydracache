@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Current stable simulator snapshot JSON schema version.
-pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 12;
+pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 13;
 
 /// Region every simulator node reports; the simulator models one region.
 pub(crate) const SIM_REGION: &str = "local";
@@ -83,6 +83,9 @@ pub struct SimSnapshot {
     pub first_violation_step: Option<u64>,
     /// Whether each product consistency level could be satisfied right now.
     pub consistency: Vec<ConsistencyLevelView>,
+    /// Which replica set `consistency` was computed on (schema 13): every node,
+    /// or in `replicated` the owners of the most recently written key.
+    pub consistency_scope: String,
     /// Invariant verdict for the current state.
     pub verdict: VerdictView,
     /// Progress summary for dashboard panels.
@@ -140,6 +143,7 @@ impl SimSnapshot {
                 .collect(),
             first_violation_step: (!report.violations.is_empty()).then_some(step),
             consistency: Vec::new(),
+            consistency_scope: "none".to_owned(),
             verdict: VerdictView::from_report(&report),
             progress: ProgressView {
                 committed_entries: history.completed().count() as u64,

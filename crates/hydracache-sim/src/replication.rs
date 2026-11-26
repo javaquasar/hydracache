@@ -24,34 +24,30 @@ pub(crate) const GRID_SEQUENCE_BASE: u64 = 1 << 40;
 /// Number of finished writes the snapshot keeps for display.
 pub(crate) const MAX_WRITES_RENDERED: usize = 16;
 
-/// Hints one primary may hold for one target before it drops the newest and
-/// leaves the key to repair (the product `HintBudget` caps count and bytes).
-pub(crate) const MAX_HINTS_PER_TARGET: usize = 32;
+/// Hint budget of one holder's product `InMemoryHintStore`: count, bytes and
+/// age (in logical milliseconds). Over it, the product drops the hint and
+/// leaves the key to repair.
+pub(crate) const MAX_HINTS: usize = 32;
+pub(crate) const MAX_HINT_BYTES: u64 = 64 * 1024;
+pub(crate) const MAX_HINT_AGE_MILLIS: u64 = 60_000;
 
 /// Steps between anti-entropy passes that copy a key's latest routed value to
 /// a live owner that lacks it.
 pub(crate) const REPAIR_INTERVAL_STEPS: u64 = 5;
 
-/// A copy the primary could not send because the backup was down or cut off.
-/// Mirrors the product `Hint` semantics: held by the sender, replayed when the
-/// target is reachable again, suppressed when the target already applied a
-/// newer write of the key, lost with its holder (the product store is in
-/// memory), and dropped over budget with the key left to repair.
+/// Display index of a hint held in a product `InMemoryHintStore` (the store
+/// itself has no listing API). The rules (budget, replay, suppression) are the
+/// product's; this only records what the snapshot shows.
 #[derive(Debug, Clone)]
 pub(crate) struct SimHint {
     pub(crate) write: u64,
     pub(crate) key: String,
-    pub(crate) value: Vec<u8>,
     pub(crate) holder: ClusterNodeId,
     pub(crate) target: ClusterNodeId,
     pub(crate) created_at_step: u64,
 }
 
 impl SimHint {
-    pub(crate) fn sequence(&self) -> u64 {
-        GRID_SEQUENCE_BASE + self.write
-    }
-
     pub(crate) fn view(&self) -> crate::snapshot::HintView {
         crate::snapshot::HintView {
             write: self.write,

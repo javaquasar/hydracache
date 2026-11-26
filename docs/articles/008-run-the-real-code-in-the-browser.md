@@ -243,10 +243,12 @@ Step 3b then added what a lost copy needs:
   in flight together;
 - an **anti-entropy pass** repairs copies lost in flight.
 
-These three rules are modeled in the simulator, not compiled from the product. The product's
-hint store and version merge depend on value-record types that do not build for the browser yet.
-That is recorded as a gap of its own, so the next step is obvious: move those types the way step 1
-moved the consistency levels.
+The first version of these rules was modeled in the simulator, because the product's hint store and
+version merge depended on value-record types that did not build for the browser. The gap register
+made the next move obvious, and it was the same as step 1. We moved the hint store, the versioned
+records and the merkle diff into the always-built module, with no behaviour change and every
+existing test passing untouched, then deleted the simulator's own rules. The browser now runs the
+product's `InMemoryHintStore`, `apply_hint` and `MerkleTree::diff`.
 
 That last point is the general lesson. When a simulator is ahead of the product, it is a design
 tool, which is fine, but the page has to say so.

@@ -153,7 +153,7 @@ test("consistency_panel_shows_product_level_availability", async ({ page }) => {
   await openReady(page);
   await page.getByTestId("tab-data").click();
   const panel = page.getByTestId("consistency-panel");
-  await expect(panel).toContainText("does not run per-level reads or writes");
+  await expect(panel).toContainText("Reads are not run per level");
   await expect(panel).toContainText("live replicas agree on sampled keys");
   for (const level of ["one", "local_quorum", "quorum", "each_quorum", "all"]) {
     await expect(panel.locator(`[data-level='${level}']`)).toHaveClass(/ok/);
@@ -1571,6 +1571,7 @@ test("write_path_models_show_owners_and_acknowledgements", async ({ page }) => {
   await expect(row.locator(".replica.not-owner")).toHaveCount(1);
   await expect(row.locator(".replica.primary-owner")).toHaveCount(1);
   await expect(row.locator(".key-state")).toHaveText("agree");
+  await expect(page.getByTestId("consistency-scope")).toContainText("owners of profiles:profile-42");
 
   await page.getByTestId("tab-clients").click();
   await page.getByTestId("replication-model").selectOption("local_first");

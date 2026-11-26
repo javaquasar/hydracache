@@ -33,7 +33,7 @@ fn full_mixed_run_replays_identically_from_script() {
 
 #[test]
 fn every_new_snapshot_field_bumped_schema() {
-    assert_eq!(SIM_SNAPSHOT_SCHEMA_VERSION, 12);
+    assert_eq!(SIM_SNAPSHOT_SCHEMA_VERSION, 13);
 
     let mut world = SimWorld::new(0x5371, SimConfig::default());
     world
@@ -43,7 +43,7 @@ fn every_new_snapshot_field_bumped_schema() {
     let encoded = snapshot.to_json();
     let decoded = SimSnapshot::from_json(&encoded).expect("current snapshot decodes");
 
-    assert_eq!(decoded.schema_version, 12);
+    assert_eq!(decoded.schema_version, 13);
     assert!(!decoded.admitted_clients.is_empty());
     assert_eq!(decoded.formation_phase, "formed");
     assert!(decoded
@@ -70,6 +70,7 @@ fn every_new_snapshot_field_bumped_schema() {
         "Version `10` adds `admitted_clients`",
         "Version `11` adds `replication`",
         "Version `12` adds `hints`",
+        "Version `13` adds `consistency_scope`",
         "`ReplayScriptV1` simulator control artifact",
     ] {
         assert!(compat.contains(marker), "missing COMPAT marker: {marker}");

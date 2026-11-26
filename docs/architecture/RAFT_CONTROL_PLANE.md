@@ -249,8 +249,8 @@ gap moves to the history list below, with its commit.
 
 | Id | Gap | Simulator / demo today | Product | Owner |
 | --- | --- | --- | --- | --- |
-| G3′ | Default model and state transfer | `full_broadcast` is still the default: the built-in workload and the deterministic-simulation invariants run only there, so `set_replication` is refused while the workload is on. `catch_up_node` copies a whole node's storage, so a restarted node may hold keys it does not own. | Default: local-first with invalidation. A restarted owner repairs only its own keys. | TD-0016 |
-| G4″ | Hint and repair rules are modeled | The rules are modeled in `world.rs` (`store_hint`, `replay_hints`, `drop_stale_copy`, `repair_pass`), because the product `HintStore`, `apply_hint` and merkle repair depend on native-only value records (`grid::hardening`). The failure detector is perfect (live set plus link state). The hint budget is a count only, with no age or bytes. Repair copies only the latest finished routed write of a key, every 5 steps, from its acting primary. A down primary is replaced by the next live owner without promotion phases. The consistency panel still treats every node as a replica. | Product `HintBudget` (count, bytes, age), `apply_hint` on versioned records, merkle repair, phased `select_backup_promotion`. | TD-0016 |
+| G3″ | Default model and the workload | `full_broadcast` is still the default. The built-in workload and its read-your-writes invariants run only there, so `set_replication` is refused while the workload is on. The simulator has no read path for a cache miss (read-through from a source, or a peer fetch from an owner), so under a routed model the history checker would report misses as stale reads. | Default: local-first with invalidation; a miss reads through or fetches from the owner. | TD-0016 |
+| G4‴ | Repair and failure-detection driver | Hints, versioned apply and the repair diff are product code (`InMemoryHintStore`, `apply_hint`, `ReplicatedValueRecord::merge`, `MerkleTree::diff`). The simulator drives them with three simplifications: a perfect failure detector (live set plus link state), one partition, and a repair pass every 5 steps without the `RepairSession` watermark. Promotion picks the first live owner; the product rule `select_backup_promotion` is the first backup, whose phases are data with no runtime driver. | A phi-accrual detector, partitioned trees, and a scheduled incremental `RepairSession`. | TD-0016 |
 | G5 | Subscriber delivery | In `full_broadcast`, an event is delivered only once **every** live node holds the version (`deliver_subscriber_events`). In the routed models it is delivered once the write is acknowledged. | Events come from the cache event or invalidation stream of the node the subscriber is attached to. | TD-0016 |
 | G7′ | Admission details | `ClientUpsert` commits at once when a live leader exists (no log round trip, no forwarded-apply wait). The built-in workload fleet is treated as admitted with the cluster. Removing a writer or subscriber keeps the client admitted (`NodeLeft` is not modeled). | Proposal, forward to the leader, commit, apply; a stopped process proposes `NodeLeft`. | TD-0016 |
 
@@ -283,6 +283,15 @@ Closed gaps:
   - the snapshot reports `replication`, per-key `owners` and recent `writes`.
 
   What remains is G3′ and G4″.
+- G3′ (state transfer) and G4″ (modeled rules):
+  - a routed restart is cold: the member loses its cache, and in `replicated`, hints
+    and repair refill only the keys it owns;
+  - the hint store, `apply_hint`, versioned records and the merkle diff moved into
+    `replication_model` (they build for wasm32), and the simulator calls them;
+  - the consistency panel is computed on the last written key's owners, and
+    `consistency_scope` says so (schema 13).
+
+  What remains is G3″ and G4‴.
 - G4′ / TD-0016 step 3b (snapshot schema 12):
   - a primary that cannot reach a backup keeps a hint and replays it when the backup
     is reachable again;
@@ -310,7 +319,8 @@ with its own tests.
    - The smoke workload uses the same rule.
    - The silent first-live-node fallback is removed.
 3. **Done: owner placement and acknowledgements** (G3, G4), then hints, versioned
-   apply and repair (step 3b, G4′). The rules are modeled in the simulator (G4″).
+   apply and repair (step 3b, G4′). The hint, versioned-record and merkle rules
+   are product code since the follow-up (G4″ closed); G3″ and G4‴ remain.
    - A `SimConfig` replication mode chooses one of two models:
      - `local_first`: the coordinator writes locally and broadcasts invalidations;
      - `replicated { rf, level }`: the coordinator forwards to the primary, which
