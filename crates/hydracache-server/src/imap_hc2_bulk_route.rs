@@ -318,10 +318,10 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
         {
             return Err(batch_too_large());
         }
-        if !key
+        if key
             .segments()
             .first()
-            .is_some_and(|key| key.len() <= 60 * 1024)
+            .is_none_or(|key| key.len() > 60 * 1024)
             || envelope
                 .idempotency_key
                 .as_ref()
