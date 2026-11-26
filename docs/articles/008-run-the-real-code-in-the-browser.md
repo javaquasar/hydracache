@@ -266,7 +266,7 @@ This step shows why the demo cannot be fixed alone. The demo already times a sub
 the engine's recorded delivery step, so it is honest about *when*. The engine was wrong about
 *why*.
 
-## Step 5: draw only what the engine recorded, on separate lanes (partly done)
+## Step 5: draw only what the engine recorded, on separate lanes (done)
 
 The rendering rule is simple: **every visual effect is tied to a fact in the snapshot.** Over the
 last schema versions we added the facts the animation needed:
@@ -278,10 +278,12 @@ last schema versions we added the facts the animation needed:
 - `applied_at_step` per replica, so a node flashes at the step the engine applied the value. A copy
   still in flight stops short, and a copy that will never arrive fades with a loss marker.
 
-The remaining work is to separate the planes visually. The client, the coordinator, the owners, and
-the acknowledgements go on the data lane. The Raft leader goes on its own metadata lane and
-lights up only for admission, leave, topology, and voter changes, because those are the only things
-it does.
+The last piece separated the planes. The client, the coordinator, the owners and the
+acknowledgements travel on the data lane: the request goes out, copies fan out from the primary,
+small green acknowledgements come back, and the client gets its answer at the step the level was
+met. The Raft leader has its own dashed lane, off the links, and lights up only when a client is
+admitted, because that is the only metadata command the simulator commits. Watching a write now
+shows what the product does: the leader stays dark.
 
 ## Honesty is a mechanism, not a tone
 

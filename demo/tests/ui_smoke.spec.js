@@ -1562,7 +1562,16 @@ test("write_path_models_show_owners_and_acknowledgements", async ({ page }) => {
   await page.getByTestId("apply-replication").click();
   await expect(page.getByTestId("replication-disclosure")).toContainText("opt-in replication primitives");
   await page.getByTestId("add-client-button").click();
+  // Admission is a Raft metadata commit: it is drawn on the metadata lane,
+  // to the leader and back, unless the writer's member is the leader.
+  const writerMember = (await page.locator("[data-client='client-a'] .entity-meta").textContent()).split("via ")[1].trim();
+  const leader = (await page.locator(".vertex.node.role-leader").getAttribute("aria-label")).split(",")[0];
+  if (writerMember !== leader) {
+    await expect(page.locator(`.pulse-layer .pulse.meta[data-to="${leader}"]`)).toHaveCount(1);
+  }
   await page.getByTestId("push-client-a").click();
+  // Acknowledgements travel back; the leader is nowhere on the data path.
+  await expect(page.locator(".pulse-layer .pulse.ack").first()).toBeAttached();
   await expect(page.locator(".write-row").first()).toContainText("acks 2/2 at ALL · acknowledged");
 
   await expect(page.getByTestId("repair-counters")).toContainText("Hints held 0");

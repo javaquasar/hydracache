@@ -312,6 +312,17 @@ describe("pushPlan for routed writes (schema 11)", () => {
     ]);
   });
 
+  it("sends acknowledgements back: backup to primary, primary to coordinator, then the reply", () => {
+    const acked = { ...final, writes: [{ ...write, acknowledged_at_step: 14 }] };
+    const plan = pushPlan({ step: 10 }, acked, "w", "profiles", "p");
+    assert.deepEqual(plan.acks, [
+      { from: "node-1", to: "node-0", at: 1 },
+      { from: "node-2", to: "node-1", at: 2 },
+      { from: "node-1", to: "node-0", at: 3 },
+    ]);
+    assert.deepEqual(plan.reply, { at: 4 });
+  });
+
   it("local_first invalidates every other live member from the coordinator", () => {
     const local = {
       ...final,

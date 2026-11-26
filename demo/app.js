@@ -14,6 +14,7 @@ import {
   tidyGraph,
   initGraph,
   playDataFlowPulse,
+  playMetadataPulse,
   pushPlan,
   resetGraph,
   syncGraph,
@@ -506,6 +507,15 @@ async function refresh() {
   render();
   if (focus && wasHolding && !state.timeline.rewound) {
     onViolationDetected(focus);
+  }
+  // A client admitted since the previous render went through the Raft
+  // leader (a ClientUpsert commit): draw it on the metadata lane.
+  if (previous && !state.timeline.rewound) {
+    const before = new Set((previous.admitted_clients || []).map((entry) => entry.id));
+    const leader = (state.snapshot.nodes || []).find((node) => node.vote_state === "leader")?.id;
+    for (const entry of state.snapshot.admitted_clients || []) {
+      if (!before.has(entry.id) && leader && entry.connected_node) playMetadataPulse(entry.connected_node, leader);
+    }
   }
   if (state.changes?.leader) {
     const { to } = state.changes.leader;

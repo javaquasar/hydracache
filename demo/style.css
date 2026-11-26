@@ -2191,6 +2191,19 @@ html.graph-dragging * {
   filter: drop-shadow(0 0 7px color-mix(in srgb, var(--event) 70%, transparent));
 }
 
+/* Acknowledgements travel back on the data path, small and green. */
+.pulse.ack {
+  fill: var(--ok);
+}
+
+/* Raft metadata (client admission) runs on its own lane, dashed. */
+.pulse.meta {
+  fill: var(--surface);
+  stroke: var(--accent-alt);
+  stroke-width: 2.5;
+  stroke-dasharray: 3 2;
+}
+
 html[data-reduced-motion="true"] .pulse-layer {
   display: none;
 }

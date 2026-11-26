@@ -16,6 +16,8 @@ Open — recorded 2026-11-25.
   - the simulator runs the product hint store, versioned records and merkle diff;
   - the consistency panel uses key owners.
 - Step 4 is done (2026-11-26). It closes G5: subscribers hear from their own member.
+- Step 5 is done (2026-11-26). The demo draws acknowledgements back to the client, and
+  draws admission on a separate Raft metadata lane.
 - Still open: G3″ (no read path, so the workload stays in `full_broadcast`), G4‴ (driver
   simplifications) and G7′.
 

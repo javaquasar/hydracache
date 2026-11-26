@@ -299,7 +299,11 @@ shared link cannot make the page render another server's verdict.
   subscriber at its delivery step. A subscriber hears from the member its
   client is connected to, once that member applies the write (`upserted`) or,
   in local-first, the invalidation (`invalidated`). In replicated, a member
-  that does not own the key never stores it, so its subscribers get no event. A replica whose copy is still in flight
+  that does not own the key never stores it, so its subscribers get no event.
+  In the routed write paths, small green dots carry the acknowledgements back
+  (backup → primary → coordinator → client). A client admission is drawn on a
+  separate, dashed Raft metadata lane to the leader and back. The leader takes
+  no part in a write. A replica whose copy is still in flight
   does not flash; one that will never get it (down, or behind a cut) shows
   the copy fading with a loss marker. Reduced motion flashes at once.
 - **Keys heatmap.** A replica that takes a new value fades from its old colour to the new one; hovering a cell gives the whole checksum and the step the page saw it written. One row per sampled key, one column per node. A cell's

@@ -335,11 +335,16 @@ with its own tests.
      write. This bumps the snapshot schema and needs a `docs/COMPAT.md` entry.
 4. **Done: subscriber events from the attached node** (G5). An event is delivered when the
    subscriber's node applies the write or receives the invalidation.
-5. **Demo**. The demo draws:
-   - client → coordinator → primary → backups, then acknowledgements back;
-   - invalidations to the holders of the key;
-   - the Raft leader on a separate metadata lane, shown only for admission, leave
-     and topology.
+5. **Done: demo.** `demo/graph.js` draws:
+   - client → coordinator → primary → backups (`routedPushPlan`);
+   - acknowledgements back (backup → primary → coordinator) and the reply to the
+     client at the acknowledged step;
+   - invalidations to the other members in `local_first`;
+   - the Raft leader on its own dashed metadata lane (`playMetadataPulse`).
+
+   The metadata lane is drawn only for client admission, because `ClientUpsert` is
+   the only metadata command the simulator commits (G7′). Leave and topology
+   commits are not simulated.
 
 Rules that apply to every step: `docs/RULES.md` (fail loud, deterministic fault
 model, boolean gates, tests for every new path). Native and wasm snapshots must stay
