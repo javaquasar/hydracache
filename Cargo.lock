@@ -2349,6 +2349,7 @@ dependencies = [
  "async-trait",
  "axum",
  "fail",
+ "getrandom 0.3.4",
  "hydra-chitchat",
  "hydra-raft",
  "hydra-sled",

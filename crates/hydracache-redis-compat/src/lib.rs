@@ -756,7 +756,7 @@ pub enum RedisServeError {
 /// RESP connection executor backed by the HydraCache client surface.
 #[derive(Debug)]
 pub struct RedisRespServer {
-    state: Arc<ClientSurfaceState>,
+    state: Option<Arc<ClientSurfaceState>>,
     dispatcher: Arc<ClientSurfaceDispatcher>,
     native_cache_events: Option<HydraCache>,
     identity: ClientIdentity,
@@ -865,11 +865,27 @@ impl RedisRespServer {
         state: Arc<ClientSurfaceState>,
         config: RedisListenerConfig,
     ) -> Result<Self, RedisServeError> {
+        Self::assemble(state.dispatcher(), Some(state), config)
+    }
+
+    /// Attach the existing RESP listener to an admitted dispatcher.
+    pub fn from_dispatcher(
+        dispatcher: Arc<ClientSurfaceDispatcher>,
+        config: RedisListenerConfig,
+    ) -> Result<Self, RedisServeError> {
+        Self::assemble(dispatcher, None, config)
+    }
+
+    fn assemble(
+        dispatcher: Arc<ClientSurfaceDispatcher>,
+        state: Option<Arc<ClientSurfaceState>>,
+        config: RedisListenerConfig,
+    ) -> Result<Self, RedisServeError> {
         config.validate()?;
         let identity = ClientIdentity::new(config.client_id.clone(), config.tenant.clone())
             .map_err(|error| RedisServeError::Identity(error.to_string()))?;
         Ok(Self {
-            dispatcher: state.dispatcher(),
+            dispatcher,
             state,
             native_cache_events: None,
             identity,
@@ -899,9 +915,17 @@ impl RedisRespServer {
         self
     }
 
-    /// Return the shared client surface state.
+    /// Return the shared local state for listeners constructed with `new`.
+    ///
+    /// Panics for a dispatcher-only listener. Use `local_state` if either
+    /// kind of listener can be supplied.
     pub fn state(&self) -> Arc<ClientSurfaceState> {
-        Arc::clone(&self.state)
+        self.local_state().expect("RESP listener has no local client state")
+    }
+
+    /// Return the local state if the listener was constructed with one.
+    pub fn local_state(&self) -> Option<Arc<ClientSurfaceState>> {
+        self.state.clone()
     }
 
     /// Return listener counters.
@@ -1193,7 +1217,7 @@ impl RedisRespServer {
             }
             if mutation_subscriber.is_none() {
                 *mutation_subscriber = Some(
-                    self.state
+                    self.dispatcher
                         .subscribe_mutations(&connection.identity)
                         .map_err(|error| RedisServeError::Identity(error.to_string()))?,
                 );
@@ -1497,11 +1521,11 @@ impl RedisRespServer {
                 bulk_static("tenant"),
                 RespValue::BulkString(identity.tenant().as_bytes().to_vec()),
                 bulk_static("dispatch_attempts"),
-                counter_value(self.state.dispatch_attempts()),
+                counter_value(self.dispatcher.dispatch_attempts()),
                 bulk_static("state_mutations"),
-                counter_value(self.state.state_mutations()),
+                counter_value(self.dispatcher.state_mutations()),
                 bulk_static("active_subscriptions"),
-                counter_value(self.state.active_subscriptions()),
+                counter_value(self.dispatcher.active_subscriptions()),
                 bulk_static("accepted_connections"),
                 counter_value(self.metrics().accepted_connections),
                 bulk_static("commands"),
@@ -2052,7 +2076,8 @@ fn redis_keyspace_messages_for_key(
     messages
 }
 
-fn redis_structured_key_to_bytes(key: &StructuredKey) -> Option<Vec<u8>> {
+/// Recover the opaque key bytes supplied at the RESP edge.
+pub fn redis_structured_key_to_bytes(key: &StructuredKey) -> Option<Vec<u8>> {
     let [segment] = key.segments() else {
         return None;
     };
@@ -2060,7 +2085,7 @@ fn redis_structured_key_to_bytes(key: &StructuredKey) -> Option<Vec<u8>> {
         return Some(Vec::new());
     }
     let encoded = segment.strip_prefix("redis-binary-v1-")?;
-    if encoded.len() % 2 != 0 {
+    if encoded.is_empty() || encoded.len() % 2 != 0 {
         return None;
     }
     encoded

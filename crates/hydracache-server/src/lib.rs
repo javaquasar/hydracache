@@ -13,7 +13,11 @@ mod generated_console_assets;
 mod grid_host;
 pub mod hc2;
 #[doc(hidden)]
+pub mod imap_owner_read;
+#[doc(hidden)]
 pub mod imap_read_barrier;
+#[doc(hidden)]
+pub mod imap_replicated_read;
 #[doc(hidden)]
 pub mod imap_topology;
 pub mod management_aggregation;
@@ -50,6 +54,8 @@ pub use config::{
     ServerRole, TlsConfig,
 };
 pub use hc2::{serve_hc2_listener, Hc2ClientPlaneService, Hc2ListenerTls, Hc2ServeError};
+#[doc(hidden)]
+pub use grid_host::MemberReadHost;
 pub use management_aggregation::{
     AggregatedManagementSnapshot, HttpManagementPeerTransport, LocalManagementSnapshotProvider,
     ManagementAggregationIssue, ManagementConsensusObservation, ManagementMemberSnapshot,

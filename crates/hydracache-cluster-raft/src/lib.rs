@@ -99,6 +99,9 @@ use hydracache::{
     RaftMetadataSnapshot,
 };
 mod log_store;
+mod read_index;
+
+pub use read_index::{RaftReadIndexError, RaftReadIndexProof, RaftReadIndexRequest};
 
 #[cfg(feature = "sled-log-store")]
 pub use log_store::SledRaftLogStore;
@@ -806,6 +809,7 @@ where
     outbound_messages: Vec<RaftWireMessage>,
     applied_index: u64,
     partition_view_fenced: bool,
+    reads: read_index::ReadIndexes,
     snapshot_installs: u64,
     max_wire_bytes: u64,
     #[cfg(test)]
@@ -1014,6 +1018,7 @@ where
             outbound_messages: Vec::new(),
             applied_index: 0,
             partition_view_fenced: false,
+            reads: read_index::ReadIndexes::default(),
             snapshot_installs: 0,
             max_wire_bytes,
             #[cfg(test)]
@@ -1099,13 +1104,7 @@ where
     /// A failed Ready cycle fences the partition view for the lifetime of this runtime.
     pub fn partition_snapshot(&self) -> Option<RaftPartitionSnapshot> {
         let state = self.raft.lock().expect("raft metadata state poisoned");
-        (!state.partition_view_fenced).then(|| RaftPartitionSnapshot {
-            term: state.raw_node.raft.term,
-            epoch: state.cluster.epoch(),
-            commit_index: state.raw_node.raft.hard_state().commit,
-            applied_index: state.applied_index,
-            members: state.cluster.members(),
-        })
+        state.partition_snapshot()
     }
 
     /// Return connected client snapshots from the runtime control plane.
@@ -1155,6 +1154,7 @@ where
     /// Advance the raft logical clock and return outbound peer messages.
     pub fn tick(&self) -> CacheResult<Vec<RaftWireMessage>> {
         let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        state.expire_forwarded_read_indexes();
         state.raw_node.tick();
         state.drain_ready()
     }
@@ -1170,7 +1170,9 @@ where
         }
         validate_inbound_metadata_snapshot(self.cluster.name(), &message)?;
         let mut state = self.raft.lock().expect("raft metadata state poisoned");
-        state.raw_node.step(message).map_err(to_cache_error)?;
+        if !state.step_with_read_index_validation(message)? {
+            return Ok(Vec::new());
+        }
         state.drain_ready()
     }
 
@@ -2055,6 +2057,7 @@ where
         if result.is_err() {
             self.partition_view_fenced = true;
         }
+        self.finish_read_indexes();
         result
     }
 
@@ -2081,8 +2084,10 @@ where
                     ))
                 });
                 self.install_metadata_snapshot(ready.snapshot())?;
+                self.reads.configuration_index = ready.snapshot().get_metadata().index;
             }
 
+            self.record_read_states(ready.take_read_states());
             let committed_entries = ready.take_committed_entries();
             outbound.extend(ready.take_messages());
             outbound.extend(ready.take_persisted_messages());
@@ -2138,6 +2143,7 @@ where
                     }
                 }
                 EntryType::EntryConfChange => {
+                    self.reads.configuration_index = entry.index;
                     let change = ConfChange::decode(entry.data.as_ref()).map_err(|error| {
                         CacheError::Decode(format!("failed to decode raft conf change: {error}"))
                     })?;
@@ -2161,6 +2167,7 @@ where
                         .map_err(to_cache_error)?;
                 }
                 EntryType::EntryConfChangeV2 => {
+                    self.reads.configuration_index = entry.index;
                     let change = ConfChangeV2::decode(entry.data.as_ref()).map_err(|error| {
                         CacheError::Decode(format!("failed to decode raft conf change v2: {error}"))
                     })?;
@@ -2742,10 +2749,16 @@ mod tests {
         );
     }
 
-    #[test]
-    fn partition_view_stays_fenced_after_a_ready_apply_failure() {
+    #[tokio::test]
+    async fn partition_view_stays_fenced_after_a_ready_apply_failure() {
         let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
         assert!(runtime.partition_snapshot().is_some());
+        let (pending, outbound) = runtime.begin_read_index().unwrap();
+        assert!(outbound.is_empty());
+        let proof = tokio::time::timeout(Duration::from_secs(2), pending.complete())
+            .await
+            .unwrap()
+            .unwrap();
         {
             let mut state = runtime.raft.lock().expect("raft metadata state poisoned");
             state.raw_node.propose(Vec::new(), vec![0xff]).unwrap();
@@ -2758,6 +2771,14 @@ mod tests {
         assert!(runtime.partition_snapshot().is_none());
         assert!(runtime.drain_ready().is_ok());
         assert!(runtime.partition_snapshot().is_none());
+        assert!(matches!(
+            proof.with_snapshot(|_, _| panic!("proof reached lookup after a Ready failure")),
+            Err(RaftReadIndexError::Unavailable)
+        ));
+        assert!(matches!(
+            runtime.begin_read_index(),
+            Err(RaftReadIndexError::Unavailable)
+        ));
     }
 
     #[tokio::test]

@@ -8,7 +8,7 @@ use thiserror::Error;
 use crate::imap_topology::{PartitionMember, PartitionTopology, PartitionTopologyError};
 
 /// The server-assigned invocation and authenticated scope covered by a read proof.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ReadInvocation<'a> {
     pub invocation_id: NonZeroU64,
     pub tenant: &'a str,
@@ -17,8 +17,7 @@ pub struct ReadInvocation<'a> {
     pub partition: PartitionId,
 }
 
-/// Inputs to the owner-lane safety check. The future Raft ReadIndex adapter must
-/// obtain the quorum index for the invocation before assembling these inputs.
+/// Inputs to the owner-lane safety check, assembled from the invocation's Raft proof.
 #[derive(Debug)]
 pub struct OwnerReadBarrier<'a> {
     pub invocation: ReadInvocation<'a>,

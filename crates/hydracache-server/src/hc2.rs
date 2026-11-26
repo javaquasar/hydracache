@@ -635,16 +635,26 @@ async fn execute_invocation(
         Err(detail) => return wire_error(StableErrorCode::StableErrorInvalidRequest, detail),
     };
     let mut envelope = ClientRequestEnvelope::new(correlation_id.to_string(), request);
-    if meta.deadline_unix_ms != 0 {
+    let deadline = if meta.deadline_unix_ms == 0 {
+        None
+    } else {
+        let remaining_ms = meta.deadline_unix_ms.saturating_sub(unix_time_ms());
+        if remaining_ms == 0 {
+            return wire_error(
+                StableErrorCode::StableErrorDeadlineExceeded,
+                "deadline expired",
+            );
+        }
         envelope = envelope.with_deadline_ms(meta.deadline_unix_ms);
-    }
+        tokio::time::Instant::now().checked_add(std::time::Duration::from_millis(remaining_ms))
+    };
     if !meta.idempotency_key.is_empty() {
         envelope = envelope.with_idempotency_key(hex(&meta.idempotency_key));
     }
     from_dispatch_response(
         service
             .state
-            .dispatch_verified_request(&identity, envelope)
+            .dispatch_verified_request_with_deadline(&identity, envelope, deadline)
             .await,
     )
 }

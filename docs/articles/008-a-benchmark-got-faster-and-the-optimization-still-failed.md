@@ -883,10 +883,20 @@ epoch from one state and the member's generation from another. Placement decline
 local apply catches up to the commit index. If applying a Raft Ready batch fails, the runtime withholds
 the placement view until recovery.
 
-The owner-lane check then compares the invocation, current owner generation, term, epoch, and
-applied prefixes before it calls the store. Tests exercise the check with supplied evidence and
-count zero lookups on stale or incomplete proofs. A real distributed read still needs to acquire
-that proof through Raft ReadIndex.
+The staged GET path issues a fresh Raft ReadIndex for every invocation. When the partition owner
+is a Raft follower, the leader confirms the read with a quorum. The follower matches the response
+to its own request and waits until it has applied the confirmed index. It then holds the value lane
+and the Raft apply lock through lookup. A promotion that reaches Raft before that check invalidates
+the old owner's proof. The new owner also needs the required value prefix before it can read.
+
+We sent the requests over HC/1 HTTP and HC/2 gRPC with mTLS to that backend. Three Raft runtimes
+ran behind a controllable message transport. Cutting off the follower that owned the partition
+left its value intact, but the request expired with zero lookups. Delaying the Raft append let
+the quorum response arrive ahead of the follower's applied index. The same invocation reached
+the value once the append was delivered. We also moved ownership after quorum confirmation and
+checked that the former owner never reached the store. These are correctness results with an
+instrumented value lane. The replicated value plane, RESP parity and distributed read cost still
+have separate release gates.
 
 The hash experiment used three sets of 100,000 keys over 271 partitions. The same FNV-1a function
 produced 365–373 entries per partition for binary integers and 321–428 for prefixed decimal keys.

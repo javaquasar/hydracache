@@ -15,18 +15,11 @@ use hydracache_client_transport_axum::{
     HYDRACACHE_TENANT_HEADER,
 };
 use hydracache_server::{ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH};
-use rcgen::{
-    BasicConstraints, CertificateParams, CertifiedIssuer, ExtendedKeyUsagePurpose, IsCa, KeyPair,
-};
 use tokio::sync::{Mutex, MutexGuard};
 
-struct TestPki {
-    ca: String,
-    server_cert: String,
-    server_key: String,
-    client_cert: String,
-    client_key: String,
-}
+#[path = "support/hc2_pki.rs"]
+mod hc2_pki;
+use hc2_pki::{pki, write_pki};
 
 // These tests release reserved ports before a child process binds them. Keep
 // the hand-off and the post-exit availability assertions isolated from the
@@ -39,27 +32,6 @@ fn daemon_process_guard() -> MutexGuard<'static, ()> {
 
 async fn async_daemon_process_guard() -> MutexGuard<'static, ()> {
     DAEMON_PROCESS_LOCK.lock().await
-}
-
-fn pki() -> TestPki {
-    let mut ca_params = CertificateParams::new(Vec::<String>::new()).unwrap();
-    ca_params.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
-    let ca = CertifiedIssuer::self_signed(ca_params, KeyPair::generate().unwrap()).unwrap();
-    let server_key = KeyPair::generate().unwrap();
-    let mut server_params = CertificateParams::new(vec!["localhost".to_owned()]).unwrap();
-    server_params.extended_key_usages = vec![ExtendedKeyUsagePurpose::ServerAuth];
-    let server_cert = server_params.signed_by(&server_key, &ca).unwrap();
-    let client_key = KeyPair::generate().unwrap();
-    let mut client_params = CertificateParams::new(vec!["hc2-client".to_owned()]).unwrap();
-    client_params.extended_key_usages = vec![ExtendedKeyUsagePurpose::ClientAuth];
-    let client_cert = client_params.signed_by(&client_key, &ca).unwrap();
-    TestPki {
-        ca: ca.pem(),
-        server_cert: server_cert.pem(),
-        server_key: server_key.serialize_pem(),
-        client_cert: client_cert.pem(),
-        client_key: client_key.serialize_pem(),
-    }
 }
 
 fn reserve_addrs<const N: usize>() -> ([SocketAddr; N], Vec<StdTcpListener>) {
@@ -84,17 +56,6 @@ fn test_root(label: &str) -> PathBuf {
         "target/test-hc2-daemon-{label}-{}-{unique}",
         std::process::id()
     ))
-}
-
-fn write_pki(root: &Path, pki: &TestPki) -> (PathBuf, PathBuf, PathBuf) {
-    std::fs::create_dir_all(root).unwrap();
-    let cert = root.join("server.pem");
-    let key = root.join("server.key");
-    let ca = root.join("clients.pem");
-    std::fs::write(&cert, &pki.server_cert).unwrap();
-    std::fs::write(&key, &pki.server_key).unwrap();
-    std::fs::write(&ca, &pki.ca).unwrap();
-    (cert, key, ca)
 }
 
 fn daemon_command(

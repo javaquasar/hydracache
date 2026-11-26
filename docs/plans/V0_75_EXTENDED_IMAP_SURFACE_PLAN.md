@@ -211,7 +211,7 @@ work stays blocked; it is not started on an assumed answer.
 
 | ID | Decision | Current state | Blocks |
 | --- | --- | --- | --- |
-| OD-1 | How an isolated former owner stops serving authoritative reads | **Selected in W0:** a request-scoped quorum-backed read barrier on the owner lane (committed epoch, ownership and applied watermark are checked before key lookup), recorded in [ADR-0024](../adr/0024-imap-quorum-backed-read-barrier.md). Lease-based local reads are not used in 0.75; adopting them later requires OD-2 bounds and a new ADR. Production implementation and per-read cost admission remain open. | Final W10b/W10c/W10e message formats; D2/D3 gates |
+| OD-1 | How an isolated former owner stops serving authoritative reads | **Selected in W0.** The owner lane uses a request-scoped quorum-backed read barrier, recorded in [ADR-0024](../adr/0024-imap-quorum-backed-read-barrier.md). D2 wires the safe Raft ReadIndex into the staged GET backend. Production value-plane assembly and per-read cost admission remain open. | Final W10b/W10c/W10e message formats, D2/D3 gates |
 | OD-2 | Time source for `ClusterTimeAuthority`: provider, how uncertainty is measured, the admitted maximum uncertainty, and behavior on clock step or uncertainty overflow | **Open.** [ADR-0025](../adr/0025-imap-cluster-time-authority.md) proposes a managed chrony profile. The provider and production bound require target-host qualification. | W10d expiry, D2 clock model, D3 expiry checks |
 | OD-3 | Write availability after one member loss in the RF=2, three-member profile | **Fail-closed is selected** by the frozen profile and W10e. With uniform placement, losing one of three members leaves about two thirds of partitions without a required backup (those it owned plus those it backed up), and their writes are rejected until re-replication proves the prefix. **Open:** numeric targets for maximum write-unavailable partition-seconds and maximum re-replication time at the frozen cardinality and payload. Record in an ADR. | W10e gate, W10m RPO/RTO matrix, W11e reporting |
 | OD-4 | Publication date of 0.74 and the minimum definition of "0.74 published" that 0.75 depends on | **Source handoff recorded on 2026-11-25.** The stable Linux binary was published on 2026-11-23 at `v0.74.0` / `bcba511f0c1f4b3e965c9e17f81b248deb0ea331`. The release owner requested integration of current main; `6d4196229` records `v0.74.1` as shipped for registry maintenance. D1 binds and remeasures B74 under its own non-regression gate. | Predecessor artifacts and D1 measurements |
@@ -1683,13 +1683,27 @@ commit introducing wire/durable bytes also updates compatibility fixtures in tha
 | D15 | SDK/facade/package integration, migration boundary and full W10 evidence | External consumers, Java 17/21, cold-cutover/API-only migration docs, SBOM/provenance, fuzz and six-hour qualification; freeze exact candidate |
 | D16 | Exact-candidate 24-hour confirmation and admitted Hazelcast S2 comparison | All manifests/checksums/guards independently verified before final release decision |
 
-**D2 implementation checkpoint.** The canonical codec, coherent Raft partition snapshot and staged
-placement are in code. `raft_snapshot_membership` exercises concurrent snapshot reads during restarts
-with the same node ID. `imap_partition_topology_075` checks the generation on the new placement and
-refusal while committed metadata is unapplied. `partition_view_stays_fenced_after_a_ready_apply_failure`
-checks the fence after a failed Ready cycle. `imap_read_barrier_validation_075` exercises the
-owner-lane check with zero value lookups on stale or incomplete evidence. Binding that check to a
-real per-invocation Raft ReadIndex and the production protocol test target remains open.
+**D2 read authority.** The canonical codec, coherent Raft partition snapshot and staged placement
+are in code. The GET backend now issues a safe Raft ReadIndex per admitted invocation. The follower
+accepts a matching response from the expected leader in the current term and waits for the local
+applied index to reach the quorum watermark. The runtime fences proofs across leadership, topology,
+voter configuration or a failed Ready cycle. The final lookup holds the value lane and the Raft
+apply lock and rechecks the tenant and namespace incarnation, local owner generation, and applied
+prefix. A missing or behind value lane returns an unavailable error.
+
+The staged backend caps its wait at 500 ms and honors a shorter client deadline. The runtime caps
+pending ReadIndex entries at 256, releases local reservations when a request is dropped, and expires
+forwarded entries at the leader after one second. These are implementation bounds for this stage.
+The release latency budget is still tracked by OD-7.
+
+`read_index_075` drives three Raft runtimes and checks response correlation, late replies, apply
+lag, leadership change and queue cleanup. `imap_read_barrier_075` sends requests over HC/1 HTTP and
+HC/2 gRPC with mTLS through the normal dispatcher. The harness drives the real Raft state machines
+with a controllable message transport and instruments the value lane. The socket tests check
+isolation with retained values, metadata lag, promotion between proof and lookup, insufficient
+value prefix, and deadline refusal. Rejected attempts make zero value lookups. Production member
+assembly with replicated values, RESP parity, real-process fault runs and per-read cost admission
+remain release gates.
 
 For the W0 hash decision, FNV-1a over the provisional canonical bytes was measured on three sets of
 100,000 sequential keys with tenant `tenant-a`, namespace `orders`, and generation 1. All 271

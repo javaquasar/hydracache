@@ -18,6 +18,7 @@ pub struct VerifiedClientRequest<'a> {
     pub(super) identity: &'a ClientIdentity,
     pub(super) envelope: ClientRequestEnvelope,
     pub(super) profiling: bool,
+    transport_deadline: Option<tokio::time::Instant>,
 }
 
 impl VerifiedClientRequest<'_> {
@@ -32,6 +33,11 @@ impl VerifiedClientRequest<'_> {
     /// Data bounds frozen at the edge's construction.
     pub fn limits(&self) -> ClientSurfaceLimits {
         self.edge.limits()
+    }
+
+    /// Monotonic deadline translated by the transport from its admitted request metadata.
+    pub fn transport_deadline(&self) -> Option<tokio::time::Instant> {
+        self.transport_deadline
     }
 
     /// Transfer the admitted payload to a backend implementation.
@@ -144,6 +150,11 @@ impl ClientSurfaceDispatcher {
         self.edge.state_mutations()
     }
 
+    /// Active subscriptions owned by this dispatcher.
+    pub fn active_subscriptions(&self) -> u64 {
+        self.edge.active_subscriptions()
+    }
+
     /// Subscribe to this dispatcher's bounded tenant-scoped event channel.
     pub fn subscribe_mutations(
         &self,
@@ -169,10 +180,21 @@ impl ClientSurfaceDispatcher {
         identity: &ClientIdentity,
         envelope: ClientRequestEnvelope,
     ) -> ClientResponseEnvelope {
+        self.dispatch_verified_request_with_deadline(identity, envelope, None)
+            .await
+    }
+
+    /// Preserve the transport's monotonic deadline for an asynchronous backend.
+    pub async fn dispatch_verified_request_with_deadline(
+        &self,
+        identity: &ClientIdentity,
+        envelope: ClientRequestEnvelope,
+        deadline: Option<tokio::time::Instant>,
+    ) -> ClientResponseEnvelope {
         if !self.admit(identity, &envelope) {
             return unauthorized_response(envelope);
         }
-        self.dispatch_admitted_request(identity, envelope).await
+        self.dispatch_admitted_request(identity, envelope, deadline).await
     }
 
     /// Local-only synchronous compatibility entry point; asynchronous modes refuse before effects.
@@ -286,6 +308,7 @@ impl ClientSurfaceDispatcher {
             identity,
             envelope,
             profiling,
+            transport_deadline: None,
         });
         if let Some((namespace, audit_auth_failure)) = audit {
             self.edge.record_rejection_audit(
@@ -303,6 +326,7 @@ impl ClientSurfaceDispatcher {
         &self,
         identity: &ClientIdentity,
         envelope: ClientRequestEnvelope,
+        deadline: Option<tokio::time::Instant>,
     ) -> ClientResponseEnvelope {
         match &self.backend {
             BackendDispatch::Local(local) => {
@@ -317,6 +341,7 @@ impl ClientSurfaceDispatcher {
                     local_maintenance.as_deref(),
                     identity,
                     envelope,
+                    deadline,
                 )
                 .await
             }
@@ -329,6 +354,7 @@ impl ClientSurfaceDispatcher {
         local_maintenance: Option<&LocalClientDataBackend>,
         identity: &ClientIdentity,
         envelope: ClientRequestEnvelope,
+        deadline: Option<tokio::time::Instant>,
     ) -> ClientResponseEnvelope {
         let profiling = self.edge.profile_instrumentation.enabled();
         if let Err(error) = self.validate_request(&envelope, profiling) {
@@ -358,6 +384,7 @@ impl ClientSurfaceDispatcher {
                     identity,
                     envelope,
                     profiling,
+                    transport_deadline: deadline,
                 })
                 .await
         };
@@ -408,7 +435,7 @@ impl ClientSurfaceDispatcher {
                 )))
             }
             ClientWireMessage::Request(envelope) => Ok(ClientWireMessage::Response(
-                self.dispatch_admitted_request(identity, envelope).await,
+                self.dispatch_admitted_request(identity, envelope, None).await,
             )),
             ClientWireMessage::Response(_)
             | ClientWireMessage::Invalidation(_)

@@ -1022,7 +1022,7 @@ fn refresh_pending_voter_removals(
     *last = materialized;
 }
 
-async fn send_raft_messages_with_diagnostics(
+pub(crate) async fn send_raft_messages_with_diagnostics(
     message_sink: &Arc<dyn RaftMessageSink>,
     messages: Vec<RaftWireMessage>,
     diagnostics: Option<&GridDriveDiagnostics>,
@@ -1142,7 +1142,7 @@ impl Drop for SnapshotSenderTaskGuard {
 }
 
 #[derive(Debug, Default)]
-struct GridDriveDiagnostics {
+pub(crate) struct GridDriveDiagnostics {
     ticks: AtomicU64,
     drive_errors: AtomicU64,
     send_failures: AtomicU64,
@@ -2364,6 +2364,48 @@ struct NetworkedGridHandle {
     management_transport: Arc<dyn ManagementPeerTransport>,
     shutdown: watch::Sender<bool>,
     _runtime: Option<DedicatedGridRuntime>,
+}
+
+/// The staged value-read attachment to a member's real Raft transport.
+/// Kept separate from control-plane status and ordinary daemon readiness.
+#[doc(hidden)]
+pub struct MemberReadHost(NetworkedGridHandle);
+
+impl MemberReadHost {
+    pub fn start(config: &ServerConfig) -> Result<Self, ServerConfigError> {
+        config.validate()?;
+        if config.role != crate::config::ServerRole::Member {
+            return Err(ServerConfigError::GridHostStart("the IMap read host requires member role".to_owned()));
+        }
+        let (stack, runtime) = start_networked_member_stack(config)?;
+        Ok(Self(NetworkedGridHandle::new(stack, Some(runtime))))
+    }
+
+    pub fn partition_snapshot(&self) -> Option<RaftPartitionSnapshot> {
+        self.0.raft.partition_snapshot()
+    }
+
+    pub fn dispatcher<S: hydracache::ReplicatedValueStore + 'static>(
+        &self,
+        limits: hydracache_client_transport_axum::ClientSurfaceLimits,
+        replication: hydracache::ReplicationConfig,
+        values: crate::imap_replicated_read::ReplicatedReadValues<S>,
+    ) -> Result<Arc<hydracache_client_transport_axum::ClientSurfaceDispatcher>, hydracache_client_transport_axum::ClientSurfaceError> {
+        use crate::imap_owner_read::RaftOwnerReadBackend;
+        use crate::imap_replicated_read::D2_PARTITION_COUNT;
+        use crate::imap_topology::PartitionMember;
+        use hydracache_client_transport_axum::ClientSurfaceDispatcher;
+
+        let backend = RaftOwnerReadBackend::new(
+            self.0.raft.clone(),
+            self.0._message_sink.clone(),
+            values,
+            PartitionMember { node: self.0.node_id.clone(), generation: self.0.generation },
+            D2_PARTITION_COUNT,
+            replication,
+        );
+        ClientSurfaceDispatcher::from_backend(limits, Arc::new(backend)).map(Arc::new)
+    }
 }
 
 impl NetworkedGridHandle {
