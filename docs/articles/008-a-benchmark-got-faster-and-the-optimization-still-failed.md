@@ -1090,29 +1090,32 @@ six-hour and 24-hour campaigns remain pending.
 
 ## Partial batches and cluster listeners
 
-One HC/2 batch can reach several owners. HydraCache validates the whole request, groups
-the items by owner, and preserves their original positions. Each owner group executes
-its items in order. A read after a write to the same key observes that write if no
-other write intervenes.
-A failed owner can leave an error in one position while the other results remain
-available. An idempotent batch gives each mutation a stable identity derived from
-the original request and item position.
+One HC/2 batch can reach several owners. HydraCache validates the whole request and
+sends one bounded request to each remote owner. Each owner validates its group against
+current placement and executes its items in order. The public response restores the
+original order and carries each item's partition and applied version when the owner
+can prove it. If an owner disappears after applying some items, losing its reply leaves
+those outcomes unknown. Replies from surviving owners remain available. Retrying the
+original batch under the same idempotency key can recover a certified result with its
+original version, including after promotion.
 
 A subscriber can attach to any member. The receiving process polls the current
 owners and advances separate cursors for their partitions. An owner publishes a change
 only when Raft has certified the version. A duplicate request can return an earlier
 outcome without publishing another event. When ownership changes, the subscriber gets
-a gap before further delivery. The same rule applies when a reconnect supplies only
-the old stream watermark or when the required journal positions have been overwritten.
-This lets clients repair their view without assuming continuity across failover.
+a gap before further delivery. The frame carries a reason and the affected partitions
+when the server can identify them. A reconnect that supplies only the old stream
+watermark requires stream-wide repair. Overwritten journal history identifies the
+partition whose continuity was lost.
 
-In the AX42 fault scenario, three separate daemons served the public mTLS endpoint.
-The test read batches of 1, 8, 64, and 256 items across the three owners. While an
-eight-second writer was running and one listener was left unread, the test killed one
-owner. The two live owners still returned their batch items. After promotion, the listener
-reported a gap and then delivered a confirmed update. It reported a gap again when the
-client reconnected with its old watermark. All three release runs returned to zero active
-subscriptions. The writer received 136, 163, and 137 acknowledgements across those runs.
+On AX42, the test waited for a certified event from the first mutation in a 64-write
+owner group, then killed that process before its reply. A surviving owner answered
+its part of the same request. The replay through the new owner recovered the original
+certificate. In a separate test, blocking event polls across 24 writes produced a
+gap for one partition. Running the packaged Java facade against three mTLS endpoints
+exercised both partial results and listener recovery. All three release repetitions
+passed these scenarios. After closing the subscriptions, all three daemons reported
+zero active registrations.
 [W10g release evidence](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#w10g-make-bulk-operations-and-listeners-cluster-wide)
 
 ## The practical rule

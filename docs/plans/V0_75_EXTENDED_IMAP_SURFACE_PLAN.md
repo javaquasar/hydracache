@@ -1553,51 +1553,52 @@ stored idempotency outcome can be recovered; never replay a confirmed item with 
 `putAll` and `removeAll` remain partial-result APIs and never hold locks across partitions.
 
 **Listener implementation details:** add a `ClusterSubscriptionCoordinator` on the accepting
-daemon. It snapshots the partition map, registers one bounded internal stream per relevant owner,
-and merges envelopes without claiming global order. An owner emits only after the W10c publish
-point. The coordinator tracks `(logical_subscription_id, partition, owner_generation, watermark)`,
-updates registrations after topology commit, discards exact duplicate watermarks, and emits
-`Gap { partitions, previous, observed, reason }` before accepting uncertain continuation. Values
+daemon. It snapshots the partition map, polls bounded pages from the relevant owners and
+merges them in certified partition order. An owner emits only after the W10c publish point.
+The coordinator tracks owner generation and watermark per partition for each logical
+subscription. It updates routing after topology commit, discards duplicate versions, and
+emits `Gap { partitions, previous, observed, reason }` before uncertain continuation. Values
 are copied only for opt-in include-value listeners and remain subject to negotiated response bytes.
 
-**Files, tests and commands:**
+**Files, tests and commands.** The public types are in `hc2_contract.proto`. Bulk routing
+and owner execution are in `hc2_bulk.rs` and `imap_hc2_bulk_route.rs`. Listener progress
+is in `value_plane_subscription.rs`. The Rust and Java SDKs decode receipts and gap scopes.
 
-- extend W3 batch types in `hydracache-client-protocol`, group execution in
-  `hydracache-server/src/value_plane.rs`, and receipt mapping in Rust/Java SDKs;
-- add `hydracache-server/src/value_plane_subscription.rs` rather than placing owner-stream state in
-  `hc2.rs`;
-- add `hc2_distributed_bulk.rs` covering 1/8/64/256 items, one/many owners, duplicates, partial
-  failure, owner change, deadline and stable order;
-- add `hc2_cluster_listener.rs` covering mutations on every owner, migration, reconnect, owner
-  death, duplicate watermark, overflow/gap, unsubscribe and zero retained registrations;
-- canaries retry an already acknowledged item with a new ID and suppress a migration gap;
-- run `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test
-  hc2_distributed_bulk --locked -- --nocapture`;
-- run `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test
-  hc2_cluster_listener --locked -- --nocapture`;
-- run the Java live-daemon facade tests with three endpoints and the packaged 0.75 artifacts.
+- Run `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test
+  hc2_daemon_process --locked -- w10g_ --test-threads=1 --nocapture` for the bulk,
+  failover, reconnect and history-loss scenarios.
+- Set `HYDRACACHE_W10G_JAVA` and `HYDRACACHE_W10G_JAVA_CLASSPATH` for the packaged
+  facade scenario. The classpath includes the compiled probe test, the two packaged JARs
+  and runtime dependencies. The probe verifies where the SDK and facade classes loaded from
+  before opening three public endpoints.
 
 **Tests:** multi-partition batch with one owner failure and stable partial receipt; listener attached
 to A observes owner mutations on B/C; migration/reconnect neither hides a gap nor invents exact-once
 delivery; slow listeners do not delay replication acknowledgement or mutation latency.
 
-**Public HC/2 bulk and listener checkpoint.** The configured RF=2 member profile now
+**Public HC/2 bulk and listeners.** The configured RF=2 member profile
 advertises Batch and Subscriptions alongside Data. Bulk validates the complete frame before
-dispatch. It groups items by the owner in a coherent placement view and executes up to four
-owner groups concurrently across the admitted request. Each group preserves input order,
-including operations on duplicate keys. The response restores original input order. Pure
-read groups reuse a successful read for repeated keys and can repeat a transient read once
-within the deadline. Each mutation uses the existing one-hop owner path. A supplied batch
-identity derives a separate stable identity for each mutating input position, including its
-issued epoch when the caller supplies an epoch-scoped identity. The coordinator never
-automatically repeats a mutation.
+dispatch. It uses one applied placement view and sends each remote owner one bounded
+subrequest, with at most four groups in flight per batch. The owner checks the complete
+group against the caller scope, sender and owner generations, epoch, partition assignments,
+and deadline before running any item. An oversized group is refused before dispatch under
+the existing 2 MiB cluster HTTP envelope bound. Other groups can still return their results.
+The owner executes items in order and the coordinator reconstructs the original request order.
+Each item retains its own linearization point. Pure read groups reuse successful reads of
+duplicate keys and can repeat a transient read once within the deadline. A supplied batch
+identity derives a stable identity for each mutation's input position. The coordinator leaves
+mutation retries to the caller.
 
 The Rust `batch_outcomes` and Java `batchOutcomes` APIs expose successful and failed items
 together. The existing batch helpers retain their error behavior. The current result
-carries the input position, serving endpoint's observed topology epoch, and status with
-retry advice. The exact partition and applied certificate version still need typed public
-receipts. Batching inside the member transport remains per item, and each mutation retains
-its own linearization point.
+carries the input position and the serving endpoint's observed topology epoch. A distributed
+receipt adds the partition and one of Confirmed, NotApplied or OutcomeUnknown. Successful
+reads carry the version proved at lookup. Writes return the applied certificate after
+replica application and Raft commit. Retained outcomes preserve the original certificate
+across promotion and omit the version for older persisted records without provenance.
+When an owner reply is lost, its items have unknown outcomes. Confirmations from other
+owners remain available. The Java facade exposes ordered outcomes through `getAll`,
+`putAll` and `removeAll`.
 
 A logical subscription on any member polls bounded pages of certified changes from current
 owners. Each page ties the request to the admitted scope, requesting and serving member
@@ -1608,9 +1609,12 @@ cursor without publishing an event. Value bytes are read for opt-in subscribers,
 snapshot installation discards the recipient's earlier event history for the moved
 partition. The coordinator tracks each partition cursor, drops duplicate versions and
 emits Gap before resuming after an epoch change or a missing history position. A nonzero
-resume watermark opens with Gap because the scalar watermark cannot restore all owner
-cursors. The existing public Gap applies to the logical stream. Structured partition and
-reason metadata remain open.
+resume watermark opens with a stream-wide Gap because the scalar watermark cannot restore
+all owner cursors. Gap includes a reason and, when known, the affected partition IDs and
+their previous and observed versions. Owners are compared by identity and generation.
+Missing journal positions produce a history-loss gap for the affected partition. An empty
+partition list signals stream-wide repair when scope cannot be proven. Rust exposes the
+details through `next_delivery`. Java exposes them through the gap callback overload.
 
 Per-member admission caps concurrent bulk requests at eight and cluster subscriptions at
 32. Event pages and HC/2 outbound queues are bounded. Unsubscribe and connection close
@@ -1618,7 +1622,7 @@ release the polling task. Java serializes each subscription's callbacks. When ei
 event queue fills, it reports a gap after the last queued event. The Rust SDK delivers that
 gap as the consumer drains the queue, even if the server sends no further frames.
 
-**AX42 evidence, 2026-11-26.** Candidate `d84c311cc56a33472d6cabba1d084981874cd639`
+**Initial AX42 evidence, 2026-11-26.** Candidate `d84c311cc56a33472d6cabba1d084981874cd639`
 passed the real three-daemon RF=2 `hc2_daemon_process` scenario twice in debug and three
 times in release. Public mTLS batches of 1, 8, 64, and 256 reads preserved their positions.
 During the eight-second write workload, killing the owner produced an item-level failure
@@ -1640,10 +1644,39 @@ Logs, the release daemon and test executable, and the Java SDK JAR are in
 `27e77e4637236e49983bd9bfdd7fb44555e975fa44af40dbc03914054de0e533`.
 [AX42 qualification workspace](../testing/imap/0.75/remote-linux-qualification.md)
 
-The remaining W10g release criteria include owner-side batch transport, typed receipts with
-partition and applied version, partition and reason fields on Gap, and the packaged Java
-facade against the three-member failure schedule. Distributed TTL and the long mixed-workload
-qualification remain open for production admission under W10i.
+**AX42 closeout evidence, 2026-11-26.** Candidate
+`af9fcad2908f5e4f1765f32e7e1dba5e4780cf05` ran three focused process scenarios against
+the public mTLS endpoints. The bulk scenario killed the owner after observing the first
+certified event from a 64-write owner group. The missing reply yielded OutcomeUnknown
+for that group, and a separate owner still returned its item. After promotion, replay of
+the same batch identity recovered the first mutation's original epoch and version. A
+fresh read reported the originating epoch of the applied certificate.
+
+The history scenario isolated event polling while the owner certified 24 changes on
+one partition. The next frame reported HistoryLost with that partition alone, from
+version 0 to version 24. The listener then received a new confirmed change. The packaged
+Java SDK and facade used all three endpoints. The probe checked a partial response,
+recovery of the failed owner's value, Gap before delivery resumed, a stream-wide Gap
+on reconnect with an old watermark, and closure of all server registrations.
+
+All three release repetitions passed all three scenarios. The eight-second foreground
+writer received 150, 119, and 152 confirmations, respectively. Every Java and Rust
+failover scenario returned to zero active subscriptions. The release history tests
+identified exactly one affected partition in each run, with version bounds 0 and 24.
+
+The same SHA passed 144 server tests, 12 Rust SDK tests, 31 Java tests, and seven
+Python tests in the private hash-locked venv. Clippy, `doc-check`, and
+`imap-contract-check --release 0.75` passed. Regenerating the Python contract produced
+the checked-in files without a diff.
+
+Logs, the release daemon and test executable, and both Java JARs are in
+`development/w10g-final-af9fcad2908f5e4f1765f32e7e1dba5e4780cf05` on AX42. The verified
+`w10g.sha256` manifest has SHA-256
+`64946b4e65ff7b89007a2d0559c241800ca42b60bd1864ae44dde156b0fdfd48`.
+[AX42 qualification workspace](../testing/imap/0.75/remote-linux-qualification.md)
+
+W10g is complete for the qualified RF=2 member profile. Production admission under
+W10i still requires distributed TTL and the long mixed-workload qualification.
 
 ### W10h. Add distributed observability, admission, readiness and operational controls
 
@@ -1796,9 +1829,9 @@ The verified `diagnostic.sha256` manifest has SHA-256
 `05b7b38267d4a7a68d83ccd2b3315090b63b2fd6dd08f5480d94bd282eb27b58`.
 
 The commands require `--diagnostic` for this profile and produce `production_admitted=false`.
-The production gate still requires distributed TTL with an admitted OD-2 provider, the
-remaining W10g release criteria, a live-drain and interrupted-copy schedule exposed to the
-daemon harness, the packaged Rust and Java SDK workload, replica-by-replica reconciliation,
+The production gate still requires distributed TTL with an admitted OD-2 provider, a
+live-drain and interrupted-copy schedule exposed to the daemon harness, the packaged Rust
+and Java SDK mixed workload, replica-by-replica reconciliation,
 and accepted OD-3 recovery bounds.
 
 #### Under-load failover and rebalance qualification
