@@ -832,23 +832,45 @@ status = "planned"
 depends_on = []
 "#;
 
-/// Scratch root with a workspace at `version` and the three deploy artifacts
-/// pinned to `chart_version`, `values_tag`, and `k8s_tag`.
+const HELM_TEMPLATE: &str = "spec:\n  template:\n    spec:\n      containers:\n        - name: hydracache\n          image: \"{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}\"\n";
+
+fn dockerfile(toolchain: &str) -> String {
+    format!(
+        "# syntax=docker/dockerfile:1\nARG RUST_IMAGE=rust:{toolchain}-bookworm@sha256:abc\nFROM ${{RUST_IMAGE}} AS builder\n"
+    )
+}
+
+fn ci_workflow(toolchain: &str) -> String {
+    format!(
+        "name: CI\non: [pull_request]\njobs:\n  rust:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v5\n      - uses: dtolnay/rust-toolchain@{toolchain}\n  msrv:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: dtolnay/rust-toolchain@1.88.0\n"
+    )
+}
+
+/// Scratch root with a workspace at `version` (MSRV 1.88), a Dockerfile and a
+/// `rust` CI job both on toolchain 1.94.0, and deploy artifacts pinned to
+/// `chart_version`, `values_tag`, and `k8s_tag`.
 fn deploy_root(version: &str, chart_version: &str, values_tag: &str, k8s_tag: &str) -> PathBuf {
     let root = scratch_root(DEPLOY_MANIFEST, &["docs/plans/A.md"]);
     fs::write(
         root.join("Cargo.toml"),
-        format!("[workspace]\nmembers = []\n\n[workspace.package]\nversion = \"{version}\"\n"),
+        format!(
+            "[workspace]\nmembers = []\n\n[workspace.package]\nversion = \"{version}\"\nrust-version = \"1.88\"\n"
+        ),
     )
     .unwrap();
+    fs::write(root.join("Dockerfile"), dockerfile("1.94.0")).unwrap();
+    fs::create_dir_all(root.join(".github/workflows")).unwrap();
+    fs::write(root.join(".github/workflows/ci.yml"), ci_workflow("1.94.0")).unwrap();
     fs::create_dir_all(root.join("scripts")).unwrap();
     fs::write(root.join("scripts/package-publishable.ps1"), "").unwrap();
     fs::write(root.join("scripts/verify-release-readiness.ps1"), "").unwrap();
-    fs::create_dir_all(root.join("deploy/helm/hydracache")).unwrap();
+    fs::create_dir_all(root.join("deploy/helm/hydracache/templates")).unwrap();
     fs::create_dir_all(root.join("deploy/k8s")).unwrap();
     fs::write(
         root.join("deploy/helm/hydracache/Chart.yaml"),
-        format!("apiVersion: v2\nname: hydracache\nversion: {chart_version}\nappVersion: \"{chart_version}\"\n"),
+        format!(
+            "apiVersion: v2\nname: hydracache\nversion: {chart_version}\nappVersion: \"{chart_version}\"\n"
+        ),
     )
     .unwrap();
     fs::write(
@@ -856,6 +878,11 @@ fn deploy_root(version: &str, chart_version: &str, values_tag: &str, k8s_tag: &s
         format!(
             "image:\n  repository: ghcr.io/javaquasar/hydracache-server\n  tag: \"{values_tag}\"\n"
         ),
+    )
+    .unwrap();
+    fs::write(
+        root.join("deploy/helm/hydracache/templates/statefulset.yaml"),
+        HELM_TEMPLATE,
     )
     .unwrap();
     fs::write(
@@ -868,9 +895,16 @@ fn deploy_root(version: &str, chart_version: &str, values_tag: &str, k8s_tag: &s
     root
 }
 
+fn assert_problem(problems: &[String], prefix: &str) {
+    assert!(
+        problems.iter().any(|problem| problem.starts_with(prefix)),
+        "missing problem starting with {prefix:?} in {problems:?}"
+    );
+}
+
 #[test]
 fn accepts_deploy_artifacts_pinned_to_workspace_version() {
-    let root = deploy_root("0.74.1", "0.74.1", "0.74.1", "0.74.1");
+    let root = deploy_root("0.74.1", "0.74.1", "", "0.74.1");
     let problems = doc_check::check(&root).unwrap();
     cleanup(&root);
     assert!(
@@ -884,29 +918,89 @@ fn detects_stale_deploy_image_versions() {
     let root = deploy_root("0.74.1", "0.48.0", "0.48.0", "0.56.0");
     let problems = doc_check::check(&root).unwrap();
     cleanup(&root);
-    for needle in [
+    for prefix in [
         "deploy/helm/hydracache/Chart.yaml: version",
         "deploy/helm/hydracache/Chart.yaml: appVersion",
         "deploy/helm/hydracache/values.yaml: image.tag",
         "deploy/k8s/statefulset.yaml: container image",
     ] {
-        assert!(
-            problems.iter().any(|problem| problem.starts_with(needle)),
-            "missing problem {needle:?} in {problems:?}"
-        );
+        assert_problem(&problems, prefix);
     }
 }
 
 #[test]
-fn detects_missing_deploy_artifact_instead_of_passing() {
+fn rejects_values_tag_that_shadows_chart_app_version() {
+    // Even a tag equal to today's version is a second source that will drift.
     let root = deploy_root("0.74.1", "0.74.1", "0.74.1", "0.74.1");
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+    assert_problem(&problems, "deploy/helm/hydracache/values.yaml: image.tag");
+}
+
+#[test]
+fn rejects_helm_template_without_app_version_default() {
+    let root = deploy_root("0.74.1", "0.74.1", "", "0.74.1");
+    fs::write(
+        root.join("deploy/helm/hydracache/templates/statefulset.yaml"),
+        "image: \"{{ .Values.image.repository }}:{{ .Values.image.tag }}\"\n",
+    )
+    .unwrap();
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+    assert_problem(
+        &problems,
+        "deploy/helm/hydracache/templates/statefulset.yaml: image tag must use",
+    );
+}
+
+#[test]
+fn detects_missing_deploy_artifact_instead_of_passing() {
+    let root = deploy_root("0.74.1", "0.74.1", "", "0.74.1");
     fs::remove_file(root.join("deploy/k8s/statefulset.yaml")).unwrap();
     let problems = doc_check::check(&root).unwrap();
     cleanup(&root);
-    assert!(
-        problems
-            .iter()
-            .any(|problem| problem.starts_with("deploy/k8s/statefulset.yaml: cannot read")),
-        "expected missing deploy artifact problem, got: {problems:?}"
+    assert_problem(&problems, "deploy/k8s/statefulset.yaml: cannot read");
+}
+
+#[test]
+fn detects_image_toolchain_drift_from_ci() {
+    let root = deploy_root("0.74.1", "0.74.1", "", "0.74.1");
+    fs::write(root.join(".github/workflows/ci.yml"), ci_workflow("1.95.0")).unwrap();
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+    assert_problem(&problems, "Dockerfile: builder toolchain 1.94.0 differs");
+}
+
+#[test]
+fn detects_image_toolchain_below_msrv() {
+    let root = deploy_root("0.74.1", "0.74.1", "", "0.74.1");
+    fs::write(root.join("Dockerfile"), dockerfile("1.87.0")).unwrap();
+    fs::write(root.join(".github/workflows/ci.yml"), ci_workflow("1.87.0")).unwrap();
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+    assert_problem(&problems, "Dockerfile: builder toolchain 1.87.0 is below");
+}
+
+#[test]
+fn detects_unpinned_ci_toolchain_and_missing_builder_pin() {
+    let root = deploy_root("0.74.1", "0.74.1", "", "0.74.1");
+    fs::write(root.join(".github/workflows/ci.yml"), ci_workflow("stable")).unwrap();
+    fs::write(root.join("Dockerfile"), "FROM rust:latest\n").unwrap();
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+    assert_problem(&problems, ".github/workflows/ci.yml: job `rust` pins");
+    assert_problem(&problems, "Dockerfile: no `ARG RUST_IMAGE=rust:");
+}
+
+#[test]
+fn toolchain_parsers_read_the_real_pin_shapes() {
+    assert_eq!(
+        doc_check::dockerfile_rust_toolchain(&dockerfile("1.94.0")).as_deref(),
+        Some("1.94.0")
     );
+    assert_eq!(
+        doc_check::ci_job_rust_toolchain(&ci_workflow("1.94.0"), "rust").as_deref(),
+        Ok("1.94.0")
+    );
+    assert!(doc_check::ci_job_rust_toolchain(&ci_workflow("1.94.0"), "missing").is_err());
 }

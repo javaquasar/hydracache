@@ -16,7 +16,7 @@ spec:
       terminationGracePeriodSeconds: 45
       containers:
         - name: hydracache
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http

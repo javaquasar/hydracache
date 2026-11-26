@@ -26,9 +26,13 @@
 //! - every ADR uses the single `0001-title.md` filename scheme, has a unique
 //!   number, and is listed from `docs/adr/README.md`.
 //! - every publishable workspace crate is present in both release publish scripts.
-//! - the Helm chart (`version`, `appVersion`, default image tag) and the raw k8s
-//!   manifest pin the workspace version, so a release cannot ship deploy
-//!   artifacts that point at a stale or unpublished `hydracache-server` image.
+//! - the Helm chart (`version`, `appVersion`) and the raw k8s manifest pin the
+//!   workspace version, `values.yaml` keeps `image.tag` empty so the template's
+//!   `appVersion` default is the only image-tag source, and the Dockerfile
+//!   builder toolchain equals the `rust` CI job pin and is at least
+//!   `rust-version`. A release therefore cannot ship deploy artifacts that point
+//!   at a stale or unpublished `hydracache-server` image, nor an image built on
+//!   a compiler CI never tested.
 //!
 //! This turns the "release sequencing is recorded, not implied" rule into an
 //! executable gate so doc drift (e.g. two plans claiming the same version, or a
@@ -185,6 +189,8 @@ struct WorkspaceTable {
 struct WorkspacePackageTable {
     #[serde(default)]
     version: Option<String>,
+    #[serde(default, rename = "rust-version")]
+    rust_version: Option<String>,
 }
 
 #[derive(serde::Deserialize)]
@@ -577,13 +583,20 @@ const SERVER_IMAGE_REPOSITORY: &str = "ghcr.io/javaquasar/hydracache-server";
 const HELM_CHART: &str = "deploy/helm/hydracache/Chart.yaml";
 const HELM_VALUES: &str = "deploy/helm/hydracache/values.yaml";
 const K8S_STATEFULSET: &str = "deploy/k8s/statefulset.yaml";
+const HELM_STATEFULSET_TEMPLATE: &str = "deploy/helm/hydracache/templates/statefulset.yaml";
+const HELM_IMAGE_TAG_DEFAULT: &str = ".Values.image.tag | default .Chart.AppVersion";
+const DOCKERFILE: &str = "Dockerfile";
+const CI_WORKFLOW: &str = ".github/workflows/ci.yml";
+/// The CI job whose pinned toolchain the server image must be built with.
+const CI_TOOLCHAIN_JOB: &str = "rust";
+const RUST_TOOLCHAIN_ACTION: &str = "dtolnay/rust-toolchain@";
 
 /// Deploy artifacts must reference the image the release publishes.
 ///
 /// Skipped only when the root has no workspace `Cargo.toml` (scratch fixtures).
 /// Once a workspace exists, every deploy file is required: deleting one must not
 /// turn the check into a silent pass.
-fn check_deploy_image_versions(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
+pub fn check_deploy_image_versions(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     let workspace_manifest_path = root.join("Cargo.toml");
     if !workspace_manifest_path.is_file() {
         return Ok(Vec::new());
@@ -592,11 +605,11 @@ fn check_deploy_image_versions(root: &Path) -> Result<Vec<String>, Box<dyn Error
         .map_err(|err| format!("reading {}: {err}", workspace_manifest_path.display()))?;
     let workspace: WorkspaceManifest = toml::from_str(&workspace_text)
         .map_err(|err| format!("parsing {}: {err}", workspace_manifest_path.display()))?;
-    let Some(version) = workspace
-        .workspace
-        .package
-        .and_then(|package| package.version)
-    else {
+    let package = workspace.workspace.package;
+    let rust_version = package
+        .as_ref()
+        .and_then(|package| package.rust_version.clone());
+    let Some(version) = package.and_then(|package| package.version) else {
         return Ok(vec![
             "Cargo.toml: [workspace.package] version is required for deploy image checks"
                 .to_owned(),
@@ -663,13 +676,23 @@ fn check_deploy_image_versions(root: &Path) -> Result<Vec<String>, Box<dyn Error
             values["image"]["repository"].as_str(),
             SERVER_IMAGE_REPOSITORY,
         );
+        // The chart appVersion is the single source of the default image tag.
         expect(
             &mut problems,
             HELM_VALUES,
             "image.tag",
             values["image"]["tag"].as_str(),
-            &version,
+            "",
         );
+    }
+    match fs::read_to_string(root.join(HELM_STATEFULSET_TEMPLATE)) {
+        Ok(template) if template.contains(HELM_IMAGE_TAG_DEFAULT) => {}
+        Ok(_) => problems.push(format!(
+            "{HELM_STATEFULSET_TEMPLATE}: image tag must use `{HELM_IMAGE_TAG_DEFAULT}` so the chart appVersion selects the image"
+        )),
+        Err(err) => problems.push(format!(
+            "{HELM_STATEFULSET_TEMPLATE}: cannot read deploy artifact: {err}"
+        )),
     }
     if let Some(statefulset) = &statefulset {
         let expected_image = format!("{SERVER_IMAGE_REPOSITORY}:{version}");
@@ -696,7 +719,112 @@ fn check_deploy_image_versions(root: &Path) -> Result<Vec<String>, Box<dyn Error
         }
     }
 
+    problems.extend(check_image_toolchain(root, rust_version.as_deref()));
     Ok(problems)
+}
+
+/// The server image must build with the toolchain CI tests with, and never
+/// below the workspace MSRV. Both drift silently otherwise: CI bumps its pin and
+/// the Dockerfile keeps building on an older compiler until a dependency needs
+/// the newer one.
+fn check_image_toolchain(root: &Path, rust_version: Option<&str>) -> Vec<String> {
+    let mut problems = Vec::new();
+    let image_toolchain = match fs::read_to_string(root.join(DOCKERFILE)) {
+        Ok(text) => {
+            let found = dockerfile_rust_toolchain(&text);
+            if found.is_none() {
+                problems.push(format!(
+                    "{DOCKERFILE}: no `ARG RUST_IMAGE=rust:<version>-...` builder pin found"
+                ));
+            }
+            found
+        }
+        Err(err) => {
+            problems.push(format!("{DOCKERFILE}: cannot read: {err}"));
+            None
+        }
+    };
+    let ci_toolchain = match fs::read_to_string(root.join(CI_WORKFLOW)) {
+        Ok(text) => match ci_job_rust_toolchain(&text, CI_TOOLCHAIN_JOB) {
+            Ok(found) => Some(found),
+            Err(err) => {
+                problems.push(format!("{CI_WORKFLOW}: {err}"));
+                None
+            }
+        },
+        Err(err) => {
+            problems.push(format!("{CI_WORKFLOW}: cannot read: {err}"));
+            None
+        }
+    };
+
+    if let (Some(image), Some(ci)) = (&image_toolchain, &ci_toolchain) {
+        if image != ci {
+            problems.push(format!(
+                "{DOCKERFILE}: builder toolchain {image} differs from the `{CI_TOOLCHAIN_JOB}` CI job toolchain {ci}; bump RUST_IMAGE (tag and digest) together with CI"
+            ));
+        }
+    }
+    match (&image_toolchain, rust_version) {
+        (Some(image), Some(msrv)) => match (parse_version(image), parse_version(msrv)) {
+            (Some(image_parts), Some(msrv_parts)) if image_parts < msrv_parts => {
+                problems.push(format!(
+                    "{DOCKERFILE}: builder toolchain {image} is below workspace rust-version {msrv}"
+                ));
+            }
+            (Some(_), Some(_)) => {}
+            _ => problems.push(format!(
+                "{DOCKERFILE}: cannot compare builder toolchain {image:?} with rust-version {msrv:?}"
+            )),
+        },
+        (Some(_), None) => problems.push(
+            "Cargo.toml: [workspace.package] rust-version is required for the image toolchain check"
+                .to_owned(),
+        ),
+        (None, _) => {}
+    }
+    problems
+}
+
+/// Extract `1.94.0` from `ARG RUST_IMAGE=rust:1.94.0-bookworm@sha256:...`.
+pub fn dockerfile_rust_toolchain(dockerfile: &str) -> Option<String> {
+    dockerfile.lines().find_map(|line| {
+        let image = line.trim().strip_prefix("ARG RUST_IMAGE=rust:")?;
+        let version: String = image
+            .chars()
+            .take_while(|ch| ch.is_ascii_digit() || *ch == '.')
+            .collect();
+        parse_version(&version).map(|_| version)
+    })
+}
+
+/// Return the `dtolnay/rust-toolchain@<version>` pin of one CI job.
+pub fn ci_job_rust_toolchain(workflow: &str, job: &str) -> Result<String, String> {
+    let document: serde_yaml::Value =
+        serde_yaml::from_str(workflow).map_err(|err| format!("invalid YAML: {err}"))?;
+    let steps = document["jobs"][job]["steps"]
+        .as_sequence()
+        .ok_or_else(|| format!("job `{job}` has no steps"))?;
+    let pins: BTreeSet<&str> = steps
+        .iter()
+        .filter_map(|step| step["uses"].as_str())
+        .filter_map(|uses| uses.strip_prefix(RUST_TOOLCHAIN_ACTION))
+        .collect();
+    match pins.into_iter().collect::<Vec<_>>().as_slice() {
+        [pin] if parse_version(pin).is_some() => Ok((*pin).to_owned()),
+        [pin] => Err(format!(
+            "job `{job}` pins {RUST_TOOLCHAIN_ACTION}{pin}, which is not a numeric toolchain version"
+        )),
+        [] => Err(format!("job `{job}` does not use {RUST_TOOLCHAIN_ACTION}<version>")),
+        many => Err(format!(
+            "job `{job}` pins several rust toolchains {many:?}; expected exactly one"
+        )),
+    }
+}
+
+fn parse_version(text: &str) -> Option<Vec<u64>> {
+    let parts: Option<Vec<u64>> = text.split('.').map(|part| part.parse().ok()).collect();
+    parts.filter(|parts| (2..=3).contains(&parts.len()))
 }
 
 fn extract_quoted_hydracache_packages(text: &str) -> BTreeSet<String> {

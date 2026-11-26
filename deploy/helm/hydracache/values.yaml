@@ -1,6 +1,8 @@
 image:
   repository: ghcr.io/javaquasar/hydracache-server
-  tag: "0.74.1"
+  # Empty means the chart appVersion, which `cargo xtask set-version` keeps
+  # equal to the workspace version. Set it only to pin a different image.
+  tag: ""
   pullPolicy: IfNotPresent
 
 replicaCount: 3

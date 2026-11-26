@@ -54,11 +54,28 @@ after that job succeeds and lists the image tag and digest.
 
 Tags: `X.Y.Z` always; `X.Y` and `latest` only for stable releases, and
 `latest` only when `X.Y.Z` is the newest stable tag in the repository.
-Pre-releases get only their exact tag. The image tag in
-`deploy/helm/hydracache/Chart.yaml`, `values.yaml`, and
-`deploy/k8s/statefulset.yaml` must equal the workspace version in the release
-commit; `cargo xtask doc-check` fails otherwise, so bump them together with
-`Cargo.toml`.
+Pre-releases get only their exact tag.
+
+Bump the release version with one command, never by hand:
+
+```powershell
+cargo xtask set-version X.Y.Z
+cargo update --workspace --offline
+```
+
+`set-version` rewrites `[workspace.package] version`, the in-repo
+`[workspace.dependencies]` versions, `deploy/helm/hydracache/Chart.yaml`
+(`version`, `appVersion`), and the image in `deploy/k8s/statefulset.yaml`, then
+re-runs the deploy checks and fails if anything still disagrees. The Helm image
+tag has no copy of its own: `values.yaml` keeps `image.tag: ""` and the template
+falls back to the chart `appVersion`.
+
+`cargo xtask doc-check` (CI `rust` job and `cargo xtask verify`) blocks a
+release commit where any of these disagree with the workspace version, where
+`values.yaml` pins its own tag, or where the Dockerfile builder toolchain
+differs from the `rust` CI job toolchain or is below `rust-version`. When CI
+moves to a new toolchain, bump `RUST_IMAGE` in the `Dockerfile` (tag and
+digest) in the same change.
 
 One-time: the first push creates the GHCR package as private. A repository
 admin makes it public under the package's settings on GitHub and links it to
