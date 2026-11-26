@@ -1701,9 +1701,31 @@ lag, leadership change and queue cleanup. `imap_read_barrier_075` sends requests
 HC/2 gRPC with mTLS through the normal dispatcher. The harness drives the real Raft state machines
 with a controllable message transport and instruments the value lane. The socket tests check
 isolation with retained values, metadata lag, promotion between proof and lookup, insufficient
-value prefix, and deadline refusal. Rejected attempts make zero value lookups. Production member
-assembly with replicated values, RESP parity, real-process fault runs and per-read cost admission
-remain release gates.
+value prefix, and deadline refusal. Rejected attempts make zero value lookups.
+
+**D2 replicated GET and RESP.** The staged `MemberReadHost` attaches the same GET dispatcher to a
+networked member's Raft runtime and HTTP peer transport. The RESP listener can use this dispatcher
+with no local map. The replica adapter turns opaque request keys into canonical bytes and uses
+the staged FNV-1a projection. A partition image is published under its owner-lane lock after
+validating scope, partition, epoch and record versions against a separately supplied applied
+prefix. That prefix must reach the required floor before the first store lookup. Verified live
+records preserve binary and empty values. Tombstones and confirmed absent keys yield RESP null.
+
+On AX42, `imap_replicated_read_075` passed at source `3ddbbf383c8cc770d9158b9e26e05ce57b8c1841` with
+Rust 1.94.0. The process scenario passed in the full test target and in two independent repeats
+using the same executable. Three separate member processes used the production RESP executor, actual HTTP
+Raft transport, and separately opened `DurableValueStore` copies of the same dataset. A symmetric
+Raft transport cut left the owner's value on disk and produced a RESP authority error with zero
+lookups. After healing, the owner returned the binary value. Killing and restarting the owner
+advanced the topology from epoch 3 to 4. Both the old image and a new image at applied prefix 7
+with required prefix 8 produced explicit refusal with zero lookups. Installing prefix 8 restored
+the read. The logs, process observations and verified `artifacts.sha256` are in
+`development/d2-replica-3ddbbf383c8cc770d9158b9e26e05ce57b8c1841` under the AX42
+[qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
+
+This read qualification uses preinstalled replicas. W10c still owns the live replication and
+acknowledgement path and the production source of the prefix proof. Public member admission and
+the per-read cost gate remain open.
 
 For the W0 hash decision, FNV-1a over the provisional canonical bytes was measured on three sets of
 100,000 sequential keys with tenant `tenant-a`, namespace `orders`, and generation 1. All 271

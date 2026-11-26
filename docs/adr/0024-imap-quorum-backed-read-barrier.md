@@ -74,8 +74,9 @@ D2/D3 must add a dedicated server integration target, `imap_read_barrier_075`, c
 The planned command is `cargo test -p hydracache-server --test imap_read_barrier_075 --locked`.
 The target exercises the staged GET backend through the real HC/1 and HC/2 listeners and three
 Raft state machines. The fixture controls Raft message delivery and supplies an instrumented
-value lane. The replicated value plane, RESP parity and real-process qualification are still
-required for production acceptance and public member readiness.
+value lane. The separate `imap_replicated_read_075` target exercises RESP, real HTTP Raft traffic,
+and preinstalled durable replicas in separate AX42 processes. The live value replication and
+acknowledgement path and production admission remain release gates.
 
 ### Server test scenarios
 

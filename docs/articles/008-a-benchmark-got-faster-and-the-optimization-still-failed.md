@@ -894,9 +894,18 @@ ran behind a controllable message transport. Cutting off the follower that owned
 left its value intact, but the request expired with zero lookups. Delaying the Raft append let
 the quorum response arrive ahead of the follower's applied index. The same invocation reached
 the value once the append was delivered. We also moved ownership after quorum confirmation and
-checked that the former owner never reached the store. These are correctness results with an
-instrumented value lane. The replicated value plane, RESP parity and distributed read cost still
-have separate release gates.
+checked that the former owner never reached the store.
+
+The next run replaced the instrumented lane with preinstalled durable replicas. Three separate
+member processes on AX42 served RESP and exchanged Raft messages over HTTP. The binary value
+remained on disk when the owner's Raft traffic was cut. RESP returned an authority error, and
+the record lookup counter stayed flat. Healing the cut restored the read. After killing and
+restarting the owner, a new topology epoch alone was insufficient. The restarted process refused
+the previous replica image and an image one entry short of the required prefix. It served the
+binary value again only after the full prefix was installed. The three AX42 runs recorded zero
+store lookups in every rejected case. The test exercised reads from
+preinstalled replicas. Live write replication, acknowledgement and distributed read cost
+remain separate release gates.
 
 The hash experiment used three sets of 100,000 keys over 271 partitions. The same FNV-1a function
 produced 365–373 entries per partition for binary integers and 321–428 for prefixed decimal keys.
