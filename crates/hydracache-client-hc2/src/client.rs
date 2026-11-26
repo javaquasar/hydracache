@@ -64,7 +64,8 @@ struct PendingSubscription {
 
 struct ActiveSubscription {
     events: mpsc::Sender<SubscriptionEvent>,
-    gap_after: u64,
+    gap_after: Option<u64>,
+    last_delivered: u64,
     _permit: OwnedSemaphorePermit,
 }
 
@@ -507,6 +508,19 @@ impl Hc2Client {
         operations: Vec<BatchOperation>,
         options: Option<RequestOptions>,
     ) -> Result<Vec<BatchItemResult>, ClientError> {
+        self.batch_outcomes(operations, options)
+            .await?
+            .into_iter()
+            .map(|item| item.result)
+            .collect()
+    }
+
+    /// Execute a bounded batch and retain successful and failed item replies.
+    pub async fn batch_outcomes(
+        &self,
+        operations: Vec<BatchOperation>,
+        options: Option<RequestOptions>,
+    ) -> Result<Vec<crate::BatchItemOutcome>, ClientError> {
         if operations.is_empty()
             || operations.len() > self.handle.runtime.config.limits.max_batch_items
         {
@@ -573,12 +587,16 @@ impl Hc2Client {
         if batch.items.len() != expected {
             return Err(protocol_error("peer returned the wrong batch result count"));
         }
-        batch
+        Ok(batch
             .items
             .into_iter()
             .enumerate()
-            .map(|(index, item)| map_batch_item(index, item))
-            .collect()
+            .map(|(index, item)| crate::BatchItemOutcome {
+                item_id: index as u32 + 1,
+                topology_epoch: item.meta.as_ref().map_or(0, |meta| meta.topology_epoch),
+                result: map_batch_item(index, item),
+            })
+            .collect())
     }
 
     /// Register a bounded subscription.
@@ -586,6 +604,17 @@ impl Hc2Client {
         &self,
         key_prefix: Bytes,
         resume_watermark: u64,
+    ) -> Result<Subscription, ClientError> {
+        self.subscribe_with_values(key_prefix, resume_watermark, false)
+            .await
+    }
+
+    /// Register a subscription with explicit value projection on member deployments.
+    pub async fn subscribe_with_values(
+        &self,
+        key_prefix: Bytes,
+        resume_watermark: u64,
+        include_value: bool,
     ) -> Result<Subscription, ClientError> {
         if key_prefix.len() > 1024 * 1024 {
             return Err(invalid("subscription key prefix exceeds 1048576 bytes"));
@@ -622,6 +651,7 @@ impl Hc2Client {
                     subscription_id,
                     key_prefix,
                     resume_watermark,
+                    include_value,
                 })),
             })
             .await?;
@@ -1061,7 +1091,8 @@ impl Runtime {
                 ack.subscription_id,
                 ActiveSubscription {
                     events: pending.events,
-                    gap_after: 0,
+                    gap_after: None,
+                    last_delivered: ack.watermark,
                     _permit: pending.permit,
                 },
             );
@@ -1078,20 +1109,19 @@ impl Runtime {
         let Some(subscription) = subscriptions.get_mut(&event.subscription_id) else {
             return;
         };
-        if subscription.gap_after != 0 {
+        if let Some(after_watermark) = subscription.gap_after {
             if subscription
                 .events
                 .try_send(SubscriptionEvent::Gap {
                     subscription_id: event.subscription_id,
-                    after_watermark: subscription.gap_after,
+                    after_watermark,
                 })
                 .is_err()
             {
-                subscription.gap_after = subscription.gap_after.max(event.watermark);
                 self.metrics.dropped_events.fetch_add(1, Ordering::Relaxed);
                 return;
             }
-            subscription.gap_after = 0;
+            subscription.gap_after = None;
         }
         self.metrics.events.fetch_add(1, Ordering::Relaxed);
         let message = SubscriptionEvent::Event(CacheEvent {
@@ -1102,8 +1132,10 @@ impl Runtime {
             removed: event.removed,
         });
         if subscription.events.try_send(message).is_err() {
-            subscription.gap_after = subscription.gap_after.max(event.watermark);
+            subscription.gap_after = Some(subscription.last_delivered);
             self.metrics.dropped_events.fetch_add(1, Ordering::Relaxed);
+        } else {
+            subscription.last_delivered = event.watermark;
         }
     }
 
@@ -1115,15 +1147,21 @@ impl Runtime {
         let Some(subscription) = subscriptions.get_mut(&gap.subscription_id) else {
             return;
         };
+        let after_watermark = subscription
+            .gap_after
+            .unwrap_or(subscription.last_delivered)
+            .min(gap.after_watermark);
         if subscription
             .events
             .try_send(SubscriptionEvent::Gap {
                 subscription_id: gap.subscription_id,
-                after_watermark: gap.after_watermark,
+                after_watermark,
             })
             .is_err()
         {
-            subscription.gap_after = subscription.gap_after.max(gap.after_watermark);
+            subscription.gap_after = Some(after_watermark);
+        } else {
+            subscription.gap_after = None;
             self.metrics.dropped_events.fetch_add(1, Ordering::Relaxed);
         }
     }

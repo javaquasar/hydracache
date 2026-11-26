@@ -292,6 +292,15 @@ pub struct BatchItemResult {
     pub mutation: Option<MutationResult>,
 }
 
+/// One result in original batch order, including partial failures.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BatchItemOutcome {
+    pub item_id: u32,
+    /// Applied topology observed by the serving endpoint.
+    pub topology_epoch: u64,
+    pub result: Result<BatchItemResult, ClientError>,
+}
+
 /// Immutable topology endpoint.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NodeEndpoint {

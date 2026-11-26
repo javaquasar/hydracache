@@ -39,6 +39,10 @@ use crate::imap_value_journal::{
     ValueJournal,
 };
 use crate::imap_value_repair::{repair_error, RepairReceipt, RepairRequest, ReplicaReady};
+use crate::value_plane_subscription::{
+    CertifiedEvent, EventCursor, EventPage, EventPoll, EventProgress, ListenerView, EVENT_SCHEMA,
+    MAX_EVENT_PAGE, MAX_PREFIX_BYTES,
+};
 
 #[path = "imap_value_primary.rs"]
 mod primary;
@@ -51,7 +55,7 @@ mod repair_owner;
 pub use rebalance::ReplicaRebalanceReport;
 pub(crate) use rebalance::{BackupObservations, RebalanceHealth, RebalanceRequest};
 
-const MAX_VALUE_BYTES: usize = 128 * 1024;
+pub(crate) const MAX_VALUE_BYTES: usize = 128 * 1024;
 const MAX_KEY_HEX_BYTES: usize = 64 * 1024;
 const MAX_ID_BYTES: usize = 128;
 const MAX_WRITES: usize = 32;
@@ -98,6 +102,7 @@ pub(crate) struct ReplicaPrefix {
 #[derive(Deserialize)]
 #[serde(untagged)]
 pub(crate) enum ReplicaMessage {
+    Events(EventPoll),
     Owner(OwnerCall),
     Apply(ReplicaApply),
     Prefix(ReplicaPrefix),
@@ -117,6 +122,10 @@ pub(crate) trait ReplicaTransport: Send + Sync {
     }
 
     async fn call_owner(&self, _request: &OwnerCall) -> CacheResult<OwnerReply> {
+        Err(transport_unavailable())
+    }
+
+    async fn poll_events(&self, _request: &EventPoll) -> CacheResult<EventPage> {
         Err(transport_unavailable())
     }
 }
@@ -239,6 +248,63 @@ impl ValueReplica {
 
     pub(crate) fn local_member(&self) -> &PartitionMember {
         &self.local
+    }
+
+    fn event_progress(
+        &self,
+        cursor: EventCursor,
+        required: PartitionValuePrefix,
+        request: &EventPoll,
+        budget: u64,
+    ) -> CacheResult<Option<EventProgress>> {
+        let partition = cursor.partition;
+        let Some(lane) = self.lane(partition) else {
+            return Ok(None);
+        };
+        let Ok(_guard) = lane.storage.try_lock() else {
+            return Ok(None);
+        };
+        let through = required.version.min(cursor.after.saturating_add(budget));
+        if through <= cursor.after || !self.journal.load(partition)?.covers(Some(required)) {
+            return Ok(None);
+        }
+        let mut events = Vec::new();
+        for version in cursor.after + 1..=through {
+            match self
+                .journal
+                .certified_event(partition, version, required, request.include_value)
+            {
+                Err(_) | Ok(None) => {
+                    return Ok(Some(EventProgress {
+                        partition,
+                        through: required.version,
+                        gap: true,
+                        events: Vec::new(),
+                    }))
+                }
+                Ok(Some(None)) => {}
+                Ok(Some(Some(event))) => {
+                    let key = self
+                        .scope
+                        .decode_storage_key(&event.key, partition)
+                        .ok_or_else(|| repair_error("certified event is outside its scope"))?;
+                    if key.starts_with(&request.key_prefix) {
+                        events.push(CertifiedEvent {
+                            version,
+                            key,
+                            value: event.value,
+                            removed: event.removed,
+                        });
+                    }
+                }
+            }
+        }
+        Ok(Some(EventProgress {
+            partition,
+            through,
+            gap: false,
+            events,
+        }))
     }
 
     pub(crate) fn route_partition(
@@ -691,6 +757,103 @@ fn new_identity(identity: Option<&str>, epoch: ClusterEpoch, promotion_started: 
 }
 
 impl<S: RaftLogStore> ValueBackend<S> {
+    pub(crate) fn event_scope(&self) -> [u8; 32] {
+        self.replica.repair_scope()
+    }
+
+    pub(crate) fn listener_view(&self) -> Option<ListenerView> {
+        let snapshot = self.raft.partition_snapshot()?;
+        let topology = PartitionTopology::from_snapshot(
+            snapshot,
+            D2_PARTITION_COUNT,
+            self.replica.replication,
+        )
+        .ok()?;
+        let snapshot = topology.snapshot();
+        Some(ListenerView {
+            epoch: snapshot.epoch,
+            partitions: snapshot
+                .value_prefixes
+                .iter()
+                .map(|(&partition, prefix)| {
+                    let owner = topology
+                        .placement(partition)
+                        .ok()
+                        .map(|placement| placement.primary);
+                    (partition, (owner, prefix.version))
+                })
+                .collect(),
+        })
+    }
+
+    pub(crate) async fn event_page(
+        &self,
+        peer: &str,
+        epoch: u64,
+        request: &EventPoll,
+    ) -> CacheResult<EventPage> {
+        let reject = || repair_error("event poll scope, placement or authority changed");
+        if request.event_schema != EVENT_SCHEMA
+            || request.epoch.value() != epoch
+            || request.source.node.as_str() != peer
+            || &request.target != self.replica.local_member()
+            || request.scope != self.replica.repair_scope()
+            || request.cursors.is_empty()
+            || request.cursors.len() > MAX_EVENT_PAGE
+            || request.key_prefix.len() > MAX_PREFIX_BYTES
+        {
+            return Err(reject());
+        }
+        let proof = request_read_index(
+            &self.raft,
+            &self.raft_transport,
+            Instant::now() + Duration::from_millis(500),
+        )
+        .await
+        .map_err(|_| reject())?;
+        let snapshot = proof
+            .with_snapshot(|snapshot, _| snapshot)
+            .map_err(|_| reject())?;
+        if snapshot.epoch != request.epoch || !admitted(&snapshot, &request.source) {
+            return Err(reject());
+        }
+        let topology = PartitionTopology::from_snapshot(
+            snapshot,
+            D2_PARTITION_COUNT,
+            self.replica.replication,
+        )
+        .map_err(|_| reject())?;
+        let mut seen = std::collections::BTreeSet::new();
+        let mut progress = Vec::new();
+        let budget = (MAX_EVENT_PAGE / request.cursors.len()) as u64;
+        for cursor in &request.cursors {
+            if !seen.insert(cursor.partition)
+                || !topology
+                    .placement(cursor.partition)
+                    .is_ok_and(|placement| placement.primary == request.target)
+            {
+                return Err(reject());
+            }
+            if let Some(required) = topology
+                .snapshot()
+                .value_prefixes
+                .get(&cursor.partition)
+                .copied()
+            {
+                if let Some(page) = self
+                    .replica
+                    .event_progress(*cursor, required, request, budget)?
+                {
+                    progress.push(page);
+                }
+            }
+        }
+        Ok(EventPage {
+            fingerprint: hash(request),
+            progress,
+        })
+    }
+
     async fn write(&self, request: VerifiedClientRequest<'_>) -> ClientBackendOutcome {
         let envelope = request.envelope();
         let now = Instant::now();

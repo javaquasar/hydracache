@@ -58,6 +58,10 @@ final class InteropProcess implements AutoCloseable {
   }
 
   HydraCacheClientConfig config(String serverName) {
+    return configBuilder(serverName).build();
+  }
+
+  HydraCacheClientConfig.Builder configBuilder(String serverName) {
     return HydraCacheClientConfig.builder()
         .endpoint(java.net.URI.create("https://localhost:" + port))
         .serverName(serverName)
@@ -67,8 +71,7 @@ final class InteropProcess implements AutoCloseable {
         .clientId("external-java-consumer")
         .tenant("interop")
         .connectTimeout(Duration.ofSeconds(5))
-        .defaultRequestTimeout(Duration.ofSeconds(2))
-        .build();
+        .defaultRequestTimeout(Duration.ofSeconds(2));
   }
 
   String awaitClosed() throws Exception {

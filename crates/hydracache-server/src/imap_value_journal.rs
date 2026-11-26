@@ -21,6 +21,46 @@ mod snapshot;
 pub(crate) use delta::CapturedTransfer;
 
 const RETAINED_IDENTITIES: usize = 128;
+pub(crate) const RETAINED_EVENT_VERSIONS: u64 = 16;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub(crate) struct JournalEvent {
+    pub version: u64,
+    pub key: String,
+    pub removed: bool,
+    pub value: Option<Vec<u8>>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct ArchivedEvent {
+    event: Option<ArchivedMutation>,
+    digest: [u8; 32],
+}
+
+#[derive(Serialize, Deserialize)]
+struct ArchivedMutation {
+    key: String,
+    value_digest: Option<[u8; 32]>,
+}
+
+impl JournalEvent {
+    fn from_mutation(mutation: &Mutation, include_value: bool) -> Option<Self> {
+        if mutation.outcome_only {
+            return None;
+        }
+        let value = mutation.value();
+        Some(Self {
+            version: mutation.record.version,
+            key: mutation.key.clone(),
+            removed: value.is_none(),
+            value: if include_value {
+                value.map(<[u8]>::to_vec)
+            } else {
+                None
+            },
+        })
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub(crate) struct Mutation {
@@ -273,6 +313,31 @@ impl ValueJournal {
             let Some(previous) = meta.materialize_pending(required) else {
                 return Ok(ApplyResult::Busy);
             };
+            let version = previous.record.version;
+            // Only a pending record matching the required Raft certificate can
+            // become history. Keep decision-only versions to prove continuity.
+            let event = (!previous.outcome_only).then(|| {
+                let value_digest = previous.value().map(|value| {
+                    batch.insert(event_value_key(partition, version), value);
+                    Sha256::digest(value).into()
+                });
+                ArchivedMutation {
+                    key: previous.key.clone(),
+                    value_digest,
+                }
+            });
+            let stored = ArchivedEvent {
+                digest: hash((partition, version, &event)),
+                event,
+            };
+            batch.insert(
+                event_key(partition, version),
+                serde_json::to_vec(&stored).map_err(storage_error)?,
+            );
+            if let Some(expired) = version.checked_sub(RETAINED_EVENT_VERSIONS) {
+                batch.remove(event_key(partition, expired));
+                batch.remove(event_value_key(partition, expired));
+            }
             if !previous.outcome_only {
                 let stored = JournalRecordV2::from_mutation(&previous);
                 batch.insert(
@@ -329,6 +394,64 @@ impl ValueJournal {
         self.0.apply_batch(batch).map_err(storage_error)?;
         self.0.flush().map_err(storage_error)?;
         Ok(ApplyResult::Flushed)
+    }
+
+    /// A missing event slot cannot prove continuity. An existing empty slot is
+    /// a certified decision that changed no value.
+    pub fn certified_event(
+        &self,
+        partition: PartitionId,
+        version: u64,
+        required: PartitionValuePrefix,
+        include_value: bool,
+    ) -> CacheResult<Option<Option<JournalEvent>>> {
+        if version > required.version {
+            return Ok(None);
+        }
+        let meta = self.load(partition)?;
+        if !meta.covers(Some(required)) {
+            return Ok(None);
+        }
+        if version == required.version {
+            if let Some(pending) = meta.matching_pending(Some(required)) {
+                return Ok(Some(JournalEvent::from_mutation(pending, include_value)));
+            }
+        }
+        let Some(bytes) = self
+            .0
+            .get(event_key(partition, version))
+            .map_err(storage_error)?
+        else {
+            return Ok(None);
+        };
+        let ArchivedEvent { event, digest } =
+            serde_json::from_slice(&bytes).map_err(storage_error)?;
+        if digest != hash((partition, version, &event)) {
+            return Err(storage_error("archived event digest mismatch"));
+        }
+        let Some(event) = event else {
+            return Ok(Some(None));
+        };
+        let value = if let Some(expected) = event.value_digest.filter(|_| include_value) {
+            let value = self
+                .0
+                .get(event_value_key(partition, version))
+                .map_err(storage_error)?
+                .ok_or_else(|| storage_error("archived event value is missing"))?;
+            let digest: [u8; 32] = Sha256::digest(&value).into();
+            if digest != expected {
+                return Err(storage_error("archived event value digest mismatch"));
+            }
+            Some(value.to_vec())
+        } else {
+            None
+        };
+        Ok(Some(Some(JournalEvent {
+            version,
+            key: event.key,
+            removed: event.value_digest.is_none(),
+            value,
+        })))
     }
 
     pub fn read_entry(
@@ -447,6 +570,21 @@ fn meta_key(partition: PartitionId) -> [u8; 5] {
     [b'm', a, b, c, d]
 }
 
+fn event_prefix(partition: PartitionId) -> [u8; 5] {
+    let [a, b, c, d] = partition.value().to_be_bytes();
+    [b'h', a, b, c, d]
+}
+
+fn event_key(partition: PartitionId, version: u64) -> Vec<u8> {
+    [event_prefix(partition).as_slice(), &version.to_be_bytes()].concat()
+}
+
+fn event_value_key(partition: PartitionId, version: u64) -> Vec<u8> {
+    let mut key = event_key(partition, version);
+    key.push(b'v');
+    key
+}
+
 fn record_key(partition: PartitionId, storage_key: &str) -> Vec<u8> {
     [
         b"v".as_slice(),
@@ -476,6 +614,96 @@ pub(crate) fn next_record(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn event_history_requires_certification_and_keeps_bounded_decision_slots() {
+        let journal = ValueJournal::temporary();
+        let partition = PartitionId::new(8);
+        let epoch = ClusterEpoch::new(4);
+        let mut required = None;
+        for version in 1..=20 {
+            let mutation = Mutation {
+                owner: PartitionMember {
+                    node: hydracache::ClusterNodeId::new("a"),
+                    generation: hydracache::ClusterGeneration::new(1),
+                },
+                backups: vec![],
+                previous: required.map_or([0; 32], |prefix: PartitionValuePrefix| prefix.digest),
+                key: "event-key".to_owned(),
+                identity: None,
+                record: next_record(partition, epoch, required, Some(vec![version as u8])).unwrap(),
+                expires_not_before_ms: None,
+                decision: None,
+                outcome_only: version == 19,
+            };
+            let certificate = mutation.certificate();
+            assert_eq!(
+                journal.apply(required, mutation, true).unwrap(),
+                ApplyResult::Flushed
+            );
+            if let Some(prior) = required {
+                assert_eq!(
+                    journal
+                        .certified_event(partition, version, prior, true)
+                        .unwrap(),
+                    None
+                );
+            }
+            required = Some(certificate);
+        }
+        let required = required.unwrap();
+        assert!(journal
+            .certified_event(partition, 1, required, true)
+            .unwrap()
+            .is_none());
+        assert_eq!(
+            journal
+                .certified_event(partition, 19, required, true)
+                .unwrap(),
+            Some(None)
+        );
+        let event = journal
+            .certified_event(partition, 20, required, true)
+            .unwrap()
+            .flatten()
+            .unwrap();
+        assert_eq!(event.value, Some(vec![20]));
+        assert_eq!(
+            journal
+                .certified_event(partition, 18, required, false)
+                .unwrap()
+                .flatten()
+                .unwrap()
+                .value,
+            None
+        );
+        assert_eq!(
+            journal.0.scan_prefix(event_prefix(partition)).count(),
+            2 * RETAINED_EVENT_VERSIONS as usize - 1
+        );
+        journal
+            .0
+            .insert(event_value_key(partition, 18), b"tampered-value".as_slice())
+            .unwrap();
+        assert!(journal
+            .certified_event(partition, 18, required, true)
+            .is_err());
+        assert!(journal
+            .certified_event(partition, 18, required, false)
+            .unwrap()
+            .is_some());
+        let key = event_key(partition, 18);
+        let mut stored: ArchivedEvent =
+            serde_json::from_slice(&journal.0.get(&key).unwrap().unwrap()).unwrap();
+        stored.event.as_mut().unwrap().key = "tampered".into();
+        journal
+            .0
+            .insert(key, serde_json::to_vec(&stored).unwrap())
+            .unwrap();
+        assert!(journal
+            .certified_event(partition, 18, required, true)
+            .is_err());
+    }
 
     #[test]
     fn historical_record_is_checked_after_next_apply() {

@@ -12,9 +12,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,38 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 final class GrpcHydraCacheClientInteropTest {
   private static final RequestOptions DEFAULT = RequestOptions.withTimeout(Duration.ofSeconds(2));
+
+  @Test
+  void slowJavaListenerKeepsBoundedOrderedCallbacksAndReportsOverflow(@TempDir Path temp)
+      throws Exception {
+    var callbacks = new LinkedBlockingQueue<Runnable>();
+    var received = new ArrayList<Long>();
+    var gaps = new ArrayList<Long>();
+    try (InteropProcess server = InteropProcess.start(Files.createDirectory(temp.resolve("pki")));
+         HydraCacheClient client = HydraCacheClient.connect(
+             server.configBuilder("localhost").callbackExecutor(callbacks::add).build())) {
+      try (Subscription subscription = client.subscribe(bytes("slow/"), 0, true, new CacheEventListener() {
+        @Override public void onEvent(CacheEvent event) { received.add(event.watermark()); }
+        @Override public void onGap(long subscriptionId, long afterWatermark) { gaps.add(afterWatermark); }
+      }).join()) {
+        for (int index = 0; index < 70; index++) {
+          assertTrue(client.put(bytes("slow/key"), bytes("v" + index), Duration.ZERO, DEFAULT).join().applied());
+        }
+        assertTrue(client.get(bytes("slow/key"), DEFAULT).join().isPresent());
+        assertEquals(1, callbacks.size());
+        callbacks.remove().run();
+        assertEquals(java.util.stream.LongStream.rangeClosed(1, 64).boxed().toList(), received);
+        assertEquals(List.of(64L), gaps);
+
+        assertTrue(client.put(bytes("slow/key"), bytes("after-gap"), Duration.ZERO, DEFAULT).join().applied());
+        Runnable resumed = callbacks.poll(5, TimeUnit.SECONDS);
+        assertTrue(resumed != null);
+        resumed.run();
+        assertTrue(received.get(received.size() - 1) > 64);
+      }
+      assertEquals(0, client.metrics().activeSubscriptions());
+    }
+  }
 
   @Test
   void javaSdkExecutesTheContractAgainstASeparateRustMtlsProcess(@TempDir Path temp) throws Exception {

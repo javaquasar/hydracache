@@ -204,13 +204,28 @@ public final class RecoveringHydraCacheClient implements HydraCacheClient {
   }
 
   @Override
+  public CompletableFuture<List<BatchItemOutcome>> batchOutcomes(
+      List<BatchOperation> operations, RequestOptions options) {
+    List<BatchOperation> copied = List.copyOf(operations);
+    boolean readOnly = copied.stream().allMatch(BatchOperation.Get.class::isInstance);
+    return withRetry(readOnly || replaySafe(options), options,
+        (client, adjusted) -> client.batchOutcomes(copied, adjusted));
+  }
+
+  @Override
   public CompletableFuture<Subscription> subscribe(
       byte[] keyPrefix, long resumeWatermark, CacheEventListener listener) {
+    return subscribe(keyPrefix, resumeWatermark, false, listener);
+  }
+
+  @Override
+  public CompletableFuture<Subscription> subscribe(
+      byte[] keyPrefix, long resumeWatermark, boolean includeValue, CacheEventListener listener) {
     if (closed.get()) return failed(connectionError("recovering client is closed"));
     Objects.requireNonNull(listener, "listener");
     long id = nextNonzero(subscriptionIds, "logical subscription id exhausted");
     LogicalSubscription logical = new LogicalSubscription(
-        id, keyPrefix.clone(), resumeWatermark, listener);
+        id, keyPrefix.clone(), resumeWatermark, includeValue, listener);
     subscriptions.put(id, logical);
     return logical.bind(current.get(), false).handle((ignored, failure) -> {
       if (failure != null) {
@@ -403,6 +418,7 @@ public final class RecoveringHydraCacheClient implements HydraCacheClient {
     private final long id;
     private final byte[] keyPrefix;
     private final long initialWatermark;
+    private final boolean includeValue;
     private final CacheEventListener listener;
     private final AtomicLong lastWatermark;
     private final AtomicLong binding = new AtomicLong();
@@ -411,10 +427,11 @@ public final class RecoveringHydraCacheClient implements HydraCacheClient {
     private final AtomicReference<Subscription> delegate = new AtomicReference<>();
 
     private LogicalSubscription(
-        long id, byte[] keyPrefix, long resumeWatermark, CacheEventListener listener) {
+        long id, byte[] keyPrefix, long resumeWatermark, boolean includeValue, CacheEventListener listener) {
       this.id = id;
       this.keyPrefix = keyPrefix;
       this.initialWatermark = resumeWatermark;
+      this.includeValue = includeValue;
       this.lastWatermark = new AtomicLong(resumeWatermark);
       this.listener = listener;
     }
@@ -439,7 +456,7 @@ public final class RecoveringHydraCacheClient implements HydraCacheClient {
 
         @Override public void onGap(long ignoredId, long afterWatermark) { requireRepair(); }
       };
-      return connection.client().subscribe(keyPrefix, lastWatermark.get(), forwarding)
+      return connection.client().subscribe(keyPrefix, lastWatermark.get(), includeValue, forwarding)
           .thenAccept(next -> {
             if (closed.get() || current.get().generation() != connection.generation()) {
               next.close();

@@ -145,7 +145,12 @@ message InvocationResponse {
 }
 
 message Cancel { uint64 correlation_id = 1; string safe_reason = 2; }
-message Subscribe { uint64 subscription_id = 1; bytes key_prefix = 2; uint64 resume_watermark = 3; }
+message Subscribe {
+  uint64 subscription_id = 1;
+  bytes key_prefix = 2;
+  uint64 resume_watermark = 3;
+  bool include_value = 4;
+}
 message Unsubscribe { uint64 subscription_id = 1; }
 message SubscriptionAck { uint64 subscription_id = 1; uint64 watermark = 2; }
 message CacheEvent {

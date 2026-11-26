@@ -86,6 +86,14 @@ impl ReplicaReadScope {
     }
 
     pub(crate) fn admits_storage_key(&self, storage_key: &str, partition: PartitionId) -> bool {
+        self.decode_storage_key(storage_key, partition).is_some()
+    }
+
+    pub(crate) fn decode_storage_key(
+        &self,
+        storage_key: &str,
+        partition: PartitionId,
+    ) -> Option<Vec<u8>> {
         let bounds = CanonicalMapKeyBounds::default();
         if storage_key.len() > bounds.max_frame_bytes * 2
             || !storage_key.len().is_multiple_of(2)
@@ -93,7 +101,7 @@ impl ReplicaReadScope {
                 .bytes()
                 .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
         {
-            return false;
+            return None;
         }
         let raw: Vec<_> = (0..storage_key.len())
             .step_by(2)
@@ -101,12 +109,14 @@ impl ReplicaReadScope {
                 u8::from_str_radix(&storage_key[i..i + 2], 16).expect("validated lowercase hex")
             })
             .collect();
-        staged_partition(&raw) == partition
-            && CanonicalMapKey::decode(&raw, bounds).is_ok_and(|key| {
-                key.tenant == self.tenant
-                    && key.namespace == self.namespace.as_str()
-                    && key.namespace_generation == self.generation.get()
-            })
+        if staged_partition(&raw) != partition {
+            return None;
+        }
+        let key = CanonicalMapKey::decode(&raw, bounds).ok()?;
+        (key.tenant == self.tenant
+            && key.namespace == self.namespace.as_str()
+            && key.namespace_generation == self.generation.get())
+        .then_some(key.key)
     }
 }
 

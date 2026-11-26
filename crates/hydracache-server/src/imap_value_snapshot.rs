@@ -273,6 +273,17 @@ impl ValueJournal {
                 batch.remove(key.map_err(storage_error)?);
             }
         }
+        for (index, key) in self
+            .0
+            .scan_prefix(event_prefix(partition))
+            .keys()
+            .enumerate()
+        {
+            if index >= 2 * RETAINED_EVENT_VERSIONS as usize {
+                return Err(repair_error("recipient event history exceeds its bound"));
+            }
+            batch.remove(key.map_err(storage_error)?);
+        }
         let mut prior = None;
         for ImageRow { key, value } in rows {
             if prior.as_ref().is_some_and(|previous| previous >= &key) || !admits_key(&key) {

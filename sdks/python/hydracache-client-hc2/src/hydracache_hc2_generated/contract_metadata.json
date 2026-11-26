@@ -1079,6 +1079,14 @@
               "kind": 4,
               "type_name": "",
               "oneof_index": null
+            },
+            {
+              "name": "include_value",
+              "number": 4,
+              "label": 1,
+              "kind": 8,
+              "type_name": "",
+              "oneof_index": null
             }
           ]
         },

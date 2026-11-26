@@ -55,6 +55,7 @@ use crate::management_aggregation::{
     ManagementMemberSnapshot, ManagementPeerTarget, ManagementPeerTransport,
     ManagementSnapshotRpcService,
 };
+use crate::value_plane_subscription::{EventPage, EventPoll};
 
 const DEFAULT_CLUSTER_NAME: &str = "hydracache";
 const GRID_INPROC_ENV: &str = "HYDRACACHE_GRID_INPROC";
@@ -89,7 +90,7 @@ type OwnerService = Arc<OnceLock<Arc<RoutedValueBackend<SledRaftLogStore>>>>;
 pub(crate) struct MemberServices {
     pub cache: HydraCache,
     pub grid: Arc<dyn GridControlPlaneHandle>,
-    pub hc2: Option<Arc<ClientSurfaceDispatcher>>,
+    pub hc2: Option<crate::Hc2ClientPlaneService>,
 }
 
 /// Build the grid-mode cache used by a member-role daemon.
@@ -2060,6 +2061,11 @@ impl ReplicaTransport for HttpRaftMessageSink {
         self.send_value_message(&request.target.node, request.epoch.value(), request, None)
             .await
     }
+
+    async fn poll_events(&self, request: &EventPoll) -> CacheResult<EventPage> {
+        self.send_value_message(&request.target.node, request.epoch.value(), request, None)
+            .await
+    }
 }
 
 #[async_trait::async_trait]
@@ -2601,7 +2607,7 @@ impl MemberReadHost {
         &self,
         config: &ServerConfig,
         profile: crate::config::DistributedHc2Config,
-    ) -> CacheResult<Arc<ClientSurfaceDispatcher>> {
+    ) -> CacheResult<crate::Hc2ClientPlaneService> {
         let storage = config
             .storage_dir
             .as_ref()
@@ -2620,6 +2626,7 @@ impl MemberReadHost {
         let backend =
             self.attach_value_backend(&storage.join("imap-hc2"), replication, scope, None)?;
         let limits = config.client_api.limits;
+        let principal = profile.principal();
         let routed = Arc::new(RoutedValueBackend::new(
             backend,
             profile,
@@ -2629,10 +2636,16 @@ impl MemberReadHost {
             .map_err(|error| CacheError::Backend(error.to_string()))?;
         self.0
             .owner_service
-            .set(routed)
+            .set(routed.clone())
             .map_err(|_| transport_unavailable())?;
         self.start_automatic_primary_failover()?;
-        Ok(Arc::new(dispatcher))
+        Ok(crate::Hc2ClientPlaneService::distributed(
+            Arc::new(dispatcher),
+            &config.hc2_client_plane.cluster_id,
+            self.0.clone(),
+            principal,
+            routed,
+        ))
     }
 
     /// Queue generation-bound primary transfers in the supplied order.
@@ -3735,6 +3748,7 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
                         ReplicaMessage::Ready(_)
                             | ReplicaMessage::Repair(_)
                             | ReplicaMessage::Owner(_)
+                            | ReplicaMessage::Events(_)
                     ) || matches!(&request, ReplicaMessage::Prefix(probe) if probe.wave.is_some()))
                 {
                     return Err(CacheError::Backend(
@@ -3745,6 +3759,13 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
                     CacheError::Backend("value replica topology unavailable".into())
                 })?;
                 let encoded = match request {
+                    ReplicaMessage::Events(request) => serde_json::to_value(
+                        self.owner_service
+                            .get()
+                            .ok_or_else(transport_unavailable)?
+                            .receive_events(&message.from, message.term, &request)
+                            .await?,
+                    ),
                     ReplicaMessage::Owner(call) => serde_json::to_value(
                         self.owner_service
                             .get()

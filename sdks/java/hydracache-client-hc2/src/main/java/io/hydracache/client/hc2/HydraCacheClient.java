@@ -38,7 +38,15 @@ public interface HydraCacheClient extends AutoCloseable {
     return unsupported("lockOwnership");
   }
   CompletableFuture<List<BatchItemResult>> batch(List<BatchOperation> operations, RequestOptions options);
+  default CompletableFuture<List<BatchItemOutcome>> batchOutcomes(
+      List<BatchOperation> operations, RequestOptions options) {
+    return unsupported("batchOutcomes");
+  }
   CompletableFuture<Subscription> subscribe(byte[] keyPrefix, long resumeWatermark, CacheEventListener listener);
+  default CompletableFuture<Subscription> subscribe(
+      byte[] keyPrefix, long resumeWatermark, boolean includeValue, CacheEventListener listener) {
+    return subscribe(keyPrefix, resumeWatermark, listener);
+  }
   CompletableFuture<FencedSession> openSession(Duration requestedTtl);
   /** Authenticated cluster identity negotiated during the HC/2 handshake. */
   String clusterId();

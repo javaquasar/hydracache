@@ -68,7 +68,7 @@ public final class HydraMap<K, V> {
   public MapListenerRegistration addEntryListener(EntryListener<K, V> listener) {
     Objects.requireNonNull(listener, "listener");
     Subscription subscription = await(client.subscribe(
-        keySpace.prefix(), 0, new CacheEventListener() {
+        keySpace.prefix(), 0, true, new CacheEventListener() {
           @Override public void onEvent(CacheEvent event) {
             K key = keyCodec.decode(keySpace.decode(event.key()));
             Optional<V> value = event.removed()

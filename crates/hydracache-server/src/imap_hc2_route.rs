@@ -3,7 +3,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use hydracache::{CacheError, ClusterEpoch, PartitionId};
+use hydracache::{CacheError, CacheResult, ClusterEpoch, ClusterNodeId, PartitionId};
 use hydracache_client_protocol::{
     ClientErrorCode, ClientErrorEnvelope, ClientRequest, ClientRequestEnvelope, Namespace,
     StructuredKey,
@@ -21,6 +21,7 @@ use crate::imap_owner_read::unavailable;
 use crate::imap_topology::{PartitionMember, PartitionPlacement};
 use crate::imap_value_journal::hash;
 use crate::imap_value_plane::ValueBackend;
+use crate::value_plane_subscription::{EventPage, EventPoll, ListenerView};
 
 const OWNER_CALL_VERSION: u16 = 1;
 const OWNER_BUDGET: Duration = Duration::from_millis(2_000);
@@ -77,7 +78,11 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
         }
     }
 
-    fn authorize(&self, principal: &str, tenant: &str) -> Result<(), ClientErrorEnvelope> {
+    pub(crate) fn authorize(
+        &self,
+        principal: &str,
+        tenant: &str,
+    ) -> Result<(), ClientErrorEnvelope> {
         if self.principal != principal || self.profile.tenant != tenant {
             return Err(ClientErrorEnvelope::new(
                 ClientErrorCode::Unauthorized,
@@ -86,6 +91,74 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
             ));
         }
         Ok(())
+    }
+
+    pub(crate) fn bulk_placements<'a>(
+        &self,
+        tenant: &str,
+        requests: impl Iterator<Item = &'a ClientRequest>,
+    ) -> Result<Vec<Option<ClusterNodeId>>, ClientErrorEnvelope> {
+        let view = self
+            .owner
+            .raft
+            .partition_snapshot()
+            .ok_or_else(unavailable)?;
+        let mut by_partition = std::collections::BTreeMap::new();
+        requests
+            .map(|request| {
+                let (ns, key) = operation_key(request).ok_or_else(unsupported)?;
+                let partition = self
+                    .owner
+                    .replica
+                    .route_partition(tenant, ns, key)
+                    .ok_or_else(unsupported)?;
+                Ok(by_partition
+                    .entry(partition)
+                    .or_insert_with(|| {
+                        self.owner
+                            .replica
+                            .placement(&view, partition)
+                            .map(|placement| placement.primary.node)
+                    })
+                    .clone())
+            })
+            .collect()
+    }
+
+    pub(crate) fn listener_view(&self) -> Option<ListenerView> {
+        self.owner.listener_view()
+    }
+
+    pub(crate) fn local_member(&self) -> &PartitionMember {
+        self.owner.replica.local_member()
+    }
+
+    pub(crate) fn event_scope(&self) -> [u8; 32] {
+        self.owner.event_scope()
+    }
+
+    pub(crate) async fn fetch_events(&self, request: &EventPoll) -> CacheResult<EventPage> {
+        if request.target == *self.local_member() {
+            return self
+                .owner
+                .event_page(request.source.node.as_str(), request.epoch.value(), request)
+                .await;
+        }
+        self.owner
+            .value_transport
+            .as_ref()
+            .ok_or_else(transport_unavailable)?
+            .poll_events(request)
+            .await
+    }
+
+    pub(crate) async fn receive_events(
+        &self,
+        peer: &str,
+        epoch: u64,
+        request: &EventPoll,
+    ) -> CacheResult<EventPage> {
+        self.owner.event_page(peer, epoch, request).await
     }
 
     fn placement(

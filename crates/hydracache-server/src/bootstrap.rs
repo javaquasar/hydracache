@@ -275,8 +275,7 @@ pub struct ServerRuntime {
     flushed: bool,
     client_surface: Option<ClientSurfaceRuntime>,
     client_dispatch_state: Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>>,
-    distributed_hc2_dispatcher:
-        Option<Arc<hydracache_client_transport_axum::ClientSurfaceDispatcher>>,
+    distributed_hc2_service: Option<crate::Hc2ClientPlaneService>,
     management_client_state: Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>>,
     redis_listener_config: Option<RedisListenerConfig>,
     redis_surface: Option<RedisSurfaceRuntime>,
@@ -319,7 +318,7 @@ impl ServerRuntime {
     /// Validate config and construct a runtime.
     pub fn new(config: ServerConfig) -> Result<Self, ServerConfigError> {
         config.validate()?;
-        let (cache, cluster_status, grid_control, distributed_hc2_dispatcher) = match config.role {
+        let (cache, cluster_status, grid_control, distributed_hc2_service) = match config.role {
             ServerRole::Member => {
                 let member = crate::grid_host::build_member(&config)?;
                 (
@@ -348,7 +347,7 @@ impl ServerRuntime {
             None
         };
         let client_dispatch_state = if config.redis_api.enabled
-            || (config.hc2_client_plane.enabled && distributed_hc2_dispatcher.is_none())
+            || (config.hc2_client_plane.enabled && distributed_hc2_service.is_none())
         {
             Some(match &client_surface {
                 Some(surface) => surface.state(),
@@ -383,7 +382,7 @@ impl ServerRuntime {
             flushed: false,
             client_surface,
             client_dispatch_state,
-            distributed_hc2_dispatcher,
+            distributed_hc2_service,
             management_client_state: None,
             redis_listener_config,
             redis_surface,
@@ -633,13 +632,8 @@ impl ServerRuntime {
         if !self.config.hc2_client_plane.enabled {
             return None;
         }
-        match &self.distributed_hc2_dispatcher {
-            Some(dispatcher) => Some(crate::Hc2ClientPlaneService::distributed(
-                dispatcher.clone(),
-                cluster_id,
-                self.grid_control.as_ref()?.clone(),
-                self.config.distributed_hc2.as_ref()?.principal(),
-            )),
+        match &self.distributed_hc2_service {
+            Some(service) => Some(service.clone()),
             None => self
                 .client_dispatch_state()
                 .map(|state| crate::Hc2ClientPlaneService::new(state, cluster_id)),

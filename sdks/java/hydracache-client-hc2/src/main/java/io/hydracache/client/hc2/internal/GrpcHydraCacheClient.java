@@ -6,6 +6,7 @@ import io.grpc.Status;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.StreamObserver;
+import io.hydracache.client.hc2.BatchItemOutcome;
 import io.hydracache.client.hc2.BatchItemResult;
 import io.hydracache.client.hc2.BatchOperation;
 import io.hydracache.client.hc2.CacheEventListener;
@@ -61,6 +62,7 @@ import java.net.Socket;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -333,6 +335,13 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
   @Override
   public CompletableFuture<List<BatchItemResult>> batch(
       List<BatchOperation> operations, RequestOptions options) {
+    return batchOutcomes(operations, options).thenApply(outcomes -> outcomes.stream()
+        .map(item -> item.result().orElseThrow(() -> item.error().orElseThrow())).toList());
+  }
+
+  @Override
+  public CompletableFuture<List<BatchItemOutcome>> batchOutcomes(
+      List<BatchOperation> operations, RequestOptions options) {
     if (operations.isEmpty() || operations.size() > 1024) {
       throw new IllegalArgumentException("batch size must be in [1, 1024]");
     }
@@ -357,12 +366,18 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
       batch.addItems(item);
     }
     return invoke(InvocationRequest.newBuilder().setMeta(meta(options)).setBatch(batch).build(), options)
-        .thenApply(response -> mapBatch(response, operations.size()));
+        .thenApply(response -> mapBatchOutcomes(response, batch.getItemsCount()));
   }
 
   @Override
   public CompletableFuture<Subscription> subscribe(
       byte[] keyPrefix, long resumeWatermark, CacheEventListener listener) {
+    return subscribe(keyPrefix, resumeWatermark, false, listener);
+  }
+
+  @Override
+  public CompletableFuture<Subscription> subscribe(
+      byte[] keyPrefix, long resumeWatermark, boolean includeValue, CacheEventListener listener) {
     requireBytes(keyPrefix, "keyPrefix", 0, 1024 * 1024);
     java.util.Objects.requireNonNull(listener, "listener");
     if (resumeWatermark < 0) throw new IllegalArgumentException("resumeWatermark must be nonnegative");
@@ -398,7 +413,8 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
       send(ClientEnvelope.newBuilder().setGeneration(config.protocolGeneration())
           .setConnectionGeneration(CONNECTION_GENERATION).setCorrelationId(correlation)
           .setSubscribe(Subscribe.newBuilder().setSubscriptionId(id)
-              .setKeyPrefix(ByteString.copyFrom(keyPrefix)).setResumeWatermark(resumeWatermark))
+              .setKeyPrefix(ByteString.copyFrom(keyPrefix)).setResumeWatermark(resumeWatermark)
+              .setIncludeValue(includeValue))
           .build());
     } catch (RuntimeException error) {
       if (pendingSubscriptions.remove(correlation, pending)) pending.fail(error);
@@ -656,26 +672,13 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
     ActiveSubscription subscription = subscriptions.get(event.getSubscriptionId());
     if (subscription == null) return;
     events.increment();
-    try {
-      config.callbackExecutor().execute(() -> {
-        try {
-          subscription.listener.onEvent(new io.hydracache.client.hc2.CacheEvent(
-              event.getSubscriptionId(), event.getWatermark(), event.getKey().toByteArray(),
-              event.getValue().toByteArray(), event.getRemoved()));
-        } catch (RuntimeException error) { listenerFailures.increment(); }
-      });
-    } catch (RuntimeException rejected) { listenerFailures.increment(); }
+    subscription.enqueue(event);
   }
 
   private void dispatchGap(EventGap gap) {
     ActiveSubscription subscription = subscriptions.get(gap.getSubscriptionId());
     if (subscription == null) return;
-    try {
-      config.callbackExecutor().execute(() -> {
-        try { subscription.listener.onGap(gap.getSubscriptionId(), gap.getAfterWatermark()); }
-        catch (RuntimeException error) { listenerFailures.increment(); }
-      });
-    } catch (RuntimeException rejected) { listenerFailures.increment(); }
+    subscription.enqueueGap(gap.getAfterWatermark());
   }
 
   private void acceptTopology(TopologyUpdate update) {
@@ -726,15 +729,23 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
     if (existing != null) existing.fence.accumulateAndGet(heartbeat.getFence(), Math::max);
   }
 
-  private static List<BatchItemResult> mapBatch(InvocationResponse response, int expected) {
+  static List<BatchItemOutcome> mapBatchOutcomes(InvocationResponse response, int expected) {
     requireSuccess(response.getMeta());
     if (!response.hasBatch()) throw local(ErrorCode.INTERNAL, "peer omitted batch result");
     BatchResult batch = response.getBatch();
     if (batch.getItemsCount() != expected) throw local(ErrorCode.INTERNAL, "batch result count mismatch");
-    List<BatchItemResult> results = new ArrayList<>(expected);
+    List<BatchItemOutcome> results = new ArrayList<>(expected);
     for (int index = 0; index < expected; index++) {
       InvocationResponse item = batch.getItems(index);
-      requireSuccess(item.getMeta());
+      int id = index + 1;
+      long epoch = item.getMeta().getTopologyEpoch();
+      if (item.getMeta().getError()
+          != io.hydracache.client.hc2.internal.wire.StableErrorCode.STABLE_ERROR_UNSPECIFIED) {
+        ResponseMeta meta = item.getMeta();
+        results.add(new BatchItemOutcome(id, epoch, Optional.empty(), Optional.of(
+            new HydraCacheException(mapError(meta.getError()), mapRetry(meta.getRetry()), meta.getSafeDetail()))));
+        continue;
+      }
       Optional<CacheValue> value = Optional.empty();
       Optional<MutationResult> mutation = Optional.empty();
       if (item.hasValue() && item.getValue().getFound()) {
@@ -744,7 +755,8 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
       } else if (item.hasMutation()) {
         mutation = Optional.of(new MutationResult(item.getMutation().getApplied()));
       }
-      results.add(new BatchItemResult(index + 1, value, mutation));
+      results.add(new BatchItemOutcome(id, epoch,
+          Optional.of(new BatchItemResult(id, value, mutation)), Optional.empty()));
     }
     return List.copyOf(results);
   }
@@ -903,17 +915,95 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
   }
 
   private final class ActiveSubscription implements Subscription {
+    private static final int MAX_CALLBACKS = 64;
+    private static final int MAX_CALLBACK_BYTES = 8 * 1024 * 1024;
     private final long id;
     private final long initialWatermark;
     private final CacheEventListener listener;
     private final AtomicBoolean stopped = new AtomicBoolean();
+    private final ArrayDeque<io.hydracache.client.hc2.internal.wire.CacheEvent> queue = new ArrayDeque<>();
+    private int queuedBytes;
+    private boolean delivering;
+    private Long pendingGap;
+    private long lastQueued;
     ActiveSubscription(long id, long initialWatermark, CacheEventListener listener) {
       this.id = id; this.initialWatermark = initialWatermark; this.listener = listener;
+      this.lastQueued = initialWatermark;
+    }
+    void enqueue(io.hydracache.client.hc2.internal.wire.CacheEvent event) {
+      synchronized (this) {
+        if (stopped.get()) return;
+        int bytes = event.getSerializedSize();
+        if (pendingGap == null && queue.size() < MAX_CALLBACKS
+            && bytes <= MAX_CALLBACK_BYTES - queuedBytes) {
+          queue.addLast(event);
+          queuedBytes += bytes;
+          lastQueued = event.getWatermark();
+        } else if (pendingGap == null) {
+          pendingGap = lastQueued;
+        }
+        if (delivering) return;
+        delivering = true;
+      }
+      scheduleDelivery();
+    }
+    void enqueueGap(long afterWatermark) {
+      synchronized (this) {
+        if (stopped.get()) return;
+        pendingGap = pendingGap == null ? afterWatermark : Math.min(pendingGap, afterWatermark);
+        if (delivering) return;
+        delivering = true;
+      }
+      scheduleDelivery();
+    }
+    private void scheduleDelivery() {
+      try {
+        config.callbackExecutor().execute(this::deliver);
+      } catch (RuntimeException rejected) {
+        synchronized (this) { delivering = false; }
+        listenerFailures.increment();
+      }
+    }
+    private void deliver() {
+      while (!stopped.get()) {
+        io.hydracache.client.hc2.internal.wire.CacheEvent event;
+        Long gap;
+        synchronized (this) {
+          event = queue.pollFirst();
+          if (event != null) {
+            queuedBytes -= event.getSerializedSize();
+            gap = null;
+          } else {
+            gap = pendingGap;
+            pendingGap = null;
+            if (gap == null) {
+              delivering = false;
+              return;
+            }
+          }
+        }
+        try {
+          if (event == null) {
+            listener.onGap(id, gap);
+          } else {
+            listener.onEvent(new io.hydracache.client.hc2.CacheEvent(
+                id, event.getWatermark(), event.getKey().toByteArray(),
+                event.getValue().toByteArray(), event.getRemoved()));
+          }
+        } catch (RuntimeException error) { listenerFailures.increment(); }
+      }
+    }
+    private synchronized void clearQueue() {
+      queue.clear();
+      queuedBytes = 0;
+      pendingGap = null;
     }
     @Override public long id() { return id; }
     @Override public long initialWatermark() { return initialWatermark; }
     @Override public void close() {
-      if (!stopped.compareAndSet(false, true) || !subscriptions.remove(id, this)) return;
+      if (!stopped.compareAndSet(false, true)) return;
+      subscriptions.remove(id, this);
+      clearQueue();
       subscriptionPermits.release();
       if (!closed.get()) {
         send(ClientEnvelope.newBuilder().setGeneration(config.protocolGeneration())
@@ -922,7 +1012,10 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
       }
     }
     void stopWithoutSend() {
-      if (stopped.compareAndSet(false, true)) subscriptionPermits.release();
+      if (stopped.compareAndSet(false, true)) {
+        clearQueue();
+        subscriptionPermits.release();
+      }
     }
   }
 

@@ -307,14 +307,16 @@ class Cancel(_message.Message):
     def __init__(self, correlation_id: _Optional[int] = ..., safe_reason: _Optional[str] = ...) -> None: ...
 
 class Subscribe(_message.Message):
-    __slots__ = ("subscription_id", "key_prefix", "resume_watermark")
+    __slots__ = ("subscription_id", "key_prefix", "resume_watermark", "include_value")
     SUBSCRIPTION_ID_FIELD_NUMBER: _ClassVar[int]
     KEY_PREFIX_FIELD_NUMBER: _ClassVar[int]
     RESUME_WATERMARK_FIELD_NUMBER: _ClassVar[int]
+    INCLUDE_VALUE_FIELD_NUMBER: _ClassVar[int]
     subscription_id: int
     key_prefix: bytes
     resume_watermark: int
-    def __init__(self, subscription_id: _Optional[int] = ..., key_prefix: _Optional[bytes] = ..., resume_watermark: _Optional[int] = ...) -> None: ...
+    include_value: bool
+    def __init__(self, subscription_id: _Optional[int] = ..., key_prefix: _Optional[bytes] = ..., resume_watermark: _Optional[int] = ..., include_value: bool = ...) -> None: ...
 
 class Unsubscribe(_message.Message):
     __slots__ = ("subscription_id",)

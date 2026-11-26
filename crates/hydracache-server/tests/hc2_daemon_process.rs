@@ -196,149 +196,13 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
     }
     let profile = imap_hc2_campaign::Profile::from_env();
     let _guard = async_daemon_process_guard().await;
-    let root = test_root("distributed-imap");
-    let pki = pki();
-    let (server_cert, server_key, ca) = write_pki(&root, &pki);
-    let mut pem = std::io::BufReader::new(pki.client_cert.as_bytes());
-    let leaf =
-        <rustls::pki_types::CertificateDer as rustls::pki_types::pem::PemObject>::from_pem_reader(
-            &mut pem,
-        )
-        .unwrap();
-    let profile_path = root.join("imap.toml");
-    std::fs::write(
-        &profile_path,
-        format!(
-            "tenant = \"w10i\"\nclient_cert_sha256 = \"{}\"\n",
-            sha256_hex(leaf.as_ref())
-        ),
-    )
-    .unwrap();
-    let token = root.join("cluster-token");
-    std::fs::write(&token, format!("fixture-only-{}", root.display())).unwrap();
-    let (addresses, reservations) = reserve_addrs::<12>();
-    let names = addresses[..3]
-        .iter()
-        .map(|addr| format!("member-{}", addr.to_string().replace(['.', ':'], "-")))
-        .collect::<Vec<_>>();
-    let seeds = addresses[..3]
-        .iter()
-        .map(ToString::to_string)
-        .collect::<Vec<_>>()
-        .join(",");
-    let spawn = |index: usize| {
-        let log = std::fs::File::options()
-            .create(true)
-            .append(true)
-            .open(root.join(format!("member-{index}.log")))
-            .unwrap();
-        let mut command = daemon_command(
-            addresses[3 + index],
-            addresses[6 + index],
-            addresses[9 + index],
-            &server_cert,
-            &server_key,
-            &ca,
-        );
-        ChildGuard(
-            command
-                .env("HYDRACACHE_CLIENT_API_ENABLED", "false")
-                .env("HYDRACACHE_ROLE", "member")
-                .env("HYDRACACHE_CLUSTER_ADDR", addresses[index].to_string())
-                .env(
-                    "HYDRACACHE_CLUSTER_ADVERTISE_ADDR",
-                    addresses[index].to_string(),
-                )
-                .env("HYDRACACHE_NODE_ID", &names[index])
-                .env("HYDRACACHE_SEEDS", &seeds)
-                .env("HYDRACACHE_STORAGE_DIR", root.join(&names[index]))
-                .env("HYDRACACHE_CLUSTER_AUTH_KEY_ID", "w10i-fixture")
-                .env("HYDRACACHE_CLUSTER_AUTH_TOKEN_FILE", &token)
-                .env("HYDRACACHE_DISTRIBUTED_HC2_CONFIG", &profile_path)
-                .stdout(Stdio::from(log.try_clone().unwrap()))
-                .stderr(Stdio::from(log))
-                .spawn()
-                .unwrap(),
-        )
-    };
-    drop(reservations);
-    let mut daemons: Vec<_> = (0..3).map(spawn).collect();
-    let adapters: Vec<_> = addresses[9..]
-        .iter()
-        .map(|address| {
-            GrpcMtlsAdapter::new(
-                GrpcMtlsConfig::new(
-                    format!("https://{address}"),
-                    "localhost",
-                    pki.ca.as_bytes(),
-                    pki.client_cert.as_bytes(),
-                    pki.client_key.as_bytes(),
-                )
-                .unwrap(),
-            )
-        })
-        .collect();
-    let mut clients = Vec::new();
-    for adapter in &adapters {
-        clients.push(connect_w10i(adapter, "w10i").await);
-    }
-    let scope = ReplicaReadScope::new(
-        "w10i".to_owned(),
-        Namespace::new("hc2").unwrap(),
-        std::num::NonZeroU64::MIN,
-        |_| None,
-    );
-    let members: Vec<_> = names
-        .iter()
-        .map(|name| ClusterMember {
-            node_id: ClusterNodeId::new(name),
-            generation: ClusterGeneration::new(1),
-            role: ClusterRole::Member,
-            epoch: ClusterEpoch::new(3),
-            endpoints: Default::default(),
-            metadata: Default::default(),
-        })
-        .collect();
-    let key_for = |primary: usize, backup: Option<usize>| {
-        (0..5000)
-            .find_map(|n| {
-                let key = format!("w10i-\0-{n}").into_bytes();
-                let (partition, _) = scope.locate(key.clone()).unwrap();
-                let ranking = RendezvousClusterOwnership
-                    .replicas_for_key(&format!("partition-{}", partition.value()), &members, 2)
-                    .unwrap();
-                (ranking.primary == members[primary].node_id
-                    && backup.is_none_or(|b| ranking.backups == [members[b].node_id.clone()]))
-                .then(|| Bytes::from(key))
-            })
-            .unwrap()
-    };
-    let hot = key_for(0, Some(1));
-    let control = key_for(1, Some(2));
+    let mut cluster = MemberCluster::start("distributed-imap").await;
+    let hot = cluster.key_for(0, Some(1), "w10i-\0-");
+    let control = cluster.key_for(1, Some(2), "w10i-\0-");
+    let clients = &mut cluster.clients;
     let initial = Bytes::from_static(b"initial");
     let winner = Bytes::from_static(b"confirmed-before-kill");
     let recovered = Bytes::from_static(b"confirmed-after-kill");
-    println!("W10i daemon process artifacts {}", root.display());
-    let deadline = tokio::time::Instant::now() + Duration::from_secs(18);
-    let status = reqwest::Client::new();
-    loop {
-        let endpoint = format!("http://{}{ADMIN_CLUSTER_OVERVIEW_PATH}", addresses[7]);
-        if let Ok(response) = status.get(endpoint).send().await {
-            if let Ok(status) = response.json::<serde_json::Value>().await {
-                if status["members"]
-                    .as_array()
-                    .is_some_and(|members| members.len() == 3)
-                {
-                    break;
-                }
-            }
-        }
-        assert!(
-            tokio::time::Instant::now() < deadline,
-            "three members were never admitted"
-        );
-        tokio::time::sleep(Duration::from_millis(70)).await;
-    }
     wait_w10i_get(&clients[1], control.clone(), None).await;
     assert!(
         clients[2]
@@ -357,7 +221,7 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
             .value,
         initial
     );
-    let not_admitted = connect_w10i(&adapters[2], "different-tenant").await;
+    let not_admitted = connect_w10i(&cluster.adapters[2], "different-tenant").await;
     assert_eq!(
         not_admitted
             .get(hot.clone(), None)
@@ -414,10 +278,10 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
         profile.ledger().unwrap(),
     ));
     tokio::time::sleep_until(started + profile.duration / 3).await;
-    let killed = daemons[0].0.id();
+    let killed = cluster.daemons[0].0.id();
     let killed_at_ms = started.elapsed().as_millis() as u64;
-    daemons[0].0.kill().unwrap();
-    daemons[0].0.wait().unwrap();
+    cluster.daemons[0].0.kill().unwrap();
+    cluster.daemons[0].0.wait().unwrap();
     wait_w10i_get(&clients[2], hot.clone(), Some(&winner)).await;
     let replay = retry_w10i(|| {
         clients[1].compare_and_set(
@@ -464,13 +328,13 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
         }
     }
     let recovered_at_ms = started.elapsed().as_millis() as u64;
-    daemons[0] = spawn(0);
-    clients[0] = connect_w10i(&adapters[0], "w10i").await;
+    cluster.daemons[0] = cluster.spec.spawn(0);
+    clients[0] = connect_w10i(&cluster.adapters[0], "w10i").await;
     wait_w10i_get(&clients[0], hot.clone(), Some(&recovered)).await;
     let _removed =
         retry_w10i(|| clients[2].remove_if_value(hot.clone(), recovered.clone(), None)).await;
     wait_w10i_get(&clients[0], hot, None).await;
-    let rejoined = daemons[0].0.id();
+    let rejoined = cluster.daemons[0].0.id();
     let rejoined_at_ms = started.elapsed().as_millis() as u64;
     let counts = load.await.unwrap();
     assert!(counts.acknowledgements > 0);
@@ -490,11 +354,495 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
     println!("W10i public HC/2 killed_pid={killed} rejoined_pid={rejoined} checks={counts:?} retained_cas_and_tombstone=true");
 }
 
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn w10g_distributed_bulk_and_cluster_listeners_recover_under_load() {
+    use hydracache_client_hc2::{BatchOperation, SubscriptionEvent};
+
+    if std::env::var("HYDRACACHE_RUN_DAEMON_PROCESS_E2E").as_deref() != Ok("1") {
+        return;
+    }
+    let _guard = async_daemon_process_guard().await;
+    let mut cluster = MemberCluster::start("w10g-bulk-listener").await;
+    let prefix = "w10g-event/";
+    let hot = cluster.key_for(0, Some(1), &format!("{prefix}hot/"));
+    let control = cluster.key_for(1, Some(2), &format!("{prefix}control/"));
+    let third = cluster.key_for(2, Some(1), &format!("{prefix}third/"));
+    let load_key = cluster.key_for(1, Some(2), "w10g-load/");
+    let client = &cluster.clients[2];
+    let value = |text: &'static [u8]| Bytes::from_static(text);
+    let put = |key: &Bytes, bytes: &'static [u8]| BatchOperation::Put {
+        key: key.clone(),
+        value: value(bytes),
+        ttl: None,
+    };
+    let get = |key: &Bytes| BatchOperation::Get { key: key.clone() };
+    wait_w10i_get(client, control.clone(), None).await;
+    let mut events = client
+        .subscribe_with_values(Bytes::from_static(b"w10g-event/"), 0, true)
+        .await
+        .unwrap();
+    let mut key_only = client
+        .subscribe(Bytes::from_static(b"w10g-event/control/"), 0)
+        .await
+        .unwrap();
+    let slow = client
+        .subscribe(Bytes::from_static(b"w10g-load/"), 0)
+        .await
+        .unwrap();
+
+    let invalid_key = value(b"w10g-invalid");
+    let invalid = vec![
+        put(&invalid_key, b"must-not-apply"),
+        BatchOperation::Put {
+            key: third.clone(),
+            value: value(b"ttl"),
+            ttl: Some(Duration::from_secs(1)),
+        },
+    ];
+    assert_eq!(
+        client
+            .batch_outcomes(invalid, None)
+            .await
+            .unwrap_err()
+            .code(),
+        ErrorCode::Unsupported
+    );
+    wait_w10i_get(client, invalid_key, None).await;
+    let options = RequestOptions {
+        timeout: Duration::from_secs(8),
+        idempotency_key: value(b"w10g-initial"),
+    };
+    let mixed = vec![
+        put(&hot, b"one"),
+        put(&third, b"three"),
+        put(&control, b"two"),
+        get(&hot),
+        put(&hot, b"one-again"),
+        get(&control),
+        get(&hot),
+    ];
+    let items = client
+        .batch_outcomes(mixed.clone(), Some(options.clone()))
+        .await
+        .unwrap();
+    assert_eq!(items.len(), mixed.len());
+    for (index, item) in items.iter().enumerate() {
+        assert_eq!(item.item_id as usize, index + 1);
+        assert!(item.topology_epoch > 0);
+        let result = item.result.as_ref().unwrap();
+        match index {
+            3 => assert_eq!(result.value.as_ref().unwrap().value, value(b"one")),
+            5 => assert_eq!(result.value.as_ref().unwrap().value, value(b"two")),
+            6 => assert_eq!(result.value.as_ref().unwrap().value, value(b"one-again")),
+            _ => assert!(result.mutation.unwrap().applied),
+        }
+    }
+    let mut observed = std::collections::BTreeMap::<Bytes, Vec<Bytes>>::new();
+    let mut watermark = 0;
+    for _ in 0..4 {
+        let SubscriptionEvent::Event(event) = next_w10g_event(&mut events).await else {
+            panic!("initial certified mutations require a continuous stream");
+        };
+        assert_eq!(event.watermark, watermark + 1);
+        watermark = event.watermark;
+        observed.entry(event.key).or_default().push(event.value);
+    }
+    assert_eq!(observed[&hot], [value(b"one"), value(b"one-again")]);
+    assert_eq!(observed[&third], [value(b"three")]);
+    assert_eq!(observed[&control], [value(b"two")]);
+    let SubscriptionEvent::Event(projected) = next_w10g_event(&mut key_only).await else {
+        panic!("expected filtered key event");
+    };
+    assert_eq!(projected.key, control);
+    assert!(projected.value.is_empty());
+    let repeated = cluster.clients[1]
+        .batch_outcomes(mixed, Some(options))
+        .await
+        .unwrap();
+    for index in [0, 1, 2, 4] {
+        assert!(
+            repeated[index]
+                .result
+                .as_ref()
+                .unwrap()
+                .mutation
+                .unwrap()
+                .applied
+        );
+    }
+    assert!(
+        tokio::time::timeout(Duration::from_millis(250), events.next())
+            .await
+            .is_err()
+    );
+    for count in [1, 8, 64, 256] {
+        let keys = [&hot, &control, &third];
+        let reads = (0..count)
+            .map(|index| get(keys[index % keys.len()]))
+            .collect();
+        let read_options = RequestOptions::with_timeout(Duration::from_secs(12)).unwrap();
+        let results = client
+            .batch_outcomes(reads, Some(read_options))
+            .await
+            .unwrap();
+        assert_eq!(results.len(), count);
+        for (index, item) in results.into_iter().enumerate() {
+            assert_eq!(item.item_id as usize, index + 1);
+            let expected = [value(b"one-again"), value(b"two"), value(b"three")];
+            assert_eq!(
+                item.result.unwrap().value.unwrap().value,
+                expected[index % 3]
+            );
+        }
+    }
+
+    let writer = client.clone();
+    let load = tokio::spawn(async move {
+        let mut accepted = 0;
+        let stop = tokio::time::Instant::now() + Duration::from_secs(8);
+        while tokio::time::Instant::now() < stop {
+            if writer
+                .put(load_key.clone(), value(b"load"), None, None)
+                .await
+                .is_ok_and(|result| result.applied)
+            {
+                accepted += 1;
+            }
+            tokio::time::sleep(Duration::from_millis(6)).await;
+        }
+        accepted
+    });
+    tokio::time::sleep(Duration::from_millis(250)).await;
+    let dead_pid = cluster.daemons[0].0.id();
+    cluster.daemons[0].0.kill().unwrap();
+    cluster.daemons[0].0.wait().unwrap();
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(4);
+    loop {
+        let partial = client
+            .batch_outcomes(vec![get(&third), get(&hot), get(&control)], None)
+            .await;
+        if let Ok(partial) = partial {
+            if partial[0].result.is_ok() && partial[1].result.is_err() && partial[2].result.is_ok()
+            {
+                assert_eq!(
+                    partial[0]
+                        .result
+                        .as_ref()
+                        .unwrap()
+                        .value
+                        .as_ref()
+                        .unwrap()
+                        .value,
+                    value(b"three")
+                );
+                assert_eq!(
+                    partial[2]
+                        .result
+                        .as_ref()
+                        .unwrap()
+                        .value
+                        .as_ref()
+                        .unwrap()
+                        .value,
+                    value(b"two")
+                );
+                break;
+            }
+        }
+        assert!(
+            tokio::time::Instant::now() < deadline,
+            "owner outage did not expose a partial batch"
+        );
+        tokio::time::sleep(Duration::from_millis(30)).await;
+    }
+    wait_w10i_get(client, hot.clone(), Some(&value(b"one-again"))).await;
+    assert!(
+        matches!(next_w10g_event(&mut events).await, SubscriptionEvent::Gap { after_watermark, .. } if after_watermark == watermark)
+    );
+    assert!(
+        retry_w10i(|| client.put(hot.clone(), value(b"recovered"), None, None))
+            .await
+            .applied
+    );
+    let resumed = wait_w10g_mutation(&mut events, &hot).await;
+    assert_eq!(resumed.value, value(b"recovered"));
+
+    cluster.daemons[0] = cluster.spec.spawn(0);
+    let rejoined = connect_w10i(&cluster.adapters[0], "w10i").await;
+    wait_w10i_get(&rejoined, hot.clone(), Some(&value(b"recovered"))).await;
+    let mut reconnect = rejoined
+        .subscribe_with_values(value(b"w10g-event/"), resumed.watermark, true)
+        .await
+        .unwrap();
+    assert!(
+        matches!(next_w10g_event(&mut reconnect).await, SubscriptionEvent::Gap { after_watermark, .. } if after_watermark == resumed.watermark)
+    );
+    assert!(
+        retry_w10i(|| client.delete(control.clone(), None))
+            .await
+            .applied
+    );
+    let removed = wait_w10g_mutation(&mut reconnect, &control).await;
+    assert!(removed.removed && removed.value.is_empty());
+    wait_w10i_get(&rejoined, control, None).await;
+    drop((events, slow, key_only, reconnect));
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(5);
+    let http = reqwest::Client::new();
+    loop {
+        let mut empty = true;
+        for index in [0, 2] {
+            let metrics = http
+                .get(format!(
+                    "http://{}{ADMIN_METRICS_PATH}",
+                    cluster.spec.addresses[6 + index]
+                ))
+                .send()
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap();
+            empty &= metrics
+                .contains("hydracache_hc2_subscriptions{transport=\"grpc_bidirectional\"} 0");
+        }
+        if empty {
+            break;
+        }
+        assert!(
+            tokio::time::Instant::now() < deadline,
+            "clustered subscriptions were retained after close"
+        );
+        tokio::time::sleep(Duration::from_millis(40)).await;
+    }
+    let accepted = load.await.unwrap();
+    assert!(
+        accepted >= 20,
+        "slow listener impaired foreground writes: {accepted}"
+    );
+    println!("W10g bulk sizes=1/8/64/256 partial_owner_failure=true listener_gap_and_reconnect=true killed_pid={dead_pid} rejoined_pid={} foreground_acks={accepted} retained_subscriptions=0", cluster.daemons[0].0.id());
+}
+
+async fn next_w10g_event(
+    subscription: &mut hydracache_client_hc2::Subscription,
+) -> hydracache_client_hc2::SubscriptionEvent {
+    tokio::time::timeout(Duration::from_secs(8), subscription.next())
+        .await
+        .expect("cluster subscription did not deliver before its deadline")
+        .expect("cluster subscription closed")
+}
+
+async fn wait_w10g_mutation(
+    subscription: &mut hydracache_client_hc2::Subscription,
+    key: &Bytes,
+) -> hydracache_client_hc2::CacheEvent {
+    for _ in 0..8 {
+        if let hydracache_client_hc2::SubscriptionEvent::Event(event) =
+            next_w10g_event(subscription).await
+        {
+            if &event.key == key {
+                return event;
+            }
+        }
+    }
+    panic!("missing cluster event for the target key");
+}
+
+struct MemberClusterSpec {
+    root: PathBuf,
+    addresses: [SocketAddr; 12],
+    names: Vec<String>,
+    seeds: String,
+    server_cert: PathBuf,
+    server_key: PathBuf,
+    ca: PathBuf,
+}
+
+impl MemberClusterSpec {
+    fn spawn(&self, index: usize) -> ChildGuard {
+        let log = std::fs::File::options()
+            .create(true)
+            .append(true)
+            .open(self.root.join(format!("member-{index}.log")))
+            .unwrap();
+        let mut command = daemon_command(
+            self.addresses[3 + index],
+            self.addresses[6 + index],
+            self.addresses[9 + index],
+            &self.server_cert,
+            &self.server_key,
+            &self.ca,
+        );
+        ChildGuard(
+            command
+                .env("HYDRACACHE_CLIENT_API_ENABLED", "false")
+                .env("HYDRACACHE_ROLE", "member")
+                .env("HYDRACACHE_CLUSTER_ADDR", self.addresses[index].to_string())
+                .env(
+                    "HYDRACACHE_CLUSTER_ADVERTISE_ADDR",
+                    self.addresses[index].to_string(),
+                )
+                .env("HYDRACACHE_NODE_ID", &self.names[index])
+                .env("HYDRACACHE_SEEDS", &self.seeds)
+                .env("HYDRACACHE_STORAGE_DIR", self.root.join(&self.names[index]))
+                .env("HYDRACACHE_CLUSTER_AUTH_KEY_ID", "w10i-fixture")
+                .env(
+                    "HYDRACACHE_CLUSTER_AUTH_TOKEN_FILE",
+                    self.root.join("cluster-token"),
+                )
+                .env(
+                    "HYDRACACHE_DISTRIBUTED_HC2_CONFIG",
+                    self.root.join("imap.toml"),
+                )
+                .env("HYDRACACHE_CLIENT_BATCH_PROFILE", "w11-256")
+                .stdout(Stdio::from(log.try_clone().unwrap()))
+                .stderr(Stdio::from(log))
+                .spawn()
+                .unwrap(),
+        )
+    }
+}
+
+struct MemberCluster {
+    spec: MemberClusterSpec,
+    daemons: Vec<ChildGuard>,
+    adapters: Vec<GrpcMtlsAdapter>,
+    clients: Vec<Hc2Client>,
+}
+
+impl MemberCluster {
+    async fn start(label: &str) -> Self {
+        let root = test_root(label);
+        let pki = pki();
+        let (server_cert, server_key, ca) = write_pki(&root, &pki);
+        let mut pem = std::io::BufReader::new(pki.client_cert.as_bytes());
+        let leaf = <rustls::pki_types::CertificateDer as rustls::pki_types::pem::PemObject>
+            ::from_pem_reader(&mut pem).unwrap();
+        std::fs::write(
+            root.join("imap.toml"),
+            format!(
+                "tenant = \"w10i\"\nclient_cert_sha256 = \"{}\"\n",
+                sha256_hex(leaf.as_ref())
+            ),
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("cluster-token"),
+            format!("fixture-only-{}", root.display()),
+        )
+        .unwrap();
+        let (addresses, reservations) = reserve_addrs::<12>();
+        let names = addresses[..3]
+            .iter()
+            .map(|addr| format!("member-{}", addr.to_string().replace(['.', ':'], "-")))
+            .collect();
+        let seeds = addresses[..3]
+            .iter()
+            .map(ToString::to_string)
+            .collect::<Vec<_>>()
+            .join(",");
+        let spec = MemberClusterSpec {
+            root,
+            addresses,
+            names,
+            seeds,
+            server_cert,
+            server_key,
+            ca,
+        };
+        drop(reservations);
+        let daemons = (0..3).map(|index| spec.spawn(index)).collect();
+        let adapters: Vec<_> = addresses[9..]
+            .iter()
+            .map(|address| {
+                GrpcMtlsAdapter::new(
+                    GrpcMtlsConfig::new(
+                        format!("https://{address}"),
+                        "localhost",
+                        pki.ca.as_bytes(),
+                        pki.client_cert.as_bytes(),
+                        pki.client_key.as_bytes(),
+                    )
+                    .unwrap(),
+                )
+            })
+            .collect();
+        let mut clients = Vec::new();
+        for adapter in &adapters {
+            clients.push(connect_w10i(adapter, "w10i").await);
+        }
+        println!("HC/2 member process artifacts {}", spec.root.display());
+        let deadline = tokio::time::Instant::now() + Duration::from_secs(18);
+        let status = reqwest::Client::new();
+        let endpoint = format!("http://{}{ADMIN_CLUSTER_OVERVIEW_PATH}", addresses[7]);
+        loop {
+            if let Ok(response) = status.get(&endpoint).send().await {
+                if let Ok(status) = response.json::<serde_json::Value>().await {
+                    if status["members"]
+                        .as_array()
+                        .is_some_and(|members| members.len() == 3)
+                    {
+                        break;
+                    }
+                }
+            }
+            assert!(
+                tokio::time::Instant::now() < deadline,
+                "three members were never admitted"
+            );
+            tokio::time::sleep(Duration::from_millis(70)).await;
+        }
+        Self {
+            spec,
+            daemons,
+            adapters,
+            clients,
+        }
+    }
+
+    fn key_for(&self, primary: usize, backup: Option<usize>, prefix: &str) -> Bytes {
+        let scope = ReplicaReadScope::new(
+            "w10i".to_owned(),
+            Namespace::new("hc2").unwrap(),
+            std::num::NonZeroU64::MIN,
+            |_| None,
+        );
+        let members: Vec<_> = self
+            .spec
+            .names
+            .iter()
+            .map(|name| ClusterMember {
+                node_id: ClusterNodeId::new(name),
+                generation: ClusterGeneration::new(1),
+                role: ClusterRole::Member,
+                epoch: ClusterEpoch::new(3),
+                endpoints: Default::default(),
+                metadata: Default::default(),
+            })
+            .collect();
+        (0..5000)
+            .find_map(|n| {
+                let key = format!("{prefix}{n}").into_bytes();
+                let (partition, _) = scope.locate(key.clone()).unwrap();
+                let ranking = RendezvousClusterOwnership
+                    .replicas_for_key(&format!("partition-{}", partition.value()), &members, 2)
+                    .unwrap();
+                (ranking.primary == members[primary].node_id
+                    && backup.is_none_or(|b| ranking.backups == [members[b].node_id.clone()]))
+                .then(|| Bytes::from(key))
+            })
+            .unwrap()
+    }
+}
+
 async fn connect_w10i(adapter: &GrpcMtlsAdapter, tenant: &str) -> Hc2Client {
     let deadline = tokio::time::Instant::now() + Duration::from_secs(18);
     loop {
         let mut config = ClientConfig::new("w10i-sdk", tenant);
-        config.capabilities = vec![Capability::Data];
+        config.capabilities = vec![
+            Capability::Data,
+            Capability::Batch,
+            Capability::Subscriptions,
+        ];
         match Hc2Client::connect(adapter, config).await {
             Ok(client) => return client,
             Err(error) => assert!(

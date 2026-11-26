@@ -39,6 +39,13 @@ use tonic::{Request, Response, Status, Streaming};
 
 use crate::cluster_status::GridControlPlaneHandle;
 use crate::config::TlsConfig;
+use crate::value_plane_subscription::{
+    ClusterEvent, ClusterSubscriptionCoordinator, MemberValuePlane, MAX_CLUSTER_SUBSCRIPTIONS,
+    MAX_PREFIX_BYTES,
+};
+
+#[path = "hc2_bulk.rs"]
+mod bulk;
 
 /// Opaque, eagerly validated TLS policy for the production HC/2 listener.
 #[derive(Clone)]
@@ -126,6 +133,9 @@ pub struct Hc2ClientPlaneService {
 struct DistributedMember {
     grid: Arc<dyn GridControlPlaneHandle>,
     principal: String,
+    plane: MemberValuePlane,
+    subscriptions: Arc<Semaphore>,
+    bulk: Arc<Semaphore>,
 }
 
 impl Hc2ClientPlaneService {
@@ -152,9 +162,16 @@ impl Hc2ClientPlaneService {
         cluster_id: impl Into<String>,
         grid: Arc<dyn GridControlPlaneHandle>,
         principal: String,
+        plane: MemberValuePlane,
     ) -> Self {
         Self {
-            member: Some(DistributedMember { grid, principal }),
+            member: Some(DistributedMember {
+                grid,
+                principal,
+                plane,
+                subscriptions: Arc::new(Semaphore::new(MAX_CLUSTER_SUBSCRIPTIONS)),
+                bulk: Arc::new(Semaphore::new(bulk::MAX_ACTIVE_BATCHES)),
+            }),
             ..Self::from_dispatcher(dispatcher, cluster_id)
         }
     }
@@ -426,7 +443,13 @@ async fn serve_connection(
                     .requested
                     .into_iter()
                     .filter(|capability| {
-                        service.member.is_none() || *capability == Capability::Data as i32
+                        service.member.is_none()
+                            || matches!(
+                                Capability::try_from(*capability),
+                                Ok(Capability::Data
+                                    | Capability::Batch
+                                    | Capability::Subscriptions)
+                            )
                     })
                     .collect(),
                 topology_epoch: service.topology_epoch(),
@@ -439,6 +462,7 @@ async fn serve_connection(
         .await?;
 
     let mut subscriptions = BTreeMap::<u64, (Bytes, u64)>::new();
+    let mut clustered = BTreeMap::<u64, ClusterSubscriptionTask>::new();
     let mut sessions = BTreeMap::<Bytes, u64>::new();
     let mut resources = StreamResourceGuard::new(Arc::clone(&service.accounting));
     while let Some(envelope) = inbound.message().await? {
@@ -453,7 +477,11 @@ async fn serve_connection(
         }
         match envelope.message {
             Some(client_envelope::Message::Invocation(invocation)) => {
-                let event = mutation_event(&invocation);
+                let event = service
+                    .member
+                    .is_none()
+                    .then(|| mutation_event(&invocation))
+                    .flatten();
                 let mut response = dispatch_invocation_until_closed(
                     service,
                     peer_id,
@@ -492,10 +520,28 @@ async fn serve_connection(
                 }
             }
             Some(client_envelope::Message::Subscribe(subscribe)) => {
-                if service.member.is_some() {
-                    return Err(Status::unimplemented(
-                        "clustered HC/2 subscriptions are unavailable",
-                    ));
+                if let Some(member) = &service.member {
+                    clustered.retain(|_, task| !task.0.is_finished());
+                    if clustered.contains_key(&subscribe.subscription_id)
+                        || clustered.len() >= service.state.limits().max_streams_per_connection
+                    {
+                        reject(&service.accounting);
+                        return Err(Status::resource_exhausted(
+                            "HC/2 subscription bound exceeded",
+                        ));
+                    }
+                    let id = subscribe.subscription_id;
+                    let task = start_cluster_subscription(
+                        member,
+                        Arc::clone(&service.accounting),
+                        identity,
+                        envelope.correlation_id,
+                        subscribe,
+                        outbound,
+                    )
+                    .await?;
+                    clustered.insert(id, task);
+                    continue;
                 }
                 if subscriptions.contains_key(&subscribe.subscription_id)
                     || subscriptions.len() >= service.state.limits().max_streams_per_connection
@@ -522,6 +568,7 @@ async fn serve_connection(
                     .await?;
             }
             Some(client_envelope::Message::Unsubscribe(unsubscribe)) => {
+                clustered.remove(&unsubscribe.subscription_id);
                 if subscriptions.remove(&unsubscribe.subscription_id).is_some() {
                     resources.remove_subscription();
                 }
@@ -583,6 +630,109 @@ async fn serve_connection(
     Ok(())
 }
 
+struct ClusterSubscriptionTask(tokio::task::JoinHandle<()>);
+
+impl Drop for ClusterSubscriptionTask {
+    fn drop(&mut self) {
+        self.0.abort();
+    }
+}
+
+async fn start_cluster_subscription(
+    member: &DistributedMember,
+    accounting: Arc<Accounting>,
+    identity: SessionIdentity,
+    correlation: u64,
+    request: hydracache_client_hc2::wire::Subscribe,
+    outbound: &OutboundQueue,
+) -> Result<ClusterSubscriptionTask, Status> {
+    if request.subscription_id == 0
+        || request.resume_watermark == u64::MAX
+        || request.key_prefix.len() > MAX_PREFIX_BYTES
+    {
+        return Err(Status::invalid_argument(
+            "invalid HC/2 cluster subscription",
+        ));
+    }
+    let permit = member
+        .subscriptions
+        .clone()
+        .try_acquire_owned()
+        .map_err(|_| Status::resource_exhausted("HC/2 member subscription bound exceeded"))?;
+    let view = member
+        .plane
+        .listener_view()
+        .ok_or_else(|| Status::unavailable("HC/2 subscription topology unavailable"))?;
+    let coordinator = ClusterSubscriptionCoordinator::new(
+        member.plane.clone(),
+        &view,
+        request.key_prefix.to_vec(),
+        request.include_value,
+    );
+    let subscription_id = request.subscription_id;
+    let mut watermark = request.resume_watermark;
+    outbound
+        .send(Ok(server_envelope(
+            identity,
+            correlation,
+            server_envelope::Message::Subscribed(SubscriptionAck {
+                subscription_id,
+                watermark,
+            }),
+        )))
+        .await?;
+    let outbound = outbound.clone();
+    Ok(ClusterSubscriptionTask(tokio::spawn(async move {
+        let _permit = permit;
+        let mut resource = StreamResourceGuard::new(accounting);
+        resource.add_subscription();
+        let gap = |after_watermark| {
+            server_envelope(
+                identity,
+                0,
+                server_envelope::Message::Gap(EventGap {
+                    subscription_id,
+                    after_watermark,
+                }),
+            )
+        };
+        if watermark != 0 && outbound.send(Ok(gap(watermark))).await.is_err() {
+            return;
+        }
+        let forward = coordinator.run(|event| {
+            let frame = match event {
+                ClusterEvent::Gap => Some(gap(watermark)),
+                ClusterEvent::Mutation(event) => watermark.checked_add(1).map(|next| {
+                    watermark = next;
+                    server_envelope(
+                        identity,
+                        0,
+                        server_envelope::Message::Event(CacheEvent {
+                            subscription_id,
+                            watermark,
+                            key: event.key.into(),
+                            value: event.value.unwrap_or_default().into(),
+                            removed: event.removed,
+                        }),
+                    )
+                }),
+            };
+            let outbound = outbound.clone();
+            async move {
+                outbound
+                    .send(Ok(frame.ok_or_else(|| {
+                        Status::resource_exhausted("HC/2 watermark exhausted")
+                    })?))
+                    .await
+            }
+        });
+        tokio::select! {
+            _ = outbound.sender.closed() => {}
+            _ = forward => {}
+        }
+    })))
+}
+
 struct PendingInvocationGuard<'a>(&'a AtomicU64);
 
 impl<'a> PendingInvocationGuard<'a> {
@@ -623,11 +773,16 @@ async fn dispatch_invocation_async(
         Ok(prepared) => prepared,
         Err(response) => return response,
     };
-    if service.member.is_some() && !admitted_distributed_operation(&operation) {
-        return wire_error(
-            StableErrorCode::StableErrorUnsupported,
-            "operation is outside the distributed HC/2 profile",
-        );
+    if let Some(member) = &service.member {
+        if let invocation_request::Operation::Batch(batch) = operation {
+            return bulk::dispatch(service, member, correlation_id, meta, identity, batch).await;
+        }
+        if !admitted_distributed_operation(&operation) {
+            return wire_error(
+                StableErrorCode::StableErrorUnsupported,
+                "operation is outside the distributed HC/2 profile",
+            );
+        }
     }
     if let invocation_request::Operation::Batch(batch) = operation {
         let mut items = Vec::with_capacity(batch.items.len());
@@ -699,34 +854,65 @@ async fn execute_invocation(
         Ok(request) => request,
         Err(detail) => return wire_error(StableErrorCode::StableErrorInvalidRequest, detail),
     };
-    let mut envelope = ClientRequestEnvelope::new(correlation_id.to_string(), request);
-    let deadline = if meta.deadline_unix_ms == 0 {
+    let issued = service
+        .member
+        .as_ref()
+        .and_then(|_| scoped_identity(&meta.idempotency_key));
+    let item_id = (!meta.idempotency_key.is_empty())
+        .then(|| issued.unwrap_or_else(|| hex(&meta.idempotency_key)));
+    execute_normalized(
+        service,
+        correlation_id,
+        meta.deadline_unix_ms,
+        &identity,
+        request,
+        item_id,
+        false,
+    )
+    .await
+}
+
+async fn execute_normalized(
+    service: &Hc2ClientPlaneService,
+    correlation: u64,
+    deadline_unix_ms: u64,
+    identity: &ClientIdentity,
+    request: ClientRequest,
+    request_identity: Option<String>,
+    classify_retry: bool,
+) -> InvocationResponse {
+    let mut envelope = ClientRequestEnvelope::new(correlation.to_string(), request);
+    let deadline = if deadline_unix_ms == 0 {
         None
     } else {
-        let remaining_ms = meta.deadline_unix_ms.saturating_sub(unix_time_ms());
+        let remaining_ms = deadline_unix_ms.saturating_sub(unix_time_ms());
         if remaining_ms == 0 {
             return wire_error(
                 StableErrorCode::StableErrorDeadlineExceeded,
                 "deadline expired",
             );
         }
-        envelope = envelope.with_deadline_ms(meta.deadline_unix_ms);
+        envelope = envelope.with_deadline_ms(deadline_unix_ms);
         tokio::time::Instant::now().checked_add(std::time::Duration::from_millis(remaining_ms))
     };
-    if !meta.idempotency_key.is_empty() {
-        let issued = service
-            .member
-            .as_ref()
-            .and_then(|_| scoped_identity(&meta.idempotency_key));
-        envelope =
-            envelope.with_idempotency_key(issued.unwrap_or_else(|| hex(&meta.idempotency_key)));
+    if let Some(request_identity) = request_identity {
+        envelope = envelope.with_idempotency_key(request_identity);
     }
-    from_dispatch_response(
-        service
-            .state
-            .dispatch_verified_request_with_deadline(&identity, envelope, deadline)
-            .await,
-    )
+    let result = service
+        .state
+        .dispatch_verified_request_with_deadline(identity, envelope, deadline)
+        .await;
+    let retry = classify_retry && result.result.as_ref().is_err_and(|error| error.retryable);
+    let mut response = from_dispatch_response(result);
+    if classify_retry {
+        if let Some(meta) = &mut response.meta {
+            meta.topology_epoch = service.topology_epoch();
+            if retry {
+                meta.retry = hydracache_client_hc2::wire::RetryDirective::SameConnection as i32;
+            }
+        }
+    }
+    response
 }
 
 fn scoped_identity(bytes: &[u8]) -> Option<String> {

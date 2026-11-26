@@ -27,10 +27,10 @@ pub use reconnect::{
     RecoveryRetainedStateSnapshot,
 };
 pub use types::{
-    BatchItemResult, BatchOperation, CacheEvent, CacheValue, Capability, ClientConfig, ClientError,
-    ClientLimits, ClientMetricsSnapshot, ClientRetainedStateSnapshot, ErrorCode, LockAcquireResult,
-    LockOwnership, MutationResult, NodeEndpoint, RequestOptions, RetryAdvice, SubscriptionEvent,
-    TopologySnapshot, TransportKind,
+    BatchItemOutcome, BatchItemResult, BatchOperation, CacheEvent, CacheValue, Capability,
+    ClientConfig, ClientError, ClientLimits, ClientMetricsSnapshot, ClientRetainedStateSnapshot,
+    ErrorCode, LockAcquireResult, LockOwnership, MutationResult, NodeEndpoint, RequestOptions,
+    RetryAdvice, SubscriptionEvent, TopologySnapshot, TransportKind,
 };
 
 /// Oldest HC/2 generation accepted during the 0.68 preview compatibility window.

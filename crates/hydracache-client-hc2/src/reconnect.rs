@@ -19,10 +19,10 @@ use tokio::time::Instant;
 use crate::adapter::TransportAdapter;
 use crate::client::SubscriptionControl;
 use crate::{
-    BatchItemResult, BatchOperation, CacheEvent, CacheValue, ClientConfig, ClientError,
-    ClientRetainedStateSnapshot, ErrorCode, FencedSession, Hc2Client, LockAcquireResult,
-    LockOwnership, MutationResult, RequestOptions, RetryAdvice, Subscription, SubscriptionEvent,
-    TransportKind,
+    BatchItemOutcome, BatchItemResult, BatchOperation, CacheEvent, CacheValue, ClientConfig,
+    ClientError, ClientRetainedStateSnapshot, ErrorCode, FencedSession, Hc2Client,
+    LockAcquireResult, LockOwnership, MutationResult, RequestOptions, RetryAdvice, Subscription,
+    SubscriptionEvent, TransportKind,
 };
 
 /// One named endpoint and its already validated, security-owning adapter.
@@ -577,11 +577,42 @@ impl RecoveringHc2Client {
         .await
     }
 
+    /// Retain independent item outcomes. Any connection-level replay uses the
+    /// same supplied mutation identity and requires the usual retry admission.
+    pub async fn batch_outcomes(
+        &self,
+        operations: Vec<BatchOperation>,
+        options: Option<RequestOptions>,
+    ) -> Result<Vec<BatchItemOutcome>, ClientError> {
+        let read_only = operations
+            .iter()
+            .all(|operation| matches!(operation, BatchOperation::Get { .. }));
+        let retry_safe = read_only || has_idempotency_key(options.as_ref());
+        let timeout = request_timeout(&self.handle.runtime.config, options.as_ref());
+        self.with_retry(retry_safe, timeout, move |client, remaining| {
+            let operations = operations.clone();
+            let options = adjusted_options(&options, remaining);
+            async move { client.batch_outcomes(operations, options).await }
+        })
+        .await
+    }
+
     /// Register a logical subscription that survives connection replacement.
     pub async fn subscribe(
         &self,
         key_prefix: Bytes,
         resume_watermark: u64,
+    ) -> Result<RecoveringSubscription, ClientError> {
+        self.subscribe_with_values(key_prefix, resume_watermark, false)
+            .await
+    }
+
+    /// Keep the requested value projection across endpoint replacement.
+    pub async fn subscribe_with_values(
+        &self,
+        key_prefix: Bytes,
+        resume_watermark: u64,
+        include_value: bool,
     ) -> Result<RecoveringSubscription, ClientError> {
         if self.handle.runtime.closed.load(Ordering::Acquire) {
             return Err(connection_error("recovering client is closed"));
@@ -592,6 +623,7 @@ impl RecoveringHc2Client {
         let state = Arc::new(SubscriptionState {
             id,
             key_prefix,
+            include_value,
             last_watermark: AtomicU64::new(resume_watermark),
             accepted_watermark: AtomicU64::new(resume_watermark),
             repair_required: AtomicBool::new(false),
@@ -814,7 +846,7 @@ impl RecoveringRuntime {
         let watermark = state.last_watermark.load(Ordering::Acquire);
         let subscription = current
             .client
-            .subscribe(state.key_prefix.clone(), watermark)
+            .subscribe_with_values(state.key_prefix.clone(), watermark, state.include_value)
             .await?;
         let control = subscription.control();
         let binding = state
@@ -955,6 +987,7 @@ impl RecoveringRuntime {
 struct SubscriptionState {
     id: u64,
     key_prefix: Bytes,
+    include_value: bool,
     last_watermark: AtomicU64,
     accepted_watermark: AtomicU64,
     repair_required: AtomicBool,
