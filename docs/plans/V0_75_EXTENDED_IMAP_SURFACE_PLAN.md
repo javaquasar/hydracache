@@ -1012,6 +1012,43 @@ bounded counts for each state but must not provide a control that edits them.
 - run `cargo test -p hydracache-server --test value_replication --locked`;
 - run `cargo test -p hydracache --features durable-value-store partition_apply --locked`.
 
+**W10c synchronous write checkpoint.** The staged member attachment supports persistent single-key
+PUT and invalidation. It serializes each partition's writes and bounds concurrent writes across
+the member. The owner flushes a pending record before it sends the exact mutation to every
+required backup. A backup validates the owner, epoch, scope, target generation and predecessor
+before atomically applying and flushing its journal. The owner matches the typed acknowledgement's
+replica and SHA-256 certificate before it publishes the next partition prefix in Raft. It returns
+success after observing that certificate in the local applied view. The durable journal binds the
+scope and retains bounded retry identities. Historical rows carry checksums.
+
+GET uses its own Raft ReadIndex. Under the partition lane and Raft apply lock, it checks that the
+local journal covers the current certificate before looking up a key. A pending write remains
+invisible until the certificate reaches Raft. A missing durable image fails closed. The owner can
+return the previous certified value during an unresolved write. An unsuccessful call after local
+apply is an ambiguous outcome. A matching retry can resume it within the same epoch.
+
+On AX42, source `b68103ab0d26d57e47f450736692469247fa9a43` ran three member processes with real RESP,
+HTTP replica apply and dedicated Sled journals. The failure scenario passed in the full target
+and in two independent repeats with the same executable. A value-only cut to the required backup
+left Raft usable. SET returned an error and GET continued to return the value at prefix 1.
+After an owner kill and restart from the same disk, GET still returned the certified value.
+Restored replica delivery allowed SET to reach prefix 2 and invalidation to reach prefix 3.
+The unit tests cover zero, one and two required backups, wrong-generation acknowledgements,
+cancellation, idempotency, scope binding and a missing local image. The Raft tests reject prefix
+gaps, mismatched predecessors and stale epochs and verify snapshot recovery.
+
+The logs, test binary and verified artifact digests are under
+`development/w10c-b68103ab0d26d57e47f450736692469247fa9a43` in the
+[qualification workspace](../testing/imap/0.75/remote-linux-qualification.md). Reproduce the
+process target with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test --locked -p hydracache-server
+--features hydracache/durable-value-store --test imap_replicated_read_075 -- --nocapture
+--test-threads=1`.
+
+The checkpoint qualifies the staged all-synchronous profile and same-disk owner recovery. Public
+admission still requires frozen wire and placement identities, the W9 retry and event contract,
+an in-memory partition-store profile, asynchronous backup queues for mixed profiles, rebalancing
+and missing-replica repair, and the cost and capacity gates. W10d owns expiry and conditional decisions.
+
 ### W10d. Replicate expiry, versions, tombstones and conditional decisions correctly
 
 The distributed record contains absolute authoritative expiry metadata or an equivalent monotonic
@@ -1723,8 +1760,8 @@ the read. The logs, process observations and verified `artifacts.sha256` are in
 `development/d2-replica-3ddbbf383c8cc770d9158b9e26e05ce57b8c1841` under the AX42
 [qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
 
-This read qualification uses preinstalled replicas. W10c still owns the live replication and
-acknowledgement path and the production source of the prefix proof. Public member admission and
+This D2 read qualification used preinstalled replicas. The W10c checkpoint above separately
+qualifies live synchronous writes and their Raft-certified prefix. Public member admission and
 the per-read cost gate remain open.
 
 For the W0 hash decision, FNV-1a over the provisional canonical bytes was measured on three sets of

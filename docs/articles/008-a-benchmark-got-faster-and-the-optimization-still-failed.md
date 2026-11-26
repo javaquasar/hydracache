@@ -903,9 +903,22 @@ the record lookup counter stayed flat. Healing the cut restored the read. After 
 restarting the owner, a new topology epoch alone was insufficient. The restarted process refused
 the previous replica image and an image one entry short of the required prefix. It served the
 binary value again only after the full prefix was installed. The three AX42 runs recorded zero
-store lookups in every rejected case. The test exercised reads from
-preinstalled replicas. Live write replication, acknowledgement and distributed read cost
-remain separate release gates.
+store lookups in every rejected case. That read test used preinstalled replicas.
+
+## A write becomes readable after the replica applies it
+
+W10c started the members with empty value journals and wrote the value through RESP. The owner
+flushed the pending record, and the required backup returned a typed acknowledgement after its
+own flush. The acknowledgement included the replica generation and a digest of the mutation.
+The owner then committed a certificate to Raft and returned success once the certificate was
+applied locally. GET uses that certificate to decide which local record can be read.
+
+On AX42, we blocked only the value message to the required backup. SET returned an error.
+Raft remained reachable, and GET continued to return the value at prefix 1. A kill and restart
+of the owner left the certified value readable from its disk. After replica delivery resumed,
+SET advanced the prefix to 2 and an invalidation advanced it to 3. This was the staged
+synchronous profile with same-disk recovery. Repair of a missing replica and the cost of the
+extra network round trip and flushes remain separate release gates.
 
 The hash experiment used three sets of 100,000 keys over 271 partitions. The same FNV-1a function
 produced 365–373 entries per partition for binary integers and 321–428 for prefixed decimal keys.
