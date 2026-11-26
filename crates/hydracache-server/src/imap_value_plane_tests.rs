@@ -265,3 +265,32 @@ async fn blocked_replica_holds_response_and_cancel_releases_the_owner_lane() {
     assert_eq!(fixture.owner.store_lookups(), 0);
     assert_eq!(fixture.version(), 1);
 }
+
+#[tokio::test]
+async fn raft_certificate_without_the_durable_image_refuses_get_before_key_lookup() {
+    let fixture = Fixture::new(1).await;
+    let raft = &fixture.transport.raft;
+    let epoch = raft.partition_snapshot().unwrap().epoch;
+    raft.propose_value_prefix(PartitionValuePrefix {
+        partition: fixture.partition,
+        epoch,
+        version: 1,
+        previous: [0; 32],
+        digest: [7; 32],
+    })
+    .unwrap();
+    assert_eq!(
+        fixture.get().await.unwrap_err().code,
+        ClientErrorCode::BackendUnavailable
+    );
+    assert_eq!(fixture.owner.store_lookups(), 0);
+}
+
+#[test]
+fn journal_rejects_another_scope_or_generation() {
+    let journal = ValueJournal::temporary();
+    journal.bind_scope("tenant", "orders", 1).unwrap();
+    journal.bind_scope("tenant", "orders", 1).unwrap();
+    assert!(journal.bind_scope("other", "orders", 1).is_err());
+    assert!(journal.bind_scope("tenant", "orders", 2).is_err());
+}

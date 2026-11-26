@@ -4,8 +4,8 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 use hydracache::{
-    CacheError, CacheResult, ClusterEpoch, PartitionId, PartitionValuePrefix, ReplicatedSlot,
-    ReplicatedValueRecord,
+    CacheError, CacheResult, ChecksummedReplicatedValueRecord, ClusterEpoch, PartitionId,
+    PartitionValuePrefix, ReplicatedSlot, ReplicatedValueRecord,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -89,6 +89,23 @@ impl ValueJournal {
         sled::open(path).map(Self).map_err(storage_error)
     }
 
+    pub fn bind_scope(&self, tenant: &str, namespace: &str, generation: u64) -> CacheResult<()> {
+        let expected =
+            serde_json::to_vec(&(1u16, tenant, namespace, generation)).map_err(storage_error)?;
+        if !self.0.is_empty() && !self.0.contains_key(b"scope").map_err(storage_error)? {
+            return Err(storage_error("nonempty journal has no scope manifest"));
+        }
+        match self
+            .0
+            .compare_and_swap(b"scope", None::<&[u8]>, Some(expected.as_slice()))
+            .map_err(storage_error)?
+        {
+            Ok(()) => self.0.flush().map(|_| ()).map_err(storage_error),
+            Err(conflict) if conflict.current.as_deref() == Some(expected.as_slice()) => Ok(()),
+            Err(_) => Err(storage_error("journal belongs to another format or scope")),
+        }
+    }
+
     pub fn load(&self, partition: PartitionId) -> CacheResult<PartitionJournal> {
         self.0
             .get(meta_key(partition))
@@ -117,7 +134,10 @@ impl ValueJournal {
             let key = record_key(partition, &previous.key);
             batch.insert(
                 key,
-                serde_json::to_vec(&previous.record).map_err(storage_error)?,
+                serde_json::to_vec(&ChecksummedReplicatedValueRecord::seal(
+                    previous.record.clone(),
+                ))
+                .map_err(storage_error)?,
             );
             if let Some(identity) = &previous.identity {
                 meta.outcomes
@@ -182,8 +202,12 @@ impl ValueJournal {
         else {
             return Ok(None);
         };
-        let record: ReplicatedValueRecord =
+        let sealed: ChecksummedReplicatedValueRecord =
             serde_json::from_slice(&bytes).map_err(storage_error)?;
+        sealed
+            .verify()
+            .map_err(|_| storage_error("stored record checksum mismatch"))?;
+        let record = sealed.record;
         if record.partition != partition
             || required.is_none_or(|prefix| record.version > prefix.version)
         {
@@ -225,4 +249,64 @@ pub(crate) fn next_record(
         Some(bytes) => ReplicatedValueRecord::value(partition, version, epoch, bytes),
         None => ReplicatedValueRecord::tombstone(partition, version, epoch, None),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn historical_record_is_checked_after_next_apply() {
+        let journal = ValueJournal::temporary();
+        journal.bind_scope("tenant", "orders", 1).unwrap();
+        let partition = PartitionId::new(4);
+        let epoch = ClusterEpoch::new(3);
+        let owner = PartitionMember {
+            node: "owner".into(),
+            generation: hydracache::ClusterGeneration::new(1),
+        };
+        let first = Mutation {
+            owner,
+            backups: Vec::new(),
+            previous: [0; 32],
+            key: "key-a".into(),
+            identity: None,
+            record: next_record(partition, epoch, None, Some(b"one".to_vec())).unwrap(),
+        };
+        let certificate = first.certificate();
+        assert_eq!(
+            journal.apply(None, first.clone(), true).unwrap(),
+            ApplyResult::Flushed
+        );
+        let next = Mutation {
+            previous: certificate.digest,
+            key: "key-b".into(),
+            record: next_record(partition, epoch, Some(certificate), Some(b"two".to_vec()))
+                .unwrap(),
+            ..first.clone()
+        };
+        assert_eq!(
+            journal.apply(Some(certificate), next, true).unwrap(),
+            ApplyResult::Flushed
+        );
+        let meta = journal.load(partition).unwrap();
+        assert_eq!(
+            journal
+                .read(partition, &first.key, &meta, Some(certificate))
+                .unwrap(),
+            Some(b"one".to_vec())
+        );
+        let mut damaged = ChecksummedReplicatedValueRecord::seal(first.record);
+        damaged.checksum ^= 1;
+        journal
+            .0
+            .insert(
+                record_key(partition, &first.key),
+                serde_json::to_vec(&damaged).unwrap(),
+            )
+            .unwrap();
+        assert!(journal
+            .read(partition, &first.key, &meta, Some(certificate))
+            .is_err());
+    }
 }

@@ -110,6 +110,8 @@ impl ValueReplica {
                 "W10c requires all configured backups to be synchronous".into(),
             ));
         }
+        let (tenant, namespace, generation) = scope.identity();
+        journal.bind_scope(tenant, namespace.as_str(), generation.get())?;
         Ok(Self {
             local,
             scope,
