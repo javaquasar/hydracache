@@ -920,6 +920,22 @@ SET advanced the prefix to 2 and an invalidation advanced it to 3. This was the 
 synchronous profile with same-disk recovery. Repair of a missing replica and the cost of the
 extra network round trip and flushes remain separate release gates.
 
+## A deadline needs both a clock bound and a replica
+
+W10d records the TTL deadline in the mutation the owner sends to the backup. The backup stores
+that deadline unchanged. The owner uses the upper bound on time to assign the deadline and waits
+for the lower bound to reach it before proposing a tombstone. The expiry worker checks the
+original entry version again, so a delayed timer cannot erase a replacement. Conditional writes
+also inspect the certified value on the owner lane. In the concurrent put-if-absent test,
+exactly one request stored a value.
+
+On AX42, controlled clock feeds placed a read on each side of the deadline. We cut delivery to
+the required backup while the expiry tombstone was due. The owner refused GET, and the Raft
+prefix stayed at 1. After we restarted the owner and restored clock and replica authority, the
+tombstone advanced the prefix to 2. A rewind of the test clock could no longer make the value
+readable. These were deterministic clock observations. The production time provider still
+requires OD-2 qualification.
+
 The hash experiment used three sets of 100,000 keys over 271 partitions. The same FNV-1a function
 produced 365–373 entries per partition for binary integers and 321–428 for prefixed decimal keys.
 That difference matters when choosing a placement policy. A Rust/Java golden vector also covers

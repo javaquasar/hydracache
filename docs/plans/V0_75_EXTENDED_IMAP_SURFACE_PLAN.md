@@ -1103,6 +1103,41 @@ representation with a frozen clock/skew policy. Replicas do not recalculate TTL 
 rebalance; clock skew at the allowed boundary; conditional races across three endpoints; stable
 final digest and exactly one valid winner/event.
 
+**W10d staged expiry and conditional checkpoint.** An explicit `ClusterTimeAuthority` provides
+bounded observations to the owner. It adds the requested TTL to the upper time bound with checked
+arithmetic and stores the resulting absolute deadline in the versioned mutation. The backup flushes
+the same deadline and acknowledges the exact digest. An owner sweep reads bounded batches of
+durable expiry candidates. Under a fresh Raft proof and the partition lane, it checks the owner,
+the entry version and deadline, and requires the lower time bound to reach that deadline. It then
+submits a tombstone through the synchronous W10c write path. Times at the deadline boundary, clock
+loss and an overlapping uncertainty interval fence GET and PTTL until time or the certified
+tombstone resolves the decision.
+
+The owner evaluates put-if-absent, exact and presence-based CAS, conditional replacement and
+removal, expiry updates, persistence and compare-value TTL extension against the certified entry
+under the same lane. A keyed retry returns its recorded result even when a later value would change
+the decision. A keyed mismatch can certify an outcome without changing the entry. Stale expiry
+candidates and a value replayed after a newer tombstone cannot remove or resurrect the entry.
+The private W10d journal format v2 includes the deadline in its digest and accepts W10c rows as
+eternal records. Tombstones remain retained.
+
+On AX42, source `d88cf27d117a0bccd653a35db17701660c60c550` exercised three separate member processes,
+real RESP and replica transport, and separately controlled clock feeds. The owner calculated
+deadline 1135 from time 1100, uncertainty 5 and TTL 30. GET refused during the uncertainty overlap.
+With the required replica cut, the expiry proposal kept prefix 1 and GET refused the old value.
+After the owner restarted from the same disk, an over-budget time sample still fenced expiry.
+Restoring the sample and replica delivery installed the tombstone at prefix 2. GET returned null
+and PTTL returned -2 even after rewinding the test clock. The process scenario passed in the full
+target and in two independent repeats with the same executable. The journal and owner-lane tests,
+protocol regressions, and shared conditional, tombstone and durable store tests passed. Logs,
+process traces and digests are in `development/w10d-d88cf27d117a0bccd653a35db17701660c60c550`
+under the AX42 [qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
+
+Production expiry still needs the OD-2 time provider and its target-host admission. The shared
+record-format migration, common embedded decision table, repair and promotion across different
+members, all-replica proof for tombstone reclamation, and the release cost and event gates remain
+open.
+
 ### W10e. Implement fenced failover, promotion and retry across owner change
 
 Member failure detection alone is insufficient. Promotion becomes writable only after the
