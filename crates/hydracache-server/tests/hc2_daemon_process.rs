@@ -738,6 +738,73 @@ async fn next_w10g_event(
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn w10g_reports_the_partition_whose_history_was_overwritten() {
+    use hydracache_client_hc2::{BatchOperation, GapReason, SubscriptionEvent};
+
+    if std::env::var("HYDRACACHE_RUN_DAEMON_PROCESS_E2E").as_deref() != Ok("1") {
+        return;
+    }
+    let _guard = async_daemon_process_guard().await;
+    let cluster = MemberCluster::start_fixture("w10g-history-gap", &pki(), true).await;
+    let prefix = Bytes::from_static(b"w10g-history/");
+    let key = cluster.key_for(1, Some(2), "w10g-history/");
+    let owner = &cluster.clients[1];
+    let initial = retry_w10i(|| async {
+        let result = owner
+            .batch_outcomes(vec![BatchOperation::Get { key: key.clone() }], None)
+            .await?;
+        result[0].result.as_ref().map_err(Clone::clone)?;
+        Ok(result[0].receipt.unwrap())
+    })
+    .await;
+    let mut subscription = cluster.clients[2]
+        .subscribe_with_values(prefix, 0, true)
+        .await
+        .unwrap();
+    cluster.spec.set_value_fault(2, true);
+    for index in 0..24 {
+        let value = Bytes::from(format!("history-{index}"));
+        assert!(
+            retry_w10i(|| owner.put(key.clone(), value.clone(), None, None))
+                .await
+                .applied
+        );
+    }
+    cluster.spec.set_value_fault(3, false);
+    let history = tokio::time::timeout(Duration::from_secs(8), subscription.next_delivery())
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(matches!(
+        history.event,
+        SubscriptionEvent::Gap {
+            after_watermark: 0,
+            ..
+        }
+    ));
+    let gap = history.gap.unwrap();
+    assert_eq!(gap.reason, GapReason::HistoryLost);
+    assert_eq!(gap.partitions.len(), 1);
+    let partition = &gap.partitions[0];
+    assert_eq!(partition.partition_id, initial.partition_id);
+    assert_eq!(partition.previous_version, initial.applied.unwrap().version);
+    assert!(partition.observed_version >= partition.previous_version + 24);
+    assert!(
+        retry_w10i(|| owner.put(key.clone(), Bytes::from_static(b"after-gap"), None, None))
+            .await
+            .applied
+    );
+    assert_eq!(
+        wait_w10g_mutation(&mut subscription, &key).await.value,
+        Bytes::from_static(b"after-gap")
+    );
+    println!(
+        "W10g partition history gap partition={} previous={} observed={} resumed=true",
+        partition.partition_id, partition.previous_version, partition.observed_version
+    );
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn w10g_packaged_java_facade_uses_three_public_endpoints() {
     let (Some(java), Some(classpath)) = (
         std::env::var_os("HYDRACACHE_W10G_JAVA"),
@@ -748,7 +815,7 @@ async fn w10g_packaged_java_facade_uses_three_public_endpoints() {
     };
     let _guard = async_daemon_process_guard().await;
     let credentials = pki();
-    let mut cluster = MemberCluster::start_with_pki("w10g-java-facade", &credentials).await;
+    let mut cluster = MemberCluster::start_fixture("w10g-java-facade", &credentials, false).await;
     let root = &cluster.spec.root;
     std::fs::write(root.join("java-client.pem"), credentials.client_cert).unwrap();
     std::fs::write(root.join("java-client.key"), credentials.client_key).unwrap();
@@ -879,9 +946,31 @@ struct MemberClusterSpec {
     server_cert: PathBuf,
     server_key: PathBuf,
     ca: PathBuf,
+    event_fault: Option<PathBuf>,
 }
 
 impl MemberClusterSpec {
+    fn set_value_fault(&self, generation: u64, enabled: bool) {
+        let target = self.event_fault.as_ref().unwrap();
+        let incoming = target.with_extension("incoming");
+        let rules = if enabled {
+            vec![serde_json::json!({
+                "from": self.names[2], "to": self.names[1], "action": {"kind": "value_drop"}
+            })]
+        } else {
+            Vec::new()
+        };
+        std::fs::write(
+            &incoming,
+            serde_json::json!({
+                "schema_version": 1, "generation": generation, "rules": rules
+            })
+            .to_string(),
+        )
+        .unwrap();
+        std::fs::rename(incoming, target).unwrap();
+    }
+
     fn spawn(&self, index: usize) -> ChildGuard {
         let log = std::fs::File::options()
             .create(true)
@@ -896,6 +985,9 @@ impl MemberClusterSpec {
             &self.server_key,
             &self.ca,
         );
+        if let Some(fault) = self.event_fault.as_ref().filter(|_| index == 2) {
+            command.env("HYDRACACHE_TEST_RAFT_OUTBOUND_FAULT_FILE", fault);
+        }
         ChildGuard(
             command
                 .env("HYDRACACHE_CLIENT_API_ENABLED", "false")
@@ -935,10 +1027,10 @@ struct MemberCluster {
 
 impl MemberCluster {
     async fn start(label: &str) -> Self {
-        Self::start_with_pki(label, &pki()).await
+        Self::start_fixture(label, &pki(), false).await
     }
 
-    async fn start_with_pki(label: &str, pki: &TestPki) -> Self {
+    async fn start_fixture(label: &str, pki: &TestPki, event_fault: bool) -> Self {
         let root = test_root(label);
         let (server_cert, server_key, ca) = write_pki(&root, pki);
         let mut pem = std::io::BufReader::new(pki.client_cert.as_bytes());
@@ -968,6 +1060,7 @@ impl MemberCluster {
             .collect::<Vec<_>>()
             .join(",");
         let spec = MemberClusterSpec {
+            event_fault: event_fault.then(|| root.join("event-fault.json")),
             root,
             addresses,
             names,
@@ -976,6 +1069,9 @@ impl MemberCluster {
             server_key,
             ca,
         };
+        if event_fault {
+            spec.set_value_fault(1, false);
+        }
         drop(reservations);
         let daemons = (0..3).map(|index| spec.spawn(index)).collect();
         let adapters: Vec<_> = addresses[9..]
