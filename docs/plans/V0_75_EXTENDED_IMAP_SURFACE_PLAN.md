@@ -1301,7 +1301,8 @@ each transfer phase; compare canonical cluster digest/cardinality before and aft
 duplicate apply or resurrection and no positive retained-transfer-memory trend.
 
 **Staged W10f replica-repair checkpoint.** The live owner of a promoted partition holds its
-writer permit while capturing and sending a fixed certified snapshot. The image contains
+writer permit while capturing and sending a fixed certified snapshot in this first
+checkpoint. The image contains
 values, tombstones, TTL metadata, versions, and retained outcomes. The owner materializes the
 certified pending record in the image and discards any uncertified record. This gives the same
 image and digest for the same prefix even after the journal materializes that record on disk.
@@ -1314,10 +1315,9 @@ the epoch while checking the owner, backup slot, replacement generation and curr
 The normal write path still checks the replacement's prefix before local apply.
 
 The staged limits are one outgoing and one incoming transfer per member, a 4 MiB encoded image
-and 4096 persisted value rows. GET can use the certified prefix during the transfer. New writes are
-refused while the repair holds the writer permit. Transfers under active writes with an ordered delta,
-automatic placement, background repair and production resource qualification are follow-up
-work under W10f. This checkpoint does not set the OD-3 recovery targets.
+and 4096 persisted value rows. GET could use the certified prefix during this first transfer.
+New writes were refused while it held the writer permit. The checkpoint left the OD-3
+recovery targets open.
 
 On AX42, source `15736ba53c7f9be4b8fd22e3342bb97335262114` passed the
 three-process RF=2 scenario four times on one binary. The test killed the original owner and
@@ -1341,6 +1341,52 @@ Logs and checksums are under `development/w10f-15736ba53c7f9be4b8fd22e3342bb9733
 in the AX42 [qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
 The verified `artifacts.sha256` manifest has SHA-256
 `2b570d1d93c49dce84e0660b1683711923158883a2c5ad71c1b2da456f2adb13`.
+
+**Live replica replacement.** The source persists a fixed snapshot and starts recording
+mutations before releasing the partition writer. The journal appends each delta in the
+same durable batch as the normal owner apply. Foreground writes continue through the
+currently assigned synchronous backup. The source sends versions in order up to a fresh
+Raft ReadIndex certificate. It verifies the digest chain from the recipient cursor to
+that certificate before sending the batch. An uncertified local apply stays outside the cut.
+
+The recipient flushes each applied delta and its exact cursor atomically. Duplicate delivery
+can return the same durable receipt. Gaps, conflicting versions, and a seal ahead of the
+recipient are rejected. A retry reuses the source image and both recipient cursors while the
+epoch and member incarnations still match. The staged source holds 128 deltas or 4 MiB of
+encoded changes. A full log backpressures new writes before local apply until the replacement commits
+or an epoch change fences the capture.
+
+The owner drains a large remaining gap with the writer released. It holds the writer for the
+final cut only when the tail fits within eight deltas and 512 KiB. The final cut uses a
+two-second deadline. The recipient must have applied the exact final Raft certificate and
+flushed its matching journal before sealing. Raft then changes the backup slot at that
+certificate and advances the epoch. Automatic placement, general owner rebalance and
+production bandwidth and recovery qualification remain open under W10f.
+
+On AX42, source `b252c4672d902a57fd48e9a3f3d22ca503387352` passed the three-process RF=2
+scenario in the full suite and three independent repeats of the same binary. The snapshot
+covered version 2. Dropping the second snapshot chunk left the current backup active, and
+the next attempt resumed at zero-based cursor 1. The owner certified 15 CAS operations
+after the snapshot, 12 of them during delta catch-up. The replacement applied versions
+3 through 17 in order. Raft activated it at prefix 17. With the previous backup stopped
+and the remaining voters serving, a new CAS advanced the prefix to 18 exactly once.
+After promoting the replacement, all 15 original request IDs returned their original
+versions and RESP returned the value at prefix 18.
+
+Journal tests cover out-of-order and conflicting deltas, an identical retry, reopening at
+a persisted cursor, premature sealing, omission of an uncertified apply, retained outcomes,
+TTL, tombstones and backpressure before apply. The process run qualifies a single-partition
+CAS schedule. Throughput, multi-partition movement and OD-3 recovery targets remain
+qualification work.
+
+Reproduce with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test --locked -p hydracache-server
+--features hydracache/durable-value-store --test imap_replicated_read_075 --
+--exact processes::w10f_streams_versioned_changes_while_owner_keeps_accepting_writes --nocapture`.
+Logs, the test binary and checksums are under
+`development/w10f-live-b252c4672d902a57fd48e9a3f3d22ca503387352` in the AX42
+[qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
+The verified `artifacts.sha256` manifest has SHA-256
+`bec4a514532e5c6090fe1c2ddaaa4b4750e390f8efdca027a150cf46c357e173`.
 
 ### W10g. Make bulk operations and listeners cluster-wide
 

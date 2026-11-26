@@ -981,6 +981,25 @@ We then promoted the repaired replica and retried the original CAS there. It ret
 stored result at version 2 while GET returned the value at version 3. The original member
 stayed stopped throughout all four runs.
 
+## The owner keeps writing while the backup catches up
+
+A fixed snapshot covers the first part of a live repair. W10f now saves later mutations
+in the same durable batch as the owner apply. Writes still go through the current backup.
+The replacement resumes from its saved cursor and applies the versions in order. The source
+checks the chain against a fresh Raft certificate, so a locally flushed write with an unknown
+outcome never becomes part of the handoff without certification.
+
+The owner pauses its writer for a bounded final gap after the replacement has caught up.
+The replacement must have the same final certificate in its Raft view and its journal.
+Only then does Raft switch the backup and advance the epoch.
+
+On AX42, we interrupted a snapshot at version 2 and resumed it on the third member. The
+owner committed 15 CAS operations after the snapshot, including 12 while delta transfer
+was in progress. Raft switched the backup at version 17. We stopped the previous backup
+and committed version 18 with the replacement. After promoting the replacement, it
+returned the original outcome for each of the 15 retries and served the value at version
+18. The single-partition scenario passed four times.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
