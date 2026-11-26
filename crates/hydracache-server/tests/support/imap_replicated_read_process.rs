@@ -655,6 +655,36 @@ fn compare_and_set_for_key(key: &[u8], expected: &[u8], value: &[u8]) -> ClientR
     }
 }
 
+fn with_rebalance_load<T>(
+    address: SocketAddr,
+    keys: &BTreeMap<PartitionId, Vec<u8>>,
+    action: impl FnOnce() -> T,
+) -> (T, BTreeMap<PartitionId, usize>) {
+    let stop = AtomicBool::new(false);
+    std::thread::scope(|scope| {
+        let writer = scope.spawn(|| {
+            let mut accepted = BTreeMap::new();
+            let deadline = Instant::now() + Duration::from_secs(10);
+            while !stop.load(Ordering::Acquire) && Instant::now() < deadline {
+                for (partition, key) in keys {
+                    match resp(address, &[b"SET", key, b"workload"]) {
+                        Ok(reply) if reply == b"+OK\r\n" => {
+                            *accepted.entry(*partition).or_insert(0usize) += 1
+                        }
+                        Ok(reply) => assert!(reply.starts_with(b"-ERR "), "{reply:?}"),
+                        Err(error) => panic!("client transport failed: {error}"),
+                    }
+                    std::thread::sleep(Duration::from_millis(15));
+                }
+            }
+            accepted
+        });
+        let result = action();
+        stop.store(true, Ordering::Release);
+        (result, writer.join().unwrap())
+    })
+}
+
 #[test]
 fn w10f_balances_three_live_partitions_and_repairs_a_failed_backup_automatically() {
     if std::env::var(RUN).as_deref() != Ok("1") {
@@ -732,26 +762,7 @@ fn w10f_balances_three_live_partitions_and_repairs_a_failed_backup_automatically
         }),
     );
 
-    let stop = AtomicBool::new(false);
-    let write_address = nodes[0].address;
-    let (report, accepted) = std::thread::scope(|scope| {
-        let writer = scope.spawn(|| {
-            let mut accepted = BTreeMap::new();
-            let deadline = Instant::now() + Duration::from_secs(10);
-            while !stop.load(Ordering::Acquire) && Instant::now() < deadline {
-                for (partition, key) in &keys {
-                    match resp(write_address, &[b"SET", key, b"workload"]) {
-                        Ok(reply) if reply == b"+OK\r\n" => {
-                            *accepted.entry(*partition).or_insert(0usize) += 1
-                        }
-                        Ok(reply) => assert!(reply.starts_with(b"-ERR "), "{reply:?}"),
-                        Err(error) => panic!("client transport failed: {error}"),
-                    }
-                    std::thread::sleep(Duration::from_millis(15));
-                }
-            }
-            accepted
-        });
+    let (report, accepted) = with_rebalance_load(nodes[0].address, &keys, || {
         publish_json(
             &nodes[0].root.join("rebalance.json"),
             &RebalanceCommand {
@@ -763,8 +774,7 @@ fn w10f_balances_three_live_partitions_and_repairs_a_failed_backup_automatically
             wait_for("three planned replica transfers", || {
                 read_json(&nodes[0].root.join("rebalance-reply.json"))
             });
-        stop.store(true, Ordering::Release);
-        (reply.unwrap(), writer.join().unwrap())
+        reply.unwrap()
     });
     assert!(report.deferred.is_empty(), "{report:?}");
     assert_eq!(report.committed.len(), 3, "{report:?}");
@@ -790,13 +800,24 @@ fn w10f_balances_three_live_partitions_and_repairs_a_failed_backup_automatically
         epoch = repair.plan.new_epoch;
     }
 
-    fault_generation(&nodes, None, 2);
     nodes[1].stop();
     assert!(nodes[1].read().is_err());
-    publish_json(&nodes[0].root.join("automatic-rebalance.json"), &true);
-    let automatic = wait_for("automatic repair after discovery loses the backup", || {
-        nodes[0].status()?.repairs.get(&failure_partition).cloned()
+    let key = keys.values().next().unwrap();
+    wait_for(
+        "the surviving voters can still serve the rebalanced keys",
+        || {
+            resp(nodes[0].address, &[b"GET", key])
+                .ok()
+                .filter(|reply| reply == b"$8\r\nworkload\r\n")
+        },
+    );
+    let (automatic, failure_writes) = with_rebalance_load(nodes[0].address, &keys, || {
+        publish_json(&nodes[0].root.join("automatic-rebalance.json"), &true);
+        wait_for("automatic repair after the backup stops", || {
+            nodes[0].status()?.repairs.get(&failure_partition).cloned()
+        })
     });
+    assert_eq!(failure_writes.len(), 3);
     assert_eq!(automatic.replaced, old_backup);
     assert!(targets.contains(&automatic.target.node));
     let epoch = automatic.new_epoch.value();
@@ -825,7 +846,7 @@ fn w10f_balances_three_live_partitions_and_repairs_a_failed_backup_automatically
             b"$8\r\nverified\r\n"
         );
     }
-    println!("W10f multi initial_partitions=3 targets={} accepted={accepted:?} deltas={:?} automatic_partition={} stopped_backup_pid={} verified_partitions=4",
+    println!("W10f multi initial_partitions=3 targets={} accepted={accepted:?} deltas={:?} automatic_partition={} writes_during_automatic_repair={failure_writes:?} stopped_backup_pid={} verified_partitions=4",
         targets.len(), report.committed.iter().map(|repair| repair.deltas).collect::<Vec<_>>(),
         failure_partition.value(), initial[1].pid);
 }
