@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Current stable simulator snapshot JSON schema version.
-pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 10;
+pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 11;
 
 /// Region every simulator node reports; the simulator models one region.
 pub(crate) const SIM_REGION: &str = "local";
@@ -56,6 +56,11 @@ pub struct SimSnapshot {
     /// (schema 10): one entry per client name, writer or reader, with the
     /// member its connection is open to.
     pub admitted_clients: Vec<AdmittedClientView>,
+    /// Write path manual pushes follow (schema 11).
+    pub replication: ReplicationView,
+    /// Recent routed writes with their owners and acknowledgements (schema 11);
+    /// empty in the `full_broadcast` model.
+    pub writes: Vec<GridWriteView>,
     /// Cluster sync progress visible to manual/topology modes.
     pub sync_progress: Vec<SyncProgressView>,
     /// Current deterministic rebalance/reshard progress.
@@ -101,6 +106,13 @@ impl SimSnapshot {
             clients: Vec::new(),
             subscribers: Vec::new(),
             admitted_clients: Vec::new(),
+            replication: ReplicationView {
+                model: "none".to_owned(),
+                replication_factor: None,
+                write_level: None,
+                disclosure: "history-only snapshots do not include a write path".to_owned(),
+            },
+            writes: Vec::new(),
             sync_progress: Vec::new(),
             rebalance: None,
             mode: "manual".to_owned(),
@@ -270,6 +282,64 @@ pub struct KeyView {
     pub key: String,
     /// Per-replica observations.
     pub replicas: Vec<KeyReplicaView>,
+    /// Rendezvous owners of the key in the `replicated` model (schema 11);
+    /// `None` in the other models, where every member may hold it.
+    pub owners: Option<KeyOwnersView>,
+}
+
+/// Primary and backup owners of one key (schema 11).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct KeyOwnersView {
+    /// Primary owner.
+    pub primary: String,
+    /// Backup owners in rendezvous order.
+    pub backups: Vec<String>,
+}
+
+/// The write path manual pushes follow (schema 11).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReplicationView {
+    /// `full_broadcast`, `local_first`, or `replicated`.
+    pub model: String,
+    /// Copies including the primary (`replicated` only).
+    pub replication_factor: Option<u64>,
+    /// Write acknowledgement level (`replicated` only).
+    pub write_level: Option<String>,
+    /// Disclosure for demo surfaces.
+    pub disclosure: String,
+}
+
+/// One routed manual write (schema 11).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct GridWriteView {
+    /// Write id, in push order.
+    pub id: u64,
+    /// Writer client.
+    pub client: String,
+    /// Namespaced key.
+    pub key: String,
+    /// Member the client is connected to; it answers the client.
+    pub coordinator: String,
+    /// Primary owner (the coordinator in `local_first`).
+    pub primary: String,
+    /// Backup owners.
+    pub backups: Vec<String>,
+    /// Backups whose copy the primary has seen acknowledged.
+    pub backups_applied: Vec<String>,
+    /// Acknowledgement level (`replicated` only).
+    pub level: Option<String>,
+    /// Acknowledgements the level requires.
+    pub required_acks: u64,
+    /// Acknowledgements the coordinator has counted.
+    pub acks: u64,
+    /// `pending`, `acknowledged`, or `failed`.
+    pub status: String,
+    /// The product's reason when the level can no longer be met.
+    pub reason: Option<String>,
+    /// Step of the push.
+    pub started_at_step: u64,
+    /// Step the required acknowledgements arrived.
+    pub acknowledged_at_step: Option<u64>,
 }
 
 /// Satisfiability of one product consistency level on the simulator topology.
@@ -618,6 +688,7 @@ pub(crate) fn key_views_from_storage(
         .into_iter()
         .map(|(key, replicas)| KeyView {
             key,
+            owners: None,
             replicas: replicas
                 .into_iter()
                 .map(|(node_id, (version, applied_at_step))| KeyReplicaView {
@@ -684,6 +755,7 @@ fn keys_from_history(history: &History) -> Vec<KeyView> {
             let version = versions.get(&key).copied().unwrap_or_default();
             KeyView {
                 key,
+                owners: None,
                 replicas: vec![KeyReplicaView {
                     node_id: "history".to_owned(),
                     version,

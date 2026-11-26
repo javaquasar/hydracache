@@ -207,23 +207,36 @@ Two side effects are worth noting. Every client-facing test now starts from a fo
 which is what the product requires anyway. And the push animation lost a hop: the request travels
 only along the writer's own link, because that member is where the engine applies the write.
 
-## Step 3: model the protocol with product primitives, behind an explicit mode (planned)
+## Step 3: model the protocol with product primitives, behind an explicit mode (done, except hints)
 
 The simulator's data plane is a product type, `ClusterNode`, that broadcasts every write to every
 peer. It was built to exercise faults and linearizability, not placement. The product has the
 placement and acknowledgement rules as tested primitives; what it does not yet have is a networked
 path that wires them into a write. That gap matters for honesty, so it shapes the design:
 
-- a `SimConfig` replication mode selects `local_first` (write locally, broadcast invalidations) or
-  `replicated { rf, level }` (forward to the primary, replicate to backups, count acknowledgements
-  with `ConsistencyLevel::validate`, keep a hint for an unreachable replica, and refuse the write
-  when the level cannot be met);
-- placement uses the product's rendezvous ranking, which first has to become wasm-buildable
-  without changing a single owner (the golden test from step 1 guards this);
-- the old broadcast-to-everyone mode stays, because existing deterministic-simulation tests and
-  invariants were written against it. Replacing it silently would change what those tests mean;
-- `replicated` mode is labelled in the demo as **the model of the opt-in replication primitives**,
-  not as shipped runtime behaviour.
+- a replication model, chosen by a replayable control action, selects `full_broadcast` (the old
+  model), `local_first` (write on the client's member and invalidate the other copies), or
+  `replicated { rf, level }`. In `replicated`, the coordinator forwards to the key's primary, which
+  replicates to its backups, and the product `Ack` messages are counted against
+  `ConsistencyLevel::validate`;
+- the nodes and their messages stay product code (`ClusterNode`, `ReplicatePut`, `Ack`). The
+  simulator only decides where each message goes, so no second data plane was written;
+- placement uses the product's rendezvous ranking. It had to become wasm-buildable first, without
+  changing a single owner; the golden test from step 1 passed untouched;
+- a write the live owners cannot meet is refused loud with the product's own reason, for example
+  `write refused at quorum: requires 2 live acknowledgements from 3 replicas, only 1 are live`. A
+  pending write fails loud as soon as that becomes true;
+- a down primary is replaced by the next live owner. This is a simplified form of the product's
+  backup promotion, and the gap register says so;
+- the old broadcast model stays the default, and the built-in workload refuses to run under the
+  new ones. Existing deterministic-simulation tests and invariants were written against it, and
+  replacing it silently would change what those tests mean;
+- `replicated` is labelled in the demo as **the model of the opt-in replication primitives**, not
+  as shipped runtime behaviour.
+
+One planned piece is not done yet: hinted handoff for a replica that is down, and the repair that
+follows. Until then, a copy lost in flight leaves its write pending, and the page shows that rather
+than hiding it.
 
 That last point is the general lesson. When a simulator is ahead of the product, it is a design
 tool, which is fine, but the page has to say so.

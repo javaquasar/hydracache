@@ -54,15 +54,26 @@ guarantee.
   connected both ways, a leader that no longer reaches a quorum steps down, and a
   node that cannot reach a quorum does not campaign.
 - **Cluster / node FSM, client routing, and heartbeat traffic are approximations.**
-  `connected_node` (which node a client/subscriber attaches to) is a deterministic
-  hash, not the real smart-routing logic; follower→leader heartbeat acks exist for
-  legibility.
-- **Replication factor = the whole cluster.** The simulator is a single
-  fully-replicated Raft group: every committed value lives on every node. The
-  product has a configurable `ReplicationConfig` (replication factor, read/write
-  quorums, sync/async backups; default is local-first `replication_factor = 1`).
-  The demo does **not** model partition placement, backup counts, or quorum
-  reads/writes.
+  A client connects to one member, picked by a deterministic hash of its name,
+  and stays there until that member goes down (snapshot schema 10). That is
+  not the real smart-routing logic. A new client is admitted only while there
+  is a leader (a simulated `ClientUpsert`). Follower→leader heartbeat acks exist
+  for legibility.
+- **The write path is a choice** (Clients tab, *Write path*; snapshot schema 11):
+  - *full broadcast* is the simulator's original model and the default: the
+    writer's member sends every write to every node. The built-in workload
+    and its invariants run only in this model.
+  - *local-first* is the product default: the writer's member keeps the
+    value and the other members drop their copy.
+  - *replicated* models the product's opt-in placement and consistency
+    primitives: rendezvous owners (`rank_replicas`), a forward to the primary,
+    copies to the backups, and acknowledgements counted with
+    `ConsistencyLevel`. A write the live owners cannot meet is refused with the
+    product's reason.
+
+  The product ships those primitives but no runtime replicated write path, so
+  *replicated* is a model, not shipped behaviour. Hinted handoff and repair are
+  not modeled yet: a copy lost in flight leaves its write pending.
 
 ### Visualization only — no engine meaning
 

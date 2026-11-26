@@ -272,3 +272,60 @@ describe("pushPlan", () => {
     assert.equal(pushPlan({ ...after, step: 99 }, final, "client-a", "profiles", "p"), null);
   });
 });
+
+describe("pushPlan for routed writes (schema 11)", () => {
+  const node = (id, extra = {}) => ({ id, crashed: false, disabled: false, ...extra });
+  const replica = (node_id, version, applied_at_step) => ({ node_id, version, applied_at_step });
+  const write = {
+    id: 1,
+    client: "w",
+    key: "profiles:p",
+    coordinator: "node-0",
+    primary: "node-1",
+    backups: ["node-2"],
+    status: "acknowledged",
+    started_at_step: 10,
+  };
+  const final = {
+    step: 14,
+    replication: { model: "replicated" },
+    nodes: [node("node-0"), node("node-1"), node("node-2"), node("node-3")],
+    keys: [
+      {
+        key: "profiles:p",
+        owners: { primary: "node-1", backups: ["node-2"] },
+        replicas: [replica("node-0", 0, null), replica("node-1", 7, 11), replica("node-2", 7, 12), replica("node-3", 0, null)],
+      },
+    ],
+    writes: [write],
+    in_flight: [],
+    links: [],
+    subscribers: [],
+  };
+
+  it("forwards to the primary, then the primary copies to its backups only", () => {
+    const plan = pushPlan({ step: 10 }, final, "w", "profiles", "p");
+    assert.equal(plan.entry, "node-0");
+    assert.deepEqual(plan.replicas, [
+      { from: "node-0", node: "node-1", status: "applied", steps: 1, after: 0, kind: "data forward" },
+      { from: "node-1", node: "node-2", status: "applied", steps: 1, after: 1 },
+    ]);
+  });
+
+  it("local_first invalidates every other live member from the coordinator", () => {
+    const local = {
+      ...final,
+      replication: { model: "local_first" },
+      nodes: [node("node-0"), node("node-1"), node("node-2", { crashed: true })],
+      writes: [{ ...write, primary: "node-0", backups: [] }],
+    };
+    const plan = pushPlan({ step: 10 }, local, "w", "profiles", "p");
+    assert.deepEqual(
+      plan.replicas.map((hop) => [hop.node, hop.kind, hop.status]),
+      [
+        ["node-1", "event", "applied"],
+        ["node-2", "event", "lost"],
+      ],
+    );
+  });
+});

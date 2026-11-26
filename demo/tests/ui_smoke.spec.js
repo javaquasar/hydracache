@@ -1543,6 +1543,42 @@ test("push_to_a_crashed_replica_shows_a_lost_copy", async ({ page }) => {
   expect(flashed.some((name) => name.startsWith("node-"))).toBe(true);
 });
 
+// TD-0016 step 3: the write path is a choice. Replicated writes reach only the
+// key's rendezvous owners and are acknowledged per the product level;
+// local-first writes on the writer's member and drops the other copies. The
+// built-in workload runs only in the full-broadcast model, so it goes off first.
+test("write_path_models_show_owners_and_acknowledgements", async ({ page }) => {
+  await openFormed(page);
+  await page.getByTestId("tab-clients").click();
+  await page.getByTestId("replication-model").selectOption("replicated");
+  await page.getByTestId("apply-replication").click();
+  await expect(page.getByRole("alert").filter({ hasText: "turn the built-in workload off first" })).toBeVisible();
+
+  await page.getByTestId("workload-toggle").uncheck();
+  await page.getByTestId("tab-clients").click();
+  await page.getByTestId("replication-model").selectOption("replicated");
+  await page.getByTestId("replication-factor").fill("2");
+  await page.getByTestId("write-level").selectOption("all");
+  await page.getByTestId("apply-replication").click();
+  await expect(page.getByTestId("replication-disclosure")).toContainText("opt-in replication primitives");
+  await page.getByTestId("add-client-button").click();
+  await page.getByTestId("push-client-a").click();
+  await expect(page.locator(".write-row").first()).toContainText("acks 2/2 at ALL · acknowledged");
+
+  await page.getByTestId("tab-data").click();
+  const row = page.locator(".key-grid tr", { hasText: "profiles:profile-42" });
+  await expect(row.locator(".replica.not-owner")).toHaveCount(1);
+  await expect(row.locator(".replica.primary-owner")).toHaveCount(1);
+  await expect(row.locator(".key-state")).toHaveText("agree");
+
+  await page.getByTestId("tab-clients").click();
+  await page.getByTestId("replication-model").selectOption("local_first");
+  await page.getByTestId("apply-replication").click();
+  await expect(page.getByTestId("replication-disclosure")).toContainText("product default");
+  await page.getByTestId("push-client-a").click();
+  await expect(page.locator(".write-row").first()).toContainText("acks 1/1 · acknowledged");
+});
+
 // A new client is a Raft metadata commit: with no leader the engine refuses it
 // loud, and the page says why before and after the refusal.
 test("new_clients_wait_for_a_leader", async ({ page }) => {

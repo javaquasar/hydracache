@@ -53,6 +53,7 @@ locally.
 | Simulator election (model) | `ElectionDriver`, `step_with_partitions` | `crates/hydracache-sim/src/election.rs` |
 | Simulator election (real raft-rs, native only) | `SimRaft` | `crates/hydracache-sim/src/sim_raft.rs` |
 | Simulator world | `SimWorld` | `crates/hydracache-sim/src/world.rs` |
+| Simulator write paths (routing over `ClusterNode` messages) | `SimReplicationModel`, `GridWrite`, `SimWorld::push_routed` | `crates/hydracache-sim/src/replication.rs`, `world.rs` |
 
 ## Metadata State Machine
 
@@ -237,7 +238,7 @@ describes the *target* of these primitives, not shipped behaviour. Label it that
 | Election (server and sandbox, native) | `SimRaft`: real raft-rs `RawNode` over `SimNetwork`, `election_source: "raft"` | `RaftMetadataRuntime`'s `RawNode` | same library, own harness |
 | Election (browser, wasm) | `ElectionDriver` model, partition-aware, `election_source: "sim-model"` | none | model; ADR-0016 forbids claiming raft fidelity |
 | Metadata commands | `ClientUpsert` only: `SimWorld::admit_client` needs a live leader, commits at once and is reported in `admitted_clients` (schema 10). `SimRaft` proposes only conf changes; the other commands are not simulated | `RaftMetadataCommand` | model of the admission rule |
-| Data plane | `ClusterNode`: write locally, then broadcast `ReplicatePut` / `ReplicateInvalidate` / `ReplicateFlush` to **all** peers | default: local write plus invalidation bus; opt-in: owner placement (primitives) | `ClusterNode` is product code, but only the simulator and `tests/sans_io_seam.rs` use it |
+| Data plane | Nodes are `ClusterNode`. The write path is a `SimReplicationModel` (`set_replication`): `full_broadcast` (default; `ClusterNode::handle_client` sends to **all** peers), `local_first` (write on the client's member, `ReplicateInvalidate` to the others), or `replicated { rf, write_level }` (forward to the primary chosen by `rank_replicas`, `ReplicatePut` to the backups, product `Ack`s counted against `ConsistencyLevel::validate`) | default: local write plus invalidation bus; opt-in: owner placement (primitives) | `ClusterNode` and the placement and consistency rules are product code; the routing between them is the simulator's |
 | Consistency panel | `SimWorld::consistency_views` calls `ConsistencyLevel::{required_acks, validate}` with every node a replica, one region | `ConsistencyLevel` | yes, in both builds (TD-0014, resolved) |
 
 ### Gap register
@@ -248,9 +249,9 @@ gap moves to the history list below, with its commit.
 
 | Id | Gap | Simulator / demo today | Product | Owner |
 | --- | --- | --- | --- | --- |
-| G3 | Replica set | Every live node receives every write (`ClusterNode::broadcast`). | Default: nobody receives the value, others invalidate. Opt-in: the primary and `RF - 1` backups only. | TD-0016, TD-0014 |
-| G4 | Acknowledgement and quorum | `handle_client` returns `Accepted` as soon as the node applies locally. Peer `Ack` messages are ignored. | Opt-in: the write is acknowledged per `ConsistencyLevel`, or refused with `ConsistencyUnsatisfiable`. | TD-0016 |
-| G5 | Subscriber delivery | An event is delivered only once **every** live node holds the version (`deliver_subscriber_events`). | Events come from the cache event or invalidation stream of the node the subscriber is attached to. | TD-0016 |
+| G3′ | Default model and state transfer | `full_broadcast` is still the default: the built-in workload and the deterministic-simulation invariants run only there, so `set_replication` is refused while the workload is on. `catch_up_node` copies a whole node's storage, so a restarted node may hold keys it does not own. | Default: local-first with invalidation. A restarted owner repairs only its own keys. | TD-0016 |
+| G4′ | Lost copies and repair | In `replicated`, a copy lost in flight leaves the write `pending` until the live owners can no longer meet the level (then it fails loud). There is no hinted handoff or anti-entropy yet. A down primary is replaced by the next live owner without promotion phases. The consistency panel still treats every node as a replica. | Hints replay to a returning replica; repair converges; `select_backup_promotion` has phases. | TD-0016 |
+| G5 | Subscriber delivery | In `full_broadcast`, an event is delivered only once **every** live node holds the version (`deliver_subscriber_events`). In the routed models it is delivered once the write is acknowledged. | Events come from the cache event or invalidation stream of the node the subscriber is attached to. | TD-0016 |
 | G7′ | Admission details | `ClientUpsert` commits at once when a live leader exists (no log round trip, no forwarded-apply wait). The built-in workload fleet is treated as admitted with the cluster. Removing a writer or subscriber keeps the client admitted (`NodeLeft` is not modeled). | Proposal, forward to the leader, commit, apply; a stopped process proposes `NodeLeft`. | TD-0016 |
 
 Closed gaps:
@@ -272,6 +273,16 @@ Closed gaps:
   - the demo draws the request only along the writer's link to that member.
 
   What remains of admission is G7′.
+- G3, G4 / TD-0016 step 3 (snapshot schema 11):
+  - manual writes can follow `local_first` or `replicated` (`set_replication`);
+  - `replicated` places a key on its `rank_replicas` owners only, forwards to the
+    primary, and counts product `Ack`s;
+  - a write is refused loud with the product `ConsistencyUnsatisfiable` reason when
+    the live owners cannot meet the level, and a pending write fails loud when they no
+    longer can;
+  - the snapshot reports `replication`, per-key `owners` and recent `writes`.
+
+  What remains is G3′ and G4′.
 
 ### Target engine shape
 
@@ -289,7 +300,8 @@ with its own tests.
    - Admission becomes a simulated `ClientUpsert` that fails loud without a leader.
    - The smoke workload uses the same rule.
    - The silent first-live-node fallback is removed.
-3. **Owner placement and acknowledgements** (G3, G4).
+3. **Done: owner placement and acknowledgements** (G3, G4). Hints and repair
+   (G4′) are the follow-up step 3b.
    - A `SimConfig` replication mode chooses one of two models:
      - `local_first`: the coordinator writes locally and broadcasts invalidations;
      - `replicated { rf, level }`: the coordinator forwards to the primary, which

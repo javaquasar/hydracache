@@ -16,6 +16,7 @@ pub mod lock_safety;
 pub mod network;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod persistence_recovery;
+pub mod replication;
 pub mod rng;
 pub mod scenarios;
 pub mod schedule;
@@ -60,6 +61,7 @@ pub use persistence_recovery::{
     run_persistence_recovery, PersistenceRecoveryFault, PersistenceRecoveryInvariantReport,
     PersistenceRecoveryScenario,
 };
+pub use replication::{level_from_name, SimReplicationModel};
 pub use rng::SimRng;
 pub use scenarios::{
     replay_world, run_scenario, run_scenario_with, scenario_matches_expectation, scenario_presets,
@@ -72,11 +74,11 @@ pub use schedule::{
 #[cfg(not(target_arch = "wasm32"))]
 pub use sim_raft::{SimRaftCluster, SimRaftError, SimRaftInFlightKey, SimRaftResult};
 pub use snapshot::{
-    AdmittedClientView, ClientView, ConsistencyLevelView, ConvergenceView, KeyReplicaView, KeyView,
-    LinkDropsView, LinkStateView, LinkView, MessageView, NodeView, ProgressView, RebalanceView,
-    SimSnapshot, SimSnapshotDecodeError, SnapshotOverBudgetView, SubscriberEventView,
-    SubscriberView, SyncProgressView, VerdictView, MAX_IN_FLIGHT_RENDERED, MAX_SUBSCRIBER_BUFFER,
-    SIM_SNAPSHOT_SCHEMA_VERSION,
+    AdmittedClientView, ClientView, ConsistencyLevelView, ConvergenceView, GridWriteView,
+    KeyOwnersView, KeyReplicaView, KeyView, LinkDropsView, LinkStateView, LinkView, MessageView,
+    NodeView, ProgressView, RebalanceView, ReplicationView, SimSnapshot, SimSnapshotDecodeError,
+    SnapshotOverBudgetView, SubscriberEventView, SubscriberView, SyncProgressView, VerdictView,
+    MAX_IN_FLIGHT_RENDERED, MAX_SUBSCRIBER_BUFFER, SIM_SNAPSHOT_SCHEMA_VERSION,
 };
 pub use soak::{
     minimal_failing_steps, minimal_failing_steps_by, run_soak, run_soak_with_seed_runner,

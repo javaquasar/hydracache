@@ -168,6 +168,11 @@ const el = {
   manualReaderNs: document.querySelector("#manual-reader-ns"),
   namespaceOptions: document.querySelector("#namespace-options"),
   addClient: document.querySelector("#add-client-button"),
+  replicationModel: document.querySelector("#replication-model"),
+  replicationFactor: document.querySelector("#replication-factor"),
+  writeLevel: document.querySelector("#write-level"),
+  applyReplication: document.querySelector("#apply-replication"),
+  replicationPanel: document.querySelector("#replication-panel"),
   manualKey: document.querySelector("#manual-key"),
   manualValue: document.querySelector("#manual-value"),
   subscribe: document.querySelector("#subscribe-button"),
@@ -384,6 +389,16 @@ function bindEvents() {
       await state.sim?.add_client(fieldValue(el.manualClient, "writer"), fieldValue(el.manualNs, "namespace"));
       await refresh();
       el.manualClient.value = nextFreeName("client-", (state.snapshot?.clients || []).map((client) => client.id));
+    }),
+  );
+  el.applyReplication.addEventListener("click", () =>
+    void runAction(async () => {
+      await state.sim?.set_replication(
+        el.replicationModel.value,
+        Math.max(1, Number(el.replicationFactor.value) || 1),
+        el.writeLevel.value,
+      );
+      await refresh();
     }),
   );
   el.pushEvent.addEventListener("click", () =>
@@ -945,6 +960,58 @@ function renderClients(snapshot) {
 
 // An empty block says what would appear there and offers the action that
 // makes it appear.
+// The write path manual pushes follow and the recent routed writes, with the
+// acknowledgements the coordinator counted (snapshot schema 11).
+function renderReplication(snapshot) {
+  const replication = snapshot.replication;
+  if (!replication) {
+    el.replicationPanel.replaceChildren();
+    return;
+  }
+  el.replicationModel.value = replication.model;
+  if (replication.replication_factor) el.replicationFactor.value = String(replication.replication_factor);
+  if (replication.write_level && [...el.writeLevel.options].some((option) => option.value === replication.write_level)) {
+    el.writeLevel.value = replication.write_level;
+  }
+  const note = document.createElement("p");
+  note.className = "panel-note";
+  note.setAttribute("data-testid", "replication-disclosure");
+  note.textContent = replication.disclosure;
+  const list = document.createElement("div");
+  list.className = "metric-list entity-list";
+  for (const write of (snapshot.writes || []).slice(-6).reverse()) {
+    const row = document.createElement("div");
+    row.className = `entity-row write-row status-${write.status}`;
+    row.dataset.write = String(write.id);
+    const title = document.createElement("strong");
+    title.textContent = `#${write.id} ${write.key}`;
+    const path = write.primary === write.coordinator ? write.coordinator : `${write.coordinator} → ${write.primary}`;
+    const backups = write.backups.length ? ` → ${write.backups.join(", ")}` : "";
+    const meta = document.createElement("span");
+    meta.className = "entity-meta";
+    const level = write.level ? ` at ${write.level.toUpperCase()}` : "";
+    meta.textContent = `${write.client}: ${path}${backups} · acks ${write.acks}/${write.required_acks}${level} · ${write.status}`;
+    row.append(title, meta);
+    if (write.reason) {
+      const reason = document.createElement("span");
+      reason.className = "entity-meta write-reason";
+      reason.textContent = write.reason;
+      row.append(reason);
+    }
+    list.append(row);
+  }
+  if (!list.childElementCount) {
+    list.append(
+      emptyState(
+        replication.model === "full_broadcast"
+          ? "Writes are broadcast to every member in this model, so there is no per-write record."
+          : "No routed writes yet. Push a value to see its path and acknowledgements.",
+      ),
+    );
+  }
+  el.replicationPanel.replaceChildren(note, list);
+}
+
 function emptyState(text, actionLabel, testId, onAction) {
   const box = document.createElement("div");
   box.className = "empty-state empty-action";
@@ -1098,6 +1165,8 @@ function renderKeys(snapshot) {
       // one; one that had no value yet flashes.
       chip.className = [
         "replica",
+        cell.owner === false ? "not-owner" : "",
+        cell.primary ? "primary-owner" : "",
         cell.version === null ? "missing" : "",
         cell.diverged ? "diverged" : "",
         cell.live ? "" : "down",
@@ -1116,9 +1185,10 @@ function renderKeys(snapshot) {
       const downNote = cell.live ? "" : " (down)";
       const written = state.keyWrites.get(`${key.key}|${cell.node}`);
       const when = written === undefined ? "unchanged since this run was opened" : `written at step ${written}`;
+      const ownerNote = cell.owner === false ? " (not an owner)" : cell.primary ? " (primary owner)" : "";
       chip.title =
         cell.version === null
-          ? `${cell.node}: no replica of ${key.key}${downNote}`
+          ? `${cell.node}: no replica of ${key.key}${ownerNote}${downNote}`
           : `${cell.node} · ${key.key}\nchecksum ${fullVersion(cell.version)}\n${when}${cell.diverged ? "\ndiffers from the live majority" : ""}${downNote}`;
       chip.dataset.written = written === undefined ? "" : String(written);
       chip.setAttribute("aria-label", chip.title.replaceAll("\n", ", "));
@@ -1127,7 +1197,7 @@ function renderKeys(snapshot) {
     }
     const status = document.createElement("td");
     status.className = "key-state";
-    status.textContent = key.agree ? "agree" : "replicas differ";
+    status.textContent = key.agree ? "agree" : key.majority === null ? "no copy" : "replicas differ";
     row.append(status);
     tbody.append(row);
   }
@@ -1777,7 +1847,10 @@ async function settleAfterIntervention() {
         (node.vote_state === "joining" || node.vote_state === "catching_up"),
     );
     const hasLeader = nodes.some((node) => node.vote_state === "leader");
-    if (hasLeader && !stillJoining) {
+    // A routed write takes several steps (forward, copies, acknowledgements);
+    // keep going while one is pending, within the same bound.
+    const writePending = (snapshot.writes || []).some((write) => write.status === "pending");
+    if (hasLeader && !stillJoining && !writePending) {
       break;
     }
   }
@@ -2507,6 +2580,7 @@ function renderTabPanels(snapshot) {
   paintPanel("verdict-panel", "verdict", verdictPanelSignature(snapshot), () => renderVerdictPanel(snapshot));
   paintPanel("signals", "cluster", JSON.stringify([(snapshot.in_flight || []).slice(0, 8), snapshot.over_budget]), () => renderSignals(snapshot));
   paintPanel("clients", "clients", JSON.stringify([snapshot.clients, snapshot.subscribers]), () => renderClients(snapshot));
+  paintPanel("replication", "clients", JSON.stringify([snapshot.replication, snapshot.writes]), () => renderReplication(snapshot));
   paintPanel("consistency", "data", consistencySignature(snapshot), () => renderConsistency(snapshot));
   paintPanel("keys", "data", keysSignature(snapshot), () => renderKeys(snapshot));
 }

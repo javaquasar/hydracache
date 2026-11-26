@@ -7,7 +7,9 @@ Open — recorded 2026-11-25.
 - Step 2 is done (2026-11-26, snapshot schema 10). It closes G1, G2, G6 and G7: writes
   go through the client's sticky member, and a new client is admitted by a simulated
   `ClientUpsert` that fails loud without a leader.
-- G7′ (admission details) is still open, and so are steps 3–5 (G3, G4, G5).
+- Step 3 is done (2026-11-26, snapshot schema 11). It closes G3 and G4: `local_first` and
+  `replicated` write paths use the product placement and acknowledgement rules.
+- Still open: G3′, G4′ (hints and repair), G5 and G7′.
 
 Owner: simulator / demo.
 
@@ -17,7 +19,7 @@ The simulator gets elections right: real raft-rs on native targets, a labelled m
 in wasm. Its data plane does not follow the product. The full comparison, with code
 references, is the gap register in
 [`docs/architecture/RAFT_CONTROL_PLANE.md`](../architecture/RAFT_CONTROL_PLANE.md#gap-register)
-(gaps G3–G5 and G7′ are open; G1, G2, G6, G7 and G8 are closed).
+(gaps G3′, G4′, G5 and G7′ are open; G1–G4, G6, G7 and G8 are closed).
 
 In short:
 

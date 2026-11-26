@@ -2831,6 +2831,23 @@ html[data-reduced-motion="true"] .spotlight {
   color: var(--muted);
 }
 
+/* Replicated model: nodes that do not own the key are greyed and dashed; the
+   primary owner carries a heavier outline. */
+.key-grid .replica.not-owner {
+  opacity: 0.45;
+  border: 1px dashed var(--muted);
+}
+
+.key-grid .replica.primary-owner {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+
+.write-row.status-failed .entity-meta,
+.write-reason {
+  color: var(--danger);
+}
+
 .key-grid .replica.diverged {
   border: 2px solid var(--danger);
   color: inherit;

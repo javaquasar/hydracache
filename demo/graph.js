@@ -1261,6 +1261,11 @@ export function pushPlan(after, final, clientId, namespace, key) {
   const replicasAt = (snapshot) =>
     new Map(((snapshot?.keys || []).find((view) => view.key === fullKey)?.replicas || []).map((replica) => [replica.node_id, replica]));
   const pushStep = after.step;
+  // A routed write (schema 11) carries its own record of the path it took.
+  const routed = (final.writes || []).findLast(
+    (write) => write.key === fullKey && write.client === clientId && write.started_at_step === pushStep,
+  );
+  if (routed) return routedPushPlan(final, routed, clientId, namespace, fullKey, replicasAt(final));
   const atPush = replicasAt(after);
   const entry = [...atPush.values()].find((replica) => replica.applied_at_step === pushStep)?.node_id ?? null;
   if (!entry) return null;
@@ -1299,6 +1304,59 @@ export function pushPlan(after, final, clientId, namespace, key) {
   return { clientId, entry, pushStep, replicas, subscribers };
 }
 
+// The plan for a routed write: client -> coordinator, a forward to the primary
+// when the coordinator is not it, the primary's copies to its backups, and in
+// local_first the invalidations to every other member. Each hop is timed by
+// the step the engine applied it (applied_at_step) or shown waiting or lost.
+function routedPushPlan(final, write, clientId, namespace, fullKey, finalReplicas) {
+  const pushStep = write.started_at_step;
+  const nodesById = new Map((final.nodes || []).map((node) => [node.id, node]));
+  const cut = new Set((final.links || []).filter((link) => link.state === "partitioned").map((link) => `${link.from}>${link.to}`));
+  const appliedAfter = (node) => {
+    const replica = finalReplicas.get(node);
+    return replica && Number.isFinite(replica.applied_at_step) && replica.applied_at_step >= pushStep && replica.version
+      ? replica.applied_at_step - pushStep
+      : null;
+  };
+  const hop = (from, node, after) => {
+    const steps = appliedAfter(node);
+    if (steps !== null) return { from, node, status: "applied", steps: Math.max(1, steps - after), after };
+    const target = nodesById.get(node);
+    const waiting =
+      target &&
+      !target.crashed &&
+      !target.disabled &&
+      (final.in_flight || []).some(
+        (message) => message.to === node && message.key === fullKey && String(message.kind).startsWith("replicate_") && !cut.has(`${message.from}>${message.to}`),
+      );
+    return { from, node, status: waiting ? "pending" : "lost", steps: null, after };
+  };
+  const entry = write.coordinator;
+  const replicas = [];
+  let primaryAt = 0;
+  if (write.primary !== entry) {
+    const forward = { ...hop(entry, write.primary, 0), kind: "data forward" };
+    replicas.push(forward);
+    primaryAt = forward.status === "applied" ? forward.steps : 0;
+  }
+  for (const backup of write.backups) replicas.push(hop(write.primary, backup, primaryAt));
+  if (final.replication?.model === "local_first") {
+    for (const node of final.nodes || []) {
+      if (node.id === entry || node.disabled) continue;
+      const down = node.crashed || cut.has(`${entry}>${node.id}`);
+      replicas.push({ from: entry, node: node.id, status: down ? "lost" : "applied", steps: 1, after: 0, kind: "event" });
+    }
+  }
+  const subscribers = (final.subscribers || [])
+    .filter((subscriber) => subscriber.namespace === namespace && subscriber.last_event?.key === fullKey)
+    .map((subscriber) => ({
+      id: subscriber.id,
+      node: subscriber.connected_node,
+      steps: Math.max(0, subscriber.last_event.delivered_at_step - pushStep),
+    }));
+  return { clientId, entry, pushStep, replicas, subscribers, write };
+}
+
 const PULSE_STEP_MS = 420;
 const PULSE_REQUEST_MS = 460;
 
@@ -1335,13 +1393,17 @@ export function playDataFlowPulse(plan) {
   // 2) replication, timed by the steps the engine took
   const replicationStart = Math.max(0, requestMs - 100);
   for (const replica of plan.replicas) {
+    // Routed writes hop from the primary, and start once it has the value.
+    const from = replica.from ?? plan.entry;
+    const start = replicationStart + PULSE_STEP_MS * Math.min(replica.after ?? 0, 6);
+    const kind = replica.kind ?? "data";
     if (replica.status === "applied") {
       const steps = Math.min(replica.steps, 6);
-      add(plan.entry, replica.node, replicationStart, PULSE_STEP_MS * steps, "data");
+      add(from, replica.node, start, PULSE_STEP_MS * steps, kind);
     } else if (replica.status === "pending") {
-      add(plan.entry, replica.node, replicationStart, PULSE_STEP_MS * 2, "data pending", { end: 0.55, hold: true });
+      add(from, replica.node, start, PULSE_STEP_MS * 2, `${kind} pending`, { end: 0.55, hold: true });
     } else {
-      add(plan.entry, replica.node, replicationStart, PULSE_STEP_MS, "data doomed", { end: 0.8, lost: true });
+      add(from, replica.node, start, PULSE_STEP_MS, `${kind} doomed`, { end: 0.8, lost: true });
     }
   }
   // 3) delivery to each subscriber, from its node, when the engine delivered

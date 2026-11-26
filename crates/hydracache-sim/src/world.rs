@@ -1,14 +1,16 @@
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 use hydracache::{
-    ClientAck, ClientOp, ClusterNode, ClusterNodeConfig, ClusterNodeId, ConsistencyLevel,
-    EffectiveReplicationMap, LogicalDuration, LogicalTime, OutboundClusterMessage, RegionId,
-    Replicas, StorageOpKind,
+    ClientAck, ClientOp, ClusterNode, ClusterNodeConfig, ClusterNodeId, ClusterNodeMessage,
+    ConsistencyLevel, EffectiveReplicationMap, LogicalDuration, LogicalTime,
+    OutboundClusterMessage, RegionId, Replicas, StorageOpKind,
 };
 
+use crate::replication::{grid_write_id, level_name, GridWrite, GridWriteStatus};
 use crate::snapshot::SIM_REGION;
 #[cfg(not(target_arch = "wasm32"))]
 use crate::SimRaftCluster;
+use crate::SimReplicationModel;
 use crate::{
     BoundedGrowthChecker, ControlActionV1, ControlApplyError, ElectionDriver,
     ElectionDriverSnapshot, History, InvariantChecker, InvariantReport, LinkFault,
@@ -96,6 +98,8 @@ struct PendingSubscriberEvent {
     key: String,
     version: u64,
     commit_index: u64,
+    /// Routed write this event waits for (delivered once it is acknowledged).
+    write: Option<u64>,
 }
 
 /// A client process the cluster knows about, and the member it is connected to.
@@ -162,6 +166,9 @@ pub struct SimWorld {
     clients: BTreeMap<String, SimClientActor>,
     subscribers: BTreeMap<String, SimSubscriber>,
     sessions: BTreeMap<String, ClientSession>,
+    replication: SimReplicationModel,
+    grid_writes: BTreeMap<u64, GridWrite>,
+    next_grid_write: u64,
     crashed_nodes: BTreeSet<ClusterNodeId>,
     isolated_nodes: BTreeSet<ClusterNodeId>,
     disabled_nodes: BTreeSet<ClusterNodeId>,
@@ -230,6 +237,9 @@ impl SimWorld {
             clients: BTreeMap::new(),
             subscribers: BTreeMap::new(),
             sessions: BTreeMap::new(),
+            replication: SimReplicationModel::default(),
+            grid_writes: BTreeMap::new(),
+            next_grid_write: 1,
             crashed_nodes: BTreeSet::new(),
             isolated_nodes: BTreeSet::new(),
             disabled_nodes: BTreeSet::new(),
@@ -283,6 +293,7 @@ impl SimWorld {
         self.tick_nodes();
         self.issue_smoke_workload();
         self.drain_node_effects();
+        self.fail_unreachable_writes();
         self.deliver_subscriber_events();
         self.refresh_invariant_report();
     }
@@ -333,8 +344,42 @@ impl SimWorld {
     }
 
     /// Enable or disable the built-in smoke workload.
+    ///
+    /// # Panics
+    ///
+    /// Panics when enabling the workload under a routed replication model: the
+    /// workload and its invariants run on the full-broadcast model only.
     pub fn set_workload_enabled(&mut self, enabled: bool) {
+        assert!(
+            !(enabled && self.replication.is_routed()),
+            "the built-in workload runs only in the full_broadcast replication model"
+        );
         self.workload_enabled = enabled;
+    }
+
+    /// Choose the write path manual pushes follow. Fails loud while the
+    /// built-in workload runs (it and its invariants use the full-broadcast
+    /// model) and on a replication factor of zero.
+    pub fn set_replication(&mut self, model: SimReplicationModel) -> Result<(), ControlApplyError> {
+        if model.is_routed() && self.workload_enabled {
+            return Err(ControlApplyError::InvalidAction(
+                "turn the built-in workload off first: it runs only in the full_broadcast model"
+                    .to_owned(),
+            ));
+        }
+        if let SimReplicationModel::Replicated {
+            replication_factor, ..
+        } = model
+        {
+            if replication_factor == 0 {
+                return Err(ControlApplyError::InvalidAction(
+                    "replication_factor must be at least 1".to_owned(),
+                ));
+            }
+        }
+        self.replication = model;
+        self.record(format!("replication:{}", model.as_str()));
+        Ok(())
     }
 
     /// Return whether the built-in smoke workload is enabled.
@@ -375,6 +420,7 @@ impl SimWorld {
             ControlActionV1::AddClient { client, ns, .. } => self.add_client(client, ns),
             ControlActionV1::Unsubscribe { client, ns, .. } => self.unsubscribe(client, ns),
             ControlActionV1::RemoveClient { client, .. } => self.remove_client(client),
+            ControlActionV1::SetReplication { model, .. } => self.set_replication(model),
             ControlActionV1::ModeChange { mode, .. } => {
                 self.mode = mode;
                 Ok(())
@@ -448,8 +494,15 @@ impl SimWorld {
                     ControlApplyError::InvalidAction("delay references an unknown link".to_owned())
                 }),
             ControlActionV1::Workload { enabled, .. } => {
-                self.set_workload_enabled(enabled);
-                Ok(())
+                if enabled && self.replication.is_routed() {
+                    Err(ControlApplyError::InvalidAction(
+                        "the built-in workload runs only in the full_broadcast replication model"
+                            .to_owned(),
+                    ))
+                } else {
+                    self.set_workload_enabled(enabled);
+                    Ok(())
+                }
             }
         };
         if result.is_ok() {
@@ -615,6 +668,9 @@ impl SimWorld {
         // product; the Raft leader is not on the data path. A client the
         // cluster has not seen is admitted first (needs a leader).
         let target = self.admit_client(&client)?;
+        if self.replication.is_routed() {
+            return self.push_routed(client, namespace, key, value, target);
+        }
         let numeric_id = self.ensure_client_actor(&client, &namespace);
         let op = WorkloadOp::Put {
             key: key.clone(),
@@ -641,10 +697,272 @@ impl SimWorld {
         self.record(format!("manual_push:{client}:{target}:{key}:{event_id:?}"));
         self.drain_node_effects();
         let version = value_version(&value);
-        self.enqueue_subscriber_events(&namespace, key, version, commit_index);
+        self.enqueue_subscriber_events(&namespace, key, version, commit_index, None);
         self.deliver_subscriber_events();
         self.refresh_invariant_report();
         Ok(())
+    }
+
+    /// A manual write under a routed model. The coordinator is the client's
+    /// member. `LocalFirst` writes there and invalidates every other member;
+    /// `Replicated` refuses the write when the product level cannot be met by
+    /// the live owners, otherwise forwards it to the primary, which replicates
+    /// to its backups. Acknowledgements come back as product `Ack` messages.
+    fn push_routed(
+        &mut self,
+        client: String,
+        namespace: String,
+        key: String,
+        value: Vec<u8>,
+        coordinator: ClusterNodeId,
+    ) -> Result<(), ControlApplyError> {
+        let (replicas, level, required_acks) = match self.replication {
+            SimReplicationModel::FullBroadcast => unreachable!("routed writes only"),
+            SimReplicationModel::LocalFirst => {
+                (Replicas::new(coordinator.clone(), Vec::new()), None, 1)
+            }
+            SimReplicationModel::Replicated {
+                replication_factor,
+                write_level,
+            } => {
+                let members = self.member_ids();
+                let replicas = hydracache::rank_replicas(
+                    &key,
+                    members.iter(),
+                    usize::try_from(replication_factor).unwrap_or(usize::MAX),
+                )
+                .ok_or_else(|| {
+                    ControlApplyError::InvalidAction("no member can own the key".to_owned())
+                })?;
+                // A down primary is replaced by the first live owner in rank
+                // order (backup promotion, without its phases), so a level
+                // the live owners can meet is not stuck behind a dead primary.
+                let live = self.live_node_ids();
+                let replicas = match replicas
+                    .all_nodes()
+                    .into_iter()
+                    .position(|node| live.contains(&node))
+                {
+                    Some(index) if index > 0 => {
+                        let mut ranked = replicas.all_nodes();
+                        let acting = ranked.remove(index);
+                        Replicas::new(acting, ranked)
+                    }
+                    _ => replicas,
+                };
+                let requirement =
+                    self.validate_level(write_level, &replicas)
+                        .map_err(|reason| {
+                            ControlApplyError::InvalidAction(format!(
+                                "write refused at {}: {reason}",
+                                level_name(write_level)
+                            ))
+                        })?;
+                (
+                    replicas,
+                    Some(write_level),
+                    requirement.required_total as u64,
+                )
+            }
+        };
+        let numeric_id = self.ensure_client_actor(&client, &namespace);
+        let op = WorkloadOp::Put {
+            key: key.clone(),
+            value: value.clone(),
+        };
+        let id = self.next_grid_write;
+        self.next_grid_write = self.next_grid_write.saturating_add(1);
+        let write = GridWrite {
+            id,
+            client: client.clone(),
+            key: key.clone(),
+            value: value.clone(),
+            coordinator: coordinator.clone(),
+            replicas: replicas.clone(),
+            level,
+            required_acks,
+            acks: 0,
+            backups_applied: BTreeSet::new(),
+            status: GridWriteStatus::Pending,
+            started_at_step: self.steps,
+            acknowledged_at_step: None,
+        };
+        let sequence = write.sequence();
+        self.grid_writes.insert(id, write);
+        self.trim_grid_writes();
+
+        let event_id = self
+            .history
+            .record_invocation(numeric_id, op, self.clock.now());
+        self.accepted_ops = self.accepted_ops.saturating_add(1);
+        self.history.record_response(
+            event_id,
+            self.clock.now(),
+            WorkloadResult::Accepted { sequence },
+        );
+        let commit_index = self.history.completed().count() as u64;
+        if let Some(actor) = self.clients.get_mut(&client) {
+            actor.namespace = namespace.clone();
+            actor.last_op = Some(format!("push {key}"));
+            actor.in_flight = 0;
+        }
+        self.record(format!(
+            "manual_push:{client}:{coordinator}:{key}:{}:write={id}:primary={}",
+            self.replication.as_str(),
+            replicas.primary
+        ));
+
+        let put = ClusterNodeMessage::ReplicatePut {
+            key: key.clone(),
+            value: value.clone(),
+            sequence,
+        };
+        if replicas.primary == coordinator {
+            self.apply_at_primary(id, &coordinator);
+        } else {
+            // The coordinator is not an owner: forward to the primary.
+            self.send_one(coordinator.clone(), replicas.primary.clone(), put);
+        }
+        if self.replication == SimReplicationModel::LocalFirst {
+            for member in self.member_ids() {
+                if member != coordinator {
+                    self.send_one(
+                        coordinator.clone(),
+                        member,
+                        ClusterNodeMessage::ReplicateInvalidate {
+                            key: key.clone(),
+                            sequence,
+                        },
+                    );
+                }
+            }
+        }
+        self.drain_node_effects();
+        let version = value_version(&value);
+        self.enqueue_subscriber_events(&namespace, key, version, commit_index, Some(id));
+        self.deliver_subscriber_events();
+        self.refresh_invariant_report();
+        Ok(())
+    }
+
+    /// The primary applies a routed write it received (or took locally as the
+    /// coordinator) and sends a copy to each backup.
+    fn apply_at_primary(&mut self, id: u64, primary: &ClusterNodeId) {
+        let Some(write) = self.grid_writes.get(&id) else {
+            return;
+        };
+        let coordinator = write.coordinator.clone();
+        let backups = write.replicas.backups.clone();
+        let put = ClusterNodeMessage::ReplicatePut {
+            key: write.key.clone(),
+            value: write.value.clone(),
+            sequence: write.sequence(),
+        };
+        if *primary == coordinator {
+            // Local apply: the product node acknowledges to the sender, here
+            // itself; `send_outbound` counts that acknowledgement directly.
+            if let Some(node) = self.nodes.get_mut(primary) {
+                node.node.handle_message(coordinator.clone(), put.clone());
+            }
+        }
+        for backup in backups {
+            self.send_one(primary.clone(), backup, put.clone());
+        }
+    }
+
+    /// A product `Ack` for a routed write arrived at `at` from `from`.
+    fn on_grid_ack(&mut self, at: &ClusterNodeId, from: &ClusterNodeId, id: u64) {
+        let step = self.steps;
+        let Some(write) = self.grid_writes.get_mut(&id) else {
+            return;
+        };
+        let primary = write.replicas.primary.clone();
+        let coordinator = write.coordinator.clone();
+        if *at == primary && write.replicas.backups.contains(from) {
+            write.backups_applied.insert(from.clone());
+            if primary == coordinator {
+                write.acknowledge(step);
+            } else {
+                // The primary passes the backup's acknowledgement on.
+                let sequence = write.sequence();
+                self.send_one(primary, coordinator, ClusterNodeMessage::Ack { sequence });
+            }
+        } else if *at == coordinator && *from == primary {
+            // The primary's own apply, or a backup acknowledgement it relayed.
+            write.acknowledge(step);
+        }
+    }
+
+    /// A pending routed write whose level the live owners can no longer meet
+    /// fails loud with the product's reason.
+    fn fail_unreachable_writes(&mut self) {
+        let pending = self
+            .grid_writes
+            .values()
+            .filter(|write| write.status == GridWriteStatus::Pending)
+            .filter_map(|write| {
+                write
+                    .level
+                    .map(|level| (write.id, level, write.replicas.clone()))
+            })
+            .collect::<Vec<_>>();
+        for (id, level, replicas) in pending {
+            if let Err(reason) = self.validate_level(level, &replicas) {
+                if let Some(write) = self.grid_writes.get_mut(&id) {
+                    write.status = GridWriteStatus::Failed(reason);
+                }
+                self.record(format!("write_failed:{id}"));
+            }
+        }
+    }
+
+    /// Product acknowledgement rule for `replicas` against the live nodes,
+    /// all in one region.
+    fn validate_level(
+        &self,
+        level: ConsistencyLevel,
+        replicas: &Replicas,
+    ) -> Result<hydracache::AckRequirement, String> {
+        let map = EffectiveReplicationMap::new(replicas.clone());
+        let region = RegionId::new(SIM_REGION);
+        let topology = replicas
+            .all_nodes()
+            .into_iter()
+            .map(|node| (node, region.clone()))
+            .collect::<BTreeMap<_, _>>();
+        level
+            .validate(&map, &topology, &region, &self.live_node_ids())
+            .map_err(|error| error.reason)
+    }
+
+    /// Cluster members that can own keys: every node not disabled. A crashed
+    /// or isolated member still owns its keys; that is what acknowledgements
+    /// and failures are about.
+    fn member_ids(&self) -> Vec<ClusterNodeId> {
+        self.nodes
+            .keys()
+            .filter(|node| !self.disabled_nodes.contains(*node))
+            .cloned()
+            .collect()
+    }
+
+    fn trim_grid_writes(&mut self) {
+        let finished = self
+            .grid_writes
+            .values()
+            .filter(|write| write.status != GridWriteStatus::Pending)
+            .map(|write| write.id)
+            .collect::<Vec<_>>();
+        let excess = finished
+            .len()
+            .saturating_sub(crate::replication::MAX_WRITES_RENDERED * 4);
+        for id in finished.into_iter().take(excess) {
+            self.grid_writes.remove(&id);
+        }
+    }
+
+    fn send_one(&mut self, from: ClusterNodeId, to: ClusterNodeId, message: ClusterNodeMessage) {
+        self.send_outbound(vec![OutboundClusterMessage { from, to, message }]);
     }
 
     /// Crash a node if it exists.
@@ -941,7 +1259,7 @@ impl SimWorld {
             links,
             in_flight,
             over_budget,
-            keys: crate::snapshot::key_views_from_storage(key_observations),
+            keys: self.with_owners(crate::snapshot::key_views_from_storage(key_observations)),
             clients: self
                 .clients
                 .iter()
@@ -966,6 +1284,18 @@ impl SimWorld {
                     connected_node: self.session_node(&subscriber.client_id),
                 })
                 .collect(),
+            replication: self.replication_view(),
+            writes: {
+                let mut writes = self
+                    .grid_writes
+                    .values()
+                    .rev()
+                    .take(crate::replication::MAX_WRITES_RENDERED)
+                    .map(GridWrite::view)
+                    .collect::<Vec<_>>();
+                writes.reverse();
+                writes
+            },
             admitted_clients: self
                 .sessions
                 .iter()
@@ -1021,13 +1351,13 @@ impl SimWorld {
             .into_iter()
             .filter(|node_id| self.nodes.contains_key(node_id))
             .collect::<BTreeSet<_>>();
-        SIM_CONSISTENCY_LEVELS
+        crate::replication::ALL_LEVELS
             .into_iter()
             .map(|level| {
                 let requirement = level.required_acks(&map, &topology, &region);
                 let verdict = level.validate(&map, &topology, &region, &live);
                 crate::snapshot::ConsistencyLevelView {
-                    level: consistency_level_name(level).to_owned(),
+                    level: level_name(level).to_owned(),
                     total_replicas: requirement.total_replicas as u64,
                     required_acks: requirement.required_total as u64,
                     live_replicas: requirement
@@ -1045,6 +1375,58 @@ impl SimWorld {
     /// Serialize the canonical UI snapshot as JSON.
     pub fn snapshot_json(&self) -> String {
         self.snapshot().to_json()
+    }
+
+    fn replication_view(&self) -> crate::snapshot::ReplicationView {
+        let (replication_factor, write_level, disclosure) = match self.replication {
+            SimReplicationModel::FullBroadcast => (
+                None,
+                None,
+                "simulator model: the client's member broadcasts every write to every member; not the product's write path",
+            ),
+            SimReplicationModel::LocalFirst => (
+                None,
+                None,
+                "product default: the client's member writes locally and the other members drop their copy",
+            ),
+            SimReplicationModel::Replicated {
+                replication_factor,
+                write_level,
+            } => (
+                Some(replication_factor),
+                Some(level_name(write_level).to_owned()),
+                "model of the opt-in replication primitives (rendezvous owners, consistency levels); the product has no runtime replicated write path yet",
+            ),
+        };
+        crate::snapshot::ReplicationView {
+            model: self.replication.as_str().to_owned(),
+            replication_factor,
+            write_level,
+            disclosure: disclosure.to_owned(),
+        }
+    }
+
+    fn with_owners(
+        &self,
+        mut keys: Vec<crate::snapshot::KeyView>,
+    ) -> Vec<crate::snapshot::KeyView> {
+        if let SimReplicationModel::Replicated {
+            replication_factor, ..
+        } = self.replication
+        {
+            let members = self.member_ids();
+            let rf = usize::try_from(replication_factor).unwrap_or(usize::MAX);
+            for key in &mut keys {
+                key.owners =
+                    hydracache::rank_replicas(&key.key, members.iter(), rf).map(|replicas| {
+                        crate::snapshot::KeyOwnersView {
+                            primary: replicas.primary.to_string(),
+                            backups: replicas.backups.iter().map(ToString::to_string).collect(),
+                        }
+                    });
+            }
+        }
+        keys
     }
 
     /// Member a client's connection is open to, as the snapshot reports it.
@@ -1176,9 +1558,37 @@ impl SimWorld {
                 self.network.record_target_down(&from, &to);
                 continue;
             }
+            let routed = self.routed_delivery(&from, &to, &message);
             if let Some(target) = self.nodes.get_mut(&to) {
-                target.node.handle_message(from, message);
+                target.node.handle_message(from.clone(), message);
             }
+            match routed {
+                Some(RoutedDelivery::Forward(id)) => self.apply_at_primary(id, &to),
+                Some(RoutedDelivery::Ack(id)) => self.on_grid_ack(&to, &from, id),
+                None => {}
+            }
+        }
+    }
+
+    /// Whether a delivered message is a step of a routed write: the forward to
+    /// the primary, or an acknowledgement.
+    fn routed_delivery(
+        &self,
+        from: &ClusterNodeId,
+        to: &ClusterNodeId,
+        message: &ClusterNodeMessage,
+    ) -> Option<RoutedDelivery> {
+        match message {
+            ClusterNodeMessage::ReplicatePut { sequence, .. } => {
+                let id = grid_write_id(*sequence)?;
+                let write = self.grid_writes.get(&id)?;
+                (*from == write.coordinator && *to == write.replicas.primary)
+                    .then_some(RoutedDelivery::Forward(id))
+            }
+            ClusterNodeMessage::Ack { sequence } => {
+                grid_write_id(*sequence).map(RoutedDelivery::Ack)
+            }
+            _ => None,
         }
     }
 
@@ -1363,6 +1773,15 @@ impl SimWorld {
 
     fn send_outbound(&mut self, outbound: Vec<OutboundClusterMessage>) {
         for outbound in outbound {
+            if outbound.from == outbound.to {
+                // A node acknowledging its own local apply of a routed write.
+                if let ClusterNodeMessage::Ack { sequence } = &outbound.message {
+                    if let Some(id) = grid_write_id(*sequence) {
+                        self.on_grid_ack(&outbound.to, &outbound.from, id);
+                    }
+                }
+                continue;
+            }
             self.record(format!(
                 "send:{}->{}:{:?}",
                 outbound.from, outbound.to, outbound.message
@@ -1451,6 +1870,7 @@ impl SimWorld {
         key: String,
         version: u64,
         commit_index: u64,
+        write: Option<u64>,
     ) {
         for subscriber in self
             .subscribers
@@ -1466,6 +1886,7 @@ impl SimWorld {
                 key: key.clone(),
                 version,
                 commit_index,
+                write,
             });
         }
     }
@@ -1487,6 +1908,24 @@ impl SimWorld {
             let Some(event) = subscriber.pending.front() else {
                 continue;
             };
+            if let Some(id) = event.write {
+                // A routed write reaches its subscribers once acknowledged.
+                let acknowledged = self
+                    .grid_writes
+                    .get(&id)
+                    .is_some_and(|write| write.status == GridWriteStatus::Acknowledged);
+                if acknowledged {
+                    let event = subscriber.pending.pop_front().expect("front event exists");
+                    subscriber.last_event = Some(SubscriberEventView {
+                        kind: event.kind,
+                        key: event.key,
+                        version: event.version,
+                        commit_index: event.commit_index,
+                        delivered_at_step: self.steps,
+                    });
+                }
+                continue;
+            }
             if completed < event.commit_index {
                 continue;
             }
@@ -1557,25 +1996,12 @@ fn namespaced_key(namespace: &str, key: &str) -> String {
     format!("{namespace}:{key}")
 }
 
-/// Product consistency levels in the order the demo lists them.
-const SIM_CONSISTENCY_LEVELS: [ConsistencyLevel; 5] = [
-    ConsistencyLevel::One,
-    ConsistencyLevel::LocalQuorum,
-    ConsistencyLevel::Quorum,
-    ConsistencyLevel::EachQuorum,
-    ConsistencyLevel::All,
-];
-
-/// Snapshot name of a level. The match is exhaustive on purpose: a new product
-/// level stops this from compiling until it is named and listed above.
-fn consistency_level_name(level: ConsistencyLevel) -> &'static str {
-    match level {
-        ConsistencyLevel::One => "one",
-        ConsistencyLevel::LocalQuorum => "local_quorum",
-        ConsistencyLevel::Quorum => "quorum",
-        ConsistencyLevel::EachQuorum => "each_quorum",
-        ConsistencyLevel::All => "all",
-    }
+/// A delivered message that moves a routed write on.
+enum RoutedDelivery {
+    /// The coordinator's forward reached the primary.
+    Forward(u64),
+    /// An acknowledgement for the write arrived.
+    Ack(u64),
 }
 
 /// Session name of a built-in workload client.
