@@ -3,7 +3,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use hydracache::{CacheError, CacheResult, ClusterEpoch, ClusterNodeId, PartitionId};
+use hydracache::{CacheError, CacheResult, ClusterEpoch, PartitionId};
 use hydracache_client_protocol::{
     ClientErrorCode, ClientErrorEnvelope, ClientRequest, ClientRequestEnvelope, Namespace,
     StructuredKey,
@@ -20,11 +20,17 @@ use crate::hc2::unix_time_ms;
 use crate::imap_owner_read::unavailable;
 use crate::imap_topology::{PartitionMember, PartitionPlacement};
 use crate::imap_value_journal::hash;
-use crate::imap_value_plane::ValueBackend;
+use crate::imap_value_plane::{AppliedOutcome, AppliedVersion, ValueBackend};
 use crate::value_plane_subscription::{EventPage, EventPoll, ListenerView};
 
 const OWNER_CALL_VERSION: u16 = 1;
 const OWNER_BUDGET: Duration = Duration::from_millis(2_000);
+
+#[path = "imap_hc2_bulk_route.rs"]
+mod bulk;
+pub(crate) use bulk::{
+    BatchExecution, BatchState, OwnerBatchCall, OwnerBatchItem, OwnerBatchReply,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -52,6 +58,7 @@ pub(crate) struct RoutedValueBackend<S: RaftLogStore> {
     profile: DistributedHc2Config,
     principal: String,
     max_value_bytes: usize,
+    owner_batches: tokio::sync::Semaphore,
 }
 
 impl<S: RaftLogStore> std::fmt::Debug for RoutedValueBackend<S> {
@@ -75,6 +82,7 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
             profile,
             principal,
             max_value_bytes,
+            owner_batches: tokio::sync::Semaphore::new(bulk::MAX_OWNER_BATCHES),
         }
     }
 
@@ -91,38 +99,6 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
             ));
         }
         Ok(())
-    }
-
-    pub(crate) fn bulk_placements<'a>(
-        &self,
-        tenant: &str,
-        requests: impl Iterator<Item = &'a ClientRequest>,
-    ) -> Result<Vec<Option<ClusterNodeId>>, ClientErrorEnvelope> {
-        let view = self
-            .owner
-            .raft
-            .partition_snapshot()
-            .ok_or_else(unavailable)?;
-        let mut by_partition = std::collections::BTreeMap::new();
-        requests
-            .map(|request| {
-                let (ns, key) = operation_key(request).ok_or_else(unsupported)?;
-                let partition = self
-                    .owner
-                    .replica
-                    .route_partition(tenant, ns, key)
-                    .ok_or_else(unsupported)?;
-                Ok(by_partition
-                    .entry(partition)
-                    .or_insert_with(|| {
-                        self.owner
-                            .replica
-                            .placement(&view, partition)
-                            .map(|placement| placement.primary.node)
-                    })
-                    .clone())
-            })
-            .collect()
     }
 
     pub(crate) fn listener_view(&self) -> Option<ListenerView> {
@@ -184,24 +160,40 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
     }
 
     async fn execute_at_owner(&self, call: &OwnerCall, deadline: Instant) -> ClientBackendOutcome {
-        if matches!(call.envelope.request, ClientRequest::Get { .. }) {
+        self.execute_proven(&call.tenant, &call.envelope, deadline, call.epoch)
+            .await
+            .map(|(response, _)| response)
+    }
+
+    async fn execute_proven(
+        &self,
+        tenant: &str,
+        envelope: &ClientRequestEnvelope,
+        deadline: Instant,
+        epoch: ClusterEpoch,
+    ) -> Result<AppliedOutcome, ClientErrorEnvelope> {
+        if matches!(envelope.request, ClientRequest::Get { .. }) {
             self.owner
                 .read
-                .read_at(
-                    &call.tenant,
-                    &call.envelope.request,
-                    deadline,
-                    Some(call.epoch),
-                )
+                .read_at_proven(tenant, &envelope.request, deadline, Some(epoch))
                 .await
+                .map(|(response, proof)| {
+                    (
+                        response,
+                        Some(AppliedVersion {
+                            epoch: proof.epoch,
+                            version: proof.applied_prefix,
+                        }),
+                    )
+                })
         } else {
             self.owner
-                .write_at(
-                    &call.tenant,
-                    &call.envelope,
+                .write_at_proven(
+                    tenant,
+                    envelope,
                     self.max_value_bytes,
                     deadline,
-                    Some(call.epoch),
+                    Some(epoch),
                 )
                 .await
         }

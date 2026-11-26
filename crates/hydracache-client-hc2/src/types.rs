@@ -299,6 +299,28 @@ pub struct BatchItemOutcome {
     /// Applied topology observed by the serving endpoint.
     pub topology_epoch: u64,
     pub result: Result<BatchItemResult, ClientError>,
+    /// Proof from a distributed owner, when supplied by the peer.
+    pub receipt: Option<BatchItemReceipt>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BatchItemState {
+    Confirmed,
+    NotApplied,
+    OutcomeUnknown,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct BatchItemReceipt {
+    pub partition_id: u32,
+    pub state: BatchItemState,
+    pub applied: Option<AppliedVersion>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AppliedVersion {
+    pub epoch: u64,
+    pub version: u64,
 }
 
 /// Immutable topology endpoint.
@@ -336,6 +358,36 @@ pub enum SubscriptionEvent {
         after_watermark: u64,
     },
     Closed(ClientError),
+}
+
+/// One ordered delivery with optional partition repair information.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SubscriptionDelivery {
+    pub event: SubscriptionEvent,
+    pub gap: Option<GapDetails>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GapReason {
+    Unknown,
+    TopologyChanged,
+    HistoryLost,
+    ResumeUnbound,
+    ClientOverflow,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GapDetails {
+    pub reason: GapReason,
+    /// Empty when the whole subscription may need repair.
+    pub partitions: Vec<PartitionGap>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PartitionGap {
+    pub partition_id: u32,
+    pub previous_version: u64,
+    pub observed_version: u64,
 }
 
 /// Privacy-safe, pull-based runtime counters.

@@ -87,6 +87,11 @@ pub(crate) struct CachedDecision {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 enum StoredDecision {
+    Certified {
+        #[serde(flatten)]
+        decision: CachedDecision,
+        prefix: PartitionValuePrefix,
+    },
     Current(CachedDecision),
     Legacy([u8; 32]),
 }
@@ -207,7 +212,10 @@ impl PartitionJournal {
             let decision = previous
                 .decision
                 .clone()
-                .map(StoredDecision::Current)
+                .map(|decision| StoredDecision::Certified {
+                    decision,
+                    prefix: previous.certificate(),
+                })
                 .unwrap_or_else(|| StoredDecision::Legacy(previous.outcome_digest()));
             self.outcomes.insert(identity.clone(), decision);
         }
@@ -224,13 +232,27 @@ impl PartitionJournal {
         required: Option<PartitionValuePrefix>,
         id: &str,
     ) -> Option<&CachedDecision> {
-        if let Some(StoredDecision::Current(decision)) = self.outcomes.get(id) {
-            return Some(decision);
+        self.retained_proven(required, id)
+            .map(|(decision, _)| decision)
+    }
+
+    pub fn retained_proven(
+        &self,
+        required: Option<PartitionValuePrefix>,
+        id: &str,
+    ) -> Option<(&CachedDecision, Option<PartitionValuePrefix>)> {
+        match self.outcomes.get(id) {
+            Some(StoredDecision::Certified { decision, prefix }) => Some((decision, Some(*prefix))),
+            Some(StoredDecision::Current(decision)) => Some((decision, None)),
+            Some(StoredDecision::Legacy(_)) => None,
+            None => {
+                let pending = self.matching_pending(required)?;
+                if pending.identity.as_deref() != Some(id) {
+                    return None;
+                }
+                Some((pending.decision.as_ref()?, required))
+            }
         }
-        self.matching_pending(required)
-            .filter(|pending| pending.identity.as_deref() == Some(id))?
-            .decision
-            .as_ref()
     }
 
     pub fn pending_retry(

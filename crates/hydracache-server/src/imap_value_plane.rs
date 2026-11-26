@@ -25,7 +25,9 @@ use tokio::sync::{watch, Semaphore};
 use tokio::time::{sleep, timeout_at, Instant};
 
 use crate::grid_host::send_raft_messages_with_diagnostics;
-use crate::imap_hc2_route::{transport_unavailable, OwnerCall, OwnerReply};
+use crate::imap_hc2_route::{
+    transport_unavailable, OwnerBatchCall, OwnerBatchReply, OwnerCall, OwnerReply,
+};
 use crate::imap_owner_read::{
     request_read_index, unavailable, OwnerReadLane, OwnerReadProgress, OwnerReadRoute,
     OwnerReadValues, RaftOwnerReadBackend,
@@ -102,6 +104,7 @@ pub(crate) struct ReplicaPrefix {
 #[derive(Deserialize)]
 #[serde(untagged)]
 pub(crate) enum ReplicaMessage {
+    OwnerBatch(OwnerBatchCall),
     Events(EventPoll),
     Owner(OwnerCall),
     Apply(ReplicaApply),
@@ -122,6 +125,10 @@ pub(crate) trait ReplicaTransport: Send + Sync {
     }
 
     async fn call_owner(&self, _request: &OwnerCall) -> CacheResult<OwnerReply> {
+        Err(transport_unavailable())
+    }
+
+    async fn call_owner_batch(&self, _request: &OwnerBatchCall) -> CacheResult<OwnerBatchReply> {
         Err(transport_unavailable())
     }
 
@@ -717,6 +724,23 @@ impl<S: RaftLogStore + 'static> ClientDataBackend for ValueBackend<S> {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub(crate) struct AppliedVersion {
+    pub epoch: ClusterEpoch,
+    pub version: u64,
+}
+
+impl From<PartitionValuePrefix> for AppliedVersion {
+    fn from(prefix: PartitionValuePrefix) -> Self {
+        Self {
+            epoch: prefix.epoch,
+            version: prefix.version,
+        }
+    }
+}
+
+pub(crate) type AppliedOutcome = (ClientResponse, Option<AppliedVersion>);
+
 struct WriteInput<'a> {
     partition: PartitionId,
     key: String,
@@ -864,7 +888,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
         let deadline = request
             .transport_deadline()
             .unwrap_or(now + relative.min(WRITE_WAIT));
-        self.write_at(
+        self.write_at_proven(
             request.identity().tenant(),
             envelope,
             request.limits().max_value_bytes,
@@ -872,16 +896,17 @@ impl<S: RaftLogStore> ValueBackend<S> {
             None,
         )
         .await
+        .map(|(response, _)| response)
     }
 
-    pub(crate) async fn write_at(
+    pub(crate) async fn write_at_proven(
         &self,
         tenant: &str,
         envelope: &ClientRequestEnvelope,
         max_value_bytes: usize,
         deadline: Instant,
         routed_epoch: Option<ClusterEpoch>,
-    ) -> ClientBackendOutcome {
+    ) -> Result<AppliedOutcome, ClientErrorEnvelope> {
         let (ns, key, operation) = WriteOp::request(&envelope.request)
             .ok_or_else(|| write_error(false, "unsupported W10d mutation or consistency"))?;
         let (route, key) = self
@@ -917,7 +942,11 @@ impl<S: RaftLogStore> ValueBackend<S> {
         .await
     }
 
-    async fn write_to(&self, input: WriteInput<'_>, deadline: Instant) -> ClientBackendOutcome {
+    async fn write_to(
+        &self,
+        input: WriteInput<'_>,
+        deadline: Instant,
+    ) -> Result<AppliedOutcome, ClientErrorEnvelope> {
         let _write = self
             .replica
             .writes
@@ -930,7 +959,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
         let _partition = lane.writer.try_acquire().map_err(|_| before_apply())?;
         let proof = request_read_index(&self.raft, &self.raft_transport, deadline).await?;
         let ready = self.ready_to_write(lane, &input, deadline).await;
-        let (mutation, response) = {
+        let (mutation, outcome) = {
             let _guard = lane.storage.try_lock().map_err(|_| before_apply())?;
             proof
                 .with_snapshot(|snapshot, _| {
@@ -942,7 +971,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
                 .map_err(|_| before_apply())??
         };
         let Some(mutation) = mutation else {
-            return Ok(response);
+            return Ok(outcome);
         };
         let prefix = mutation.certificate();
         let wire_version = mutation.wire_version();
@@ -978,7 +1007,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
                     return Err(ambiguous());
                 }
                 if snapshot.value_prefixes.get(&prefix.partition) == Some(&prefix) {
-                    return Ok(response);
+                    return Ok(outcome);
                 }
                 sleep(Duration::from_millis(5)).await;
             }
@@ -1037,7 +1066,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
         input: WriteInput<'_>,
         snapshot: &RaftPartitionSnapshot,
         ready: Option<PromotionWriteCut>,
-    ) -> Result<(Option<Mutation>, ClientResponse), ClientErrorEnvelope> {
+    ) -> Result<(Option<Mutation>, AppliedOutcome), ClientErrorEnvelope> {
         if input
             .routed_epoch
             .is_some_and(|epoch| epoch != snapshot.epoch)
@@ -1057,13 +1086,13 @@ impl<S: RaftLogStore> ValueBackend<S> {
         if !meta.covers(prior) {
             return Err(before_apply());
         }
-        if let Some(retained) = input
+        if let Some((retained, prefix)) = input
             .identity
             .as_deref()
-            .and_then(|id| meta.retained(prior, id))
+            .and_then(|id| meta.retained_proven(prior, id))
         {
             return if retained.request == input.fingerprint {
-                Ok((None, retained.response.clone()))
+                Ok((None, (retained.response.clone(), prefix.map(Into::into))))
             } else {
                 Err(identity_conflict())
             };
@@ -1118,7 +1147,11 @@ impl<S: RaftLogStore> ValueBackend<S> {
                     })?;
                 let outcome_only = decision.change.is_none();
                 if outcome_only && input.identity.is_none() {
-                    return Ok((None, decision.response));
+                    let observed = AppliedVersion {
+                        epoch: snapshot.epoch,
+                        version: prior.map_or(0, |prefix| prefix.version),
+                    };
+                    return Ok((None, (decision.response, Some(observed))));
                 }
                 let change = decision.change.unwrap_or_else(Change::tombstone);
                 let mutation = Mutation {
@@ -1139,15 +1172,16 @@ impl<S: RaftLogStore> ValueBackend<S> {
                 (mutation, decision.response)
             }
         };
+        let applied = mutation.certificate().into();
         match journal
             .apply(prior, mutation.clone(), true)
             .map_err(|_| ambiguous())?
         {
             ApplyResult::Flushed => {
                 self.replica.owner_applies.fetch_add(1, Ordering::Relaxed);
-                Ok((Some(mutation), response))
+                Ok((Some(mutation), (response, Some(applied))))
             }
-            ApplyResult::Replay => Ok((None, response)),
+            ApplyResult::Replay => Ok((None, (response, None))),
             ApplyResult::Busy => Err(before_apply()),
             ApplyResult::Conflict => Err(identity_conflict()),
         }

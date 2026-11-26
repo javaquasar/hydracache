@@ -397,7 +397,10 @@ fn apply_invocation(
                 .collect();
             InvocationResponse {
                 meta: Some(success_meta()),
-                result: Some(invocation_response::Result::Batch(BatchResult { items })),
+                result: Some(invocation_response::Result::Batch(BatchResult {
+                    items,
+                    receipts: Vec::new(),
+                })),
             }
         }
         None => error_result(

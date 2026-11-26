@@ -20,10 +20,11 @@ use crate::wire::{
     TryLockRequest, UnlockRequest, Unsubscribe,
 };
 use crate::{
-    BatchItemResult, BatchOperation, CacheEvent, CacheValue, Capability, ClientConfig, ClientError,
-    ClientMetricsSnapshot, ClientRetainedStateSnapshot, ErrorCode, LockAcquireResult,
-    LockOwnership, MutationResult, NodeEndpoint, RequestOptions, RetryAdvice, SubscriptionEvent,
-    TopologySnapshot, TransportKind,
+    AppliedVersion, BatchItemReceipt, BatchItemResult, BatchItemState, BatchOperation, CacheEvent,
+    CacheValue, Capability, ClientConfig, ClientError, ClientMetricsSnapshot,
+    ClientRetainedStateSnapshot, ErrorCode, GapDetails, GapReason, LockAcquireResult,
+    LockOwnership, MutationResult, NodeEndpoint, PartitionGap, RequestOptions, RetryAdvice,
+    SubscriptionDelivery, SubscriptionEvent, TopologySnapshot, TransportKind,
 };
 
 struct Metrics {
@@ -57,32 +58,35 @@ struct PendingInvocation {
 
 struct PendingSubscription {
     subscription_id: u64,
-    events: mpsc::Sender<SubscriptionEvent>,
+    events: mpsc::Sender<SubscriptionDelivery>,
     reply: oneshot::Sender<Result<SubscriptionAck, ClientError>>,
     permit: OwnedSemaphorePermit,
 }
 
 struct ActiveSubscription {
-    events: mpsc::Sender<SubscriptionEvent>,
-    gap_after: Option<u64>,
+    events: mpsc::Sender<SubscriptionDelivery>,
+    pending_gap: Option<(u64, Option<GapDetails>)>,
     last_delivered: u64,
     _permit: OwnedSemaphorePermit,
 }
 
 impl ActiveSubscription {
     fn flush_gap(&mut self, subscription_id: u64) -> bool {
-        if let Some(after_watermark) = self.gap_after {
+        if let Some((after_watermark, details)) = self.pending_gap.take() {
             if self
                 .events
-                .try_send(SubscriptionEvent::Gap {
-                    subscription_id,
-                    after_watermark,
+                .try_send(SubscriptionDelivery {
+                    event: SubscriptionEvent::Gap {
+                        subscription_id,
+                        after_watermark,
+                    },
+                    gap: details.clone(),
                 })
                 .is_err()
             {
+                self.pending_gap = Some((after_watermark, details));
                 return false;
             }
-            self.gap_after = None;
         }
         true
     }
@@ -606,16 +610,28 @@ impl Hc2Client {
         if batch.items.len() != expected {
             return Err(protocol_error("peer returned the wrong batch result count"));
         }
-        Ok(batch
+        if !batch.receipts.is_empty() && batch.receipts.len() != expected {
+            return Err(protocol_error(
+                "peer returned the wrong batch receipt count",
+            ));
+        }
+        let mut receipts = batch.receipts.into_iter();
+        batch
             .items
             .into_iter()
             .enumerate()
-            .map(|(index, item)| crate::BatchItemOutcome {
-                item_id: index as u32 + 1,
-                topology_epoch: item.meta.as_ref().map_or(0, |meta| meta.topology_epoch),
-                result: map_batch_item(index, item),
+            .map(|(index, item)| {
+                Ok(crate::BatchItemOutcome {
+                    item_id: index as u32 + 1,
+                    topology_epoch: item.meta.as_ref().map_or(0, |meta| meta.topology_epoch),
+                    result: map_batch_item(index, item),
+                    receipt: receipts
+                        .next()
+                        .map(|receipt| decode_batch_receipt(index, receipt))
+                        .transpose()?,
+                })
             })
-            .collect())
+            .collect()
     }
 
     /// Register a bounded subscription.
@@ -822,7 +838,7 @@ pub struct Subscription {
     runtime: Weak<Runtime>,
     id: u64,
     initial_watermark: u64,
-    events: mpsc::Receiver<SubscriptionEvent>,
+    events: mpsc::Receiver<SubscriptionDelivery>,
     closed: bool,
 }
 
@@ -847,6 +863,11 @@ impl Subscription {
         self.initial_watermark
     }
     pub async fn next(&mut self) -> Option<SubscriptionEvent> {
+        self.next_delivery().await.map(|delivery| delivery.event)
+    }
+
+    /// Receive an event with any supplied partition repair information.
+    pub async fn next_delivery(&mut self) -> Option<SubscriptionDelivery> {
         let event = self.events.recv().await?;
         if let Some(runtime) = self.runtime.upgrade() {
             let mut subscriptions = runtime.subscriptions.lock().unwrap();
@@ -1117,7 +1138,7 @@ impl Runtime {
                 ack.subscription_id,
                 ActiveSubscription {
                     events: pending.events,
-                    gap_after: None,
+                    pending_gap: None,
                     last_delivered: ack.watermark,
                     _permit: pending.permit,
                 },
@@ -1136,6 +1157,9 @@ impl Runtime {
             return;
         };
         if !subscription.flush_gap(event.subscription_id) {
+            if let Some((_, details)) = &mut subscription.pending_gap {
+                *details = Some(overflow_gap());
+            }
             self.metrics.dropped_events.fetch_add(1, Ordering::Relaxed);
             return;
         }
@@ -1147,8 +1171,15 @@ impl Runtime {
             value: event.value,
             removed: event.removed,
         });
-        if subscription.events.try_send(message).is_err() {
-            subscription.gap_after = Some(subscription.last_delivered);
+        if subscription
+            .events
+            .try_send(SubscriptionDelivery {
+                event: message,
+                gap: None,
+            })
+            .is_err()
+        {
+            subscription.pending_gap = Some((subscription.last_delivered, Some(overflow_gap())));
             self.metrics.dropped_events.fetch_add(1, Ordering::Relaxed);
         } else {
             subscription.last_delivered = event.watermark;
@@ -1163,11 +1194,16 @@ impl Runtime {
         let Some(subscription) = subscriptions.get_mut(&gap.subscription_id) else {
             return;
         };
-        let after_watermark = subscription
-            .gap_after
-            .unwrap_or(subscription.last_delivered)
-            .min(gap.after_watermark);
-        subscription.gap_after = Some(after_watermark);
+        let (after, details) = if let Some((pending, previous)) = subscription.pending_gap.take() {
+            let details = previous.filter(|details| details.reason == GapReason::ClientOverflow);
+            (pending.min(gap.after_watermark), details)
+        } else {
+            (
+                subscription.last_delivered.min(gap.after_watermark),
+                gap.details.map(decode_gap),
+            )
+        };
+        subscription.pending_gap = Some((after, details));
         subscription.flush_gap(gap.subscription_id);
         self.metrics.dropped_events.fetch_add(1, Ordering::Relaxed);
     }
@@ -1434,9 +1470,10 @@ impl Runtime {
                 .lock()
                 .expect("subscription mutex poisoned"),
         ) {
-            let _ = subscription
-                .events
-                .try_send(SubscriptionEvent::Closed(error.clone()));
+            let _ = subscription.events.try_send(SubscriptionDelivery {
+                event: SubscriptionEvent::Closed(error.clone()),
+                gap: None,
+            });
         }
         self.sessions
             .lock()
@@ -1594,6 +1631,84 @@ fn client_envelope_request_meta(
             .expect("topology lock poisoned")
             .epoch,
     })
+}
+
+fn decode_batch_receipt(
+    index: usize,
+    receipt: crate::wire::BatchItemReceipt,
+) -> Result<BatchItemReceipt, ClientError> {
+    use crate::wire::BatchItemState as WireState;
+    if receipt.item_id as usize != index + 1 {
+        return Err(protocol_error(
+            "peer returned an out-of-order batch receipt",
+        ));
+    }
+    let state = match WireState::try_from(receipt.state) {
+        Ok(WireState::Confirmed) => BatchItemState::Confirmed,
+        Ok(WireState::NotApplied) => BatchItemState::NotApplied,
+        Ok(WireState::OutcomeUnknown) => BatchItemState::OutcomeUnknown,
+        _ => {
+            return Err(protocol_error(
+                "peer returned an unknown batch receipt state",
+            ))
+        }
+    };
+    let applied = match (receipt.applied_epoch, receipt.applied_version) {
+        (Some(epoch), Some(version)) if epoch != 0 && state == BatchItemState::Confirmed => {
+            Some(AppliedVersion { epoch, version })
+        }
+        (None, None) => None,
+        _ => {
+            return Err(protocol_error(
+                "peer returned an inconsistent applied version",
+            ))
+        }
+    };
+    Ok(BatchItemReceipt {
+        partition_id: receipt.partition_id,
+        state,
+        applied,
+    })
+}
+
+fn overflow_gap() -> GapDetails {
+    GapDetails {
+        reason: GapReason::ClientOverflow,
+        partitions: Vec::new(),
+    }
+}
+
+fn decode_gap(details: crate::wire::EventGapDetails) -> GapDetails {
+    use crate::wire::EventGapReason as WireReason;
+    let reason = match WireReason::try_from(details.reason) {
+        Ok(WireReason::TopologyChanged) => GapReason::TopologyChanged,
+        Ok(WireReason::HistoryLost) => GapReason::HistoryLost,
+        Ok(WireReason::ResumeUnbound) => GapReason::ResumeUnbound,
+        Ok(WireReason::ClientOverflow) => GapReason::ClientOverflow,
+        _ => GapReason::Unknown,
+    };
+    let mut previous = None;
+    let ordered = details.partitions.iter().all(|partition| {
+        let ordered = previous.is_none_or(|id| id < partition.partition_id);
+        previous = Some(partition.partition_id);
+        ordered
+    });
+    if !ordered || details.partitions.len() > 1024 || reason == GapReason::Unknown {
+        return GapDetails {
+            reason: GapReason::Unknown,
+            partitions: Vec::new(),
+        };
+    }
+    let partitions = details
+        .partitions
+        .into_iter()
+        .map(|partition| PartitionGap {
+            partition_id: partition.partition_id,
+            previous_version: partition.previous_version,
+            observed_version: partition.observed_version,
+        })
+        .collect();
+    GapDetails { reason, partitions }
 }
 
 fn map_batch_item(

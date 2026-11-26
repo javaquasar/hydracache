@@ -356,7 +356,7 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn w10g_distributed_bulk_and_cluster_listeners_recover_under_load() {
-    use hydracache_client_hc2::{BatchOperation, SubscriptionEvent};
+    use hydracache_client_hc2::{BatchItemState, BatchOperation, GapReason, SubscriptionEvent};
 
     if std::env::var("HYDRACACHE_RUN_DAEMON_PROCESS_E2E").as_deref() != Ok("1") {
         return;
@@ -408,6 +408,24 @@ async fn w10g_distributed_bulk_and_cluster_listeners_recover_under_load() {
         ErrorCode::Unsupported
     );
     wait_w10i_get(client, invalid_key, None).await;
+    let oversized_key = cluster.key_for(0, None, "w10g-oversized/");
+    let oversized = (0..4)
+        .map(|_| BatchOperation::Put {
+            key: oversized_key.clone(),
+            value: Bytes::from(vec![255; 128 * 1024]),
+            ttl: None,
+        })
+        .collect();
+    let refused = client.batch_outcomes(oversized, None).await.unwrap();
+    assert!(refused.iter().all(|item| {
+        item.receipt.is_some_and(|receipt| {
+            receipt.state == BatchItemState::NotApplied && receipt.applied.is_none()
+        }) && item
+            .result
+            .as_ref()
+            .is_err_and(|error| error.code() == ErrorCode::QuotaExceeded)
+    }));
+    wait_w10i_get(client, oversized_key, None).await;
     let options = RequestOptions {
         timeout: Duration::from_secs(8),
         idempotency_key: value(b"w10g-initial"),
@@ -429,6 +447,9 @@ async fn w10g_distributed_bulk_and_cluster_listeners_recover_under_load() {
     for (index, item) in items.iter().enumerate() {
         assert_eq!(item.item_id as usize, index + 1);
         assert!(item.topology_epoch > 0);
+        let receipt = item.receipt.unwrap();
+        assert_eq!(receipt.state, BatchItemState::Confirmed);
+        assert!(receipt.applied.is_some());
         let result = item.result.as_ref().unwrap();
         match index {
             3 => assert_eq!(result.value.as_ref().unwrap().value, value(b"one")),
@@ -437,6 +458,17 @@ async fn w10g_distributed_bulk_and_cluster_listeners_recover_under_load() {
             _ => assert!(result.mutation.unwrap().applied),
         }
     }
+    let hot_receipt = items[0].receipt.unwrap();
+    assert_eq!(items[3].receipt, Some(hot_receipt));
+    assert_eq!(items[4].receipt, items[6].receipt);
+    assert_eq!(
+        items[4].receipt.unwrap().applied.unwrap().version,
+        hot_receipt.applied.unwrap().version + 1
+    );
+    assert_ne!(
+        items[1].receipt.unwrap().partition_id,
+        hot_receipt.partition_id
+    );
     let mut observed = std::collections::BTreeMap::<Bytes, Vec<Bytes>>::new();
     let mut watermark = 0;
     for _ in 0..4 {
@@ -462,6 +494,7 @@ async fn w10g_distributed_bulk_and_cluster_listeners_recover_under_load() {
         for (index, item) in repeated.into_iter().enumerate() {
             if matches!(index, 0 | 1 | 2 | 4) {
                 assert!(item.result?.mutation.unwrap().applied);
+                assert_eq!(item.receipt, items[index].receipt);
             }
         }
         Ok(())
@@ -521,6 +554,10 @@ async fn w10g_distributed_bulk_and_cluster_listeners_recover_under_load() {
         if let Ok(partial) = partial {
             if partial[0].result.is_ok() && partial[1].result.is_err() && partial[2].result.is_ok()
             {
+                assert_ne!(partial[1].receipt.unwrap().state, BatchItemState::Confirmed);
+                assert!(partial[1].receipt.unwrap().applied.is_none());
+                assert_eq!(partial[0].receipt.unwrap().state, BatchItemState::Confirmed);
+                assert_eq!(partial[2].receipt.unwrap().state, BatchItemState::Confirmed);
                 assert_eq!(
                     partial[0]
                         .result
@@ -553,8 +590,22 @@ async fn w10g_distributed_bulk_and_cluster_listeners_recover_under_load() {
         tokio::time::sleep(Duration::from_millis(30)).await;
     }
     wait_w10i_get(client, hot.clone(), Some(&value(b"one-again"))).await;
+    let boundary = tokio::time::timeout(Duration::from_secs(8), events.next_delivery())
+        .await
+        .unwrap()
+        .unwrap();
     assert!(
-        matches!(next_w10g_event(&mut events).await, SubscriptionEvent::Gap { after_watermark, .. } if after_watermark == watermark)
+        matches!(boundary.event, SubscriptionEvent::Gap { after_watermark, .. } if after_watermark == watermark)
+    );
+    let details = boundary.gap.unwrap();
+    assert_eq!(details.reason, GapReason::TopologyChanged);
+    // The first epoch change can precede reassignment. An empty list is a stream-wide gap.
+    assert!(
+        details.partitions.is_empty()
+            || details
+                .partitions
+                .iter()
+                .any(|gap| { gap.partition_id == hot_receipt.partition_id })
     );
     assert!(
         retry_w10i(|| client.put(hot.clone(), value(b"recovered"), None, None))
@@ -571,9 +622,16 @@ async fn w10g_distributed_bulk_and_cluster_listeners_recover_under_load() {
         .subscribe_with_values(value(b"w10g-event/"), resumed.watermark, true)
         .await
         .unwrap();
+    let boundary = tokio::time::timeout(Duration::from_secs(8), reconnect.next_delivery())
+        .await
+        .unwrap()
+        .unwrap();
     assert!(
-        matches!(next_w10g_event(&mut reconnect).await, SubscriptionEvent::Gap { after_watermark, .. } if after_watermark == resumed.watermark)
+        matches!(boundary.event, SubscriptionEvent::Gap { after_watermark, .. } if after_watermark == resumed.watermark)
     );
+    let details = boundary.gap.unwrap();
+    assert_eq!(details.reason, GapReason::ResumeUnbound);
+    assert!(details.partitions.is_empty());
     assert!(
         retry_w10i(|| client.delete(control.clone(), None))
             .await

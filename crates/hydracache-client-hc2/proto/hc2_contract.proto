@@ -130,7 +130,23 @@ message ValueResult { bool found = 1; bytes value = 2; uint64 expires_at_unix_ms
 message MutationResult { bool applied = 1; }
 message LockResult { bool acquired = 1; uint64 fence = 2; }
 message LockOwnershipResult { bool locked = 1; uint64 fence = 2; }
-message BatchResult { repeated InvocationResponse items = 1; }
+enum BatchItemState {
+  BATCH_ITEM_STATE_UNSPECIFIED = 0;
+  BATCH_ITEM_STATE_CONFIRMED = 1;
+  BATCH_ITEM_STATE_NOT_APPLIED = 2;
+  BATCH_ITEM_STATE_OUTCOME_UNKNOWN = 3;
+}
+message BatchItemReceipt {
+  uint32 item_id = 1;
+  uint32 partition_id = 2;
+  BatchItemState state = 3;
+  optional uint64 applied_epoch = 4;
+  optional uint64 applied_version = 5;
+}
+message BatchResult {
+  repeated InvocationResponse items = 1;
+  repeated BatchItemReceipt receipts = 2;
+}
 
 message InvocationResponse {
   ResponseMeta meta = 1;
@@ -160,7 +176,28 @@ message CacheEvent {
   bytes value = 4;
   bool removed = 5;
 }
-message EventGap { uint64 subscription_id = 1; uint64 after_watermark = 2; }
+enum EventGapReason {
+  EVENT_GAP_REASON_UNSPECIFIED = 0;
+  EVENT_GAP_REASON_TOPOLOGY_CHANGED = 1;
+  EVENT_GAP_REASON_HISTORY_LOST = 2;
+  EVENT_GAP_REASON_RESUME_UNBOUND = 3;
+  EVENT_GAP_REASON_CLIENT_OVERFLOW = 4;
+}
+message PartitionGap {
+  uint32 partition_id = 1;
+  uint64 previous_version = 2;
+  uint64 observed_version = 3;
+}
+message EventGapDetails {
+  EventGapReason reason = 1;
+  // An empty list means the gap can affect the whole stream.
+  repeated PartitionGap partitions = 2;
+}
+message EventGap {
+  uint64 subscription_id = 1;
+  uint64 after_watermark = 2;
+  EventGapDetails details = 3;
+}
 
 message NodeEndpoint {
   string node_id = 1;

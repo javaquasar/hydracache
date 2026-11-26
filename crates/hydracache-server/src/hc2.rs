@@ -686,22 +686,29 @@ async fn start_cluster_subscription(
         let _permit = permit;
         let mut resource = StreamResourceGuard::new(accounting);
         resource.add_subscription();
-        let gap = |after_watermark| {
+        let gap = |after_watermark, details| {
             server_envelope(
                 identity,
                 0,
                 server_envelope::Message::Gap(EventGap {
                     subscription_id,
                     after_watermark,
+                    details: Some(details),
                 }),
             )
         };
-        if watermark != 0 && outbound.send(Ok(gap(watermark))).await.is_err() {
-            return;
+        if watermark != 0 {
+            let details = hydracache_client_hc2::wire::EventGapDetails {
+                reason: hydracache_client_hc2::wire::EventGapReason::ResumeUnbound as i32,
+                partitions: Vec::new(),
+            };
+            if outbound.send(Ok(gap(watermark, details))).await.is_err() {
+                return;
+            }
         }
         let forward = coordinator.run(|event| {
             let frame = match event {
-                ClusterEvent::Gap => Some(gap(watermark)),
+                ClusterEvent::Gap(details) => Some(gap(watermark, details)),
                 ClusterEvent::Mutation(event) => watermark.checked_add(1).map(|next| {
                     watermark = next;
                     server_envelope(
@@ -801,6 +808,7 @@ async fn dispatch_invocation_async(
         }
         return wire_success(Some(invocation_response::Result::Batch(BatchResult {
             items,
+            receipts: Vec::new(),
         })));
     }
     execute_invocation(service, correlation_id, meta, identity, operation).await
@@ -867,7 +875,6 @@ async fn execute_invocation(
         &identity,
         request,
         item_id,
-        false,
     )
     .await
 }
@@ -879,7 +886,6 @@ async fn execute_normalized(
     identity: &ClientIdentity,
     request: ClientRequest,
     request_identity: Option<String>,
-    classify_retry: bool,
 ) -> InvocationResponse {
     let mut envelope = ClientRequestEnvelope::new(correlation.to_string(), request);
     let deadline = if deadline_unix_ms == 0 {
@@ -898,21 +904,12 @@ async fn execute_normalized(
     if let Some(request_identity) = request_identity {
         envelope = envelope.with_idempotency_key(request_identity);
     }
-    let result = service
-        .state
-        .dispatch_verified_request_with_deadline(identity, envelope, deadline)
-        .await;
-    let retry = classify_retry && result.result.as_ref().is_err_and(|error| error.retryable);
-    let mut response = from_dispatch_response(result);
-    if classify_retry {
-        if let Some(meta) = &mut response.meta {
-            meta.topology_epoch = service.topology_epoch();
-            if retry {
-                meta.retry = hydracache_client_hc2::wire::RetryDirective::SameConnection as i32;
-            }
-        }
-    }
-    response
+    from_dispatch_response(
+        service
+            .state
+            .dispatch_verified_request_with_deadline(identity, envelope, deadline)
+            .await,
+    )
 }
 
 fn scoped_identity(bytes: &[u8]) -> Option<String> {
@@ -1145,6 +1142,7 @@ async fn emit_matching_events(
                         server_envelope::Message::Gap(EventGap {
                             subscription_id: *subscription_id,
                             after_watermark: *watermark,
+                            details: None,
                         }),
                     )))
                     .await?;

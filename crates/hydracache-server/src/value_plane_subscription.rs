@@ -6,6 +6,7 @@ use std::time::Duration;
 
 use futures_util::{stream, StreamExt};
 use hydracache::{ClusterEpoch, PartitionId};
+use hydracache_client_hc2::wire::{EventGapDetails, EventGapReason, PartitionGap};
 use serde::{Deserialize, Serialize};
 use tokio::time::{timeout, MissedTickBehavior};
 
@@ -68,7 +69,7 @@ pub(crate) struct ListenerView {
 }
 
 pub(crate) enum ClusterEvent {
-    Gap,
+    Gap(EventGapDetails),
     Mutation(CertifiedEvent),
 }
 
@@ -76,6 +77,7 @@ pub(crate) struct ClusterSubscriptionCoordinator {
     plane: MemberValuePlane,
     epoch: ClusterEpoch,
     cursors: BTreeMap<PartitionId, u64>,
+    owners: BTreeMap<PartitionId, Option<PartitionMember>>,
     turn: usize,
     key_prefix: Vec<u8>,
     include_value: bool,
@@ -92,6 +94,7 @@ impl ClusterSubscriptionCoordinator {
             plane,
             epoch: view.epoch,
             cursors: frontier(view),
+            owners: owners(view),
             turn: 0,
             key_prefix,
             include_value,
@@ -110,8 +113,10 @@ impl ClusterSubscriptionCoordinator {
                 continue;
             };
             if self.epoch != view.epoch {
-                emit(ClusterEvent::Gap).await?;
+                let details = topology_gap(&self.owners, &mut self.cursors, &view);
+                emit(ClusterEvent::Gap(details)).await?;
                 self.epoch = view.epoch;
+                self.owners = owners(&view);
             }
             let selected = view
                 .partitions
@@ -168,7 +173,19 @@ impl ClusterSubscriptionCoordinator {
                 let Some(page) = page else { continue };
                 for item in page.progress {
                     if item.gap {
-                        emit(ClusterEvent::Gap).await?;
+                        emit(ClusterEvent::Gap(EventGapDetails {
+                            reason: EventGapReason::HistoryLost as i32,
+                            partitions: vec![PartitionGap {
+                                partition_id: item.partition.value(),
+                                previous_version: self
+                                    .cursors
+                                    .get(&item.partition)
+                                    .copied()
+                                    .unwrap_or(0),
+                                observed_version: item.through,
+                            }],
+                        }))
+                        .await?;
                     }
                     for event in item.events {
                         emit(ClusterEvent::Mutation(event)).await?;
@@ -177,6 +194,41 @@ impl ClusterSubscriptionCoordinator {
                 }
             }
         }
+    }
+}
+
+fn owners(view: &ListenerView) -> BTreeMap<PartitionId, Option<PartitionMember>> {
+    view.partitions
+        .iter()
+        .map(|(&id, (owner, _))| (id, owner.clone()))
+        .collect()
+}
+
+fn topology_gap(
+    previous_owners: &BTreeMap<PartitionId, Option<PartitionMember>>,
+    cursors: &mut BTreeMap<PartitionId, u64>,
+    view: &ListenerView,
+) -> EventGapDetails {
+    let partitions = view
+        .partitions
+        .iter()
+        .filter_map(|(&id, (owner, observed))| {
+            let previous = cursors.get(&id).copied().unwrap_or(0);
+            if previous > *observed {
+                cursors.insert(id, *observed);
+            }
+            (previous_owners.get(&id) != Some(owner) || previous > *observed).then_some(
+                PartitionGap {
+                    partition_id: id.value(),
+                    previous_version: previous,
+                    observed_version: *observed,
+                },
+            )
+        })
+        .collect();
+    EventGapDetails {
+        reason: EventGapReason::TopologyChanged as i32,
+        partitions,
     }
 }
 

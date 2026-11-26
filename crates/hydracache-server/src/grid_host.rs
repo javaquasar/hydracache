@@ -40,7 +40,8 @@ use crate::cluster_status::{
 };
 use crate::config::{ClusterStartMode, ServerConfig, ServerConfigError};
 use crate::imap_hc2_route::{
-    decode_key, transport_unavailable, OwnerCall, OwnerReply, RoutedValueBackend,
+    decode_key, transport_unavailable, OwnerBatchCall, OwnerBatchReply, OwnerCall, OwnerReply,
+    RoutedValueBackend,
 };
 use crate::imap_value_plane::{
     BackupObservations, RebalanceHealth, RebalanceRequest, ReplicaApply, ReplicaApplyAck,
@@ -2062,6 +2063,11 @@ impl ReplicaTransport for HttpRaftMessageSink {
             .await
     }
 
+    async fn call_owner_batch(&self, request: &OwnerBatchCall) -> CacheResult<OwnerBatchReply> {
+        self.send_value_message(&request.target.node, request.epoch.value(), request, None)
+            .await
+    }
+
     async fn poll_events(&self, request: &EventPoll) -> CacheResult<EventPage> {
         self.send_value_message(&request.target.node, request.epoch.value(), request, None)
             .await
@@ -3748,6 +3754,7 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
                         ReplicaMessage::Ready(_)
                             | ReplicaMessage::Repair(_)
                             | ReplicaMessage::Owner(_)
+                            | ReplicaMessage::OwnerBatch(_)
                             | ReplicaMessage::Events(_)
                     ) || matches!(&request, ReplicaMessage::Prefix(probe) if probe.wave.is_some()))
                 {
@@ -3759,6 +3766,13 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
                     CacheError::Backend("value replica topology unavailable".into())
                 })?;
                 let encoded = match request {
+                    ReplicaMessage::OwnerBatch(batch) => serde_json::to_value(
+                        self.owner_service
+                            .get()
+                            .ok_or_else(transport_unavailable)?
+                            .receive_owner_batch(&message.from, message.term, &batch)
+                            .await,
+                    ),
                     ReplicaMessage::Events(request) => serde_json::to_value(
                         self.owner_service
                             .get()

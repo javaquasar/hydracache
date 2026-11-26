@@ -1,10 +1,11 @@
 //! Complete ingress validation and bounded owner-group execution of HC/2 batches.
 
 use super::*;
+use crate::imap_hc2_route::{BatchExecution, BatchState};
 use crate::imap_value_decision::WriteOp;
 use crate::imap_value_journal::hash;
 use crate::imap_value_plane::MAX_VALUE_BYTES;
-use hydracache_client_hc2::wire::{BatchRequest, RetryDirective};
+use hydracache_client_hc2::wire::{BatchItemReceipt, BatchItemState, BatchRequest, RetryDirective};
 
 pub(super) const MAX_ACTIVE_BATCHES: usize = 8;
 const MAX_BATCH_ITEMS: usize = 256;
@@ -45,23 +46,6 @@ pub(super) async fn dispatch(
         }
         Err((code, detail)) => return wire_error(code, detail),
     };
-    let owners = match member
-        .plane
-        .bulk_placements(identity.tenant(), requests.iter())
-    {
-        Ok(owners) => owners,
-        Err(error) => {
-            return wire_error(
-                map_client_error(error.code),
-                "HC/2 batch placement is unavailable",
-            )
-        }
-    };
-    let mut results: Vec<Option<InvocationResponse>> = vec![None; requests.len()];
-    let mut groups = BTreeMap::<_, Vec<_>>::new();
-    for (index, (request, owner)) in requests.into_iter().zip(owners).enumerate() {
-        groups.entry(owner).or_default().push((index, request));
-    }
     let latest = unix_time_ms().saturating_add(MAX_BATCH_RUN_MS);
     let deadline = if meta.deadline_unix_ms == 0 {
         latest
@@ -71,123 +55,115 @@ pub(super) async fn dispatch(
     let token = scoped_identity(&meta.idempotency_key);
     let issued_epoch = token.as_deref().and_then(|token| token.split(':').nth(1));
     let parent = meta.idempotency_key.as_ref();
-    let identity = &identity;
-    let mut executions = futures_util::stream::iter(groups.into_values())
-        .map(|group| async move {
-            let mut items = Vec::with_capacity(group.len());
-            let read_only = group
-                .iter()
-                .all(|(_, request)| matches!(request, ClientRequest::Get { .. }));
-            let mut reads = BTreeMap::<Vec<String>, InvocationResponse>::new();
-            for (index, request) in group {
-                let response = if unix_time_ms() >= deadline {
-                    let mut refused = wire_error(
-                        StableErrorCode::StableErrorDeadlineExceeded,
-                        "batch item was not dispatched",
-                    );
-                    if let Some(meta) = &mut refused.meta {
-                        meta.retry = RetryDirective::SameConnection as i32;
-                        meta.topology_epoch = service.topology_epoch();
-                    }
-                    refused
-                } else {
-                    match &request {
-                        ClientRequest::Get { key, .. } => {
-                            let cache_key = key.segments().to_vec();
-                            if let Some(repeated) = reads.get(&cache_key) {
-                                items.push((index, repeated.clone()));
-                                continue;
-                            }
-                            let mut response = execute_normalized(
-                                service,
-                                correlation,
-                                deadline,
-                                identity,
-                                request.clone(),
-                                None,
-                                true,
-                            )
-                            .await;
-                            if unix_time_ms() < deadline
-                                && response.meta.as_ref().is_some_and(|meta| {
-                                    matches!(
-                                        StableErrorCode::try_from(meta.error),
-                                        Ok(StableErrorCode::StableErrorUnavailable
-                                            | StableErrorCode::StableErrorDeadlineExceeded)
-                                    )
-                                })
-                            {
-                                response = execute_normalized(
-                                    service,
-                                    correlation,
-                                    deadline,
-                                    identity,
-                                    request,
-                                    None,
-                                    true,
-                                )
-                                .await;
-                            }
-                            if read_only
-                                && matches!(
-                                    response.result,
-                                    Some(invocation_response::Result::Value(_))
-                                )
-                            {
-                                reads.insert(cache_key, response.clone());
-                            }
-                            response
-                        }
-                        _ => {
-                            let key = (!parent.is_empty())
-                                .then(|| item_identity(parent, issued_epoch, index));
-                            execute_normalized(
-                                service,
-                                correlation,
-                                deadline,
-                                identity,
-                                request,
-                                key,
-                                true,
-                            )
-                            .await
-                        }
-                    }
-                };
-                items.push((index, response));
+    let mut results = vec![None; requests.len()];
+    let envelopes = requests
+        .into_iter()
+        .enumerate()
+        .map(|(index, request)| {
+            let read = matches!(request, ClientRequest::Get { .. });
+            let mut envelope = ClientRequestEnvelope::new(correlation.to_string(), request)
+                .with_deadline_ms(deadline);
+            if !read && !parent.is_empty() {
+                envelope =
+                    envelope.with_idempotency_key(item_identity(parent, issued_epoch, index));
             }
-            items
+            envelope
+        })
+        .collect();
+    let (groups, unassigned) =
+        match member
+            .plane
+            .group_batch(identity.client_id(), identity.tenant(), deadline, envelopes)
+        {
+            Ok(grouped) => grouped,
+            Err(error) => {
+                return wire_error(
+                    map_client_error(error.code),
+                    "HC/2 batch placement is unavailable",
+                )
+            }
+        };
+    for item in unassigned {
+        results[item.index] = Some((
+            item.partition,
+            BatchExecution::not_applied(crate::imap_owner_read::unavailable()),
+        ));
+    }
+    let mut executions = futures_util::stream::iter(groups)
+        .map(|group| async move {
+            let outcomes = member.plane.call_batch(&group).await;
+            group.items.into_iter().zip(outcomes)
         })
         .buffer_unordered(MAX_OWNER_GROUPS);
     while let Some(group) = executions.next().await {
-        for (index, response) in group {
-            results[index] = Some(response);
+        for (item, execution) in group {
+            results[item.index] = Some((item.partition, execution));
         }
     }
     let mut remaining = MAX_BATCH_REPLY_BYTES;
-    let items = results
+    let topology_epoch = service.topology_epoch();
+    let (items, receipts) = results
         .into_iter()
-        .map(|result| {
-            let item = result.expect("one result for each admitted batch operation");
-            let len = item.encoded_len() + 10;
-            if matches!(item.result, Some(invocation_response::Result::Value(_))) && len > remaining
+        .enumerate()
+        .map(|(index, result)| {
+            let (partition, execution) =
+                result.expect("one result for each admitted batch operation");
+            let refused_retryable = execution
+                .outcome
+                .as_ref()
+                .is_err_and(|error| error.retryable);
+            let (state, retry) = match execution.state {
+                BatchState::Confirmed => (BatchItemState::Confirmed, RetryDirective::Never),
+                BatchState::NotApplied => (
+                    BatchItemState::NotApplied,
+                    if refused_retryable {
+                        RetryDirective::SameConnection
+                    } else {
+                        RetryDirective::Never
+                    },
+                ),
+                BatchState::Unknown => (
+                    BatchItemState::OutcomeUnknown,
+                    if parent.is_empty() {
+                        RetryDirective::Never
+                    } else {
+                        RetryDirective::ReconnectIdempotent
+                    },
+                ),
+            };
+            let envelope = match execution.outcome {
+                Ok(value) => ClientResponseEnvelope::ok(correlation.to_string(), value),
+                Err(error) => ClientResponseEnvelope::error(correlation.to_string(), error),
+            };
+            let mut response = from_dispatch_response(envelope);
+            let bytes = response.encoded_len() + 10;
+            if matches!(response.result, Some(invocation_response::Result::Value(_)))
+                && bytes > remaining
             {
-                let mut omitted = wire_error(
+                response = wire_error(
                     StableErrorCode::StableErrorQuotaExceeded,
                     "batch value reply exceeds its bound",
                 );
-                if let Some(meta) = &mut omitted.meta {
-                    meta.topology_epoch = service.topology_epoch();
-                }
-                omitted
             } else {
-                remaining = remaining.saturating_sub(len);
-                item
+                remaining = remaining.saturating_sub(bytes);
             }
+            if let Some(meta) = &mut response.meta {
+                meta.retry = retry as i32;
+                meta.topology_epoch = topology_epoch;
+            }
+            let receipt = BatchItemReceipt {
+                item_id: index as u32 + 1,
+                partition_id: partition.value(),
+                state: state as i32,
+                applied_epoch: execution.applied.map(|proof| proof.epoch.value()),
+                applied_version: execution.applied.map(|proof| proof.version),
+            };
+            (response, receipt)
         })
-        .collect();
+        .unzip();
     wire_success(Some(invocation_response::Result::Batch(BatchResult {
         items,
+        receipts,
     })))
 }
 

@@ -146,6 +146,24 @@ impl<S: RaftLogStore, V: OwnerReadValues> RaftOwnerReadBackend<S, V> {
         deadline: Instant,
         routed_epoch: Option<ClusterEpoch>,
     ) -> ClientBackendOutcome {
+        self.read_at_proven(tenant, request, deadline, routed_epoch)
+            .await
+            .map(|(response, _)| response)
+    }
+
+    pub(crate) async fn read_at_proven(
+        &self,
+        tenant: &str,
+        request: &ClientRequest,
+        deadline: Instant,
+        routed_epoch: Option<ClusterEpoch>,
+    ) -> Result<
+        (
+            hydracache_client_protocol::ClientResponse,
+            OwnerReadProgress,
+        ),
+        ClientErrorEnvelope,
+    > {
         let (ns, key, ttl) = match request {
             ClientRequest::Get { ns, key } => (ns, key, false),
             ClientRequest::GetTtl { ns, key } => (ns, key, true),
@@ -213,7 +231,7 @@ impl<S: RaftLogStore, V: OwnerReadValues> RaftOwnerReadBackend<S, V> {
                     self.replication,
                 )
                 .map_err(|_| unavailable())?;
-                OwnerReadBarrier {
+                let response = OwnerReadBarrier {
                     invocation,
                     term,
                     epoch,
@@ -236,7 +254,8 @@ impl<S: RaftLogStore, V: OwnerReadValues> RaftOwnerReadBackend<S, V> {
                         }
                     },
                 )
-                .map_err(|_| unavailable())?
+                .map_err(|_| unavailable())??;
+                Ok((response, progress))
             })
             .map_err(|_| unavailable())?
     }
