@@ -71,6 +71,19 @@ struct JournalRecordV2 {
     digest: [u8; 32],
 }
 
+impl JournalRecordV2 {
+    fn from_mutation(mutation: &Mutation) -> Self {
+        let sealed = ChecksummedReplicatedValueRecord::seal(mutation.record.clone());
+        let expires_not_before_ms = mutation.expires_not_before_ms;
+        Self {
+            format: 2,
+            digest: hash((2u16, &sealed, expires_not_before_ms)),
+            sealed,
+            expires_not_before_ms,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]
 enum JournalRecord {
@@ -142,6 +155,21 @@ impl PartitionJournal {
         self.pending
             .as_ref()
             .filter(|pending| required == Some(pending.certificate()))
+    }
+
+    fn materialize_pending(&mut self, required: Option<PartitionValuePrefix>) -> Option<Mutation> {
+        self.matching_pending(required)?;
+        let previous = self.pending.take().expect("certified pending record");
+        if let Some(identity) = &previous.identity {
+            let decision = previous
+                .decision
+                .clone()
+                .map(StoredDecision::Current)
+                .unwrap_or_else(|| StoredDecision::Legacy(previous.outcome_digest()));
+            self.outcomes.insert(identity.clone(), decision);
+        }
+        self.visible = required;
+        Some(previous)
     }
 
     pub fn covers(&self, required: Option<PartitionValuePrefix>) -> bool {
@@ -230,19 +258,11 @@ impl ValueJournal {
         let mut meta = self.load(partition)?;
         let mut batch = sled::Batch::default();
         if meta.visible != required {
-            if meta.matching_pending(required).is_none() {
+            let Some(previous) = meta.materialize_pending(required) else {
                 return Ok(ApplyResult::Busy);
-            }
-            let previous = meta.pending.take().expect("certified pending record");
+            };
             if !previous.outcome_only {
-                let sealed = ChecksummedReplicatedValueRecord::seal(previous.record.clone());
-                let expires_not_before_ms = previous.expires_not_before_ms;
-                let stored = JournalRecordV2 {
-                    format: 2,
-                    digest: hash((2u16, &sealed, expires_not_before_ms)),
-                    sealed,
-                    expires_not_before_ms,
-                };
+                let stored = JournalRecordV2::from_mutation(&previous);
                 batch.insert(
                     record_key(partition, &previous.key),
                     serde_json::to_vec(&stored).map_err(storage_error)?,
@@ -254,15 +274,6 @@ impl ValueJournal {
                     batch.remove(timer);
                 }
             }
-            if let Some(identity) = &previous.identity {
-                let decision = previous
-                    .decision
-                    .clone()
-                    .map(StoredDecision::Current)
-                    .unwrap_or_else(|| StoredDecision::Legacy(previous.outcome_digest()));
-                meta.outcomes.insert(identity.clone(), decision);
-            }
-            meta.visible = required;
         }
 
         if let Some(identity) = &mutation.identity {

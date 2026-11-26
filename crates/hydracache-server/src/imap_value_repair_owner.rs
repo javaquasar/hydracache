@@ -31,18 +31,24 @@ impl ValueReplica {
         let lane = self
             .lane(partition)
             .ok_or_else(|| repair_error("unknown partition"))?;
-        let _storage = lane
-            .storage
-            .try_lock()
-            .map_err(|_| repair_error("recipient lane busy"))?;
-        raft.with_applied_partition_snapshot(|snapshot| {
+        let installs = matches!(request.step, RepairStep::Install);
+        let receive = |snapshot: RaftPartitionSnapshot| {
             if !admits_repair(&snapshot, &request.manifest.plan) {
                 return Err(repair_error("recipient has no matching applied cut"));
             }
             self.journal
                 .receive_image(request, |key| self.scope.admits_storage_key(key, partition))
-        })
-        .ok_or_else(|| repair_error("recipient Raft view unavailable"))?
+        };
+        let received = if installs {
+            let _storage = lane
+                .storage
+                .try_lock()
+                .map_err(|_| repair_error("recipient lane busy"))?;
+            raft.with_applied_partition_snapshot(receive)
+        } else {
+            raft.partition_snapshot().map(receive)
+        };
+        received.ok_or_else(|| repair_error("recipient Raft view unavailable"))?
     }
 
     pub(crate) async fn repair_backup<S: RaftLogStore>(
@@ -69,53 +75,53 @@ impl ValueReplica {
         let proof = request_read_index(raft, raft_transport, deadline)
             .await
             .map_err(|_| repair_error("owner Raft authority unavailable"))?;
-        let (plan, image) = {
-            let _storage = lane
-                .storage
-                .try_lock()
-                .map_err(|_| repair_error("owner lane busy"))?;
-            proof
-                .with_snapshot(|snapshot, _| {
-                    if let Some(prior) = snapshot.value_repairs.get(&partition).filter(|prior| {
-                        prior.owner == self.local
-                            && prior.replaced == replaced
-                            && prior.target == target
-                            && admitted(&snapshot, &self.local)
-                            && admitted(&snapshot, &target)
-                    }) {
-                        return Ok((prior.clone(), None));
-                    }
-                    let next_epoch = snapshot
-                        .epoch
-                        .value()
-                        .checked_add(1)
-                        .ok_or_else(|| repair_error("epoch exhausted"))?;
-                    let mut plan = PartitionReplicaRepair {
-                        partition,
-                        old_epoch: snapshot.epoch,
-                        new_epoch: ClusterEpoch::new(next_epoch),
-                        owner: self.local.clone(),
-                        replaced,
-                        target,
-                        required: snapshot.value_prefixes.get(&partition).copied(),
-                        snapshot_digest: [0; 32],
-                    };
-                    if !admits_repair(&snapshot, &plan) {
-                        return Err(repair_error("owner has no matching replacement slot"));
-                    }
-                    let image = self.journal.export_image(partition, plan.required)?;
-                    plan.snapshot_digest = bytes_digest(&image);
-                    Ok((plan, Some(image)))
-                })
-                .map_err(|_| repair_error("owner Raft authority changed"))??
-        };
-        let Some(image) = image else {
+        let (mut plan, previously_applied) = proof
+            .with_snapshot(|snapshot, _| {
+                if let Some(prior) = snapshot.value_repairs.get(&partition).filter(|prior| {
+                    prior.owner == self.local
+                        && prior.replaced == replaced
+                        && prior.target == target
+                        && admitted(&snapshot, &self.local)
+                        && admitted(&snapshot, &target)
+                }) {
+                    return Ok((prior.clone(), true));
+                }
+                let next_epoch = snapshot
+                    .epoch
+                    .value()
+                    .checked_add(1)
+                    .ok_or_else(|| repair_error("epoch exhausted"))?;
+                let plan = PartitionReplicaRepair {
+                    partition,
+                    old_epoch: snapshot.epoch,
+                    new_epoch: ClusterEpoch::new(next_epoch),
+                    owner: self.local.clone(),
+                    replaced,
+                    target,
+                    required: snapshot.value_prefixes.get(&partition).copied(),
+                    snapshot_digest: [0; 32],
+                };
+                if !admits_repair(&snapshot, &plan) {
+                    return Err(repair_error("owner has no matching replacement slot"));
+                }
+                Ok((plan, false))
+            })
+            .map_err(|_| repair_error("owner Raft authority changed"))??;
+        if previously_applied {
             return Ok(ReplicaRepairOutcome {
                 plan,
                 resumed_from: 0,
                 chunks: 0,
             });
+        }
+        let image = {
+            let _storage = lane
+                .storage
+                .try_lock()
+                .map_err(|_| repair_error("owner lane busy"))?;
+            self.journal.export_image(partition, plan.required)?
         };
+        plan.snapshot_digest = bytes_digest(&image);
         let manifest = RepairManifest {
             plan: plan.clone(),
             scope: self.repair_scope(),

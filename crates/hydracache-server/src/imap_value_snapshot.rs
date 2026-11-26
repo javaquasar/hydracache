@@ -25,28 +25,56 @@ impl ValueJournal {
         partition: PartitionId,
         required: Option<PartitionValuePrefix>,
     ) -> CacheResult<Vec<u8>> {
-        let mut meta = self.load(partition)?;
+        let stored = self.0.get(meta_key(partition)).map_err(storage_error)?;
+        if stored
+            .as_ref()
+            .is_some_and(|bytes| bytes.len() > MAX_IMAGE_BYTES)
+        {
+            return Err(repair_error("partition journal exceeds the snapshot limit"));
+        }
+        let mut meta: PartitionJournal = stored
+            .map(|bytes| serde_json::from_slice(&bytes).map_err(storage_error))
+            .transpose()?
+            .unwrap_or_default();
         if !meta.covers(required) {
             return Err(repair_error("owner lacks the certified prefix"));
         }
-        meta.pending = meta
-            .pending
-            .take()
-            .filter(|row| Some(row.certificate()) == required);
+        // A certified prefix's image is stable across journal materialization.
+        let materialized = meta
+            .materialize_pending(required)
+            .filter(|row| !row.outcome_only);
+        meta.pending = None;
         let records = record_key(partition, "");
         let mut size = serde_json::to_vec(&meta).map_err(storage_error)?.len();
         let mut rows = Vec::new();
         for pair in self.0.scan_prefix(&records) {
             let (key, value) = pair.map_err(storage_error)?;
+            let key = std::str::from_utf8(&key[records.len()..]).map_err(storage_error)?;
+            if materialized.as_ref().is_some_and(|row| row.key == key) {
+                continue;
+            }
             size += key.len() + value.len();
             if size > MAX_IMAGE_BYTES || rows.len() == MAX_IMAGE_ROWS {
                 return Err(repair_error("partition exceeds the staged snapshot limits"));
             }
-            let key = std::str::from_utf8(&key[records.len()..]).map_err(storage_error)?;
             rows.push(ImageRow {
                 key: key.to_owned(),
                 value: serde_json::from_slice(&value).map_err(storage_error)?,
             });
+        }
+        if let Some(row) = materialized {
+            if rows.len() == MAX_IMAGE_ROWS {
+                return Err(repair_error("partition exceeds the staged snapshot limits"));
+            }
+            let index = rows.partition_point(|prior| prior.key < row.key);
+            let value = JournalRecord::V2(JournalRecordV2::from_mutation(&row));
+            rows.insert(
+                index,
+                ImageRow {
+                    key: row.key,
+                    value,
+                },
+            );
         }
         let bytes = serde_json::to_vec(&PartitionImage { meta, rows }).map_err(storage_error)?;
         if bytes.len() > MAX_IMAGE_BYTES {
@@ -169,21 +197,8 @@ impl ValueJournal {
         let partition = manifest.plan.partition;
         let required = manifest.plan.required;
         let PartitionImage { meta, rows } = serde_json::from_slice(bytes).map_err(storage_error)?;
-        let valid_meta = match &meta.pending {
-            Some(pending) => {
-                Some(pending.certificate()) == required
-                    && pending.record.partition == partition
-                    && meta
-                        .visible
-                        .map_or(0, |prefix| prefix.version)
-                        .checked_add(1)
-                        == Some(pending.record.version)
-                    && meta.visible.map_or([0; 32], |prefix| prefix.digest) == pending.previous
-                    && admits_key(&pending.key)
-            }
-            None => meta.visible == required,
-        };
-        if !valid_meta
+        if meta.pending.is_some()
+            || meta.visible != required
             || rows.len() > MAX_IMAGE_ROWS
             || meta.outcomes.len() > RETAINED_IDENTITIES
             || meta
@@ -348,6 +363,8 @@ mod tests {
             Some(b"certified".to_vec()),
             None,
         );
+        let image_with_certified_pending =
+            source.export_image(prefix.partition, Some(prefix)).unwrap();
         let _uncertified = write(
             &source,
             Some(prefix),
@@ -357,6 +374,7 @@ mod tests {
         );
         let partition = prefix.partition;
         let image = source.export_image(partition, Some(prefix)).unwrap();
+        assert_eq!(image, image_with_certified_pending);
         let manifest = manifest(Some(prefix), &image);
         assert!(manifest.chunks() > 1);
         assert_eq!(image, source.export_image(partition, Some(prefix)).unwrap());
@@ -507,5 +525,49 @@ mod tests {
             .get(meta_key(PartitionId::new(7)))
             .unwrap()
             .is_none());
+    }
+
+    #[test]
+    fn a_new_epoch_replaces_the_cursor_and_an_oversized_transfer_leaves_it_intact() {
+        let journal = ValueJournal::temporary();
+        let image = journal.export_image(PartitionId::new(7), None).unwrap();
+        let active = manifest(None, &image);
+        journal
+            .receive_image(request(&active, RepairStep::Status), |_| true)
+            .unwrap();
+        journal
+            .receive_image(request(&active, chunk(0, &image)), |_| true)
+            .unwrap();
+        let mut incompatible = active.clone();
+        incompatible.plan.snapshot_digest = [5; 32];
+        assert!(journal
+            .receive_image(request(&incompatible, RepairStep::Status), |_| true)
+            .is_err());
+        let mut oversized = active.clone();
+        oversized.image_len = MAX_IMAGE_BYTES + 1;
+        assert!(journal
+            .receive_image(request(&oversized, RepairStep::Status), |_| true)
+            .is_err());
+        assert_eq!(
+            journal
+                .receive_image(request(&active, RepairStep::Status), |_| true)
+                .unwrap()
+                .next,
+            1
+        );
+        let mut newer = active.clone();
+        newer.plan.old_epoch = active.plan.new_epoch;
+        newer.plan.new_epoch = ClusterEpoch::new(newer.plan.old_epoch.value() + 1);
+        assert_eq!(
+            journal
+                .receive_image(request(&newer, RepairStep::Status), |_| true)
+                .unwrap()
+                .next,
+            0
+        );
+        assert!(journal.0.get(chunk_key(0)).unwrap().is_none());
+        assert!(journal
+            .receive_image(request(&active, RepairStep::Install), |_| true)
+            .is_err());
     }
 }

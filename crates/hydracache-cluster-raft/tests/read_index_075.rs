@@ -484,20 +484,21 @@ async fn promotion_requires_exact_committed_cut_and_fences_delayed_certificate_a
     .unwrap();
     let restored = RaftMetadataRuntime::from_snapshot(raft.export_snapshot()).unwrap();
     for runtime in [&raft, &restored] {
-        runtime
-            .with_applied_partition_snapshot(|snapshot| {
-                assert_eq!(snapshot.epoch, repair.new_epoch);
-                assert_eq!(snapshot.value_repairs[&partition], repair);
-                assert_eq!(snapshot.value_prefixes[&partition], next);
-                assert_eq!(
-                    snapshot.value_promotions[&partition].backups,
-                    vec![target.clone()]
-                );
-                assert_eq!(
-                    snapshot.value_promotions[&partition].new_owner,
-                    plan.new_owner
-                );
-            })
-            .unwrap();
+        let snapshot = runtime.partition_snapshot().unwrap();
+        assert_eq!(snapshot.epoch, repair.new_epoch);
+        assert_eq!(snapshot.value_repairs[&partition], repair);
+        assert_eq!(snapshot.value_prefixes[&partition], next);
+        assert_eq!(
+            snapshot.value_promotions[&partition].backups,
+            vec![target.clone()]
+        );
+        assert_eq!(
+            snapshot.value_promotions[&partition].new_owner,
+            plan.new_owner
+        );
     }
+    assert_eq!(
+        raft.with_applied_partition_snapshot(|snapshot| snapshot.value_repairs[&partition].clone()),
+        Some(repair)
+    );
 }
