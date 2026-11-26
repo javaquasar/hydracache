@@ -83,6 +83,26 @@ fn generation_and_domain_are_mandatory() {
 }
 
 #[test]
+fn binary_frame_rejects_truncation_and_trailing_data() {
+    let bounds = ReferenceKeyBounds::default();
+    let key = ReferenceCanonicalKey::new("tenant-a", "orders", 1, vec![0, 0xff, 0x80, 0]);
+    let mut frame = key.encode(bounds).unwrap();
+    assert_eq!(ReferenceCanonicalKey::decode(&frame, bounds).unwrap(), key);
+    for length in 0..frame.len() {
+        assert_eq!(
+            ReferenceCanonicalKey::decode(&frame[..length], bounds),
+            Err(ReferenceKeyError::MalformedFrame),
+            "accepted a truncated frame at {length} bytes"
+        );
+    }
+    frame.push(0);
+    assert_eq!(
+        ReferenceCanonicalKey::decode(&frame, bounds),
+        Err(ReferenceKeyError::MalformedFrame)
+    );
+}
+
+#[test]
 fn checked_in_cross_language_vectors_are_generated_by_the_rust_reference() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -93,15 +113,23 @@ fn checked_in_cross_language_vectors_are_generated_by_the_rust_reference() {
     )
     .unwrap();
     for vector in value["vectors"].as_array().unwrap() {
+        let bounds = ReferenceKeyBounds::default();
         let key = ReferenceCanonicalKey::new(
             vector["tenant"].as_str().unwrap(),
             vector["namespace"].as_str().unwrap(),
             vector["namespace_generation"].as_u64().unwrap(),
             decode_hex(vector["key_hex"].as_str().unwrap()),
         );
+        let encoded = vector["encoded_hex"].as_str().unwrap();
         assert_eq!(
-            hex(&key.encode(ReferenceKeyBounds::default()).unwrap()),
-            vector["encoded_hex"].as_str().unwrap(),
+            hex(&key.encode(bounds).unwrap()),
+            encoded,
+            "vector {}",
+            vector["id"].as_str().unwrap()
+        );
+        assert_eq!(
+            ReferenceCanonicalKey::decode(&decode_hex(encoded), bounds).unwrap(),
+            key,
             "vector {}",
             vector["id"].as_str().unwrap()
         );

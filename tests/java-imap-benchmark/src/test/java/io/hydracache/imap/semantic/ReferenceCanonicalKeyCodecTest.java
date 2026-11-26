@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.Arrays;
 import java.util.HexFormat;
 import org.junit.jupiter.api.Test;
 
@@ -41,5 +42,34 @@ final class ReferenceCanonicalKeyCodecTest {
     assertThrows(IllegalArgumentException.class,
         () -> ReferenceCanonicalKeyCodec.decode(malicious,
             new ReferenceCanonicalKeyCodec.Bounds(4, 4, 4, 64)));
+  }
+
+  @Test
+  void matchesTheRustBinaryKeyGoldenAtTheMaxPositiveJavaGeneration() {
+    byte[] encoded = HexFormat.of().parseHex(
+        "4843524b303735000000000874656e616e742d61000000066f72646572737fffffffffffffff0000000400ff8000");
+    var key = new ReferenceCanonicalKeyCodec.Key("tenant-a", "orders", Long.MAX_VALUE,
+        new byte[] {0, (byte) 0xff, (byte) 0x80, 0});
+    assertArrayEquals(encoded, ReferenceCanonicalKeyCodec.encode(key, BOUNDS));
+    assertEquals(key, ReferenceCanonicalKeyCodec.decode(encoded, BOUNDS));
+  }
+
+  @Test
+  void rejectsTruncatedBinaryFramesTrailingDataAndUnknownDomainVersions() {
+    var key = new ReferenceCanonicalKeyCodec.Key("tenant-a", "orders", 1,
+        new byte[] {0, (byte) 0xff, (byte) 0x80, 0});
+    byte[] frame = ReferenceCanonicalKeyCodec.encode(key, BOUNDS);
+    for (int length = 0; length < frame.length; length++) {
+      byte[] truncated = Arrays.copyOf(frame, length);
+      assertThrows(IllegalArgumentException.class,
+          () -> ReferenceCanonicalKeyCodec.decode(truncated, BOUNDS),
+          "accepted a truncated frame at " + length + " bytes");
+    }
+    byte[] trailing = Arrays.copyOf(frame, frame.length + 1);
+    assertThrows(IllegalArgumentException.class,
+        () -> ReferenceCanonicalKeyCodec.decode(trailing, BOUNDS));
+    frame[6] = '6';
+    assertThrows(IllegalArgumentException.class,
+        () -> ReferenceCanonicalKeyCodec.decode(frame, BOUNDS));
   }
 }

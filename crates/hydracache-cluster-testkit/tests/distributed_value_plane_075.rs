@@ -307,6 +307,65 @@ fn isolated_old_owner_cannot_serve_reads() {
 }
 
 #[test]
+fn barrier_requires_the_current_commit_epoch_even_with_unchanged_partition_placement() {
+    let mut sim = simulator(16);
+    let key = key(0, 1);
+    let initial = sim.assignment(0).unwrap().clone();
+    sim.execute(&initial.owner, put(1, key.clone(), b"v1", initial.epoch))
+        .unwrap();
+    let pending = sim.begin_read(&initial.owner, &key, 0).unwrap();
+
+    sim.promote_backup(1, initial.epoch + 1).unwrap();
+    let current = sim.assignment(0).unwrap();
+    assert_eq!(current.owner, initial.owner);
+    assert_eq!(current.backup, initial.backup);
+    assert_eq!(
+        sim.finish_read(pending),
+        Err(SimulatorError::StaleEpoch {
+            expected: initial.epoch,
+            actual: current.epoch,
+        })
+    );
+    assert_eq!(
+        sim.read(&current.owner, &key, 0).unwrap(),
+        Some(b"v1".to_vec())
+    );
+}
+
+#[test]
+fn returning_owner_cannot_complete_a_read_admitted_before_two_promotions() {
+    let mut sim = simulator(16);
+    let key = key(0, 1);
+    let initial = sim.assignment(0).unwrap().clone();
+    sim.execute(&initial.owner, put(1, key.clone(), b"v1", initial.epoch))
+        .unwrap();
+    let pending = sim.begin_read(&initial.owner, &key, 0).unwrap();
+
+    let promoted = sim.promote_backup(0, initial.epoch + 1).unwrap();
+    sim.repair_backup(0, &initial.owner).unwrap();
+    sim.execute(&promoted.owner, put(2, key.clone(), b"v2", promoted.epoch))
+        .unwrap();
+    let returned = sim.promote_backup(0, promoted.epoch + 1).unwrap();
+
+    assert_eq!(returned.owner, initial.owner);
+    assert_eq!(
+        sim.node_value(&returned.owner, &key).unwrap(),
+        Some(b"v2".to_vec())
+    );
+    assert_eq!(
+        sim.finish_read(pending),
+        Err(SimulatorError::StaleEpoch {
+            expected: initial.epoch,
+            actual: returned.epoch,
+        })
+    );
+    assert_eq!(
+        sim.read(&returned.owner, &key, 0).unwrap(),
+        Some(b"v2".to_vec())
+    );
+}
+
+#[test]
 fn quorum_loss_refuses_reads_and_unproved_backup_cannot_be_promoted() {
     let mut sim = simulator(16);
     let key = key(0, 1);
@@ -417,6 +476,53 @@ fn expiry_eligibility_uses_current_owner_clock_and_its_conservative_bound() {
     assert!(!sim.expiry_due(&promoted.owner, 0, 20, 10).unwrap());
     sim.advance_logical_time(1);
     assert!(sim.expiry_due(&promoted.owner, 0, 20, 10).unwrap());
+}
+
+#[test]
+fn expiry_rechecks_the_time_bound_after_uncertainty_grows() {
+    let mut sim = simulator(16).with_expiry_tombstones();
+    let key = key(0, 1);
+    let owner = sim.assignment(0).unwrap().owner.clone();
+    let mut write = put(1, key.clone(), b"v1", sim.epoch());
+    write.operation = MutationOperation::Put {
+        value: b"v1".to_vec(),
+        ttl: TtlDirective::ExpireAfter(20),
+    };
+    sim.execute(&owner, write).unwrap();
+    sim.advance_logical_time(20);
+
+    sim.observe_node_time(
+        &owner,
+        ClusterTimeObservation {
+            now: 21,
+            uncertainty: 1,
+        },
+    )
+    .unwrap();
+    assert!(sim.expiry_due(&owner, 0, 20, 2).unwrap());
+
+    sim.observe_node_time(
+        &owner,
+        ClusterTimeObservation {
+            now: 21,
+            uncertainty: 2,
+        },
+    )
+    .unwrap();
+    let expiry = MutationIdentity::new("expiry", 1);
+    assert_eq!(sim.expire(&owner, &key, expiry.clone(), 2).unwrap(), None);
+    assert_eq!(sim.read(&owner, &key, 0).unwrap(), Some(b"v1".to_vec()));
+
+    sim.observe_node_time(
+        &owner,
+        ClusterTimeObservation {
+            now: 22,
+            uncertainty: 2,
+        },
+    )
+    .unwrap();
+    assert!(sim.expire(&owner, &key, expiry, 2).unwrap().is_some());
+    assert_eq!(sim.read(&owner, &key, 0).unwrap(), None);
 }
 
 #[test]
