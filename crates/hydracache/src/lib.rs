@@ -632,6 +632,7 @@ pub use grid::conditional::{
     LockHold, LockOwner, ReplicaAppliedPrefix, ReplicatedRecordApply, SingleKeyConditionalStore,
     TombstoneGcError, TombstoneGcWatermark,
 };
+pub use grid::time_authority::{ClusterTimeAuthority, TimeObservation};
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::consistency_level::{
     AckRequirement, ConsistencyLevel, ConsistencyReadiness, ConsistencyUnsatisfiable, ReadOptions,

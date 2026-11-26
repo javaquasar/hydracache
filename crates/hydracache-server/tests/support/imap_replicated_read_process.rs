@@ -6,7 +6,8 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::time::{Instant, SystemTime};
 
-use hydracache::DurableValueStore;
+use hydracache::{ClusterTimeAuthority, DurableValueStore, TimeObservation};
+use hydracache_server::imap_value_plane::ReplicaClock;
 use hydracache_server::{MemberReadHost, ServerConfig, ServerRole};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -36,6 +37,24 @@ struct Receipt {
     serial: u32,
     epoch: u64,
     applied: u64,
+}
+
+#[derive(Deserialize)]
+struct ClockSample {
+    now_ms: u64,
+    uncertainty_ms: u64,
+}
+
+struct FileClock(PathBuf);
+
+impl ClusterTimeAuthority for FileClock {
+    fn observe(&self) -> Option<TimeObservation> {
+        let sample: ClockSample = read_json(&self.0)?;
+        Some(TimeObservation {
+            now_ms: sample.now_ms,
+            uncertainty_ms: sample.uncertainty_ms,
+        })
+    }
 }
 
 #[tokio::test]
@@ -115,11 +134,15 @@ async fn run_live(
     replication: ReplicationConfig,
 ) {
     let (dispatcher, values) = host
-        .value_dispatcher(
+        .value_dispatcher_with_clock(
             &root.join("live-values"),
             Default::default(),
             replication,
             scope(),
+            Some(ReplicaClock {
+                authority: Arc::new(FileClock(root.join("clock.json"))),
+                maximum_uncertainty_ms: 10,
+            }),
         )
         .unwrap();
     let task = start_resp(TcpListener::bind(address).await.unwrap(), dispatcher);
@@ -529,5 +552,90 @@ fn live_write_requires_backup_and_recovery_never_reads_uncertified_value() {
     println!(
         "W10c recovered old pid={} new pid={} epoch={} SET prefix=2 tombstone prefix=3",
         initial[owner].pid, recovered[owner].pid, recovered[owner].epoch
+    );
+}
+
+fn clock(node: &Node, now_ms: u64, uncertainty_ms: u64) {
+    publish_json(
+        &node.root.join("clock.json"),
+        &json!({"now_ms":now_ms,"uncertainty_ms":uncertainty_ms}),
+    );
+}
+
+#[test]
+fn distributed_ttl_withholds_expiry_during_replica_cut_and_fences_restarted_owner() {
+    if std::env::var(RUN).as_deref() != Ok("1") {
+        return;
+    }
+    let mut nodes = start_nodes(true);
+    let initial = wait_for("three W10d members", || all_members(&nodes, 0));
+    let owner = expect_owner(&nodes, b"$-1\r\n");
+    let backup = nodes
+        .iter()
+        .position(|node| Some(&node.identity) == initial[owner].backup.as_ref())
+        .unwrap();
+    clock(&nodes[owner], 1100, 5);
+    for (index, node) in nodes.iter().enumerate() {
+        if index != owner {
+            clock(node, 9000, 1);
+        }
+    }
+    let set = |node: &Node| resp(node.address, &[b"SET", KEY, VALUE, b"NX", b"PX", b"30"]).unwrap();
+    assert_eq!(set(&nodes[owner]), b"+OK\r\n");
+    assert_eq!(set(&nodes[owner]), b"$-1\r\n");
+    assert_eq!(
+        resp(nodes[owner].address, &[b"PTTL", KEY]).unwrap(),
+        b":30\r\n"
+    );
+    assert_eq!(nodes[owner].read().unwrap(), expected_value());
+    clock(&nodes[owner], 1134, 3);
+    assert_eq!(nodes[owner].read().unwrap(), UNAVAILABLE);
+    assert_eq!(nodes[owner].refreshed_status().version, 1);
+
+    publish_json(
+        &nodes[owner].root.join("fault.json"),
+        &json!({
+            "schema_version": 1, "generation": 1, "rules": [{
+                "from": nodes[owner].identity, "to": nodes[backup].identity, "action": {"kind": "value_drop"}
+            }]
+        }),
+    );
+    clock(&nodes[owner], 1140, 3);
+    wait_for("replica interruption on expiry tombstone", || {
+        fs::read_to_string(nodes[owner].root.join("child.log"))
+            .ok()?
+            .contains("action=ValueDrop")
+            .then_some(())
+    });
+    assert_eq!(nodes[owner].read().unwrap(), UNAVAILABLE);
+    assert_eq!(nodes[owner].refreshed_status().version, 1);
+    assert_eq!(nodes[backup].refreshed_status().applies, 1);
+    println!("W10d deadline=1135 overlap=unavailable expiry replica cut prefix=1");
+
+    nodes[owner].stop();
+    clock(&nodes[owner], 1140, 11);
+    fault_generation(&nodes, None, 2);
+    nodes[owner].start();
+    let rejoined = wait_for("restarted timed owner with retained prefix", || {
+        all_members(&nodes, initial[owner].epoch).filter(|statuses| {
+            statuses[owner].generation > initial[owner].generation && statuses[owner].version == 1
+        })
+    });
+    assert_ne!(initial[owner].pid, rejoined[owner].pid);
+    assert_eq!(nodes[owner].read().unwrap(), UNAVAILABLE);
+    clock(&nodes[owner], 1140, 3);
+    wait_for("certified expiry after restoration", || {
+        (nodes[owner].status()?.version == 2).then_some(())
+    });
+    // Even a deliberately rolled-back test clock cannot resurrect a certified tombstone.
+    clock(&nodes[owner], 1000, 0);
+    assert_eq!(nodes[owner].read().unwrap(), b"$-1\r\n");
+    assert_eq!(
+        resp(nodes[owner].address, &[b"PTTL", KEY]).unwrap(),
+        b":-2\r\n"
+    );
+    println!(
+        "W10d restarted pid={} epoch={} certified expiry prefix=2, GET nil after clock rewind",
+        rejoined[owner].pid, rejoined[owner].epoch
     );
 }

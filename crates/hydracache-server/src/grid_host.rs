@@ -2493,6 +2493,21 @@ impl MemberReadHost {
         Arc<hydracache_client_transport_axum::ClientSurfaceDispatcher>,
         Arc<ValueReplica>,
     )> {
+        self.value_dispatcher_with_clock(journal, limits, replication, scope, None)
+    }
+
+    /// Attach an explicit bounded time provider for staged W10d owner expiry.
+    pub fn value_dispatcher_with_clock(
+        &self,
+        journal: &Path,
+        limits: hydracache_client_transport_axum::ClientSurfaceLimits,
+        replication: hydracache::ReplicationConfig,
+        scope: crate::imap_replicated_read::ReplicaReadScope,
+        clock: Option<crate::imap_value_plane::ReplicaClock>,
+    ) -> CacheResult<(
+        Arc<hydracache_client_transport_axum::ClientSurfaceDispatcher>,
+        Arc<ValueReplica>,
+    )> {
         use crate::imap_owner_read::RaftOwnerReadBackend;
         use crate::imap_replicated_read::D2_PARTITION_COUNT;
         use crate::imap_topology::PartitionMember;
@@ -2502,12 +2517,10 @@ impl MemberReadHost {
             node: self.0.node_id.clone(),
             generation: self.0.generation,
         };
-        let replica = Arc::new(ValueReplica::open(
-            journal,
-            local.clone(),
-            scope,
-            replication,
-        )?);
+        let schedules_expiry = clock.is_some();
+        let replica = Arc::new(
+            ValueReplica::open(journal, local.clone(), scope, replication)?.with_clock(clock),
+        );
         let read = RaftOwnerReadBackend::new(
             self.0.raft.clone(),
             self.0._message_sink.clone(),
@@ -2516,25 +2529,33 @@ impl MemberReadHost {
             D2_PARTITION_COUNT,
             replication,
         );
-        let dispatcher = ClientSurfaceDispatcher::from_backend(
-            limits,
-            Arc::new(ValueBackend {
-                raft: self.0.raft.clone(),
-                raft_transport: self.0._message_sink.clone(),
-                value_transport: self
-                    .0
-                    .network_sink
-                    .clone()
-                    .map(|sink| sink as Arc<dyn ReplicaTransport>),
-                read,
-                replica: replica.clone(),
-            }),
-        )
-        .map_err(|error| CacheError::Backend(error.to_string()))?;
+        let backend = Arc::new(ValueBackend {
+            raft: self.0.raft.clone(),
+            raft_transport: self.0._message_sink.clone(),
+            value_transport: self
+                .0
+                .network_sink
+                .clone()
+                .map(|sink| sink as Arc<dyn ReplicaTransport>),
+            read,
+            replica: replica.clone(),
+        });
+        let dispatcher = ClientSurfaceDispatcher::from_backend(limits, backend.clone())
+            .map_err(|error| CacheError::Backend(error.to_string()))?;
         self.0
             .value_replica
             .set(replica.clone())
             .map_err(|_| CacheError::Backend("value plane already attached".into()))?;
+        if schedules_expiry {
+            let shutdown = self.0.shutdown.subscribe();
+            self.0
+                ._runtime
+                .as_ref()
+                .expect("member owns a runtime")
+                .spawn(async move {
+                    backend.run_expiry(shutdown).await;
+                });
+        }
         Ok((Arc::new(dispatcher), replica))
     }
 
@@ -2629,7 +2650,6 @@ impl DedicatedGridRuntime {
         self.block_on(future)
     }
 
-    #[cfg(test)]
     fn spawn<F>(&self, future: F)
     where
         F: Future<Output = ()> + Send + 'static,

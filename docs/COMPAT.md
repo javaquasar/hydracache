@@ -6,6 +6,12 @@ they are persisted or transmitted across processes.
 
 ## Versioned Artifacts
 
+The opt-in W10d journal and replica apply payload use staged format `2` for an absolute expiry
+and recorded conditional outcomes. The W10d reader accepts the earlier W10c journal rows as
+eternal records, verifies new rows including their expiry, and refuses future format numbers.
+This is a private qualification format. The shared replicated-record format and release
+compatibility admission are tracked separately.
+
 | Artifact | Current Version | Writer | Reader Compatibility | Failure Mode |
 | --- | --- | --- | --- | --- |
 | `CacheInvalidationFrame` | `1` | `hydracache` invalidation bus publishers | Readers accept version `1` only. Unknown versions are rejected before apply. | Decode error is reported and the receiver continues. |

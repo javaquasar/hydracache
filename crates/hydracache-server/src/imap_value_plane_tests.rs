@@ -1,8 +1,10 @@
 use std::num::NonZeroU64;
 use std::sync::atomic::AtomicBool;
 
-use hydracache::{ClusterCandidate, ClusterControlPlane};
-use hydracache_client_protocol::ClientRequestEnvelope;
+use hydracache::{ClusterCandidate, ClusterControlPlane, TimeObservation};
+use hydracache_client_protocol::{
+    CasExpectation, ClientRequestEnvelope, ConditionalPutCondition, LockConsistency,
+};
 use hydracache_client_transport_axum::{ClientIdentity, ClientSurfaceDispatcher};
 use hydracache_cluster_raft::InMemoryRaftMessageSink;
 
@@ -66,6 +68,47 @@ struct Fixture {
     transport: Arc<PeerTransport>,
     owner: Arc<ValueReplica>,
     partition: PartitionId,
+    backend: Arc<ValueBackend<hydracache_cluster_raft::InMemoryRaftLogStore>>,
+    clock: Arc<ManualClock>,
+}
+
+#[derive(Default)]
+struct ManualClock(Mutex<Option<TimeObservation>>);
+
+impl ClusterTimeAuthority for ManualClock {
+    fn observe(&self) -> Option<TimeObservation> {
+        *self.0.lock().unwrap()
+    }
+}
+
+#[test]
+fn observation_rejects_unadmitted_error_and_unrepresentable_bounds() {
+    assert_eq!(
+        TimeObservation {
+            now_ms: 100,
+            uncertainty_ms: 2
+        }
+        .bounds(2),
+        Some((98, 102))
+    );
+    for now_ms in [0, u64::MAX] {
+        assert_eq!(
+            TimeObservation {
+                now_ms,
+                uncertainty_ms: 2
+            }
+            .bounds(2),
+            None
+        );
+    }
+    assert_eq!(
+        TimeObservation {
+            now_ms: 100,
+            uncertainty_ms: 3
+        }
+        .bounds(2),
+        None
+    );
 }
 
 impl Fixture {
@@ -90,7 +133,20 @@ impl Fixture {
         .unwrap()
         .placement(partition)
         .unwrap();
-        let owner = replica(placement.primary.clone(), replication);
+        let clock = Arc::new(ManualClock::default());
+        let owner = Arc::new(
+            ValueReplica::with_journal(
+                ValueJournal::temporary(),
+                placement.primary.clone(),
+                scope(),
+                replication,
+            )
+            .unwrap()
+            .with_clock(Some(ReplicaClock {
+                authority: clock.clone(),
+                maximum_uncertainty_ms: 10,
+            })),
+        );
         let transport = Arc::new(PeerTransport {
             raft: raft.clone(),
             replicas: placement
@@ -112,21 +168,22 @@ impl Fixture {
             D2_PARTITION_COUNT,
             replication,
         );
-        let backend = ValueBackend {
+        let backend = Arc::new(ValueBackend {
             raft,
             raft_transport,
             value_transport: Some(transport.clone()),
             replica: owner.clone(),
             read,
-        };
+        });
         Self {
             dispatcher: Arc::new(
-                ClientSurfaceDispatcher::from_backend(Default::default(), Arc::new(backend))
-                    .unwrap(),
+                ClientSurfaceDispatcher::from_backend(Default::default(), backend.clone()).unwrap(),
             ),
             transport,
             owner,
             partition,
+            backend,
+            clock,
         }
     }
 
@@ -170,6 +227,41 @@ impl Fixture {
             )
             .await
             .result
+    }
+
+    async fn command(&self, request: ClientRequest, id: Option<&str>) -> ClientBackendOutcome {
+        let mut envelope = ClientRequestEnvelope::new("w10d", request);
+        envelope.idempotency_key = id.map(str::to_owned);
+        self.dispatcher
+            .dispatch_verified_request(&identity(), envelope)
+            .await
+            .result
+    }
+
+    fn time(&self, now_ms: u64, uncertainty_ms: u64) {
+        *self.clock.0.lock().unwrap() = Some(TimeObservation {
+            now_ms,
+            uncertainty_ms,
+        });
+    }
+
+    async fn pending_ttl(&self) {
+        let (ns, key) = parts();
+        assert_eq!(
+            self.command(
+                ClientRequest::Put {
+                    ns,
+                    key,
+                    value: b"ttl".to_vec(),
+                    ttl_ms: Some(10),
+                    dimensions: Vec::new(),
+                },
+                None
+            )
+            .await
+            .unwrap(),
+            ClientResponse::Stored
+        );
     }
 }
 
@@ -293,4 +385,183 @@ fn journal_rejects_another_scope_or_generation() {
     journal.bind_scope("tenant", "orders", 1).unwrap();
     assert!(journal.bind_scope("other", "orders", 1).is_err());
     assert!(journal.bind_scope("tenant", "orders", 2).is_err());
+}
+
+#[tokio::test]
+async fn ttl_is_computed_once_and_expires_only_after_the_lower_bound() {
+    let fixture = Fixture::new(1).await;
+    fixture.time(100, 2);
+    fixture.pending_ttl().await;
+    let snapshot = fixture.transport.raft.partition_snapshot().unwrap();
+    let cert = snapshot.value_prefixes[&fixture.partition];
+    let peer = &fixture.transport.replicas[0];
+    let (_, key) = scope().locate(b"key".to_vec()).unwrap();
+    let meta = peer.journal.load(fixture.partition).unwrap();
+    let record = peer
+        .journal
+        .read_entry(fixture.partition, &key, &meta, Some(cert))
+        .unwrap()
+        .unwrap();
+    assert_eq!(record.expires_not_before_ms, Some(112));
+    assert!(peer.time().is_none());
+    let (ns, key) = parts();
+    assert!(matches!(
+        fixture
+            .command(ClientRequest::GetTtl { ns, key }, None)
+            .await
+            .unwrap(),
+        ClientResponse::Ttl {
+            state: TtlState::ExpiresIn { ttl_ms: 10 }
+        }
+    ));
+
+    fixture.time(110, 11);
+    assert_eq!(
+        fixture.get().await.unwrap_err().code,
+        ClientErrorCode::BackendUnavailable
+    );
+    fixture.backend.expire_batch(&mut None).await;
+    assert_eq!(fixture.version(), 1);
+    fixture.time(111, 2);
+    assert_eq!(
+        fixture.get().await.unwrap_err().code,
+        ClientErrorCode::BackendUnavailable
+    );
+    fixture.backend.expire_batch(&mut None).await;
+    assert_eq!(fixture.version(), 1);
+    fixture.time(114, 2);
+    assert_eq!(
+        fixture.get().await.unwrap_err().code,
+        ClientErrorCode::BackendUnavailable
+    );
+    fixture.backend.expire_batch(&mut None).await;
+    assert_eq!(fixture.version(), 2);
+    fixture.time(90, 0);
+    assert_eq!(
+        fixture.get().await.unwrap(),
+        ClientResponse::Value { value: None }
+    );
+    assert_eq!(peer.replica_applies(), 2);
+}
+
+#[tokio::test]
+async fn stale_deadline_ticket_cannot_remove_a_persisted_replacement() {
+    let fixture = Fixture::new(1).await;
+    fixture.time(100, 2);
+    fixture.pending_ttl().await;
+    fixture.time(103, 2);
+    let (ns, key) = parts();
+    assert_eq!(
+        fixture
+            .command(ClientRequest::Persist { ns, key }, None)
+            .await
+            .unwrap(),
+        ClientResponse::Expiry { applied: true }
+    );
+    fixture.time(150, 2);
+    fixture.backend.expire_batch(&mut None).await;
+    assert_eq!(fixture.version(), 2);
+    assert_eq!(
+        fixture.get().await.unwrap(),
+        ClientResponse::Value {
+            value: Some(b"ttl".to_vec())
+        }
+    );
+}
+
+#[tokio::test]
+async fn owner_serializes_if_absent_and_replays_mismatch_without_a_second_decision() {
+    let fixture = Fixture::new(1).await;
+    let (ns, key) = parts();
+    let nx = ClientRequest::ConditionalPut {
+        ns: ns.clone(),
+        key: key.clone(),
+        value: b"first".to_vec(),
+        ttl_ms: None,
+        condition: ConditionalPutCondition::IfAbsent,
+    };
+    let (a, b) = tokio::join!(
+        fixture.command(nx.clone(), None),
+        fixture.command(nx.clone(), None)
+    );
+    assert_eq!(
+        [a, b]
+            .into_iter()
+            .filter(|res| matches!(res, Ok(ClientResponse::ConditionalStored { stored: true })))
+            .count(),
+        1
+    );
+    assert_eq!(fixture.version(), 1);
+    assert_eq!(
+        fixture.command(nx, None).await.unwrap(),
+        ClientResponse::ConditionalStored { stored: false }
+    );
+    let cas = ClientRequest::CompareAndSet {
+        ns: ns.clone(),
+        key: key.clone(),
+        expected: CasExpectation::Exact(b"later".to_vec()),
+        new_value: b"ghost".to_vec(),
+        level: LockConsistency::Quorum,
+    };
+    let mismatch = ClientResponse::CasMismatch {
+        current: Some(b"first".to_vec()),
+    };
+    assert_eq!(
+        fixture.command(cas.clone(), Some("cas")).await.unwrap(),
+        mismatch
+    );
+    assert_eq!(
+        fixture.get().await.unwrap(),
+        ClientResponse::Value {
+            value: Some(b"first".to_vec())
+        }
+    );
+    fixture.put(b"later", "overwrite").await.unwrap();
+    assert_eq!(fixture.command(cas, Some("cas")).await.unwrap(), mismatch);
+    assert_eq!(fixture.version(), 3);
+    let replace = ClientRequest::CompareAndSet {
+        ns: ns.clone(),
+        key: key.clone(),
+        expected: CasExpectation::Present,
+        new_value: b"replacement".to_vec(),
+        level: LockConsistency::Quorum,
+    };
+    assert_eq!(
+        fixture.command(replace, None).await.unwrap(),
+        ClientResponse::CasApplied { new_version: 4 }
+    );
+    assert!(matches!(
+        fixture
+            .command(
+                ClientRequest::RemoveIfValue {
+                    ns: ns.clone(),
+                    key: key.clone(),
+                    expected: b"later".to_vec(),
+                    level: LockConsistency::Quorum
+                },
+                None
+            )
+            .await
+            .unwrap(),
+        ClientResponse::CasMismatch { .. }
+    ));
+    assert_eq!(
+        fixture
+            .command(
+                ClientRequest::RemoveIfValue {
+                    ns,
+                    key,
+                    expected: b"replacement".to_vec(),
+                    level: LockConsistency::Quorum
+                },
+                None
+            )
+            .await
+            .unwrap(),
+        ClientResponse::CasApplied { new_version: 5 }
+    );
+    assert_eq!(
+        fixture.get().await.unwrap(),
+        ClientResponse::Value { value: None }
+    );
 }

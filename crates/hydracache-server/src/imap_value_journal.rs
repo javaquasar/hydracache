@@ -1,12 +1,14 @@
 //! Durable apply and visibility for the W10c partition owner and its replicas.
 
 use std::collections::BTreeMap;
+use std::ops::Bound;
 use std::path::Path;
 
 use hydracache::{
     CacheError, CacheResult, ChecksummedReplicatedValueRecord, ClusterEpoch, PartitionId,
     PartitionValuePrefix, ReplicatedSlot, ReplicatedValueRecord,
 };
+use hydracache_client_protocol::ClientResponse;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
@@ -22,9 +24,83 @@ pub(crate) struct Mutation {
     pub key: String,
     pub identity: Option<String>,
     pub record: ReplicatedValueRecord,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expires_not_before_ms: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub decision: Option<CachedDecision>,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub outcome_only: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub(crate) struct CachedDecision {
+    pub request: [u8; 32],
+    pub response: ClientResponse,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+enum StoredDecision {
+    Current(CachedDecision),
+    Legacy([u8; 32]),
+}
+
+#[derive(Debug)]
+pub(crate) struct StoredEntry {
+    pub record: ReplicatedValueRecord,
+    pub expires_not_before_ms: Option<u64>,
+}
+
+impl StoredEntry {
+    pub fn value(&self) -> Option<&[u8]> {
+        match &self.record.state {
+            ReplicatedSlot::Value { value, .. } => Some(value),
+            ReplicatedSlot::Tombstone { .. } => None,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+struct JournalRecordV2 {
+    format: u16,
+    sealed: ChecksummedReplicatedValueRecord,
+    expires_not_before_ms: Option<u64>,
+    digest: [u8; 32],
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum JournalRecord {
+    V2(JournalRecordV2),
+    Legacy(ChecksummedReplicatedValueRecord),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub(crate) struct ExpiryCandidate {
+    pub partition: PartitionId,
+    pub key: String,
+    pub version: u64,
+    pub deadline: u64,
 }
 
 impl Mutation {
+    pub fn wire_version(&self) -> u16 {
+        if self.expires_not_before_ms.is_some() || self.decision.is_some() || self.outcome_only {
+            2
+        } else {
+            1
+        }
+    }
+
+    fn expiry(&self) -> Option<ExpiryCandidate> {
+        Some(ExpiryCandidate {
+            partition: self.record.partition,
+            key: self.key.clone(),
+            version: self.record.version,
+            deadline: self.expires_not_before_ms?,
+        })
+    }
+
     pub fn certificate(&self) -> PartitionValuePrefix {
         PartitionValuePrefix {
             partition: self.record.partition,
@@ -47,7 +123,7 @@ impl Mutation {
     }
 }
 
-fn hash(input: impl Serialize) -> [u8; 32] {
+pub(crate) fn hash(input: impl Serialize) -> [u8; 32] {
     Sha256::digest(serde_json::to_vec(&input).expect("bounded value mutation serializes")).into()
 }
 
@@ -55,7 +131,7 @@ fn hash(input: impl Serialize) -> [u8; 32] {
 pub(crate) struct PartitionJournal {
     visible: Option<PartitionValuePrefix>,
     pending: Option<Mutation>,
-    outcomes: BTreeMap<String, [u8; 32]>,
+    outcomes: BTreeMap<String, StoredDecision>,
 }
 
 impl PartitionJournal {
@@ -67,6 +143,30 @@ impl PartitionJournal {
 
     pub fn covers(&self, required: Option<PartitionValuePrefix>) -> bool {
         self.visible == required || self.matching_pending(required).is_some()
+    }
+
+    pub fn retained(
+        &self,
+        required: Option<PartitionValuePrefix>,
+        id: &str,
+    ) -> Option<&CachedDecision> {
+        if let Some(StoredDecision::Current(decision)) = self.outcomes.get(id) {
+            return Some(decision);
+        }
+        self.matching_pending(required)
+            .filter(|pending| pending.identity.as_deref() == Some(id))?
+            .decision
+            .as_ref()
+    }
+
+    pub fn pending_retry(
+        &self,
+        required: Option<PartitionValuePrefix>,
+        epoch: ClusterEpoch,
+    ) -> Option<&Mutation> {
+        self.pending.as_ref().filter(|pending| {
+            pending.record.epoch == epoch && required != Some(pending.certificate())
+        })
     }
 }
 
@@ -131,28 +231,48 @@ impl ValueJournal {
                 return Ok(ApplyResult::Busy);
             }
             let previous = meta.pending.take().expect("certified pending record");
-            let key = record_key(partition, &previous.key);
-            batch.insert(
-                key,
-                serde_json::to_vec(&ChecksummedReplicatedValueRecord::seal(
-                    previous.record.clone(),
-                ))
-                .map_err(storage_error)?,
-            );
+            if !previous.outcome_only {
+                let sealed = ChecksummedReplicatedValueRecord::seal(previous.record.clone());
+                let expires_not_before_ms = previous.expires_not_before_ms;
+                let stored = JournalRecordV2 {
+                    format: 2,
+                    digest: hash((2u16, &sealed, expires_not_before_ms)),
+                    sealed,
+                    expires_not_before_ms,
+                };
+                batch.insert(
+                    record_key(partition, &previous.key),
+                    serde_json::to_vec(&stored).map_err(storage_error)?,
+                );
+                let timer = expiry_key(partition, &previous.key);
+                if let Some(expiry) = previous.expiry() {
+                    batch.insert(timer, serde_json::to_vec(&expiry).map_err(storage_error)?);
+                } else {
+                    batch.remove(timer);
+                }
+            }
             if let Some(identity) = &previous.identity {
-                meta.outcomes
-                    .insert(identity.clone(), previous.outcome_digest());
+                let decision = previous
+                    .decision
+                    .clone()
+                    .map(StoredDecision::Current)
+                    .unwrap_or_else(|| StoredDecision::Legacy(previous.outcome_digest()));
+                meta.outcomes.insert(identity.clone(), decision);
             }
             meta.visible = required;
         }
 
         if let Some(identity) = &mutation.identity {
             if let Some(stored) = meta.outcomes.get(identity) {
-                return Ok(if owner_request && *stored == mutation.outcome_digest() {
-                    ApplyResult::Replay
-                } else {
-                    ApplyResult::Conflict
-                });
+                return Ok(
+                    if owner_request
+                        && matches!(stored, StoredDecision::Legacy(digest) if *digest == mutation.outcome_digest())
+                    {
+                        ApplyResult::Replay
+                    } else {
+                        ApplyResult::Conflict
+                    },
+                );
             }
             if meta.outcomes.len() >= RETAINED_IDENTITIES {
                 return Ok(ApplyResult::Busy);
@@ -182,18 +302,21 @@ impl ValueJournal {
         Ok(ApplyResult::Flushed)
     }
 
-    pub fn read(
+    pub fn read_entry(
         &self,
         partition: PartitionId,
         key: &str,
         meta: &PartitionJournal,
         required: Option<PartitionValuePrefix>,
-    ) -> CacheResult<Option<Vec<u8>>> {
+    ) -> CacheResult<Option<StoredEntry>> {
         if let Some(mutation) = meta
             .matching_pending(required)
-            .filter(|mutation| mutation.key == key)
+            .filter(|mutation| !mutation.outcome_only && mutation.key == key)
         {
-            return Ok(mutation.value().map(<[u8]>::to_vec));
+            return Ok(Some(StoredEntry {
+                record: mutation.record.clone(),
+                expires_not_before_ms: mutation.expires_not_before_ms,
+            }));
         }
         let Some(bytes) = self
             .0
@@ -202,8 +325,21 @@ impl ValueJournal {
         else {
             return Ok(None);
         };
-        let sealed: ChecksummedReplicatedValueRecord =
-            serde_json::from_slice(&bytes).map_err(storage_error)?;
+        let (sealed, expires_not_before_ms) =
+            match serde_json::from_slice::<JournalRecord>(&bytes).map_err(storage_error)? {
+                JournalRecord::Legacy(sealed) => (sealed, None),
+                JournalRecord::V2(stored) => {
+                    if stored.format != 2
+                        || stored.digest
+                            != hash((stored.format, &stored.sealed, stored.expires_not_before_ms))
+                    {
+                        return Err(storage_error(
+                            "invalid W10d journal record format or digest",
+                        ));
+                    }
+                    (stored.sealed, stored.expires_not_before_ms)
+                }
+            };
         sealed
             .verify()
             .map_err(|_| storage_error("stored record checksum mismatch"))?;
@@ -213,11 +349,56 @@ impl ValueJournal {
         {
             return Err(storage_error("record is outside the certified prefix"));
         }
-        Ok(match record.state {
-            ReplicatedSlot::Value { value, .. } => Some(value),
-            ReplicatedSlot::Tombstone { .. } => None,
-        })
+        if record.is_tombstone() && expires_not_before_ms.is_some() {
+            return Err(storage_error("tombstone has a deadline"));
+        }
+        Ok(Some(StoredEntry {
+            record,
+            expires_not_before_ms,
+        }))
     }
+
+    /// Bounded rotating scan of persisted timers and still-pending entries.
+    pub fn expiry_batch(
+        &self,
+        cursor: &mut Option<Vec<u8>>,
+        lower: u64,
+        limit: usize,
+    ) -> CacheResult<Vec<ExpiryCandidate>> {
+        let start = cursor
+            .take()
+            .map_or(Bound::Included(vec![b'e']), Bound::Excluded);
+        let mut expiries = Vec::new();
+        let mut scan = self.0.range((start, Bound::Excluded(vec![b'n'])));
+        for _ in 0..limit {
+            let Some((key, data)) = scan.next().transpose().map_err(storage_error)? else {
+                *cursor = None;
+                break;
+            };
+            let expiry = match key.first() {
+                Some(b'e') => Some(serde_json::from_slice(&data).map_err(storage_error)?),
+                Some(b'm') => serde_json::from_slice::<PartitionJournal>(&data)
+                    .map_err(storage_error)?
+                    .pending
+                    .and_then(|mutation| mutation.expiry()),
+                _ => None,
+            };
+            if let Some(expiry) = expiry.filter(|expiry| expiry.deadline <= lower) {
+                expiries.push(expiry);
+            }
+            *cursor = Some(key.to_vec());
+        }
+        Ok(expiries)
+    }
+}
+
+fn expiry_key(partition: PartitionId, storage_key: &str) -> Vec<u8> {
+    [
+        b"e".as_slice(),
+        &partition.value().to_be_bytes(),
+        storage_key.as_bytes(),
+    ]
+    .concat()
 }
 
 fn meta_key(partition: PartitionId) -> [u8; 5] {
@@ -272,6 +453,9 @@ mod tests {
             key: "key-a".into(),
             identity: None,
             record: next_record(partition, epoch, None, Some(b"one".to_vec())).unwrap(),
+            expires_not_before_ms: None,
+            decision: None,
+            outcome_only: false,
         };
         let certificate = first.certificate();
         assert_eq!(
@@ -292,8 +476,11 @@ mod tests {
         let meta = journal.load(partition).unwrap();
         assert_eq!(
             journal
-                .read(partition, &first.key, &meta, Some(certificate))
-                .unwrap(),
+                .read_entry(partition, &first.key, &meta, Some(certificate))
+                .unwrap()
+                .as_ref()
+                .and_then(StoredEntry::value)
+                .map(<[u8]>::to_vec),
             Some(b"one".to_vec())
         );
         let mut damaged = ChecksummedReplicatedValueRecord::seal(first.record);
@@ -306,7 +493,76 @@ mod tests {
             )
             .unwrap();
         assert!(journal
-            .read(partition, &first.key, &meta, Some(certificate))
+            .read_entry(partition, &first.key, &meta, Some(certificate))
+            .is_err());
+    }
+
+    #[test]
+    fn legacy_rows_are_eternal_and_future_or_modified_deadlines_fail_closed() {
+        let journal = ValueJournal::temporary();
+        let partition = PartitionId::new(1);
+        let epoch = ClusterEpoch::new(1);
+        let sealed = ChecksummedReplicatedValueRecord::seal(ReplicatedValueRecord::value(
+            partition,
+            1,
+            epoch,
+            b"v".to_vec(),
+        ));
+        let required = Some(PartitionValuePrefix {
+            partition,
+            epoch,
+            version: 1,
+            previous: [0; 32],
+            digest: [1; 32],
+        });
+        let key = record_key(partition, "fixture");
+        journal
+            .0
+            .insert(&key, serde_json::to_vec(&sealed).unwrap())
+            .unwrap();
+        let meta = PartitionJournal::default();
+        assert_eq!(
+            journal
+                .read_entry(partition, "fixture", &meta, required)
+                .unwrap()
+                .unwrap()
+                .expires_not_before_ms,
+            None
+        );
+        let mut record = JournalRecordV2 {
+            format: 2,
+            expires_not_before_ms: Some(7),
+            digest: hash((2u16, &sealed, Some(7u64))),
+            sealed,
+        };
+        journal
+            .0
+            .insert(&key, serde_json::to_vec(&record).unwrap())
+            .unwrap();
+        assert_eq!(
+            journal
+                .read_entry(partition, "fixture", &meta, required)
+                .unwrap()
+                .unwrap()
+                .expires_not_before_ms,
+            Some(7)
+        );
+        record.expires_not_before_ms = Some(8);
+        journal
+            .0
+            .insert(&key, serde_json::to_vec(&record).unwrap())
+            .unwrap();
+        assert!(journal
+            .read_entry(partition, "fixture", &meta, required)
+            .is_err());
+        record.format = 3;
+        record.digest = hash((3u16, &record.sealed, record.expires_not_before_ms));
+        journal
+            .0
+            .insert(&key, serde_json::to_vec(&record).unwrap())
+            .unwrap();
+        assert!(journal
+            .read_entry(partition, "fixture", &meta, required)
             .is_err());
     }
 }

@@ -51,6 +51,10 @@ pub trait OwnerReadLane {
     }
 
     fn lookup(&self, key: &StructuredKey) -> ClientBackendOutcome;
+
+    fn lookup_ttl(&self, _key: &StructuredKey) -> ClientBackendOutcome {
+        Err(unavailable())
+    }
 }
 
 /// Local value executor required by the owner backend. Routing admits the
@@ -115,12 +119,16 @@ impl<S: RaftLogStore, V: OwnerReadValues> RaftOwnerReadBackend<S, V> {
 
     async fn read(&self, request: VerifiedClientRequest<'_>) -> ClientBackendOutcome {
         let envelope = request.envelope();
-        let ClientRequest::Get { ns, key } = &envelope.request else {
-            return Err(ClientErrorEnvelope::new(
-                ClientErrorCode::BackendUnavailable,
-                false,
-                "the owner-read backend only supports GET",
-            ));
+        let (ns, key, ttl) = match &envelope.request {
+            ClientRequest::Get { ns, key } => (ns, key, false),
+            ClientRequest::GetTtl { ns, key } => (ns, key, true),
+            _ => {
+                return Err(ClientErrorEnvelope::new(
+                    ClientErrorCode::BackendUnavailable,
+                    false,
+                    "the owner-read backend only supports value and TTL reads",
+                ))
+            }
         };
         let now = Instant::now();
         let deadline = request
@@ -202,7 +210,11 @@ impl<S: RaftLogStore, V: OwnerReadValues> RaftOwnerReadBackend<S, V> {
                     0,
                     || {
                         check_deadline(deadline)?;
-                        lane.lookup(key)
+                        if ttl {
+                            lane.lookup_ttl(key)
+                        } else {
+                            lane.lookup(key)
+                        }
                     },
                 )
                 .map_err(|_| unavailable())?

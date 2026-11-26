@@ -20,6 +20,7 @@ pub mod imap_read_barrier;
 pub mod imap_replicated_read;
 #[doc(hidden)]
 pub mod imap_topology;
+mod imap_value_decision;
 mod imap_value_journal;
 #[doc(hidden)]
 pub mod imap_value_plane;
@@ -56,9 +57,9 @@ pub use config::{
     Hc2ClientPlaneConfig, ManagementHistoryConfig, RedisApiConfig, ServerConfig, ServerConfigError,
     ServerRole, TlsConfig,
 };
-pub use hc2::{serve_hc2_listener, Hc2ClientPlaneService, Hc2ListenerTls, Hc2ServeError};
 #[doc(hidden)]
 pub use grid_host::MemberReadHost;
+pub use hc2::{serve_hc2_listener, Hc2ClientPlaneService, Hc2ListenerTls, Hc2ServeError};
 pub use management_aggregation::{
     AggregatedManagementSnapshot, HttpManagementPeerTransport, LocalManagementSnapshotProvider,
     ManagementAggregationIssue, ManagementConsensusObservation, ManagementMemberSnapshot,
