@@ -1041,6 +1041,30 @@ and returned the recorded outcomes of earlier CAS requests. We then cancelled an
 wave with a snapshot chunk in flight. The current owner kept the value it had just
 written. The four-process scenario passed four times with the same binary.
 
+## Choosing a new primary
+
+For a planned drain, the planner counts certified primaries already assigned to each
+healthy candidate. It prefers the least loaded destination, breaks a tie in favour of
+an existing synchronous copy, and adjusts the counts as it fills the wave. The Raft
+epoch binds the choice to the placement view used to make it. The node that starts
+the wave can also be a destination if its attached generation matches that view.
+
+After an RF=2 owner failure, its only synchronous backup can take over if its durable
+journal matches the exact prefix certified by Raft. The backup checks that prefix again
+at a fresh ReadIndex, then Raft commits the new assignment. Reads can resume at the new
+owner. Fresh writes need a certified synchronous copy, which the repair worker rebuilds
+on a surviving member. The old owner's process generation stays fenced when it returns.
+
+On AX42, three member processes moved two primaries during a planned drain. We
+killed one of the new owners while RESP writes continued on the other partition.
+The surviving backup promoted on the original certificate, and the third member
+took the new synchronous slot. The new owner returned the recorded result of the
+CAS acknowledged before the kill and accepted a fresh CAS. The restarted member
+refused both GET and SET for the partition it had lost. Four runs of the same
+optimized binary produced this result. The six-hour production campaign through
+packaged HC/2 clients and the 24-hour confirmation are still pending.
+[Release plan](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#w10f-implement-bounded-rebalance-and-replica-repair)
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

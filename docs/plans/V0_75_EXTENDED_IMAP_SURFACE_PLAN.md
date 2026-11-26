@@ -1450,9 +1450,8 @@ the same generation, prefix and idempotency checks for reads and writes.
 
 Cancelling advances the epoch, fences late activations and preserves committed steps. If a destination already joined as a backup, the backup assignment remains
 committed. A changed generation can leave the task pending until the operator cancels and
-submits a new wave. This checkpoint uses explicitly chosen primary destinations and an
-attached staged value plane. Production routing, automatic primary placement policy and
-bandwidth and recovery qualification remain open.
+submits a new wave. This checkpoint exercised explicitly chosen primary destinations on
+the attached value plane. The next checkpoint adds automatic selection.
 
 On AX42, source `e8cc34aaf501b1ac438992f49853be44776776ff` passed a four-process RF=2
 scenario in the full suite and three independent repeats on the same binary. The two
@@ -1477,6 +1476,58 @@ Reproduce with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test --locked -p hydra
 [qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
 The verified `artifacts.sha256` manifest has SHA-256
 `9164c218df0a48d2ac85f9bfa44235b40f6049f99b15b3e80298e6ee535ba09c`.
+
+**Automatic primary selection and RF=2 recovery.** For a planned drain, the caller
+supplies the retiring members and can limit the request to named partitions. The planner
+takes one coherent placement view and ranks eligible destinations by projected certified
+primary count, then exact synchronous-backup membership, then node ID. It excludes
+drained, failed and suspect destinations. A remote readiness reply must match the
+generation, epoch, scope and replica profile. One wave contains at most 16 tasks, and
+selection sends at most 16 remote probes. The wave proposal is fenced if the selection
+epoch changes.
+
+RF=2 primary recovery is opt-in on the attached value plane. A sole synchronous backup
+can propose recovery after the owner is reported dead, misses two readiness observations
+for the same generation, or no longer matches a pinned assignment's generation. The
+backup must already hold the exact Raft-certified prefix. The target rechecks that prefix
+under the partition guard and a fresh ReadIndex before Raft can apply the promotion. The
+former generation stays in the synchronous slot until certified backup repair replaces
+it. Fresh writes require a proved synchronous backup. Recovery depends on a coherent
+prior placement and a Raft majority. An active wave whose head loses its executor still
+requires cancellation before replanning.
+
+The three-member RF=2 process schedule writes through RESP during a two-partition drain,
+then kills one of the new owners while traffic continues through the other. It checks that
+the old backup takes over with the unchanged certificate at version 2, the third member
+receives the repaired copy, and the new owner can replay the pre-failure HC/1 CAS and
+commit version 3. After the failed member rejoins at a higher generation, GET and SET
+on its endpoint are refused for the moved partition. The current owner still returns
+the confirmed value. Tests also cover ranking, stale incarnations, rejecting an unassigned
+backup, stale digests and restoring the committed recovery task from a Raft snapshot.
+
+On AX42, source `8cc855f5dec48a428c65bddb45f4001297f8683b` passed 23 server unit
+tests, 25 server integration tests and 23 Raft tests with Rust 1.94.0. Scoped Clippy
+passed with warnings denied. The default release-profile binary passed all 12 tests in
+the replicated-read suite and three further runs of the new schedule. Across the four
+optimized runs, the control partition acknowledged 9-27 RESP SETs during the drain and
+330-354 during owner failure and recovery. The recovered assignment and backup repair
+committed by epoch 9 in all four runs. These figures count acknowledgements in this
+schedule. Sustained recovery time and throughput require the W10i campaign.
+
+Reproduce with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test --release --locked
+-p hydracache-server --features hydracache/durable-value-store --test imap_replicated_read_075
+-- --exact processes::w10f_selects_primary_destinations_and_recovers_a_failed_owner_under_load
+--nocapture`. Logs, node records, and the optimized binary are under
+`development/w10f-auto-8cc855f5dec48a428c65bddb45f4001297f8683b` in the AX42
+[qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
+The verified `artifacts.sha256` manifest has SHA-256
+`3a1f387e1364a4580e61a5cd2777d4f06f38b857a4938796b29612b9fc2d86e2`.
+
+Production admission remains open at W10i. The staged member attachment has no
+production HC/2 routing integration, and `xtask` does not register the six-hour
+`imap-distributed-qualification` or the 24-hour confirmation command. The public
+SDK mixed-workload campaign, acknowledged-mutation reconciliation at scale and the
+OD-2/OD-3 acceptance thresholds still require evidence.
 
 ### W10g. Make bulk operations and listeners cluster-wide
 
