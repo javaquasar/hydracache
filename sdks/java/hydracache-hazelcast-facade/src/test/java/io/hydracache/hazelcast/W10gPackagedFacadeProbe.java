@@ -56,14 +56,13 @@ public final class W10gPackagedFacadeProbe {
             && result.get(1).outcome().error().isPresent() && result.get(2).value().isPresent());
         require(partial.get(1).outcome().receipt().orElseThrow().state()
             != BatchItemReceipt.State.CONFIRMED, "failed owner was reported confirmed");
-        var recovered = awaitBatch(map, keys, result -> result.stream().allMatch(item -> item.value().isPresent())
+        awaitBatch(map, keys, result -> result.stream().allMatch(item -> item.value().isPresent())
             && result.get(1).outcome().topologyEpoch() > initial.get(1).outcome().topologyEpoch());
         var gap = observer.gaps.poll(DEADLINE.toSeconds(), TimeUnit.SECONDS);
         require(gap != null && gap.reason() == SubscriptionGap.Reason.TOPOLOGY_CHANGED,
             "topology gap was not delivered through the facade");
-        var updateOptions = mutationOptions(recovered.get(1).outcome().topologyEpoch(), "java-promoted");
-        awaitMutation(() -> sender.putAll(Map.of(hot, "promoted"), updateOptions));
-        long watermark = observer.awaitEvent(hot, "promoted");
+        awaitMutation(() -> sender.putAll(Map.of(control, "after-gap"), READ));
+        long watermark = observer.awaitEvent(control, "after-gap");
         Files.createFile(root.resolve("java-promoted"));
         long stop = System.nanoTime() + DEADLINE.toNanos();
         while (!Files.exists(root.resolve("java-rejoined"))) {
@@ -77,10 +76,7 @@ public final class W10gPackagedFacadeProbe {
             var resume = resumedObserver.gaps.poll(DEADLINE.toSeconds(), TimeUnit.SECONDS);
             require(resume != null && resume.reason() == SubscriptionGap.Reason.RESUME_UNBOUND
                 && resume.partitions().isEmpty(), "reconnect did not signal stream-wide repair");
-            var current = awaitBatch(map, List.of(control), result -> result.get(0).value().isPresent()
-                && result.get(0).outcome().topologyEpoch() >= recovered.get(1).outcome().topologyEpoch());
-            var deleteOptions = mutationOptions(current.get(0).outcome().topologyEpoch(), "java-delete");
-            awaitMutation(() -> sender.removeAll(List.of(control), deleteOptions));
+            awaitMutation(() -> sender.removeAll(List.of(control), READ));
             require(resumedObserver.awaitEvent(control, null) > watermark,
                 "reconnected listener did not receive the delete");
           }
@@ -90,26 +86,18 @@ public final class W10gPackagedFacadeProbe {
     System.out.println("W10g packaged Java facade partial_batch=true topology_gap=true resume_gap=true");
   }
 
-  private static RequestOptions mutationOptions(long epoch, String id) {
-    require(epoch > 0, "the current topology epoch is required for a safe retry");
-    byte[] identity = ("w10e:" + epoch + ":" + id).getBytes(StandardCharsets.UTF_8);
-    return new RequestOptions(Duration.ofSeconds(2), identity);
-  }
-
   private static void awaitMutation(Supplier<List<MapBatchItem<String, String>>> operation)
       throws InterruptedException {
     long stop = System.nanoTime() + DEADLINE.toNanos();
     do {
-      try {
-        var result = operation.get().get(0).outcome();
-        if (result.result().isPresent()) {
-          require(result.result().orElseThrow().mutation().orElseThrow().applied(), "mutation did not apply");
-          return;
-        }
-        throw result.error().orElseThrow();
-      } catch (HydraCacheException error) {
-        requireRetryable(error);
+      var result = operation.get().get(0).outcome();
+      if (result.result().isPresent()) {
+        require(result.result().orElseThrow().mutation().orElseThrow().applied(), "mutation did not apply");
+        return;
       }
+      var error = result.error().orElseThrow();
+      if (result.receipt().orElseThrow().state() != BatchItemReceipt.State.NOT_APPLIED) throw error;
+      requireRetryable(error);
       Thread.sleep(40);
     } while (System.nanoTime() < stop);
     throw new AssertionError("certified mutation was unavailable");

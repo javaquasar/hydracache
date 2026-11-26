@@ -856,10 +856,12 @@ async fn w10g_packaged_java_facade_uses_three_public_endpoints() {
     let rejoined = connect_w10i(&cluster.adapters[0], "w10i").await;
     wait_w10i_get(
         &rejoined,
-        keys[0].clone(),
-        Some(&Bytes::from_static(b"promoted")),
+        keys[1].clone(),
+        Some(&Bytes::from_static(b"after-gap")),
     )
     .await;
+    let retained = keys[0].slice(prefix.len()..);
+    wait_w10i_get(&rejoined, keys[0].clone(), Some(&retained)).await;
     std::fs::File::create(root.join("java-rejoined")).unwrap();
     let deadline = tokio::time::Instant::now() + Duration::from_secs(20);
     loop {
@@ -952,6 +954,7 @@ struct MemberClusterSpec {
 impl MemberClusterSpec {
     fn set_value_fault(&self, generation: u64, enabled: bool) {
         let target = self.event_fault.as_ref().unwrap();
+        std::fs::create_dir_all(target.parent().unwrap()).unwrap();
         let incoming = target.with_extension("incoming");
         let rules = if enabled {
             vec![serde_json::json!({
@@ -1050,7 +1053,7 @@ impl MemberCluster {
         )
         .unwrap();
         let (addresses, reservations) = reserve_addrs::<12>();
-        let names = addresses[..3]
+        let names: Vec<String> = addresses[..3]
             .iter()
             .map(|addr| format!("member-{}", addr.to_string().replace(['.', ':'], "-")))
             .collect();
@@ -1060,7 +1063,7 @@ impl MemberCluster {
             .collect::<Vec<_>>()
             .join(",");
         let spec = MemberClusterSpec {
-            event_fault: event_fault.then(|| root.join("event-fault.json")),
+            event_fault: event_fault.then(|| root.join(&names[2]).join("event-fault.json")),
             root,
             addresses,
             names,
