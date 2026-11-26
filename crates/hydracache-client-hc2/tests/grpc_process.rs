@@ -306,7 +306,16 @@ async fn rust_sdk_is_bounded_cancel_safe_and_process_interoperable() {
     .expect("three multiplexed event frames must reach the bounded client queue");
     assert!(matches!(
         subscription.next().await,
-        Some(SubscriptionEvent::Event(_))
+        Some(SubscriptionEvent::Event(event)) if event.watermark == 1
+    ));
+    assert!(matches!(
+        tokio::time::timeout(Duration::from_secs(2), subscription.next())
+            .await
+            .expect("queued gap must arrive without another server event"),
+        Some(SubscriptionEvent::Gap {
+            after_watermark: 1,
+            ..
+        })
     ));
     client
         .put(
@@ -316,13 +325,12 @@ async fn rust_sdk_is_bounded_cancel_safe_and_process_interoperable() {
             None,
         )
         .await
-        .expect("trigger repair boundary");
+        .expect("deliver the first event after the gap");
     assert!(matches!(
-        subscription.next().await,
-        Some(SubscriptionEvent::Gap {
-            after_watermark: 3,
-            ..
-        })
+        tokio::time::timeout(Duration::from_secs(2), subscription.next())
+            .await
+            .expect("delivery must resume after the gap"),
+        Some(SubscriptionEvent::Event(event)) if event.watermark == 4
     ));
 
     let batch = client
@@ -343,7 +351,7 @@ async fn rust_sdk_is_bounded_cancel_safe_and_process_interoperable() {
         .expect("bounded batch");
     assert_eq!(batch.len(), 2);
     assert_eq!(client.topology().nodes.len(), 1);
-    assert!(client.metrics().dropped_events >= 3);
+    assert_eq!(client.metrics().dropped_events, 2);
 
     subscription.close();
     session.close();

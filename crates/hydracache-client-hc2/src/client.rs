@@ -69,6 +69,25 @@ struct ActiveSubscription {
     _permit: OwnedSemaphorePermit,
 }
 
+impl ActiveSubscription {
+    fn flush_gap(&mut self, subscription_id: u64) -> bool {
+        if let Some(after_watermark) = self.gap_after {
+            if self
+                .events
+                .try_send(SubscriptionEvent::Gap {
+                    subscription_id,
+                    after_watermark,
+                })
+                .is_err()
+            {
+                return false;
+            }
+            self.gap_after = None;
+        }
+        true
+    }
+}
+
 struct PendingSession {
     ttl: Duration,
     reply: oneshot::Sender<Result<(Bytes, u64), ClientError>>,
@@ -828,7 +847,14 @@ impl Subscription {
         self.initial_watermark
     }
     pub async fn next(&mut self) -> Option<SubscriptionEvent> {
-        self.events.recv().await
+        let event = self.events.recv().await?;
+        if let Some(runtime) = self.runtime.upgrade() {
+            let mut subscriptions = runtime.subscriptions.lock().unwrap();
+            if let Some(subscription) = subscriptions.get_mut(&self.id) {
+                subscription.flush_gap(self.id);
+            }
+        }
+        Some(event)
     }
     pub(crate) fn control(&self) -> SubscriptionControl {
         SubscriptionControl {
@@ -1109,19 +1135,9 @@ impl Runtime {
         let Some(subscription) = subscriptions.get_mut(&event.subscription_id) else {
             return;
         };
-        if let Some(after_watermark) = subscription.gap_after {
-            if subscription
-                .events
-                .try_send(SubscriptionEvent::Gap {
-                    subscription_id: event.subscription_id,
-                    after_watermark,
-                })
-                .is_err()
-            {
-                self.metrics.dropped_events.fetch_add(1, Ordering::Relaxed);
-                return;
-            }
-            subscription.gap_after = None;
+        if !subscription.flush_gap(event.subscription_id) {
+            self.metrics.dropped_events.fetch_add(1, Ordering::Relaxed);
+            return;
         }
         self.metrics.events.fetch_add(1, Ordering::Relaxed);
         let message = SubscriptionEvent::Event(CacheEvent {
@@ -1151,19 +1167,9 @@ impl Runtime {
             .gap_after
             .unwrap_or(subscription.last_delivered)
             .min(gap.after_watermark);
-        if subscription
-            .events
-            .try_send(SubscriptionEvent::Gap {
-                subscription_id: gap.subscription_id,
-                after_watermark,
-            })
-            .is_err()
-        {
-            subscription.gap_after = Some(after_watermark);
-        } else {
-            subscription.gap_after = None;
-            self.metrics.dropped_events.fetch_add(1, Ordering::Relaxed);
-        }
+        subscription.gap_after = Some(after_watermark);
+        subscription.flush_gap(gap.subscription_id);
+        self.metrics.dropped_events.fetch_add(1, Ordering::Relaxed);
     }
 
     fn accept_topology(&self, update: crate::wire::TopologyUpdate) {
