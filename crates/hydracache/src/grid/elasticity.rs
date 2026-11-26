@@ -24,33 +24,7 @@ pub const NODE_TOPOLOGY_ZONE_METADATA_KEY: &str = "hydracache.topology.zone";
 /// Control-plane snapshot format version registered in `docs/COMPAT.md`.
 pub const CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION: u32 = 1;
 
-/// Stable region identifier used by zone-aware placement.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct RegionId(String);
-
-impl RegionId {
-    /// Create a region id.
-    pub fn new(value: impl Into<String>) -> Self {
-        Self(value.into())
-    }
-
-    /// Return the region id as a string slice.
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
-}
-
-impl From<&str> for RegionId {
-    fn from(value: &str) -> Self {
-        Self::new(value)
-    }
-}
-
-impl From<String> for RegionId {
-    fn from(value: String) -> Self {
-        Self::new(value)
-    }
-}
+pub use crate::replication_model::RegionId;
 
 /// Stable availability-zone identifier used by placement and locality reads.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]

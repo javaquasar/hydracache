@@ -7,7 +7,6 @@
 #[cfg(not(target_arch = "wasm32"))]
 pub mod checkpoint;
 pub mod clock;
-pub mod consistency;
 pub mod control;
 pub mod election;
 pub mod invariants;
@@ -17,6 +16,7 @@ pub mod lock_safety;
 pub mod network;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod persistence_recovery;
+pub mod replication;
 pub mod rng;
 pub mod scenarios;
 pub mod schedule;
@@ -33,7 +33,6 @@ pub mod world;
 #[cfg(not(target_arch = "wasm32"))]
 pub use checkpoint::{run_checkpoint_rescale, CheckpointRescaleReport};
 pub use clock::SimClock;
-pub use consistency::{consistency_level_views, SIM_CONSISTENCY_LEVELS};
 pub use control::{
     ControlActionV1, ControlApplyError, ReplayScriptError, ReplayScriptV1, SimMode,
     MAX_REPLAY_ACTIONS, REPLAY_SCRIPT_VERSION,
@@ -62,6 +61,7 @@ pub use persistence_recovery::{
     run_persistence_recovery, PersistenceRecoveryFault, PersistenceRecoveryInvariantReport,
     PersistenceRecoveryScenario,
 };
+pub use replication::{level_from_name, SimReplicationModel};
 pub use rng::SimRng;
 pub use scenarios::{
     replay_world, run_scenario, run_scenario_with, scenario_matches_expectation, scenario_presets,
@@ -74,8 +74,9 @@ pub use schedule::{
 #[cfg(not(target_arch = "wasm32"))]
 pub use sim_raft::{SimRaftCluster, SimRaftError, SimRaftInFlightKey, SimRaftResult};
 pub use snapshot::{
-    ClientView, ConsistencyLevelView, ConvergenceView, KeyReplicaView, KeyView, LinkDropsView,
-    LinkStateView, LinkView, MessageView, NodeView, ProgressView, RebalanceView, SimSnapshot,
+    AdmittedClientView, ClientView, ConsistencyLevelView, ConvergenceView, GridWriteView, HintView,
+    KeyOwnersView, KeyReplicaView, KeyView, LinkDropsView, LinkStateView, LinkView, MessageView,
+    NodeView, ProgressView, RebalanceView, RepairView, ReplicationView, SimSnapshot,
     SimSnapshotDecodeError, SnapshotOverBudgetView, SubscriberEventView, SubscriberView,
     SyncProgressView, VerdictView, MAX_IN_FLIGHT_RENDERED, MAX_SUBSCRIBER_BUFFER,
     SIM_SNAPSHOT_SCHEMA_VERSION,

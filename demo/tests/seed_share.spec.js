@@ -28,8 +28,10 @@ test("copy_reproducer_uses_current_seed_and_step", async ({ page }) => {
 });
 
 test("copy_reproducer_roundtrips_mode_and_actions", async ({ page, browser }) => {
-  await page.goto(`${demoUrl}?seed=502&steps=0&scenario=default`);
+  // Clients join through the Raft leader, so start from a formed cluster.
+  await page.goto(`${demoUrl}?seed=502&steps=12&scenario=default`);
   await expect(page.getByTestId("snapshot-hash")).toContainText(/^snapshot /);
+  await expect(page.locator(".vertex.node.role-leader")).toHaveCount(1);
   await page.getByTestId("mode-select").selectOption("mixed");
   await expect(page.getByTestId("intervention-status")).toContainText("mixed");
   await page.getByTestId("tab-clients").click();

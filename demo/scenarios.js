@@ -30,13 +30,13 @@ export const SCENARIOS = [
         focus: { tab: "cluster", target: "#cluster-graph" },
       },
       {
-        text: "Subscribe client-a to the profiles namespace. Subscribers receive committed cache events.",
+        text: "Subscribe client-a to the profiles namespace. A new client joins through the leader (a Raft metadata commit), then receives committed cache events.",
         actions: [{ type: "subscribe", client: "client-a", ns: "profiles" }],
         report: { kind: "subscribed", client: "client-a", ns: "profiles" },
         focus: { tab: "clients", target: "[data-testid='subscribers-panel']" },
       },
       {
-        text: "Push profile-42. The write commits through the leader, replicates to every node, and is delivered to the subscriber. Compare the checksums in the Keys panel.",
+        text: "Push profile-42. The member client-a is connected to takes the write (the leader is not on the write path), copies it to every node (the simulator's full-replication model), and the subscriber is told. Compare the checksums in the Keys panel.",
         actions: [{ type: "push", client: "client-a", ns: "profiles", key: "profile-42", value: "fresh" }],
         report: { kind: "delivered", client: "client-a", ns: "profiles", key: "profile-42" },
         focus: { tab: "data", target: "[data-testid='keys-panel']" },

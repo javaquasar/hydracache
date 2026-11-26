@@ -89,6 +89,9 @@ enum SimInjectRequest {
     RemoveClient {
         client: String,
     },
+    SetReplication {
+        model: hydracache_sim::SimReplicationModel,
+    },
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -256,6 +259,9 @@ fn apply_injection(
         },
         SimInjectRequest::RemoveClient { client } => {
             ControlActionV1::RemoveClient { at_step, client }
+        }
+        SimInjectRequest::SetReplication { model } => {
+            ControlActionV1::SetReplication { at_step, model }
         }
     };
     world

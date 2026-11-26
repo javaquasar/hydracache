@@ -169,6 +169,39 @@ impl SimHandle {
             .map_err(|error| JsValue::from_str(&error.to_string()))
     }
 
+    /// Choose the write path for manual pushes: `full_broadcast`, `local_first`,
+    /// or `replicated` with a replication factor and a write level such as
+    /// `quorum`. Fails loud while the built-in workload runs.
+    pub fn set_replication(
+        &mut self,
+        model: String,
+        replication_factor: u64,
+        write_level: String,
+    ) -> Result<(), JsValue> {
+        let model = match model.as_str() {
+            "full_broadcast" => hydracache_sim::SimReplicationModel::FullBroadcast,
+            "local_first" => hydracache_sim::SimReplicationModel::LocalFirst,
+            "replicated" => hydracache_sim::SimReplicationModel::Replicated {
+                replication_factor,
+                write_level: hydracache_sim::level_from_name(&write_level).ok_or_else(|| {
+                    JsValue::from_str(&format!("unknown write level '{write_level}'"))
+                })?,
+            },
+            other => {
+                return Err(JsValue::from_str(&format!(
+                    "unknown replication model '{other}'"
+                )))
+            }
+        };
+        let at_step = self.world.outcome().steps;
+        self.world
+            .apply_control_action(hydracache_sim::ControlActionV1::SetReplication {
+                at_step,
+                model,
+            })
+            .map_err(|error| JsValue::from_str(&error.to_string()))
+    }
+
     /// Remove a manual-mode writer client.
     pub fn remove_client(&mut self, client: String) -> Result<(), JsValue> {
         let at_step = self.world.outcome().steps;

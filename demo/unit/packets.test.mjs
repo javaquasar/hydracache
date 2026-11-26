@@ -263,6 +263,25 @@ describe("pushPlan", () => {
     assert.deepEqual(plan.subscribers, [{ id: "r@profiles", node: "node-0", steps: 1 }]);
   });
 
+  it("takes the writer's member as the entry even when an earlier copy lands elsewhere at the push step", () => {
+    // Repeated identical pushes: node-0 applies the previous push's copy at
+    // step 20 while the writer's member node-1 applies the new push.
+    const repeat = {
+      ...after,
+      clients: [{ id: "client-a", connected_node: "node-1" }],
+      keys: [{ key: "profiles:p", replicas: [replica("node-0", 7, 20), replica("node-1", 7, 20), replica("node-2", 7, 19), replica("node-3", 7, 19)] }],
+    };
+    const settled = {
+      ...final,
+      nodes: after.nodes,
+      in_flight: [],
+      keys: [{ key: "profiles:p", replicas: [replica("node-0", 7, 21), replica("node-1", 7, 20), replica("node-2", 7, 21), replica("node-3", 7, 21)] }],
+    };
+    const plan = pushPlan(repeat, settled, "client-a", "profiles", "p");
+    assert.equal(plan.entry, "node-1");
+    assert.ok(plan.replicas.every((hop) => hop.status === "applied"), JSON.stringify(plan.replicas));
+  });
+
   it("treats a copy in flight over a cut link as lost", () => {
     const plan = pushPlan(after, { ...final, links: [{ from: "node-1", to: "node-3", state: "partitioned" }] }, "client-a", "profiles", "p");
     assert.equal(plan.replicas.find((entry) => entry.node === "node-3").status, "lost");
@@ -270,5 +289,73 @@ describe("pushPlan", () => {
 
   it("returns nothing when no node applied the push at its step", () => {
     assert.equal(pushPlan({ ...after, step: 99 }, final, "client-a", "profiles", "p"), null);
+  });
+});
+
+describe("pushPlan for routed writes (schema 11)", () => {
+  const node = (id, extra = {}) => ({ id, crashed: false, disabled: false, ...extra });
+  const replica = (node_id, version, applied_at_step) => ({ node_id, version, applied_at_step });
+  const write = {
+    id: 1,
+    client: "w",
+    key: "profiles:p",
+    coordinator: "node-0",
+    primary: "node-1",
+    backups: ["node-2"],
+    status: "acknowledged",
+    started_at_step: 10,
+  };
+  const final = {
+    step: 14,
+    replication: { model: "replicated" },
+    nodes: [node("node-0"), node("node-1"), node("node-2"), node("node-3")],
+    keys: [
+      {
+        key: "profiles:p",
+        owners: { primary: "node-1", backups: ["node-2"] },
+        replicas: [replica("node-0", 0, null), replica("node-1", 7, 11), replica("node-2", 7, 12), replica("node-3", 0, null)],
+      },
+    ],
+    writes: [write],
+    in_flight: [],
+    links: [],
+    subscribers: [],
+  };
+
+  it("forwards to the primary, then the primary copies to its backups only", () => {
+    const plan = pushPlan({ step: 10 }, final, "w", "profiles", "p");
+    assert.equal(plan.entry, "node-0");
+    assert.deepEqual(plan.replicas, [
+      { from: "node-0", node: "node-1", status: "applied", steps: 1, after: 0, kind: "data forward" },
+      { from: "node-1", node: "node-2", status: "applied", steps: 1, after: 1 },
+    ]);
+  });
+
+  it("sends acknowledgements back: backup to primary, primary to coordinator, then the reply", () => {
+    const acked = { ...final, writes: [{ ...write, acknowledged_at_step: 14 }] };
+    const plan = pushPlan({ step: 10 }, acked, "w", "profiles", "p");
+    assert.deepEqual(plan.acks, [
+      { from: "node-1", to: "node-0", at: 1 },
+      { from: "node-2", to: "node-1", at: 2 },
+      { from: "node-1", to: "node-0", at: 3 },
+    ]);
+    assert.deepEqual(plan.reply, { at: 4 });
+  });
+
+  it("local_first invalidates every other live member from the coordinator", () => {
+    const local = {
+      ...final,
+      replication: { model: "local_first" },
+      nodes: [node("node-0"), node("node-1"), node("node-2", { crashed: true })],
+      writes: [{ ...write, primary: "node-0", backups: [] }],
+    };
+    const plan = pushPlan({ step: 10 }, local, "w", "profiles", "p");
+    assert.deepEqual(
+      plan.replicas.map((hop) => [hop.node, hop.kind, hop.status]),
+      [
+        ["node-1", "event", "applied"],
+        ["node-2", "event", "lost"],
+      ],
+    );
   });
 });

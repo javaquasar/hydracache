@@ -2,8 +2,25 @@
 
 ## Status
 
-Open — recorded 2026-11-23. Implementation idea validated by a throwaway prototype (see
-[Prototype result](#prototype-result)); not scheduled.
+Resolved — recorded 2026-11-23, done 2026-11-25. The work followed the
+implementation idea below:
+
+- `Replicas`, `EffectiveReplicationMap`, `ReplicationConfig`, `ReplicationConfigError`,
+  `RegionId` and the whole consistency-level module moved to
+  `crates/hydracache/src/replication_model/`, which builds for every target. The root
+  names are unchanged, and `grid` re-exports them internally.
+- `SimWorld::consistency_views` calls `ConsistencyLevel::{required_acks, validate}` in
+  both builds. `crates/hydracache-sim/src/consistency.rs` and
+  `tests/consistency_parity.rs` are gone. An exhaustive `match` names the levels, so
+  adding a new product level breaks the simulator build.
+- The snapshot is unchanged: no schema bump and no COMPAT entry. The demo suite passes
+  against the rebuilt wasm package, and `snapshot_v8_reports_product_consistency_levels`
+  pins the product's reason text.
+- `crates/hydracache/tests/placement_golden.rs` records rendezvous owners, because the
+  ranking is the next thing to move (TD-0016, step 3).
+
+Definition-of-done item 4 is met except `cargo xtask verify`, which was not run
+locally; it runs in CI and must pass before merge.
 
 Owner: simulator / grid.
 
@@ -92,6 +109,11 @@ behavior, format, or public-name change.
 Unrelated finding while prototyping: the `memory_compat_driver_071` example needs the
 `durable-value-store` feature but declares no `required-features`, so
 `cargo check -p hydracache --all-targets` without that feature fails on `main` too.
+
+## Related
+
+This is step 1 of closing [TD-0016](TD-0016-simulator-write-path-fidelity.md) (gap G8 in
+[`docs/architecture/RAFT_CONTROL_PLANE.md`](../architecture/RAFT_CONTROL_PLANE.md#gap-register)).
 
 ## Revisit Trigger
 

@@ -14,6 +14,7 @@ import {
   tidyGraph,
   initGraph,
   playDataFlowPulse,
+  playMetadataPulse,
   pushPlan,
   resetGraph,
   syncGraph,
@@ -168,6 +169,11 @@ const el = {
   manualReaderNs: document.querySelector("#manual-reader-ns"),
   namespaceOptions: document.querySelector("#namespace-options"),
   addClient: document.querySelector("#add-client-button"),
+  replicationModel: document.querySelector("#replication-model"),
+  replicationFactor: document.querySelector("#replication-factor"),
+  writeLevel: document.querySelector("#write-level"),
+  applyReplication: document.querySelector("#apply-replication"),
+  replicationPanel: document.querySelector("#replication-panel"),
   manualKey: document.querySelector("#manual-key"),
   manualValue: document.querySelector("#manual-value"),
   subscribe: document.querySelector("#subscribe-button"),
@@ -386,6 +392,16 @@ function bindEvents() {
       el.manualClient.value = nextFreeName("client-", (state.snapshot?.clients || []).map((client) => client.id));
     }),
   );
+  el.applyReplication.addEventListener("click", () =>
+    void runAction(async () => {
+      await state.sim?.set_replication(
+        el.replicationModel.value,
+        Math.max(1, Number(el.replicationFactor.value) || 1),
+        el.writeLevel.value,
+      );
+      await refresh();
+    }),
+  );
   el.pushEvent.addEventListener("click", () =>
     void runAction(() => pushEventFor(manualClientId(), el.manualNs.value)),
   );
@@ -491,6 +507,15 @@ async function refresh() {
   render();
   if (focus && wasHolding && !state.timeline.rewound) {
     onViolationDetected(focus);
+  }
+  // A client admitted since the previous render went through the Raft
+  // leader (a ClientUpsert commit): draw it on the metadata lane.
+  if (previous && !state.timeline.rewound) {
+    const before = new Set((previous.admitted_clients || []).map((entry) => entry.id));
+    const leader = (state.snapshot.nodes || []).find((node) => node.vote_state === "leader")?.id;
+    for (const entry of state.snapshot.admitted_clients || []) {
+      if (!before.has(entry.id) && leader && entry.connected_node) playMetadataPulse(entry.connected_node, leader);
+    }
   }
   if (state.changes?.leader) {
     const { to } = state.changes.leader;
@@ -897,6 +922,16 @@ function renderClients(snapshot) {
     // The form right above is the action; the block only explains.
     clients.append(emptyState("No writers yet. A writer pushes values into one namespace; add one above, or push to create it."));
   }
+  // A new client is admitted by a Raft metadata commit (ClientUpsert), so the
+  // engine refuses new names while there is no leader. Say so before the
+  // user hits the refusal; admitted clients keep writing.
+  if (!(snapshot.nodes || []).some((node) => node.vote_state === "leader")) {
+    const hint = emptyState(
+      "No Raft leader yet: a new client joins through a leader commit, so adding one is refused until a leader is elected. Clients already admitted keep writing through their own member.",
+    );
+    hint.setAttribute("data-testid", "admission-hint");
+    clients.prepend(hint);
+  }
 
   const subscribers = document.createElement("div");
   subscribers.className = "metric-list entity-list";
@@ -935,6 +970,75 @@ function renderClients(snapshot) {
 
 // An empty block says what would appear there and offers the action that
 // makes it appear.
+// The write path manual pushes follow and the recent routed writes, with the
+// acknowledgements the coordinator counted (snapshot schema 11).
+function renderReplication(snapshot) {
+  const replication = snapshot.replication;
+  if (!replication) {
+    el.replicationPanel.replaceChildren();
+    return;
+  }
+  el.replicationModel.value = replication.model;
+  if (replication.replication_factor) el.replicationFactor.value = String(replication.replication_factor);
+  if (replication.write_level && [...el.writeLevel.options].some((option) => option.value === replication.write_level)) {
+    el.writeLevel.value = replication.write_level;
+  }
+  const note = document.createElement("p");
+  note.className = "panel-note";
+  note.setAttribute("data-testid", "replication-disclosure");
+  note.textContent = replication.disclosure;
+  const list = document.createElement("div");
+  list.className = "metric-list entity-list";
+  for (const write of (snapshot.writes || []).slice(-6).reverse()) {
+    const row = document.createElement("div");
+    row.className = `entity-row write-row status-${write.status}`;
+    row.dataset.write = String(write.id);
+    const title = document.createElement("strong");
+    title.textContent = `#${write.id} ${write.key}`;
+    const path = write.primary === write.coordinator ? write.coordinator : `${write.coordinator} → ${write.primary}`;
+    const backups = write.backups.length ? ` → ${write.backups.join(", ")}` : "";
+    const meta = document.createElement("span");
+    meta.className = "entity-meta";
+    const level = write.level ? ` at ${write.level.toUpperCase()}` : "";
+    const hinted = (write.hinted || []).length ? ` · hint held for ${write.hinted.join(", ")}` : "";
+    meta.textContent = `${write.client}: ${path}${backups} · acks ${write.acks}/${write.required_acks}${level} · ${write.status}${hinted}`;
+    row.append(title, meta);
+    if (write.reason) {
+      const reason = document.createElement("span");
+      reason.className = "entity-meta write-reason";
+      reason.textContent = write.reason;
+      row.append(reason);
+    }
+    list.append(row);
+  }
+  if (!list.childElementCount) {
+    list.append(
+      emptyState(
+        replication.model === "full_broadcast"
+          ? "Writes are broadcast to every member in this model, so there is no per-write record."
+          : "No routed writes yet. Push a value to see its path and acknowledgements.",
+      ),
+    );
+  }
+  const parts = [note];
+  const repair = snapshot.repair;
+  if (repair && replication.model !== "full_broadcast") {
+    // Hinted handoff and anti-entropy are simulator models of the product
+    // rules (schema 12); say so next to the counters.
+    const counters = document.createElement("p");
+    counters.className = "panel-note";
+    counters.setAttribute("data-testid", "repair-counters");
+    const held = (snapshot.hints || []).length;
+    counters.textContent =
+      `Hints held ${held} · replayed ${repair.hints_replayed} · suppressed ${repair.hints_suppressed} · dropped ${repair.hints_dropped}` +
+      ` · repair copies ${repair.repair_copies} (a pass every ${repair.interval_steps} steps${repair.last_run_step == null ? "" : `, last at step ${repair.last_run_step}`}).`;
+    counters.title = repair.disclosure;
+    parts.push(counters);
+  }
+  parts.push(list);
+  el.replicationPanel.replaceChildren(...parts);
+}
+
 function emptyState(text, actionLabel, testId, onAction) {
   const box = document.createElement("div");
   box.className = "empty-state empty-action";
@@ -988,8 +1092,11 @@ function renderNamespaceOptions(snapshot) {
 function renderConsistency(snapshot) {
   const note = document.createElement("p");
   note.className = "model-note";
-  note.textContent =
-    "Could an operation at each level be acknowledged right now? Computed with the product consistency rules: every node is a replica in one region and only live nodes acknowledge (isolated counts as down; single partitioned links are not considered). The simulator does not run per-level reads or writes.";
+  // Schema 13: in the replicated write path each key has its own owners, so
+  // the engine computes the panel on the owners of the last written key.
+  const scope = snapshot.consistency_scope || "every node is a replica";
+  note.setAttribute("data-testid", "consistency-scope");
+  note.textContent = `Could an operation at each level be acknowledged right now? Computed with the product consistency rules on: ${scope}, in one region; only live nodes acknowledge (isolated counts as down; single partitioned links are not considered). Reads are not run per level; writes are, in the replicated write path.`;
   const levels = document.createElement("div");
   levels.className = "metric-list";
   for (const view of snapshot.consistency || []) {
@@ -1088,6 +1195,8 @@ function renderKeys(snapshot) {
       // one; one that had no value yet flashes.
       chip.className = [
         "replica",
+        cell.owner === false ? "not-owner" : "",
+        cell.primary ? "primary-owner" : "",
         cell.version === null ? "missing" : "",
         cell.diverged ? "diverged" : "",
         cell.live ? "" : "down",
@@ -1106,9 +1215,10 @@ function renderKeys(snapshot) {
       const downNote = cell.live ? "" : " (down)";
       const written = state.keyWrites.get(`${key.key}|${cell.node}`);
       const when = written === undefined ? "unchanged since this run was opened" : `written at step ${written}`;
+      const ownerNote = cell.owner === false ? " (not an owner)" : cell.primary ? " (primary owner)" : "";
       chip.title =
         cell.version === null
-          ? `${cell.node}: no replica of ${key.key}${downNote}`
+          ? `${cell.node}: no replica of ${key.key}${ownerNote}${downNote}`
           : `${cell.node} · ${key.key}\nchecksum ${fullVersion(cell.version)}\n${when}${cell.diverged ? "\ndiffers from the live majority" : ""}${downNote}`;
       chip.dataset.written = written === undefined ? "" : String(written);
       chip.setAttribute("aria-label", chip.title.replaceAll("\n", ", "));
@@ -1117,7 +1227,7 @@ function renderKeys(snapshot) {
     }
     const status = document.createElement("td");
     status.className = "key-state";
-    status.textContent = key.agree ? "agree" : "replicas differ";
+    status.textContent = key.agree ? "agree" : key.majority === null ? "no copy" : "replicas differ";
     row.append(status);
     tbody.append(row);
   }
@@ -1767,7 +1877,10 @@ async function settleAfterIntervention() {
         (node.vote_state === "joining" || node.vote_state === "catching_up"),
     );
     const hasLeader = nodes.some((node) => node.vote_state === "leader");
-    if (hasLeader && !stillJoining) {
+    // A routed write takes several steps (forward, copies, acknowledgements);
+    // keep going while one is pending, within the same bound.
+    const writePending = (snapshot.writes || []).some((write) => write.status === "pending");
+    if (hasLeader && !stillJoining && !writePending) {
       break;
     }
   }
@@ -2497,6 +2610,9 @@ function renderTabPanels(snapshot) {
   paintPanel("verdict-panel", "verdict", verdictPanelSignature(snapshot), () => renderVerdictPanel(snapshot));
   paintPanel("signals", "cluster", JSON.stringify([(snapshot.in_flight || []).slice(0, 8), snapshot.over_budget]), () => renderSignals(snapshot));
   paintPanel("clients", "clients", JSON.stringify([snapshot.clients, snapshot.subscribers]), () => renderClients(snapshot));
+  paintPanel("replication", "clients", JSON.stringify([snapshot.replication, snapshot.writes, snapshot.hints, snapshot.repair]), () =>
+    renderReplication(snapshot),
+  );
   paintPanel("consistency", "data", consistencySignature(snapshot), () => renderConsistency(snapshot));
   paintPanel("keys", "data", keysSignature(snapshot), () => renderKeys(snapshot));
 }
@@ -2533,6 +2649,7 @@ function verdictPanelSignature(snapshot) {
 function consistencySignature(snapshot) {
   return JSON.stringify([
     snapshot.consistency,
+    snapshot.consistency_scope,
     keyAgreement(snapshot),
     snapshot.progress?.committed_entries,
   ]);

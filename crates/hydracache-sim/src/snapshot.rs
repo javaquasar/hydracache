@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Current stable simulator snapshot JSON schema version.
-pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 9;
+pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 13;
 
 /// Region every simulator node reports; the simulator models one region.
 pub(crate) const SIM_REGION: &str = "local";
@@ -52,6 +52,19 @@ pub struct SimSnapshot {
     pub clients: Vec<ClientView>,
     /// Manual-mode namespace subscribers.
     pub subscribers: Vec<SubscriberView>,
+    /// Client processes admitted through the simulated Raft metadata path
+    /// (schema 10): one entry per client name, writer or reader, with the
+    /// member its connection is open to.
+    pub admitted_clients: Vec<AdmittedClientView>,
+    /// Write path manual pushes follow (schema 11).
+    pub replication: ReplicationView,
+    /// Recent routed writes with their owners and acknowledgements (schema 11);
+    /// empty in the `full_broadcast` model.
+    pub writes: Vec<GridWriteView>,
+    /// Hints primaries hold for unreachable backups (schema 12).
+    pub hints: Vec<HintView>,
+    /// Hinted-handoff and repair counters (schema 12).
+    pub repair: RepairView,
     /// Cluster sync progress visible to manual/topology modes.
     pub sync_progress: Vec<SyncProgressView>,
     /// Current deterministic rebalance/reshard progress.
@@ -70,6 +83,9 @@ pub struct SimSnapshot {
     pub first_violation_step: Option<u64>,
     /// Whether each product consistency level could be satisfied right now.
     pub consistency: Vec<ConsistencyLevelView>,
+    /// Which replica set `consistency` was computed on (schema 13): every node,
+    /// or in `replicated` the owners of the most recently written key.
+    pub consistency_scope: String,
     /// Invariant verdict for the current state.
     pub verdict: VerdictView,
     /// Progress summary for dashboard panels.
@@ -96,6 +112,25 @@ impl SimSnapshot {
             keys: keys_from_history(history),
             clients: Vec::new(),
             subscribers: Vec::new(),
+            admitted_clients: Vec::new(),
+            replication: ReplicationView {
+                model: "none".to_owned(),
+                replication_factor: None,
+                write_level: None,
+                disclosure: "history-only snapshots do not include a write path".to_owned(),
+            },
+            writes: Vec::new(),
+            hints: Vec::new(),
+            repair: RepairView {
+                interval_steps: 0,
+                last_run_step: None,
+                hints_stored: 0,
+                hints_replayed: 0,
+                hints_suppressed: 0,
+                hints_dropped: 0,
+                repair_copies: 0,
+                disclosure: "history-only snapshots do not include repair".to_owned(),
+            },
             sync_progress: Vec::new(),
             rebalance: None,
             mode: "manual".to_owned(),
@@ -108,6 +143,7 @@ impl SimSnapshot {
                 .collect(),
             first_violation_step: (!report.violations.is_empty()).then_some(step),
             consistency: Vec::new(),
+            consistency_scope: "none".to_owned(),
             verdict: VerdictView::from_report(&report),
             progress: ProgressView {
                 committed_entries: history.completed().count() as u64,
@@ -265,6 +301,102 @@ pub struct KeyView {
     pub key: String,
     /// Per-replica observations.
     pub replicas: Vec<KeyReplicaView>,
+    /// Rendezvous owners of the key in the `replicated` model (schema 11);
+    /// `None` in the other models, where every member may hold it.
+    pub owners: Option<KeyOwnersView>,
+}
+
+/// Primary and backup owners of one key (schema 11).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct KeyOwnersView {
+    /// Primary owner.
+    pub primary: String,
+    /// Backup owners in rendezvous order.
+    pub backups: Vec<String>,
+}
+
+/// The write path manual pushes follow (schema 11).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReplicationView {
+    /// `full_broadcast`, `local_first`, or `replicated`.
+    pub model: String,
+    /// Copies including the primary (`replicated` only).
+    pub replication_factor: Option<u64>,
+    /// Write acknowledgement level (`replicated` only).
+    pub write_level: Option<String>,
+    /// Disclosure for demo surfaces.
+    pub disclosure: String,
+}
+
+/// A hint a primary holds for a backup it could not reach (schema 12).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct HintView {
+    /// Write the hint carries.
+    pub write: u64,
+    /// Namespaced key.
+    pub key: String,
+    /// Node holding the hint (the write's primary).
+    pub holder: String,
+    /// Backup the copy is for.
+    pub target: String,
+    /// Step the hint was stored.
+    pub created_at_step: u64,
+}
+
+/// Hinted-handoff and repair counters (schema 12).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RepairView {
+    /// Steps between anti-entropy passes.
+    pub interval_steps: u64,
+    /// Step of the last pass, if any ran.
+    pub last_run_step: Option<u64>,
+    /// Hints stored.
+    pub hints_stored: u64,
+    /// Hints replayed to a returning backup.
+    pub hints_replayed: u64,
+    /// Hints dropped because the backup already had a newer write.
+    pub hints_suppressed: u64,
+    /// Hints lost with their holder or over budget (the key is left to repair).
+    pub hints_dropped: u64,
+    /// Copies sent by anti-entropy passes.
+    pub repair_copies: u64,
+    /// Disclosure for demo surfaces.
+    pub disclosure: String,
+}
+
+/// One routed manual write (schema 11).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct GridWriteView {
+    /// Write id, in push order.
+    pub id: u64,
+    /// Writer client.
+    pub client: String,
+    /// Namespaced key.
+    pub key: String,
+    /// Member the client is connected to; it answers the client.
+    pub coordinator: String,
+    /// Primary owner (the coordinator in `local_first`).
+    pub primary: String,
+    /// Backup owners.
+    pub backups: Vec<String>,
+    /// Backups whose copy the primary has seen acknowledged.
+    pub backups_applied: Vec<String>,
+    /// Backups that got a hint instead of a copy (schema 12).
+    pub hinted: Vec<String>,
+    /// Acknowledgement level (`replicated` only).
+    pub level: Option<String>,
+    /// Acknowledgements the level requires.
+    pub required_acks: u64,
+    /// Acknowledgements the coordinator has counted.
+    pub acks: u64,
+    /// `pending`, `acknowledged`, or `failed`.
+    pub status: String,
+    /// The product's reason when the level can no longer be met.
+    pub reason: Option<String>,
+    /// Step of the push.
+    pub started_at_step: u64,
+    /// Step the required acknowledgements arrived.
+    pub acknowledged_at_step: Option<u64>,
 }
 
 /// Satisfiability of one product consistency level on the simulator topology.
@@ -316,7 +448,21 @@ pub struct ClientView {
     pub last_op: Option<String>,
     /// Operations currently in flight for this actor.
     pub in_flight: u32,
-    /// Cluster node this client is currently routed to (smart-client routing).
+    /// Member this client's connection is open to (its coordinator). Sticky
+    /// since schema 10: it changes only when that member goes down.
+    pub connected_node: Option<String>,
+}
+
+/// A client process admitted through the simulated `ClientUpsert` metadata
+/// command (schema 10).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AdmittedClientView {
+    /// Client name.
+    pub id: String,
+    /// Step at which the simulated `ClientUpsert` committed.
+    pub admitted_at_step: u64,
+    /// Member the client's connection is open to; it coordinates the client's
+    /// writes. `None` when no member is live.
     pub connected_node: Option<String>,
 }
 
@@ -335,7 +481,7 @@ pub struct SubscriberView {
     pub lag: u64,
     /// Events dropped because the bounded buffer was full.
     pub dropped: u64,
-    /// Cluster node this subscriber currently receives events from.
+    /// Member the subscriber's client is connected to (sticky since schema 10).
     pub connected_node: Option<String>,
 }
 
@@ -599,6 +745,7 @@ pub(crate) fn key_views_from_storage(
         .into_iter()
         .map(|(key, replicas)| KeyView {
             key,
+            owners: None,
             replicas: replicas
                 .into_iter()
                 .map(|(node_id, (version, applied_at_step))| KeyReplicaView {
@@ -665,6 +812,7 @@ fn keys_from_history(history: &History) -> Vec<KeyView> {
             let version = versions.get(&key).copied().unwrap_or_default();
             KeyView {
                 key,
+                owners: None,
                 replicas: vec![KeyReplicaView {
                     node_id: "history".to_owned(),
                     version,

@@ -53,6 +53,11 @@
       "title": "Optimization Starts With Measurement: Reading Allocations, RSS, and Runtime Together",
       "file": "007-optimization-starts-with-measurement.md",
       "status": "draft"
+    },
+    {
+      "title": "Run the Real Code in the Browser: Compiling Production Rules to WebAssembly for Honest Simulations",
+      "file": "008-run-the-real-code-in-the-browser.md",
+      "status": "draft"
     }
   ]
 }

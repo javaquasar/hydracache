@@ -124,20 +124,22 @@ async fn sim_routes_accept_same_control_script() {
         0x5334,
         SimMode::Manual,
         vec![
-            ControlActionV1::Step { at_step: 0, n: 8 },
+            // Clients join through the Raft metadata path, so the real raft-rs
+            // election must have produced a leader first.
+            ControlActionV1::Step { at_step: 0, n: 80 },
             ControlActionV1::Subscribe {
-                at_step: 8,
+                at_step: 80,
                 client: "client-a".to_owned(),
                 ns: "profiles".to_owned(),
             },
             ControlActionV1::PushEvent {
-                at_step: 8,
+                at_step: 80,
                 client: "client-a".to_owned(),
                 ns: "profiles".to_owned(),
                 key: "profile-42".to_owned(),
                 value: "fresh".to_owned(),
             },
-            ControlActionV1::Step { at_step: 8, n: 2 },
+            ControlActionV1::Step { at_step: 80, n: 2 },
         ],
     );
 
@@ -183,6 +185,10 @@ async fn sim_routes_accept_topology_control_actions() {
     )
     .await;
     assert!(rejoined["rebalance"].is_object());
+
+    // A new client is admitted by the Raft leader; let the cluster re-elect
+    // after the isolation before the client joins.
+    post_json(app.clone(), "/sim/step", json!({"steps": 80}).to_string()).await;
 
     let writer = post_json(
         app.clone(),

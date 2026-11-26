@@ -483,3 +483,35 @@ describe("historyStrip", () => {
     assert.equal(historyStrip(new Map(), 0, 0).summary, "No steps observed yet.");
   });
 });
+
+describe("keyAgreement under routed write paths (schema 11)", () => {
+  const nodes = ["node-0", "node-1", "node-2"].map((id) => ({ id, crashed: false, disabled: false }));
+  const key = (versions, owners = null) => ({
+    key: "profiles:p",
+    owners,
+    replicas: Object.entries(versions).map(([node_id, version]) => ({ node_id, version })),
+  });
+
+  test("replicated: non-owners without the value do not diverge; a lagging owner does", () => {
+    const owners = { primary: "node-1", backups: ["node-2"] };
+    const done = keyAgreement({ replication: { model: "replicated" }, nodes, keys: [key({ "node-1": 7, "node-2": 7 }, owners)] });
+    assert.equal(done.keys[0].agree, true);
+    assert.deepEqual(
+      done.keys[0].cells.map((cell) => [cell.node, cell.owner, cell.primary, cell.diverged]),
+      [
+        ["node-0", false, false, false],
+        ["node-1", true, true, false],
+        ["node-2", true, false, false],
+      ],
+    );
+    const lagging = keyAgreement({ replication: { model: "replicated" }, nodes, keys: [key({ "node-1": 7 }, owners)] });
+    assert.equal(lagging.keys[0].agree, false);
+    assert.equal(lagging.keys[0].cells[2].diverged, true);
+  });
+
+  test("local_first: dropped copies are expected", () => {
+    const agreement = keyAgreement({ replication: { model: "local_first" }, nodes, keys: [key({ "node-0": 7 })] });
+    assert.equal(agreement.keys[0].agree, true);
+    assert.ok(agreement.keys[0].cells.every((cell) => !cell.diverged));
+  });
+});
