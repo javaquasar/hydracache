@@ -14,6 +14,12 @@ enum StartDecision {
     },
 }
 
+pub(super) struct PrimaryWaveRequest<'a> {
+    pub targets: &'a [(PartitionId, PartitionMember)],
+    pub epoch: Option<ClusterEpoch>,
+    pub recovery: bool,
+}
+
 impl ValueReplica {
     pub(crate) async fn start_primary_wave<S: RaftLogStore>(
         &self,
@@ -21,6 +27,25 @@ impl ValueReplica {
         sink: &Arc<dyn RaftMessageSink>,
         targets: &[(PartitionId, PartitionMember)],
     ) -> CacheResult<PrimaryRebalanceWave> {
+        self.submit_primary_wave(
+            raft,
+            sink,
+            PrimaryWaveRequest {
+                targets,
+                epoch: None,
+                recovery: false,
+            },
+        )
+        .await
+    }
+
+    pub(super) async fn submit_primary_wave<S: RaftLogStore>(
+        &self,
+        raft: &RaftMetadataRuntime<S>,
+        sink: &Arc<dyn RaftMessageSink>,
+        request: PrimaryWaveRequest<'_>,
+    ) -> CacheResult<PrimaryRebalanceWave> {
+        let targets = request.targets;
         if targets.is_empty()
             || targets.len() > PrimaryRebalanceWave::MAX_TASKS
             || !(1..=2).contains(&self.replication.sync_backups)
@@ -34,6 +59,9 @@ impl ValueReplica {
             .map_err(|_| repair_error("no authority to start the primary wave"))?;
         let operation = proof
             .with_snapshot(|snapshot, _| {
+                if request.epoch.is_some_and(|epoch| epoch != snapshot.epoch) {
+                    return Err(repair_error("primary selection epoch changed"));
+                }
                 if let Some(wave) = snapshot.primary_rebalance.as_ref() {
                     let same_request = wave.scope == scope
                         && !wave.cancelled
@@ -43,7 +71,9 @@ impl ValueReplica {
                             .iter()
                             .zip(targets)
                             .all(|(task, (partition, target))| {
-                                task.partition == *partition && task.target == *target
+                                task.partition == *partition
+                                    && task.target == *target
+                                    && task.recovery == request.recovery
                             });
                     if same_request
                         && (wave.head().is_some()
@@ -63,12 +93,15 @@ impl ValueReplica {
                     .iter()
                     .map(|(partition, target)| {
                         let placement = self
-                            .placement(&snapshot, *partition)
+                            .primary_placement(&snapshot, *partition, request.recovery)
                             .ok_or_else(|| repair_error("primary wave has no applied placement"))?;
                         if !seen.insert(*partition)
                             || !snapshot.value_prefixes.contains_key(partition)
                             || placement.primary.node == target.node
                             || !admitted(&snapshot, target)
+                            || (request.recovery
+                                && (self.replication.sync_backups != 1
+                                    || !placement.backups.contains(target)))
                         {
                             return Err(repair_error(
                                 "primary wave target is invalid or duplicated",
@@ -78,6 +111,7 @@ impl ValueReplica {
                             partition: *partition,
                             source: placement.primary,
                             target: target.clone(),
+                            recovery: request.recovery,
                         })
                     })
                     .collect::<CacheResult<Vec<_>>>()?;
@@ -149,16 +183,28 @@ impl ValueReplica {
         }) else {
             return Ok(());
         };
-        let Some(task) = wave.head().filter(|task| task.source == self.local) else {
+        let Some(task) = wave.head().filter(|task| {
+            if task.recovery {
+                task.target == self.local
+            } else {
+                task.source == self.local
+            }
+        }) else {
             return Ok(());
         };
-        let Some(placement) = self.placement(&snapshot, task.partition) else {
+        let Some(placement) = self.primary_placement(&snapshot, task.partition, task.recovery)
+        else {
             return Ok(());
         };
-        if placement.primary != self.local || !admitted(&snapshot, &task.target) {
+        if placement.primary != task.source || !admitted(&snapshot, &task.target) {
             return Ok(());
         }
         if !placement.backups.contains(&task.target) {
+            if task.recovery {
+                return Err(repair_error(
+                    "recovery requires an existing synchronous backup",
+                ));
+            }
             let probe = self.candidate_probe(task.target.clone(), snapshot.epoch);
             if timeout_at(
                 Instant::now() + Duration::from_millis(600),
@@ -192,6 +238,27 @@ impl ValueReplica {
             .await
     }
 
+    pub(super) fn primary_placement(
+        &self,
+        snapshot: &RaftPartitionSnapshot,
+        partition: PartitionId,
+        recovery: bool,
+    ) -> Option<PartitionPlacement> {
+        if recovery && snapshot.applied_index == snapshot.commit_index {
+            if let Some((primary, backups)) = snapshot.value_assignment(partition) {
+                if backups.len() == self.replication.sync_backups {
+                    return Some(PartitionPlacement {
+                        partition,
+                        epoch: snapshot.epoch,
+                        primary,
+                        backups,
+                    });
+                }
+            }
+        }
+        self.placement(snapshot, partition)
+    }
+
     async fn handoff_primary<S: RaftLogStore>(
         &self,
         raft: &RaftMetadataRuntime<S>,
@@ -219,29 +286,25 @@ impl ValueReplica {
                         return Err(repair_error("primary wave head changed"));
                     }
                     let mut placement = self
-                        .placement(&snapshot, task.partition)
-                        .filter(|placement| {
-                            placement.primary == self.local && placement.primary == task.source
-                        })
+                        .primary_placement(&snapshot, task.partition, task.recovery)
+                        .filter(|placement| placement.primary == task.source)
                         .ok_or_else(|| repair_error("primary ownership changed"))?;
                     let slot = placement
                         .backups
                         .iter_mut()
                         .find(|member| **member == task.target)
                         .ok_or_else(|| repair_error("primary destination has not been seeded"))?;
-                    *slot = self.local.clone();
-                    if !placement
-                        .backups
-                        .iter()
-                        .all(|backup| admitted(&snapshot, backup))
-                        || !admitted(&snapshot, &task.target)
+                    *slot = task.source.clone();
+                    if !placement.backups.iter().all(|backup| {
+                        admitted(&snapshot, backup) || (task.recovery && backup == &task.source)
+                    }) || !admitted(&snapshot, &task.target)
                     {
                         return Err(repair_error("primary handoff generation changed"));
                     }
                     let required = snapshot.value_prefixes.get(&task.partition).copied();
                     if required.is_none() || !self.journal.load(task.partition)?.covers(required) {
                         return Err(repair_error(
-                            "source does not hold the final certified prefix",
+                            "handoff executor does not hold the final certified prefix",
                         ));
                     }
                     Ok(PartitionPromotion {
@@ -265,7 +328,7 @@ impl ValueReplica {
                 required: plan.required,
                 wave: Some(wave),
             };
-            if transport.probe(probe.clone()).await? != probe {
+            if !task.recovery && transport.probe(probe.clone()).await? != probe {
                 return Err(repair_error(
                     "primary destination did not prove the final prefix",
                 ));

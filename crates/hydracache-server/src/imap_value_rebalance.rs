@@ -96,6 +96,18 @@ impl ValueReplica {
             .filter(|backup| admitted(snapshot, backup))
             .map(|backup| (backup.node.clone(), backup))
             .collect();
+        self.observe_replica_endpoints(snapshot.epoch, transport, samples, health, peers)
+            .await;
+    }
+
+    pub(super) async fn observe_replica_endpoints(
+        &self,
+        epoch: ClusterEpoch,
+        transport: &dyn ReplicaTransport,
+        samples: &mut BackupObservations,
+        health: &mut RebalanceHealth,
+        peers: BTreeMap<ClusterNodeId, PartitionMember>,
+    ) {
         samples.misses.retain(|id, (generation, _)| {
             peers
                 .get(id)
@@ -110,7 +122,7 @@ impl ValueReplica {
         for offset in 0..count.min(WATCH_PROBES) {
             let peer = &peers[(start + offset) % count];
             if !health.failed.contains(&peer.node) {
-                let probe = self.candidate_probe(peer.clone(), snapshot.epoch);
+                let probe = self.candidate_probe(peer.clone(), epoch);
                 let ready = timeout_at(
                     Instant::now() + PROBE_WAIT,
                     transport.check_candidate(probe.clone()),
@@ -290,7 +302,7 @@ impl ValueReplica {
     }
 }
 
-async fn candidate_ready(
+pub(super) async fn candidate_ready(
     transport: &dyn ReplicaTransport,
     probe: &ReplicaReady,
     probes: &mut usize,

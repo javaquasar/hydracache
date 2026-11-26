@@ -41,6 +41,8 @@ use crate::imap_value_repair::{repair_error, RepairReceipt, RepairRequest, Repli
 
 #[path = "imap_value_primary.rs"]
 mod primary;
+#[path = "imap_primary_policy.rs"]
+mod primary_policy;
 #[path = "imap_value_rebalance.rs"]
 mod rebalance;
 #[path = "imap_value_repair_owner.rs"]
@@ -131,6 +133,7 @@ pub struct ValueReplica {
     repair_receiver: Mutex<()>,
     rebalance_pass: Semaphore,
     pub(crate) rebalance_started: AtomicBool,
+    pub(crate) primary_failover_started: AtomicBool,
     lookups: AtomicU64,
     applies: AtomicU64,
     owner_applies: AtomicU64,
@@ -181,6 +184,7 @@ impl ValueReplica {
             repair_receiver: Mutex::new(()),
             rebalance_pass: Semaphore::new(1),
             rebalance_started: AtomicBool::new(false),
+            primary_failover_started: AtomicBool::new(false),
             lookups: AtomicU64::new(0),
             applies: AtomicU64::new(0),
             owner_applies: AtomicU64::new(0),

@@ -69,6 +69,7 @@ struct RebalanceCommand {
 #[derive(Serialize, Deserialize)]
 enum WaveCommand {
     Start(Vec<(PartitionId, PartitionMember)>),
+    Plan(RebalanceCommand),
     Cancel(ClusterEpoch),
 }
 
@@ -235,12 +236,21 @@ async fn run_live(
     let mut repair_serial = 0;
     let mut rebalanced = false;
     let mut automatic = false;
+    let mut automatic_primary = false;
     let mut wave_serial = 0;
     loop {
         if let Some(request) = read_json::<WaveRequest>(&root.join("wave.json")) {
             if request.serial > wave_serial {
                 let result = match request.command {
                     WaveCommand::Start(targets) => host.start_primary_rebalance(&targets).await,
+                    WaveCommand::Plan(command) => host
+                        .plan_primary_drain(&command.partitions, &command.drained)
+                        .await
+                        .and_then(|wave| {
+                            wave.ok_or_else(|| {
+                                hydracache::CacheError::Backend("no eligible drain target".into())
+                            })
+                        }),
                     WaveCommand::Cancel(id) => host.cancel_primary_rebalance(id).await,
                 }
                 .map_err(|error| error.to_string());
@@ -284,6 +294,11 @@ async fn run_live(
             host.start_automatic_replica_rebalance().unwrap();
             host.start_automatic_replica_rebalance().unwrap();
             automatic = true;
+        }
+        if !automatic_primary && root.join("automatic-primary.json").is_file() {
+            host.start_automatic_primary_failover().unwrap();
+            host.start_automatic_primary_failover().unwrap();
+            automatic_primary = true;
         }
         if let Some(command) = read_json::<RepairCommand>(&root.join("repair.json")) {
             if command.serial > repair_serial {
@@ -752,6 +767,150 @@ fn fixture_members(nodes: &[Node], statuses: &[Status]) -> Vec<ClusterMember> {
             metadata: Default::default(),
         })
         .collect()
+}
+
+#[test]
+fn w10f_selects_primary_destinations_and_recovers_a_failed_owner_under_load() {
+    if std::env::var(RUN).as_deref() != Ok("1") {
+        return;
+    }
+    let mut nodes = start_nodes(true);
+    let initial = wait_for("three nodes before primary drain", || {
+        all_members(&nodes, 0)
+    });
+    let members = fixture_members(&nodes, &initial);
+    let key_for = |backup: usize| {
+        (0..5000)
+            .find_map(|index| {
+                let key = format!("automatic-primary-{index}").into_bytes();
+                let partition = scope().locate(key.clone()).unwrap().0;
+                let placement = RendezvousClusterOwnership
+                    .replicas_for_key(&format!("partition-{}", partition.value()), &members, 2)
+                    .unwrap();
+                (placement.primary == members[0].node_id
+                    && placement.backups == [members[backup].node_id.clone()])
+                .then_some((partition, key))
+            })
+            .unwrap()
+    };
+    let (failed_partition, failed_key) = key_for(1);
+    let (live_partition, live_key) = key_for(2);
+    for key in [&failed_key, &live_key] {
+        assert_eq!(
+            resp(nodes[0].address, &[b"SET", key, b"seed"]).unwrap(),
+            b"+OK\r\n"
+        );
+    }
+    let retained = compare_and_set_for_key(&failed_key, b"seed", b"certified");
+    assert_eq!(
+        nodes[0]
+            .hc1(retained.clone(), "automatic-primary-retained")
+            .unwrap(),
+        ClientResponse::CasApplied { new_version: 2 },
+    );
+    let live_keys = BTreeMap::from([(live_partition, live_key.clone())]);
+    let (drained, drain_writes) = with_rebalance_load(nodes[0].address, &live_keys, || {
+        wait_for("old primary accepts drain workload", || {
+            (resp(nodes[0].address, &[b"GET", &live_key]).ok()? == b"$8\r\nworkload\r\n")
+                .then_some(())
+        });
+        let wave = nodes[2]
+            .wave(
+                1,
+                WaveCommand::Plan(RebalanceCommand {
+                    partitions: vec![failed_partition, live_partition],
+                    drained: BTreeSet::from([members[0].node_id.clone()]),
+                }),
+            )
+            .unwrap();
+        assert_eq!(wave.tasks.len(), 2);
+        for (partition, target) in [(failed_partition, 1), (live_partition, 2)] {
+            let task = wave
+                .tasks
+                .iter()
+                .find(|task| task.partition == partition)
+                .unwrap();
+            assert_eq!(
+                task.target,
+                nodes[target].member(initial[target].generation)
+            );
+            assert!(!task.recovery);
+        }
+        wait_for("both automatic destinations become primary", || {
+            let status = nodes[2].status()?;
+            let published = status.wave.as_ref()?;
+            (published.id == wave.id && published.completed == 2).then_some(status)
+        })
+    });
+    assert!(drain_writes[&live_partition] > 0);
+    let last_owner = drained.promotions[&failed_partition].new_owner.clone();
+    let survivor = nodes[0].member(initial[0].generation);
+    let before = drained.promotions[&failed_partition].required.unwrap();
+    assert_eq!(before.version, 2);
+    assert_eq!(
+        resp(nodes[1].address, &[b"GET", &failed_key]).unwrap(),
+        b"$9\r\ncertified\r\n"
+    );
+    nodes[1].stop();
+    assert!(resp(nodes[1].address, &[b"GET", &failed_key]).is_err());
+    let (restored, fault_writes) = with_rebalance_load(nodes[2].address, &live_keys, || {
+        publish_json(&nodes[0].root.join("automatic-primary.json"), &true);
+        wait_for("automatic primary recovery and restored redundancy", || {
+            let status = nodes[0].status()?;
+            let wave = status.wave.as_ref()?;
+            let promotion = status.promotions.get(&failed_partition)?;
+            let repaired = status.repairs.get(&failed_partition)?;
+            (wave.completed == 1
+                && wave.tasks[0].recovery
+                && wave.tasks[0].source == last_owner
+                && promotion.new_owner == survivor
+                && repaired.owner == survivor
+                && repaired.target.node == members[2].node_id
+                && repaired.required == Some(before))
+            .then_some(status)
+        })
+    });
+    assert!(fault_writes[&live_partition] > 0);
+    assert_eq!(
+        restored.promotions[&failed_partition].required,
+        Some(before)
+    );
+    assert_eq!(
+        nodes[0]
+            .hc1(retained, "automatic-primary-retained")
+            .unwrap(),
+        ClientResponse::CasApplied { new_version: 2 },
+    );
+    let fresh = compare_and_set_for_key(&failed_key, b"certified", b"recovered");
+    let id = format!("w10e:{}:automatic-primary-fresh", restored.epoch);
+    for _ in 0..2 {
+        assert_eq!(
+            nodes[0].hc1(fresh.clone(), &id).unwrap(),
+            ClientResponse::CasApplied { new_version: 3 }
+        );
+    }
+    nodes[1].start();
+    let rejoined = wait_for("failed owner rejoins at a new generation", || {
+        let statuses = all_members(&nodes, restored.epoch)?;
+        (statuses[1].generation > initial[1].generation).then_some(statuses)
+    });
+    assert_eq!(
+        resp(nodes[1].address, &[b"GET", &failed_key]).unwrap(),
+        UNAVAILABLE
+    );
+    assert_eq!(
+        resp(nodes[1].address, &[b"SET", &failed_key, b"stale"]).unwrap(),
+        UNAVAILABLE
+    );
+    assert_eq!(
+        resp(nodes[0].address, &[b"GET", &failed_key]).unwrap(),
+        b"$9\r\nrecovered\r\n"
+    );
+    println!(
+        "W10f automatic drain_writes={} failure_writes={} killed_pid={} rejoined_pid={} old_generation={} new_generation={} recovery_epoch={} certified_version={} retry_version=3",
+        drain_writes[&live_partition], fault_writes[&live_partition], initial[1].pid,
+        rejoined[1].pid, initial[1].generation, rejoined[1].generation, restored.epoch, before.version,
+    );
 }
 
 #[test]

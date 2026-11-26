@@ -2580,6 +2580,85 @@ impl MemberReadHost {
             .await
     }
 
+    /// Select eligible primary destinations for the certified partitions on a drain list.
+    pub async fn plan_primary_drain(
+        &self,
+        partitions: &[hydracache::PartitionId],
+        drained: &BTreeSet<ClusterNodeId>,
+    ) -> CacheResult<Option<hydracache::PrimaryRebalanceWave>> {
+        let replica = self
+            .0
+            .value_replica
+            .get()
+            .ok_or_else(|| CacheError::Backend("staged value plane is not attached".into()))?;
+        let transport = self
+            .0
+            .network_sink
+            .as_deref()
+            .ok_or_else(|| CacheError::Backend("snapshot transport unavailable".into()))?;
+        replica
+            .plan_primary_drain(
+                &self.0.raft,
+                &self.0._message_sink,
+                transport,
+                RebalanceRequest {
+                    partitions,
+                    drained,
+                    health: &rebalance_health(&self.0.discovery),
+                },
+            )
+            .await
+    }
+
+    /// Start the staged RF2 owner failure watcher and the backup repair worker.
+    pub fn start_automatic_primary_failover(&self) -> CacheResult<()> {
+        let replica = self
+            .0
+            .value_replica
+            .get()
+            .cloned()
+            .ok_or_else(|| CacheError::Backend("staged value plane is not attached".into()))?;
+        if !replica.supports_primary_failover() {
+            return Err(CacheError::Backend(
+                "automatic primary failover requires RF2".into(),
+            ));
+        }
+        let transport = self
+            .0
+            .network_sink
+            .clone()
+            .ok_or_else(|| CacheError::Backend("snapshot transport unavailable".into()))?;
+        self.start_automatic_replica_rebalance()?;
+        if replica
+            .primary_failover_started
+            .swap(true, Ordering::AcqRel)
+        {
+            return Ok(());
+        }
+        let raft = self.0.raft.clone();
+        let sink = self.0._message_sink.clone();
+        let discovery = self.0.discovery.clone();
+        let mut shutdown = self.0.shutdown.subscribe();
+        self.0._runtime.as_ref().expect("member owns a runtime").spawn(async move {
+            let mut ticks = tokio::time::interval(Duration::from_secs(2));
+            ticks.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+            let mut samples = BackupObservations::default();
+            while !*shutdown.borrow() {
+                tokio::select! {
+                    _ = shutdown.changed() => return,
+                    _ = ticks.tick() => {}
+                }
+                tokio::select! {
+                    _ = shutdown.changed() => return,
+                    _ = replica.recover_failed_primaries(
+                        &raft, &sink, transport.as_ref(), &mut samples, rebalance_health(&discovery),
+                    ) => {}
+                }
+            }
+        });
+        Ok(())
+    }
+
     /// Fence the unfinished part of a wave, preserving committed movements.
     pub async fn cancel_primary_rebalance(
         &self,

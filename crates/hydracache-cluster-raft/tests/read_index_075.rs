@@ -683,11 +683,13 @@ async fn primary_wave_fences_other_owners_and_recovers_head_progress_and_cancell
             partition: first,
             source: source.clone(),
             target: target.clone(),
+            recovery: false,
         },
         PrimaryTransferTask {
             partition: second,
             source: next_source,
             target: next_target,
+            recovery: false,
         },
     ];
     let certificate = |partition, epoch, version, previous| PartitionValuePrefix {
@@ -816,4 +818,128 @@ async fn primary_wave_fences_other_owners_and_recovers_head_progress_and_cancell
         .unwrap();
     assert_eq!(complete.completed, 1);
     assert!(!complete.cancelled && complete.head().is_none());
+}
+
+#[tokio::test]
+async fn rf2_recovery_wave_requires_the_assigned_backup_and_exact_prefix() {
+    use hydracache::{
+        ClusterEpoch, ClusterReplicationStrategy, PartitionId, PartitionPromotion,
+        PartitionReplicaIdentity, PartitionReplicaRepair, PartitionValuePrefix,
+        PrimaryRebalanceCommand, PrimaryTransferTask, RendezvousClusterOwnership,
+    };
+    use hydracache_cluster_raft::RaftMetadataRuntime;
+
+    let raft = RaftMetadataRuntime::single_node("recovery-wave", 1).unwrap();
+    for node in ["a", "b", "c"] {
+        raft.join_member(ClusterCandidate::member(node))
+            .await
+            .unwrap();
+    }
+    let snapshot = raft.partition_snapshot().unwrap();
+    let partition = PartitionId::new(12);
+    let assignment = RendezvousClusterOwnership
+        .replicas_for_key("partition-12", &snapshot.members, 2)
+        .unwrap();
+    let identity = |node| {
+        let member = snapshot
+            .members
+            .iter()
+            .find(|member| member.node_id == node)
+            .unwrap();
+        PartitionReplicaIdentity {
+            node,
+            generation: member.generation,
+        }
+    };
+    let source = identity(assignment.primary);
+    let target = identity(assignment.backups[0].clone());
+    let spare = identity(
+        snapshot
+            .members
+            .iter()
+            .find(|member| member.node_id != source.node && member.node_id != target.node)
+            .unwrap()
+            .node_id
+            .clone(),
+    );
+    let bump = |epoch: ClusterEpoch| ClusterEpoch::new(epoch.value() + 1);
+    let id = bump(snapshot.epoch);
+    let prefix = PartitionValuePrefix {
+        partition,
+        epoch: snapshot.epoch,
+        version: 1,
+        previous: [0; 32],
+        digest: [1; 32],
+    };
+    raft.propose_value_prefix(prefix).unwrap();
+    let start = |target, sync_backups| PrimaryRebalanceCommand::Start {
+        id,
+        scope: [4; 32],
+        sync_backups,
+        tasks: vec![PrimaryTransferTask {
+            partition,
+            source: source.clone(),
+            target,
+            recovery: true,
+        }],
+    };
+    raft.propose_primary_rebalance(start(spare.clone(), 1))
+        .unwrap();
+    raft.propose_primary_rebalance(start(target.clone(), 2))
+        .unwrap();
+    assert!(raft
+        .partition_snapshot()
+        .unwrap()
+        .primary_rebalance
+        .is_none());
+    raft.propose_primary_rebalance(start(target.clone(), 1))
+        .unwrap();
+    let active = raft.partition_snapshot().unwrap();
+    assert_eq!(active.epoch, id);
+    assert!(active.primary_rebalance.unwrap().head().unwrap().recovery);
+    raft.propose_value_repair(PartitionReplicaRepair {
+        partition,
+        old_epoch: id,
+        new_epoch: bump(id),
+        owner: source.clone(),
+        replaced: target.clone(),
+        target: spare,
+        required: Some(prefix),
+        snapshot_digest: [8; 32],
+        prior_backups: Some(vec![target.clone()]),
+        wave: Some(id),
+    })
+    .unwrap();
+    let promote = |required, wave| PartitionPromotion {
+        partition,
+        old_epoch: id,
+        new_epoch: bump(id),
+        old_owner: source.clone(),
+        new_owner: target.clone(),
+        required: Some(required),
+        backups: vec![source.clone()],
+        wave,
+    };
+    raft.propose_value_promotion(promote(prefix, None)).unwrap();
+    raft.propose_value_promotion(promote(
+        PartitionValuePrefix {
+            digest: [2; 32],
+            ..prefix
+        },
+        Some(id),
+    ))
+    .unwrap();
+    assert_eq!(raft.partition_snapshot().unwrap().epoch, id);
+    raft.propose_value_promotion(promote(prefix, Some(id)))
+        .unwrap();
+    let durable = RaftMetadataRuntime::from_snapshot(raft.export_snapshot()).unwrap();
+    let applied = durable.partition_snapshot().unwrap();
+    assert_eq!(
+        applied.value_assignment(partition),
+        Some((target, vec![source]))
+    );
+    assert_eq!(applied.value_prefixes[&partition], prefix);
+    let wave = applied.primary_rebalance.unwrap();
+    assert_eq!(wave.completed, 1);
+    assert!(wave.tasks[0].recovery && wave.head().is_none());
 }

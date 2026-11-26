@@ -387,13 +387,7 @@ impl RaftPartitionSnapshot {
         required: Option<hydracache::PartitionValuePrefix>,
     ) -> Option<usize> {
         if self.applied_index != self.commit_index
-            || !primary_rebalance::allows_transfer(
-                self.primary_rebalance.as_ref(),
-                repair.wave,
-                repair.partition,
-                &repair.owner,
-                &repair.target,
-            )
+            || !primary_rebalance::allows_seed(self.primary_rebalance.as_ref(), repair)
         {
             return None;
         }
@@ -1707,6 +1701,9 @@ fn apply_partition_metadata(
                 promotions.get(&plan.partition),
                 repairs.get(&plan.partition),
                 plan,
+                wave.as_ref()
+                    .and_then(hydracache::PrimaryRebalanceWave::head)
+                    .is_some_and(|head| head.recovery),
             )
             && cluster.apply_partition_epoch(plan.old_epoch, plan.new_epoch)
         {
@@ -1721,13 +1718,7 @@ fn apply_partition_metadata(
         }
     }
     if let RaftMetadataCommand::ReplaceValueReplica(repair) = command {
-        if !primary_rebalance::allows_transfer(
-            wave.as_ref(),
-            repair.wave,
-            repair.partition,
-            &repair.owner,
-            &repair.target,
-        ) {
+        if !primary_rebalance::allows_seed(wave.as_ref(), repair) {
             return;
         }
         let slot = value_repair_slot(
@@ -1810,6 +1801,7 @@ fn valid_promotion(
     previous: Option<&hydracache::PartitionPromotion>,
     repair: Option<&hydracache::PartitionReplicaRepair>,
     plan: &hydracache::PartitionPromotion,
+    reserve_retired_owner: bool,
 ) -> bool {
     use hydracache::ClusterReplicationStrategy;
     if !(1..=2).contains(&plan.backups.len()) || plan.old_owner.node == plan.new_owner.node {
@@ -1820,9 +1812,9 @@ fn valid_promotion(
         .chain(&plan.backups)
         .any(|identity| {
             !destinations.insert(&identity.node)
-                || !members.iter().any(|member| {
+                || !(members.iter().any(|member| {
                     member.node_id == identity.node && member.generation == identity.generation
-                })
+                }) || (reserve_retired_owner && identity == &plan.old_owner))
         })
     {
         return false;

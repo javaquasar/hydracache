@@ -168,6 +168,9 @@ pub struct PrimaryTransferTask {
     pub partition: super::PartitionId,
     pub source: PartitionReplicaIdentity,
     pub target: PartitionReplicaIdentity,
+    /// Recover from an unavailable owner using an already certified backup.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub recovery: bool,
 }
 
 /// Raft authority for an ordered group of primary transfers.

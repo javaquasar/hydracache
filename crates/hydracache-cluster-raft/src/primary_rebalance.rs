@@ -23,6 +23,22 @@ pub(super) fn allows_transfer(
     }
 }
 
+pub(super) fn allows_seed(
+    wave: Option<&PrimaryRebalanceWave>,
+    repair: &PartitionReplicaRepair,
+) -> bool {
+    !wave
+        .and_then(PrimaryRebalanceWave::head)
+        .is_some_and(|head| head.recovery)
+        && allows_transfer(
+            wave,
+            repair.wave,
+            repair.partition,
+            &repair.owner,
+            &repair.target,
+        )
+}
+
 pub(super) fn placement(
     partition: PartitionId,
     backups: usize,
@@ -132,7 +148,6 @@ pub(super) fn apply_control(
                 seen.insert(task.partition)
                     && prefixes.contains_key(&task.partition)
                     && task.source.node != task.target.node
-                    && admit(&task.source)
                     && admit(&task.target)
                     && placement(
                         task.partition,
@@ -141,7 +156,14 @@ pub(super) fn apply_control(
                         promotions.get(&task.partition),
                         repairs.get(&task.partition),
                     )
-                    .is_some_and(|(owner, _)| owner == task.source)
+                    .is_some_and(|(owner, backups)| {
+                        owner == task.source
+                            && if task.recovery {
+                                *sync_backups == 1 && backups.contains(&task.target)
+                            } else {
+                                admit(&task.source)
+                            }
+                    })
             }) || !cluster.apply_partition_epoch(epoch, *id)
             {
                 return;
