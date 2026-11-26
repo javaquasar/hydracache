@@ -1565,6 +1565,7 @@ test("write_path_models_show_owners_and_acknowledgements", async ({ page }) => {
   await page.getByTestId("push-client-a").click();
   await expect(page.locator(".write-row").first()).toContainText("acks 2/2 at ALL · acknowledged");
 
+  await expect(page.getByTestId("repair-counters")).toContainText("Hints held 0");
   await page.getByTestId("tab-data").click();
   const row = page.locator(".key-grid tr", { hasText: "profiles:profile-42" });
   await expect(row.locator(".replica.not-owner")).toHaveCount(1);
@@ -1577,6 +1578,35 @@ test("write_path_models_show_owners_and_acknowledgements", async ({ page }) => {
   await expect(page.getByTestId("replication-disclosure")).toContainText("product default");
   await page.getByTestId("push-client-a").click();
   await expect(page.locator(".write-row").first()).toContainText("acks 1/1 · acknowledged");
+});
+
+// TD-0016 step 3b: with RF 3 on three nodes every node owns every key, so a
+// crashed node always misses the copy: its primary keeps a hint, and replays
+// it when the node restarts.
+test("a_crashed_owner_gets_a_hint_replayed_on_restart", async ({ page }) => {
+  await openFormed(page);
+  await page.getByTestId("workload-toggle").uncheck();
+  await page.getByTestId("tab-clients").click();
+  await page.getByTestId("replication-model").selectOption("replicated");
+  await page.getByTestId("replication-factor").fill("3");
+  await page.getByTestId("write-level").selectOption("one");
+  await page.getByTestId("apply-replication").click();
+  await page.getByTestId("add-client-button").click();
+  const member = (await page.locator("[data-client='client-a'] .entity-meta").textContent()).split("via ")[1].trim();
+  const down = ["node-0", "node-1", "node-2"].find((node) => node !== member);
+  await page.getByTestId("tab-cluster").click();
+  await page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" }).nth(Number(down.split("-")[1])).click();
+  await expect(page.locator(`.vertex.node[aria-label^="${down},"]`)).toHaveClass(/role-crashed/);
+  await page.getByTestId("tab-clients").click();
+  await page.getByTestId("push-client-a").click();
+  await expect(page.locator(".write-row").first()).toContainText(`hint held for ${down}`);
+  await expect(page.getByTestId("repair-counters")).toContainText("Hints held 1");
+
+  await page.getByTestId("tab-cluster").click();
+  await page.getByTestId("nodes-panel").getByRole("button", { name: "Restart" }).click();
+  for (let index = 0; index < 4; index += 1) await page.getByTestId("step").click();
+  await page.getByTestId("tab-clients").click();
+  await expect(page.getByTestId("repair-counters")).toContainText("Hints held 0 · replayed 1");
 });
 
 // A new client is a Raft metadata commit: with no leader the engine refuses it

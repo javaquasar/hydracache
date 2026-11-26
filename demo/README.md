@@ -72,8 +72,16 @@ guarantee.
     product's reason.
 
   The product ships those primitives but no runtime replicated write path, so
-  *replicated* is a model, not shipped behaviour. Hinted handoff and repair are
-  not modeled yet: a copy lost in flight leaves its write pending.
+  *replicated* is a model, not shipped behaviour.
+- **Hints and repair are simulator models** (snapshot schema 12; counters under
+  *Write path*):
+  - a primary keeps a hint for a backup it cannot reach, and replays it when
+    the backup returns;
+  - copies apply by version, so a late copy never overwrites a newer value;
+  - an anti-entropy pass every 5 steps repairs lost copies.
+
+  They follow the product's hinted-handoff rules, but the product hint store
+  and merkle repair are not compiled into the simulator.
 
 ### Visualization only — no engine meaning
 

@@ -207,7 +207,7 @@ Two side effects are worth noting. Every client-facing test now starts from a fo
 which is what the product requires anyway. And the push animation lost a hop: the request travels
 only along the writer's own link, because that member is where the engine applies the write.
 
-## Step 3: model the protocol with product primitives, behind an explicit mode (done, except hints)
+## Step 3: model the protocol with product primitives, behind an explicit mode (done)
 
 The simulator's data plane is a product type, `ClusterNode`, that broadcasts every write to every
 peer. It was built to exercise faults and linearizability, not placement. The product has the
@@ -234,9 +234,19 @@ path that wires them into a write. That gap matters for honesty, so it shapes th
 - `replicated` is labelled in the demo as **the model of the opt-in replication primitives**, not
   as shipped runtime behaviour.
 
-One planned piece is not done yet: hinted handoff for a replica that is down, and the repair that
-follows. Until then, a copy lost in flight leaves its write pending, and the page shows that rather
-than hiding it.
+Step 3b then added what a lost copy needs:
+
+- a primary that cannot reach a backup keeps a **hint** and replays it when the backup returns.
+  Hints are lost with a crashed holder, as with the product's in-memory store;
+- copies apply **by version**: a late hint or an older invalidation is acknowledged but never
+  overwrites a newer value. The first test of this caught a real race, a hint and a newer write
+  in flight together;
+- an **anti-entropy pass** repairs copies lost in flight.
+
+These three rules are modeled in the simulator, not compiled from the product. The product's
+hint store and version merge depend on value-record types that do not build for the browser yet.
+That is recorded as a gap of its own, so the next step is obvious: move those types the way step 1
+moved the consistency levels.
 
 That last point is the general lesson. When a simulator is ahead of the product, it is a design
 tool, which is fine, but the page has to say so.

@@ -6,7 +6,10 @@ use hydracache::{
     OutboundClusterMessage, RegionId, Replicas, StorageOpKind,
 };
 
-use crate::replication::{grid_write_id, level_name, GridWrite, GridWriteStatus};
+use crate::replication::{
+    grid_write_id, level_name, GridWrite, GridWriteStatus, RepairStats, SimHint,
+    MAX_HINTS_PER_TARGET, REPAIR_INTERVAL_STEPS,
+};
 use crate::snapshot::SIM_REGION;
 #[cfg(not(target_arch = "wasm32"))]
 use crate::SimRaftCluster;
@@ -168,6 +171,13 @@ pub struct SimWorld {
     sessions: BTreeMap<String, ClientSession>,
     replication: SimReplicationModel,
     grid_writes: BTreeMap<u64, GridWrite>,
+    hints: Vec<SimHint>,
+    /// Hint copies on their way to their target, by (write, target).
+    hints_in_flight: BTreeSet<(u64, ClusterNodeId)>,
+    /// Newest routed write each node applied per key: copies are versioned,
+    /// so an older one never overwrites a newer value.
+    applied_write: BTreeMap<(ClusterNodeId, String), u64>,
+    repair_stats: RepairStats,
     next_grid_write: u64,
     crashed_nodes: BTreeSet<ClusterNodeId>,
     isolated_nodes: BTreeSet<ClusterNodeId>,
@@ -239,6 +249,10 @@ impl SimWorld {
             sessions: BTreeMap::new(),
             replication: SimReplicationModel::default(),
             grid_writes: BTreeMap::new(),
+            hints: Vec::new(),
+            hints_in_flight: BTreeSet::new(),
+            applied_write: BTreeMap::new(),
+            repair_stats: RepairStats::default(),
             next_grid_write: 1,
             crashed_nodes: BTreeSet::new(),
             isolated_nodes: BTreeSet::new(),
@@ -293,6 +307,10 @@ impl SimWorld {
         self.tick_nodes();
         self.issue_smoke_workload();
         self.drain_node_effects();
+        // After storage applied this step's deliveries, so a hint sees what
+        // its target already holds.
+        self.replay_hints();
+        self.repair_pass();
         self.fail_unreachable_writes();
         self.deliver_subscriber_events();
         self.refresh_invariant_report();
@@ -783,6 +801,7 @@ impl SimWorld {
             required_acks,
             acks: 0,
             backups_applied: BTreeSet::new(),
+            hinted: BTreeSet::new(),
             status: GridWriteStatus::Pending,
             started_at_step: self.steps,
             acknowledged_at_step: None,
@@ -861,12 +880,186 @@ impl SimWorld {
         if *primary == coordinator {
             // Local apply: the product node acknowledges to the sender, here
             // itself; `send_outbound` counts that acknowledgement directly.
+            self.applied_write
+                .insert((primary.clone(), write.key.clone()), id);
             if let Some(node) = self.nodes.get_mut(primary) {
                 node.node.handle_message(coordinator.clone(), put.clone());
             }
         }
         for backup in backups {
-            self.send_one(primary.clone(), backup, put.clone());
+            if self.reachable(primary, &backup) {
+                self.send_one(primary.clone(), backup, put.clone());
+            } else {
+                self.store_hint(id, primary, backup);
+            }
+        }
+    }
+
+    /// Whether `from` can send to `to` now: both live and the link up. This
+    /// is the primary's failure detector; the simulator's is perfect.
+    fn reachable(&self, from: &ClusterNodeId, to: &ClusterNodeId) -> bool {
+        let live = self.live_node_ids();
+        live.contains(from) && live.contains(to) && self.network.can_deliver(from, to)
+    }
+
+    /// Keep a hint for a backup the primary cannot reach. The write was
+    /// validated against the live owners, so this backup's acknowledgement
+    /// is not required by the level (the product's `RequiredReplicaMiss`
+    /// refusal happened before the write started).
+    fn store_hint(&mut self, id: u64, holder: &ClusterNodeId, target: ClusterNodeId) {
+        let Some(write) = self.grid_writes.get_mut(&id) else {
+            return;
+        };
+        let held = self
+            .hints
+            .iter()
+            .filter(|hint| hint.holder == *holder && hint.target == target)
+            .count();
+        if held >= MAX_HINTS_PER_TARGET {
+            self.repair_stats.hints_dropped = self.repair_stats.hints_dropped.saturating_add(1);
+            self.trace
+                .push(format!("hint_dropped:{id}:{target}:over_budget"));
+            return;
+        }
+        write.hinted.insert(target.clone());
+        self.hints.push(SimHint {
+            write: id,
+            key: write.key.clone(),
+            value: write.value.clone(),
+            holder: holder.clone(),
+            target: target.clone(),
+            created_at_step: self.steps,
+        });
+        self.repair_stats.hints_stored = self.repair_stats.hints_stored.saturating_add(1);
+        self.trace
+            .push(format!("hint_stored:{id}:{holder}->{target}"));
+    }
+
+    /// Replay hints whose target is reachable again, in the order they were
+    /// stored. A hint is lost with a holder that is down (the product hint
+    /// store is in memory) and suppressed when the target already applied a
+    /// newer write of the same key.
+    fn replay_hints(&mut self) {
+        if self.hints.is_empty() {
+            return;
+        }
+        let live = self.live_node_ids();
+        let hints = std::mem::take(&mut self.hints);
+        let mut kept = Vec::new();
+        for hint in hints {
+            let holder_down = self.crashed_nodes.contains(&hint.holder)
+                || self.disabled_nodes.contains(&hint.holder);
+            if holder_down {
+                self.repair_stats.hints_dropped = self.repair_stats.hints_dropped.saturating_add(1);
+                self.record(format!(
+                    "hint_dropped:{}:{}:holder_down",
+                    hint.write, hint.target
+                ));
+                continue;
+            }
+            if !(live.contains(&hint.holder)
+                && live.contains(&hint.target)
+                && self.network.can_deliver(&hint.holder, &hint.target))
+            {
+                kept.push(hint);
+                continue;
+            }
+            // Product `apply_hint`: a hint never overwrites a newer value the
+            // target already holds.
+            let current = self
+                .nodes
+                .get(&hint.target)
+                .and_then(|node| node.storage.visible_checksums().get(&hint.key).copied());
+            let newer = self.grid_writes.values().any(|write| {
+                write.key == hint.key
+                    && write.id > hint.write
+                    && Some(value_version(&write.value)) == current
+            });
+            if newer {
+                self.repair_stats.hints_suppressed =
+                    self.repair_stats.hints_suppressed.saturating_add(1);
+                self.record(format!("hint_suppressed:{}:{}", hint.write, hint.target));
+                continue;
+            }
+            self.repair_stats.hints_replayed = self.repair_stats.hints_replayed.saturating_add(1);
+            self.record(format!(
+                "hint_replayed:{}:{}->{}",
+                hint.write, hint.holder, hint.target
+            ));
+            let sequence = hint.sequence();
+            if let Some(write) = self.grid_writes.get_mut(&hint.write) {
+                write.hinted.remove(&hint.target);
+            }
+            self.hints_in_flight
+                .insert((hint.write, hint.target.clone()));
+            self.send_one(
+                hint.holder,
+                hint.target,
+                ClusterNodeMessage::ReplicatePut {
+                    key: hint.key,
+                    value: hint.value,
+                    sequence,
+                },
+            );
+        }
+        self.hints.extend(kept);
+    }
+
+    /// Anti-entropy, every `REPAIR_INTERVAL_STEPS`: for each key with a
+    /// finished routed write, the acting primary copies the latest value to
+    /// any live, reachable owner that holds something else and has no hint
+    /// pending for it. This closes copies lost in flight and dropped hints. A
+    /// model of the product's repair (merkle comparison is not simulated).
+    fn repair_pass(&mut self) {
+        if !self.replication.is_routed()
+            || self.steps == 0
+            || !self.steps.is_multiple_of(REPAIR_INTERVAL_STEPS)
+        {
+            return;
+        }
+        let mut latest = BTreeMap::<String, u64>::new();
+        for write in self.grid_writes.values() {
+            if write.status != GridWriteStatus::Pending {
+                latest.insert(write.key.clone(), write.id);
+            }
+        }
+        let mut copies = Vec::new();
+        for id in latest.into_values() {
+            let write = &self.grid_writes[&id];
+            let version = value_version(&write.value);
+            let holds = |node: &ClusterNodeId| {
+                self.nodes
+                    .get(node)
+                    .and_then(|sim| sim.storage.visible_checksums().get(&write.key).copied())
+                    == Some(version)
+            };
+            let source = write.replicas.primary.clone();
+            if !holds(&source) {
+                continue;
+            }
+            for target in write.replicas.backups.iter() {
+                let hinted = self
+                    .hints
+                    .iter()
+                    .any(|hint| hint.write == id && hint.target == *target);
+                if !hinted && !holds(target) && self.reachable(&source, target) {
+                    copies.push((
+                        source.clone(),
+                        target.clone(),
+                        ClusterNodeMessage::ReplicatePut {
+                            key: write.key.clone(),
+                            value: write.value.clone(),
+                            sequence: write.sequence(),
+                        },
+                    ));
+                }
+            }
+        }
+        self.repair_stats.last_repair_step = Some(self.steps);
+        for (from, to, message) in copies {
+            self.repair_stats.repair_copies = self.repair_stats.repair_copies.saturating_add(1);
+            self.record(format!("repair_copy:{from}->{to}"));
+            self.send_one(from, to, message);
         }
     }
 
@@ -1285,6 +1478,17 @@ impl SimWorld {
                 })
                 .collect(),
             replication: self.replication_view(),
+            hints: self.hints.iter().map(SimHint::view).collect(),
+            repair: crate::snapshot::RepairView {
+                interval_steps: REPAIR_INTERVAL_STEPS,
+                last_run_step: self.repair_stats.last_repair_step,
+                hints_stored: self.repair_stats.hints_stored,
+                hints_replayed: self.repair_stats.hints_replayed,
+                hints_suppressed: self.repair_stats.hints_suppressed,
+                hints_dropped: self.repair_stats.hints_dropped,
+                repair_copies: self.repair_stats.repair_copies,
+                disclosure: "simulator model of the product hinted-handoff rules and of anti-entropy repair; the product hint store and merkle repair are not compiled into the simulator".to_owned(),
+            },
             writes: {
                 let mut writes = self
                     .grid_writes
@@ -1558,6 +1762,9 @@ impl SimWorld {
                 self.network.record_target_down(&from, &to);
                 continue;
             }
+            if self.drop_stale_copy(&from, &to, &message) {
+                continue;
+            }
             let routed = self.routed_delivery(&from, &to, &message);
             if let Some(target) = self.nodes.get_mut(&to) {
                 target.node.handle_message(from.clone(), message);
@@ -1568,6 +1775,47 @@ impl SimWorld {
                 None => {}
             }
         }
+    }
+
+    /// Versioned apply for routed copies and invalidations (the product's
+    /// replicated records merge by version): a copy of an older write than the
+    /// one `to` already applied for the key is acknowledged but not applied. A
+    /// suppressed hint replay is counted, as the product `apply_hint` does.
+    fn drop_stale_copy(
+        &mut self,
+        from: &ClusterNodeId,
+        to: &ClusterNodeId,
+        message: &ClusterNodeMessage,
+    ) -> bool {
+        let (key, sequence) = match message {
+            ClusterNodeMessage::ReplicatePut { key, sequence, .. }
+            | ClusterNodeMessage::ReplicateInvalidate { key, sequence } => (key, *sequence),
+            _ => return false,
+        };
+        let Some(id) = grid_write_id(sequence) else {
+            return false;
+        };
+        let was_hint = self.hints_in_flight.remove(&(id, to.clone()));
+        let slot = (to.clone(), key.clone());
+        if self
+            .applied_write
+            .get(&slot)
+            .is_some_and(|newest| *newest > id)
+        {
+            if was_hint {
+                self.repair_stats.hints_suppressed =
+                    self.repair_stats.hints_suppressed.saturating_add(1);
+            }
+            self.record(format!("stale_copy_skipped:{id}:{to}"));
+            self.send_one(
+                to.clone(),
+                from.clone(),
+                ClusterNodeMessage::Ack { sequence },
+            );
+            return true;
+        }
+        self.applied_write.insert(slot, id);
+        false
     }
 
     /// Whether a delivered message is a step of a routed write: the forward to

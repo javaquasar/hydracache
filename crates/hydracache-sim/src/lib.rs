@@ -74,11 +74,12 @@ pub use schedule::{
 #[cfg(not(target_arch = "wasm32"))]
 pub use sim_raft::{SimRaftCluster, SimRaftError, SimRaftInFlightKey, SimRaftResult};
 pub use snapshot::{
-    AdmittedClientView, ClientView, ConsistencyLevelView, ConvergenceView, GridWriteView,
+    AdmittedClientView, ClientView, ConsistencyLevelView, ConvergenceView, GridWriteView, HintView,
     KeyOwnersView, KeyReplicaView, KeyView, LinkDropsView, LinkStateView, LinkView, MessageView,
-    NodeView, ProgressView, RebalanceView, ReplicationView, SimSnapshot, SimSnapshotDecodeError,
-    SnapshotOverBudgetView, SubscriberEventView, SubscriberView, SyncProgressView, VerdictView,
-    MAX_IN_FLIGHT_RENDERED, MAX_SUBSCRIBER_BUFFER, SIM_SNAPSHOT_SCHEMA_VERSION,
+    NodeView, ProgressView, RebalanceView, RepairView, ReplicationView, SimSnapshot,
+    SimSnapshotDecodeError, SnapshotOverBudgetView, SubscriberEventView, SubscriberView,
+    SyncProgressView, VerdictView, MAX_IN_FLIGHT_RENDERED, MAX_SUBSCRIBER_BUFFER,
+    SIM_SNAPSHOT_SCHEMA_VERSION,
 };
 pub use soak::{
     minimal_failing_steps, minimal_failing_steps_by, run_soak, run_soak_with_seed_runner,

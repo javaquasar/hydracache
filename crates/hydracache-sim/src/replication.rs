@@ -24,6 +24,56 @@ pub(crate) const GRID_SEQUENCE_BASE: u64 = 1 << 40;
 /// Number of finished writes the snapshot keeps for display.
 pub(crate) const MAX_WRITES_RENDERED: usize = 16;
 
+/// Hints one primary may hold for one target before it drops the newest and
+/// leaves the key to repair (the product `HintBudget` caps count and bytes).
+pub(crate) const MAX_HINTS_PER_TARGET: usize = 32;
+
+/// Steps between anti-entropy passes that copy a key's latest routed value to
+/// a live owner that lacks it.
+pub(crate) const REPAIR_INTERVAL_STEPS: u64 = 5;
+
+/// A copy the primary could not send because the backup was down or cut off.
+/// Mirrors the product `Hint` semantics: held by the sender, replayed when the
+/// target is reachable again, suppressed when the target already applied a
+/// newer write of the key, lost with its holder (the product store is in
+/// memory), and dropped over budget with the key left to repair.
+#[derive(Debug, Clone)]
+pub(crate) struct SimHint {
+    pub(crate) write: u64,
+    pub(crate) key: String,
+    pub(crate) value: Vec<u8>,
+    pub(crate) holder: ClusterNodeId,
+    pub(crate) target: ClusterNodeId,
+    pub(crate) created_at_step: u64,
+}
+
+impl SimHint {
+    pub(crate) fn sequence(&self) -> u64 {
+        GRID_SEQUENCE_BASE + self.write
+    }
+
+    pub(crate) fn view(&self) -> crate::snapshot::HintView {
+        crate::snapshot::HintView {
+            write: self.write,
+            key: self.key.clone(),
+            holder: self.holder.to_string(),
+            target: self.target.to_string(),
+            created_at_step: self.created_at_step,
+        }
+    }
+}
+
+/// Counters for hinted handoff and repair.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub(crate) struct RepairStats {
+    pub(crate) hints_stored: u64,
+    pub(crate) hints_replayed: u64,
+    pub(crate) hints_suppressed: u64,
+    pub(crate) hints_dropped: u64,
+    pub(crate) repair_copies: u64,
+    pub(crate) last_repair_step: Option<u64>,
+}
+
 /// Which write path a manual push follows.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
@@ -101,6 +151,8 @@ pub(crate) struct GridWrite {
     pub(crate) acks: u64,
     /// Backups whose copy the primary has seen acknowledged.
     pub(crate) backups_applied: BTreeSet<ClusterNodeId>,
+    /// Backups the primary holds a hint for instead of a sent copy.
+    pub(crate) hinted: BTreeSet<ClusterNodeId>,
     pub(crate) status: GridWriteStatus,
     pub(crate) started_at_step: u64,
     pub(crate) acknowledged_at_step: Option<u64>,
@@ -141,6 +193,7 @@ impl GridWrite {
                 .iter()
                 .map(ToString::to_string)
                 .collect(),
+            hinted: self.hinted.iter().map(ToString::to_string).collect(),
             level: self.level.map(level_name).map(str::to_owned),
             required_acks: self.required_acks,
             acks: self.acks,

@@ -9,7 +9,9 @@ Open — recorded 2026-11-25.
   `ClientUpsert` that fails loud without a leader.
 - Step 3 is done (2026-11-26, snapshot schema 11). It closes G3 and G4: `local_first` and
   `replicated` write paths use the product placement and acknowledgement rules.
-- Still open: G3′, G4′ (hints and repair), G5 and G7′.
+- Step 3b is done (2026-11-26, snapshot schema 12). It closes G4′: hints for unreachable backups,
+  versioned apply, and anti-entropy repair.
+- Still open: G3′, G4″ (the hint and repair rules are modeled, not product code), G5 and G7′.
 
 Owner: simulator / demo.
 
@@ -19,7 +21,7 @@ The simulator gets elections right: real raft-rs on native targets, a labelled m
 in wasm. Its data plane does not follow the product. The full comparison, with code
 references, is the gap register in
 [`docs/architecture/RAFT_CONTROL_PLANE.md`](../architecture/RAFT_CONTROL_PLANE.md#gap-register)
-(gaps G3′, G4′, G5 and G7′ are open; G1–G4, G6, G7 and G8 are closed).
+(gaps G3′, G4″, G5 and G7′ are open; G1–G4, G4′, G6, G7 and G8 are closed).
 
 In short:
 

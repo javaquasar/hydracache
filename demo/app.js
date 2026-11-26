@@ -990,7 +990,8 @@ function renderReplication(snapshot) {
     const meta = document.createElement("span");
     meta.className = "entity-meta";
     const level = write.level ? ` at ${write.level.toUpperCase()}` : "";
-    meta.textContent = `${write.client}: ${path}${backups} · acks ${write.acks}/${write.required_acks}${level} · ${write.status}`;
+    const hinted = (write.hinted || []).length ? ` · hint held for ${write.hinted.join(", ")}` : "";
+    meta.textContent = `${write.client}: ${path}${backups} · acks ${write.acks}/${write.required_acks}${level} · ${write.status}${hinted}`;
     row.append(title, meta);
     if (write.reason) {
       const reason = document.createElement("span");
@@ -1009,7 +1010,23 @@ function renderReplication(snapshot) {
       ),
     );
   }
-  el.replicationPanel.replaceChildren(note, list);
+  const parts = [note];
+  const repair = snapshot.repair;
+  if (repair && replication.model !== "full_broadcast") {
+    // Hinted handoff and anti-entropy are simulator models of the product
+    // rules (schema 12); say so next to the counters.
+    const counters = document.createElement("p");
+    counters.className = "panel-note";
+    counters.setAttribute("data-testid", "repair-counters");
+    const held = (snapshot.hints || []).length;
+    counters.textContent =
+      `Hints held ${held} · replayed ${repair.hints_replayed} · suppressed ${repair.hints_suppressed} · dropped ${repair.hints_dropped}` +
+      ` · repair copies ${repair.repair_copies} (a pass every ${repair.interval_steps} steps${repair.last_run_step == null ? "" : `, last at step ${repair.last_run_step}`}).`;
+    counters.title = repair.disclosure;
+    parts.push(counters);
+  }
+  parts.push(list);
+  el.replicationPanel.replaceChildren(...parts);
 }
 
 function emptyState(text, actionLabel, testId, onAction) {
@@ -2580,7 +2597,9 @@ function renderTabPanels(snapshot) {
   paintPanel("verdict-panel", "verdict", verdictPanelSignature(snapshot), () => renderVerdictPanel(snapshot));
   paintPanel("signals", "cluster", JSON.stringify([(snapshot.in_flight || []).slice(0, 8), snapshot.over_budget]), () => renderSignals(snapshot));
   paintPanel("clients", "clients", JSON.stringify([snapshot.clients, snapshot.subscribers]), () => renderClients(snapshot));
-  paintPanel("replication", "clients", JSON.stringify([snapshot.replication, snapshot.writes]), () => renderReplication(snapshot));
+  paintPanel("replication", "clients", JSON.stringify([snapshot.replication, snapshot.writes, snapshot.hints, snapshot.repair]), () =>
+    renderReplication(snapshot),
+  );
   paintPanel("consistency", "data", consistencySignature(snapshot), () => renderConsistency(snapshot));
   paintPanel("keys", "data", keysSignature(snapshot), () => renderKeys(snapshot));
 }

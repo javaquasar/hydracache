@@ -62,7 +62,7 @@ fn raft_snapshot_uses_existing_schema_version() {
     world.run(20);
     let snapshot = world.snapshot();
 
-    assert_eq!(SIM_SNAPSHOT_SCHEMA_VERSION, 11);
+    assert_eq!(SIM_SNAPSHOT_SCHEMA_VERSION, 12);
     assert_eq!(snapshot.schema_version, SIM_SNAPSHOT_SCHEMA_VERSION);
     assert_eq!(snapshot.election_source, "raft");
 }

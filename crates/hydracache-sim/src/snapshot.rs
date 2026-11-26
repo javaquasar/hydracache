@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Current stable simulator snapshot JSON schema version.
-pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 11;
+pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 12;
 
 /// Region every simulator node reports; the simulator models one region.
 pub(crate) const SIM_REGION: &str = "local";
@@ -61,6 +61,10 @@ pub struct SimSnapshot {
     /// Recent routed writes with their owners and acknowledgements (schema 11);
     /// empty in the `full_broadcast` model.
     pub writes: Vec<GridWriteView>,
+    /// Hints primaries hold for unreachable backups (schema 12).
+    pub hints: Vec<HintView>,
+    /// Hinted-handoff and repair counters (schema 12).
+    pub repair: RepairView,
     /// Cluster sync progress visible to manual/topology modes.
     pub sync_progress: Vec<SyncProgressView>,
     /// Current deterministic rebalance/reshard progress.
@@ -113,6 +117,17 @@ impl SimSnapshot {
                 disclosure: "history-only snapshots do not include a write path".to_owned(),
             },
             writes: Vec::new(),
+            hints: Vec::new(),
+            repair: RepairView {
+                interval_steps: 0,
+                last_run_step: None,
+                hints_stored: 0,
+                hints_replayed: 0,
+                hints_suppressed: 0,
+                hints_dropped: 0,
+                repair_copies: 0,
+                disclosure: "history-only snapshots do not include repair".to_owned(),
+            },
             sync_progress: Vec::new(),
             rebalance: None,
             mode: "manual".to_owned(),
@@ -309,6 +324,42 @@ pub struct ReplicationView {
     pub disclosure: String,
 }
 
+/// A hint a primary holds for a backup it could not reach (schema 12).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct HintView {
+    /// Write the hint carries.
+    pub write: u64,
+    /// Namespaced key.
+    pub key: String,
+    /// Node holding the hint (the write's primary).
+    pub holder: String,
+    /// Backup the copy is for.
+    pub target: String,
+    /// Step the hint was stored.
+    pub created_at_step: u64,
+}
+
+/// Hinted-handoff and repair counters (schema 12).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RepairView {
+    /// Steps between anti-entropy passes.
+    pub interval_steps: u64,
+    /// Step of the last pass, if any ran.
+    pub last_run_step: Option<u64>,
+    /// Hints stored.
+    pub hints_stored: u64,
+    /// Hints replayed to a returning backup.
+    pub hints_replayed: u64,
+    /// Hints dropped because the backup already had a newer write.
+    pub hints_suppressed: u64,
+    /// Hints lost with their holder or over budget (the key is left to repair).
+    pub hints_dropped: u64,
+    /// Copies sent by anti-entropy passes.
+    pub repair_copies: u64,
+    /// Disclosure for demo surfaces.
+    pub disclosure: String,
+}
+
 /// One routed manual write (schema 11).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GridWriteView {
@@ -326,6 +377,8 @@ pub struct GridWriteView {
     pub backups: Vec<String>,
     /// Backups whose copy the primary has seen acknowledged.
     pub backups_applied: Vec<String>,
+    /// Backups that got a hint instead of a copy (schema 12).
+    pub hinted: Vec<String>,
     /// Acknowledgement level (`replicated` only).
     pub level: Option<String>,
     /// Acknowledgements the level requires.
