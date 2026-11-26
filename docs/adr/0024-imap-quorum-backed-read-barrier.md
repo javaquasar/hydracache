@@ -72,9 +72,25 @@ D2/D3 must add a dedicated server integration target, `imap_read_barrier_075`, c
 - equivalent HC/1, HC/2 and RESP outcomes through the admitted backend.
 
 The planned command is `cargo test -p hydracache-server --test imap_read_barrier_075 --locked`.
-That target is not implemented by this ADR. Existing model receipts and a documentation pass
-cannot replace these production tests. Public member-mode map capability stays fail-closed
-until its backend, protocol and release gates pass.
+The production test target and its acceptance remain pending. Public member-mode map capability
+stays fail-closed until its backend, protocol and release gates pass.
+
+### Server test scenarios
+
+Use the server's admitted backend through the production dispatcher. Drive the owner lane and
+the quorum test double with explicit barriers, and record the order of proof issuance, topology
+change, prefix publication, and lookup. Assert zero store lookups on every rejected path. Use
+deterministic time for deadline tests.
+
+| Planned test | Fixture and decisive check |
+| --- | --- |
+| `isolated_former_owner_refuses_retained_value` | Store a value before isolating the old owner. Route a read to it with the original epoch and cached route. Assert explicit refusal and zero lookups on that owner. |
+| `read_waits_for_both_applied_prefixes` | Complete quorum confirmation at index N while the owner has applied N−1, then separately hold the value prefix below its floor. Release each independently. Require both to reach their floors before the sole lookup. |
+| `proof_is_bound_to_the_original_invocation` | Supply a proof from another epoch, partition, or request identity. Include a second request with the same key after the first succeeds. Each mismatch refuses lookup. |
+| `owner_transition_and_lookup_share_the_lane` | Pause after proof issuance, then promote before the old owner's lookup can enter its lane. Require refusal. Reverse the schedule to check that a read linearized before the transition can succeed. |
+| `promoted_owner_requires_admitted_value_prefix` | Give the promoted node the new epoch while withholding its required value prefix. Prove refusal, then install that prefix and prove a fresh read returns the acknowledged value. |
+| `cancel_or_deadline_releases_the_waiting_invocation` | Hold the proof request pending. In separate cases cancel the client and advance the deadline. Assert bounded queue and transport permits return, a late proof has no effect, and a new invocation can complete. |
+| `hc1_hc2_resp_preserve_read_authority_outcomes` | Run the same success and stale-owner cases over real HC/1, HC/2 and RESP entry points. Compare the contract outcome, request correlation, and per-attempt lookup trace. |
 
 ## Compatibility
 
