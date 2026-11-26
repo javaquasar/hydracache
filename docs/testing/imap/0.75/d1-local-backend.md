@@ -70,6 +70,22 @@ was exhausted by client and server sockets. That diagnostic attempt was retained
 owned test process stopped; the repeat raises only its own limit, without changing host
 configuration or reducing test cardinality.
 
+## AX42 placement confirmation
+
+The 26 November placement check used the original B74 and static-candidate build records from
+the `89ec8970c66df1ae03b7a58bca3d6a7be573cf93` comparison. On the new AX42 profile the Tokio
+worker ran on physical core 3 and the main thread on physical core 4. Each of the two affected
+cells got twenty new B74 A/A pairs, equally split between the two orders. Raw embedded `GET`
+measured sixteen million operations per attempt and typed embedded `PUT` measured six million.
+
+All 80 attempts stayed below the 5 ms run-queue limit. The typed embedded `PUT` control passed
+all four bands. Raw embedded `GET` p99 had a 95% A/A interval of -1.39% to +3.04% against the
+frozen ±3% band. The preregistered stop rule ended the campaign before A/B. The previous
+configuration's comparison receipts and the newer calibration receipts remain available.
+
+The verified archive is `target/imap-075/d1-put-clock-20261125/d1-isolated-confirm-20261126.zip`
+with SHA-256 `fc7fd124b126bdd093d7cb8b9b060d9566828fe99586618837d68672b2cd6461`.
+
 ## Open admission gates
 
 The owner explicitly chose to leave W0 public scope open on 25 November 2026. OD-6 and OD-9

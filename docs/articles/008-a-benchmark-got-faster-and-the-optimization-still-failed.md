@@ -814,6 +814,25 @@ For raw embedded `GET`, the B74-versus-B74 p99 interval ran from -3.91% to +1.73
 beyond its ±3% noise budget. The same-binary control also exceeded the goodput and CPU/op
 noise budgets for typed embedded `PUT`.
 
+We then tested CPU placement with the same B74 executable on both sides and the same
+arguments for every attempt. On the original two cores, the worker migrated and the cores
+received NIC interrupts. On a single isolated core we saw no worker migrations or NIC
+interrupts, yet the main thread and the Tokio worker accumulated up to
+15.93 ms in the run queue. Pinning those threads to different isolated physical cores brought
+the maximum down to 3.19 ms for raw `GET` and 1.95 ms for typed `PUT` in the short pilot.
+
+A separate diagnostic build recorded the latency histogram every 500,000 operations. One
+raw `GET` process on an isolated core moved from a 2.10 µs p99 in the first window to about
+2.19 µs in the remaining windows. The share of requests above 2.15 µs moved from 0.42% to
+roughly 1.28%, crossing the 1% boundary that determines p99. The diagnostic histograms show
+why a longer measurement and a fresh same-binary control matter even after CPU placement
+improves.
+
+The confirmation used twenty fresh A/A pairs per cell with the original release executable.
+Every attempt cleared the scheduler limit. The typed `PUT` control passed all four bands.
+The raw `GET` p99 interval ran from -1.39% to +3.04%, just above the frozen +3% limit.
+That calibration outcome kept D1 open and stopped the new campaign before A/B.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
