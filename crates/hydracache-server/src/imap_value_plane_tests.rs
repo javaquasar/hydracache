@@ -3,7 +3,8 @@ use std::sync::atomic::AtomicBool;
 
 use hydracache::{ClusterCandidate, ClusterControlPlane, TimeObservation};
 use hydracache_client_protocol::{
-    CasExpectation, ClientRequestEnvelope, ConditionalPutCondition, LockConsistency,
+    CasExpectation, ClientRequestEnvelope, CompareValueExpireMode, ConditionalPutCondition,
+    LockConsistency,
 };
 use hydracache_client_transport_axum::{ClientIdentity, ClientSurfaceDispatcher};
 use hydracache_cluster_raft::InMemoryRaftMessageSink;
@@ -35,6 +36,7 @@ struct PeerTransport {
     hold: AtomicBool,
     entered: Semaphore,
     release: Semaphore,
+    last: Mutex<Option<ReplicaApply>>,
 }
 
 #[async_trait::async_trait]
@@ -45,6 +47,7 @@ impl ReplicaTransport for PeerTransport {
             self.release.acquire().await.unwrap().forget();
         }
         let source = message.mutation.owner.node.clone();
+        *self.last.lock().unwrap() = Some(message.clone());
         let peer = self
             .replicas
             .iter()
@@ -158,6 +161,7 @@ impl Fixture {
             hold: AtomicBool::new(false),
             entered: Semaphore::new(0),
             release: Semaphore::new(0),
+            last: Mutex::new(None),
         });
         let raft_transport = Arc::new(InMemoryRaftMessageSink::default());
         let read = RaftOwnerReadBackend::new(
@@ -392,6 +396,7 @@ async fn ttl_is_computed_once_and_expires_only_after_the_lower_bound() {
     let fixture = Fixture::new(1).await;
     fixture.time(100, 2);
     fixture.pending_ttl().await;
+    let late_value = fixture.transport.last.lock().unwrap().clone().unwrap();
     let snapshot = fixture.transport.raft.partition_snapshot().unwrap();
     let cert = snapshot.value_prefixes[&fixture.partition];
     let peer = &fixture.transport.replicas[0];
@@ -442,6 +447,66 @@ async fn ttl_is_computed_once_and_expires_only_after_the_lower_bound() {
         ClientResponse::Value { value: None }
     );
     assert_eq!(peer.replica_applies(), 2);
+    let snapshot = fixture.transport.raft.partition_snapshot().unwrap();
+    let source = late_value.mutation.owner.node.clone();
+    assert!(peer
+        .apply_replica(&snapshot, source.as_str(), late_value.epoch(), late_value)
+        .is_err());
+    assert_eq!(peer.replica_applies(), 2);
+}
+
+#[tokio::test]
+async fn conditional_ttl_extension_preserves_the_previous_deadline_and_refuses_mismatch() {
+    let fixture = Fixture::new(1).await;
+    fixture.time(100, 2);
+    fixture.pending_ttl().await;
+    let (ns, key) = parts();
+    let extend = |value: &[u8]| ClientRequest::CompareValueAndExpire {
+        ns: ns.clone(),
+        key: key.clone(),
+        expected_value: value.to_vec(),
+        ttl_ms: 5,
+        mode: CompareValueExpireMode::AddToRemaining,
+    };
+    assert_eq!(
+        fixture.command(extend(b"wrong"), None).await.unwrap(),
+        ClientResponse::CompareValueApplied { applied: false }
+    );
+    assert_eq!(fixture.version(), 1);
+    assert_eq!(
+        fixture.command(extend(b"ttl"), None).await.unwrap(),
+        ClientResponse::CompareValueApplied { applied: true }
+    );
+    let ttl = |ns, key| ClientRequest::GetTtl { ns, key };
+    assert_eq!(
+        fixture
+            .command(ttl(ns.clone(), key.clone()), None)
+            .await
+            .unwrap(),
+        ClientResponse::Ttl {
+            state: TtlState::ExpiresIn { ttl_ms: 15 }
+        }
+    );
+    assert_eq!(
+        fixture
+            .command(
+                ClientRequest::Expire {
+                    ns: ns.clone(),
+                    key: key.clone(),
+                    ttl_ms: 0
+                },
+                None
+            )
+            .await
+            .unwrap(),
+        ClientResponse::Expiry { applied: true }
+    );
+    assert_eq!(
+        fixture.command(ttl(ns, key), None).await.unwrap(),
+        ClientResponse::Ttl {
+            state: TtlState::Missing
+        }
+    );
 }
 
 #[tokio::test]

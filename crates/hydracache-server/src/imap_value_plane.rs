@@ -568,7 +568,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
         }
         let time = self.replica.time();
         if let WriteOp::ExpireDue(ticket) = input.operation {
-            if !time.is_some_and(|(lower, _)| lower >= ticket.deadline) {
+            if time.is_none_or(|(lower, _)| lower < ticket.deadline) {
                 return Err(before_apply());
             }
         }
