@@ -1,0 +1,207 @@
+name: Server Image
+
+# Single owner of the hydracache-server image build, push and attestation.
+#
+# - `Publish Crates` calls it with `publish_mode: release` after crates.io
+#   publication and consumer verification of the same tag.
+# - A manual dispatch always runs in dry-run mode: it exercises the same login,
+#   push, attestation and pull-by-digest path against the scratch package
+#   `hydracache-server-dryrun`, so the release path is proven before a real
+#   release depends on it. It never touches `hydracache-server` tags.
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Image version (the released workspace version)
+        required: true
+        type: string
+      source_sha:
+        description: Commit to build
+        required: true
+        type: string
+      publish_mode:
+        description: "`release` pushes hydracache-server; anything else is a dry run"
+        required: true
+        type: string
+    outputs:
+      image:
+        description: Image repository that was pushed
+        value: ${{ jobs.image.outputs.image }}
+      digest:
+        description: Pushed manifest digest
+        value: ${{ jobs.image.outputs.digest }}
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Dry-run image version; empty means <workspace version>-ci.<run id>.<attempt>
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: server-image-${{ inputs.version || github.run_id }}-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  image:
+    name: Build, smoke-test and push hydracache-server
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    outputs:
+      image: ${{ steps.tags.outputs.image }}
+      digest: ${{ steps.push.outputs.digest }}
+    env:
+      # Only an explicit `release` from the caller publishes the real package;
+      # a manual dispatch has no such input and is always a dry run.
+      PUBLISH_MODE: ${{ inputs.publish_mode == 'release' && 'release' || 'dry-run' }}
+      SOURCE_SHA: ${{ inputs.source_sha || github.sha }}
+
+    steps:
+      - name: Checkout source commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.source_sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Resolve image version and tags
+        id: tags
+        shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          version="$INPUT_VERSION"
+          if [[ "$PUBLISH_MODE" == "release" ]]; then
+            image="ghcr.io/$owner/hydracache-server"
+            test -n "$version" || { echo "release mode requires a version" >&2; exit 1; }
+          else
+            image="ghcr.io/$owner/hydracache-server-dryrun"
+            if [[ -z "$version" ]]; then
+              workspace="$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -n1)"
+              test -n "$workspace" || { echo "cannot read workspace version" >&2; exit 1; }
+              version="${workspace%%-*}-ci.${GITHUB_RUN_ID}.${GITHUB_RUN_ATTEMPT}"
+            fi
+          fi
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z]+(\.[0-9A-Za-z]+)*)?$ ]]; then
+            echo "invalid image version: $version" >&2
+            exit 1
+          fi
+          tags="$image:$version"
+          # Floating tags exist only for real stable releases.
+          if [[ "$PUBLISH_MODE" == "release" && "$version" != *-* ]]; then
+            tags="$tags"$'\n'"$image:${version%.*}"
+            # `latest` only moves forward: a patch to an older line never takes it.
+            newest="$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' | grep -v -- '-' | sed 's/^v//' | sort -V | tail -n1)"
+            if [[ "$newest" == "$version" ]]; then
+              tags="$tags"$'\n'"$image:latest"
+            fi
+          fi
+          {
+            echo "image=$image"
+            echo "version=$version"
+            echo "tags<<EOF"
+            echo "$tags"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Mode: $PUBLISH_MODE"
+          echo "Tags:"
+          echo "$tags"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build candidate image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          push: false
+          tags: hydracache-server:candidate
+          build-args: |
+            VERSION=${{ steps.tags.outputs.version }}
+            REVISION=${{ env.SOURCE_SHA }}
+
+      - name: Smoke-test candidate image before push
+        timeout-minutes: 5
+        run: scripts/ci/docker-image-smoke.sh hydracache-server:candidate "${{ steps.tags.outputs.version }}"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Refuse to overwrite an existing version tag
+        timeout-minutes: 5
+        env:
+          VERSION_REF: ${{ steps.tags.outputs.image }}:${{ steps.tags.outputs.version }}
+        shell: bash
+        run: |
+          set -uo pipefail
+          if output="$(docker buildx imagetools inspect "$VERSION_REF" 2>&1)"; then
+            echo "$VERSION_REF already exists; published version tags are immutable. Ship a new version." >&2
+            echo "$output" >&2
+            exit 1
+          fi
+          echo "$VERSION_REF is not published yet:"
+          echo "$output"
+
+      - name: Push image with SBOM and provenance
+        id: push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          sbom: true
+          provenance: mode=max
+          tags: ${{ steps.tags.outputs.tags }}
+          build-args: |
+            VERSION=${{ steps.tags.outputs.version }}
+            REVISION=${{ env.SOURCE_SHA }}
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ steps.tags.outputs.image }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+      - name: Smoke-test published image by digest
+        timeout-minutes: 10
+        env:
+          IMAGE_REF: ${{ steps.tags.outputs.image }}@${{ steps.push.outputs.digest }}
+        run: |
+          docker pull "$IMAGE_REF"
+          scripts/ci/docker-image-smoke.sh "$IMAGE_REF" "${{ steps.tags.outputs.version }}"
+
+      - name: Verify provenance attestation
+        timeout-minutes: 5
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IMAGE_REF: ${{ steps.tags.outputs.image }}@${{ steps.push.outputs.digest }}
+        run: gh attestation verify "oci://$IMAGE_REF" --owner "$GITHUB_REPOSITORY_OWNER"
+
+      - name: Summarize
+        shell: bash
+        run: |
+          {
+            echo "### hydracache-server image ($PUBLISH_MODE)"
+            echo
+            echo '```'
+            echo "${{ steps.tags.outputs.tags }}"
+            echo "${{ steps.tags.outputs.image }}@${{ steps.push.outputs.digest }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

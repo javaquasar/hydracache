@@ -51,10 +51,18 @@ spec:
               value: /etc/hydracache/tls/tls.key
             - name: HYDRACACHE_TLS_CA_PATH
               value: /etc/hydracache/tls/ca.crt
+            # A TLS member rejects unauthenticated raft peers: the token Secret
+            # `hydracache-cluster-auth` (item `token`) is required with TLS.
+            - name: HYDRACACHE_CLUSTER_HEADLESS_SERVICE
+              value: hydracache-headless
+            - name: HYDRACACHE_CLUSTER_AUTH_KEY_ID
+              value: cluster-v1
+            - name: HYDRACACHE_CLUSTER_AUTH_TOKEN_FILE
+              value: /etc/hydracache/cluster-auth/token
+            # Backup is off until a real destination is configured:
+            # set HYDRACACHE_BACKUP_ENABLED=true and HYDRACACHE_BACKUP_LOCATION.
             - name: HYDRACACHE_BACKUP_ENABLED
-              value: "true"
-            - name: HYDRACACHE_BACKUP_LOCATION
-              value: s3://hydracache-backups/prod
+              value: "false"
             - name: HYDRACACHE_ADMIN_ADDR
               value: 0.0.0.0:9091
           livenessProbe:
@@ -75,10 +83,16 @@ spec:
             - name: tls
               mountPath: /etc/hydracache/tls
               readOnly: true
+            - name: cluster-auth
+              mountPath: /etc/hydracache/cluster-auth
+              readOnly: true
       volumes:
         - name: tls
           secret:
             secretName: hydracache-mtls
+        - name: cluster-auth
+          secret:
+            secretName: hydracache-cluster-auth
   volumeClaimTemplates:
     - metadata:
         name: data

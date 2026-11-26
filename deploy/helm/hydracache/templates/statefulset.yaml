@@ -1,10 +1,13 @@
+{{- include "hydracache.validate" . -}}
+{{- $clusterAuth := and .Values.clusterAuth.keyId .Values.clusterAuth.secretName -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "hydracache.fullname" . | default "hydracache" }}
+  name: {{ include "hydracache.fullname" . }}
 spec:
-  serviceName: {{ include "hydracache.fullname" . | default "hydracache" }}-headless
+  serviceName: {{ include "hydracache.headless" . }}
   replicas: {{ .Values.replicaCount }}
+  podManagementPolicy: Parallel
   selector:
     matchLabels:
       app.kubernetes.io/name: hydracache
@@ -34,20 +37,37 @@ spec:
               value: "0.0.0.0:{{ .Values.service.httpPort }}"
             - name: HYDRACACHE_CLUSTER_ADDR
               value: "0.0.0.0:{{ .Values.service.clusterPort }}"
+            - name: HYDRACACHE_CLUSTER_HEADLESS_SERVICE
+              value: {{ include "hydracache.headless" . | quote }}
+            - name: HYDRACACHE_SEEDS
+              value: {{ include "hydracache.seeds" . | quote }}
             - name: HYDRACACHE_STORAGE_DIR
               value: {{ .Values.storage.mountPath | quote }}
             - name: HYDRACACHE_TLS_ENABLED
               value: {{ .Values.tls.enabled | quote }}
+            {{- if .Values.tls.enabled }}
             - name: HYDRACACHE_TLS_CERT_PATH
               value: {{ .Values.tls.certPath | quote }}
             - name: HYDRACACHE_TLS_KEY_PATH
               value: {{ .Values.tls.keyPath | quote }}
             - name: HYDRACACHE_TLS_CA_PATH
               value: {{ .Values.tls.caPath | quote }}
+            {{- else }}
+            - name: HYDRACACHE_TLS_ACK_INSECURE
+              value: "true"
+            {{- end }}
+            {{- if $clusterAuth }}
+            - name: HYDRACACHE_CLUSTER_AUTH_KEY_ID
+              value: {{ .Values.clusterAuth.keyId | quote }}
+            - name: HYDRACACHE_CLUSTER_AUTH_TOKEN_FILE
+              value: "{{ .Values.clusterAuth.mountPath }}/{{ .Values.clusterAuth.tokenKey }}"
+            {{- end }}
             - name: HYDRACACHE_BACKUP_ENABLED
               value: {{ .Values.backup.enabled | quote }}
+            {{- if .Values.backup.enabled }}
             - name: HYDRACACHE_BACKUP_LOCATION
               value: {{ .Values.backup.location | quote }}
+            {{- end }}
             - name: HYDRACACHE_ADMIN_ADDR
               value: "0.0.0.0:{{ .Values.service.adminPort }}"
           livenessProbe:
@@ -61,13 +81,29 @@ spec:
           volumeMounts:
             - name: data
               mountPath: {{ .Values.storage.mountPath | quote }}
+            {{- if .Values.tls.enabled }}
             - name: tls
               mountPath: /etc/hydracache/tls
               readOnly: true
+            {{- end }}
+            {{- if $clusterAuth }}
+            - name: cluster-auth
+              mountPath: {{ .Values.clusterAuth.mountPath | quote }}
+              readOnly: true
+            {{- end }}
+      {{- if or .Values.tls.enabled $clusterAuth }}
       volumes:
+        {{- if .Values.tls.enabled }}
         - name: tls
           secret:
             secretName: {{ .Values.tls.secretName }}
+        {{- end }}
+        {{- if $clusterAuth }}
+        - name: cluster-auth
+          secret:
+            secretName: {{ .Values.clusterAuth.secretName }}
+        {{- end }}
+      {{- end }}
   volumeClaimTemplates:
     - metadata:
         name: data

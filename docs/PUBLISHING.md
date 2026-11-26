@@ -46,15 +46,30 @@ Java or Python preview packages.
 ### Container image
 
 After the crates are published and the clean consumer verification passes, the
-`publish-image` job builds `hydracache-server` from the same source SHA, runs
-`scripts/ci/docker-image-smoke.sh` against the local candidate, pushes it to
-`ghcr.io/javaquasar/hydracache-server`, attests its build provenance, and runs
-the smoke test again on the pushed digest. The GitHub Release is created only
-after that job succeeds and lists the image tag and digest.
+`publish-image` job calls the reusable `Server Image` workflow
+(`.github/workflows/server-image.yml`) in `release` mode. It builds
+`hydracache-server` from the same source SHA, runs
+`scripts/ci/docker-image-smoke.sh` against the local candidate, refuses to
+continue if the `X.Y.Z` tag already exists, pushes to
+`ghcr.io/javaquasar/hydracache-server`, attests its build provenance, smoke-tests
+the pushed digest again, and verifies the attestation with `gh attestation
+verify`. The GitHub Release is created only after that job succeeds and lists
+the image tag and digest.
 
 Tags: `X.Y.Z` always; `X.Y` and `latest` only for stable releases, and
 `latest` only when `X.Y.Z` is the newest stable tag in the repository.
 Pre-releases get only their exact tag.
+
+Dry run: dispatching `Server Image` manually always runs in dry-run mode. It
+runs the same login, push, attestation and pull-by-digest steps against the
+scratch package `ghcr.io/javaquasar/hydracache-server-dryrun`, with a
+`<workspace version>-ci.<run id>.<attempt>` tag unless a version is given, and
+never touches `hydracache-server`. Run it after changing the image workflow and
+before the first release that depends on the change:
+
+```powershell
+gh workflow run server-image.yml --ref main
+```
 
 Bump the release version with one command, never by hand:
 

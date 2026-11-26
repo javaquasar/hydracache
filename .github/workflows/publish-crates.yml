@@ -433,106 +433,16 @@ jobs:
     name: Publish server container image to GHCR
     needs: [resolve, publish, consumer-verification]
     if: needs.resolve.outputs.eligible == 'true' && needs.publish.result == 'success' && needs.consumer-verification.result == 'success'
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
+    uses: ./.github/workflows/server-image.yml
+    with:
+      version: ${{ needs.resolve.outputs.version }}
+      source_sha: ${{ needs.resolve.outputs.source_sha }}
+      publish_mode: release
     permissions:
       contents: read
       packages: write
       id-token: write
       attestations: write
-    outputs:
-      digest: ${{ steps.push.outputs.digest }}
-      image: ${{ steps.tags.outputs.image }}
-    env:
-      RELEASE_VERSION: ${{ needs.resolve.outputs.version }}
-      SOURCE_SHA: ${{ needs.resolve.outputs.source_sha }}
-
-    steps:
-      - name: Checkout candidate commit
-        uses: actions/checkout@v5
-        with:
-          ref: ${{ needs.resolve.outputs.source_sha }}
-          fetch-depth: 0
-
-      - name: Resolve image tags
-        id: tags
-        shell: bash
-        run: |
-          set -euo pipefail
-          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/hydracache-server"
-          tags="$image:$RELEASE_VERSION"
-          if [[ "$RELEASE_VERSION" != *-* ]]; then
-            minor="${RELEASE_VERSION%.*}"
-            tags="$tags"$'\n'"$image:$minor"
-            # `latest` only moves forward: a patch to an older line never takes it.
-            newest="$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' | grep -v -- '-' | sed 's/^v//' | sort -V | tail -n1)"
-            if [[ "$newest" == "$RELEASE_VERSION" ]]; then
-              tags="$tags"$'\n'"$image:latest"
-            fi
-          fi
-          echo "image=$image" >> "$GITHUB_OUTPUT"
-          {
-            echo "tags<<EOF"
-            echo "$tags"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-          echo "Publishing tags:"
-          echo "$tags"
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
-
-      - name: Build candidate image
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        with:
-          context: .
-          platforms: linux/amd64
-          load: true
-          push: false
-          tags: hydracache-server:candidate
-          build-args: |
-            VERSION=${{ needs.resolve.outputs.version }}
-            REVISION=${{ needs.resolve.outputs.source_sha }}
-
-      - name: Smoke-test candidate image before push
-        timeout-minutes: 5
-        run: scripts/ci/docker-image-smoke.sh hydracache-server:candidate "$RELEASE_VERSION"
-
-      - name: Log in to GHCR
-        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
-
-      - name: Push image with SBOM and provenance
-        id: push
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        with:
-          context: .
-          platforms: linux/amd64
-          push: true
-          sbom: true
-          provenance: mode=max
-          tags: ${{ steps.tags.outputs.tags }}
-          build-args: |
-            VERSION=${{ needs.resolve.outputs.version }}
-            REVISION=${{ needs.resolve.outputs.source_sha }}
-
-      - name: Attest build provenance
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
-        with:
-          subject-name: ${{ steps.tags.outputs.image }}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
-
-      - name: Smoke-test published image by digest
-        timeout-minutes: 10
-        env:
-          IMAGE_REF: ${{ steps.tags.outputs.image }}@${{ steps.push.outputs.digest }}
-        run: |
-          docker pull "$IMAGE_REF"
-          scripts/ci/docker-image-smoke.sh "$IMAGE_REF" "$RELEASE_VERSION"
 
   github-release:
     name: Create GitHub Release after publication

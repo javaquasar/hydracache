@@ -90,7 +90,7 @@
           "migration-conformance-admission-069",
           "hc2-linux-required",
           "hc2-docker-interop",
-          "server-image-smoke",
+          "server-image-smoke", "helm-chart-check",
           "performance-067-shared-tripwire",
           "performance-ci-instruction-v1",
           "msrv"
@@ -426,6 +426,19 @@
       }
     },
     {
+      "path": ".github/workflows/server-image.yml",
+      "purpose": "Build, smoke-test, push and attest the hydracache-server image; release mode from Publish Crates, dry-run mode to a scratch package on manual dispatch",
+      "triggers": ["workflow_call", "workflow_dispatch"],
+      "concurrency_markers": ["inputs.version", "github.run_id", "github.sha"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [],
+        "publish": ["image"]
+      }
+    },
+    {
       "path": ".github/workflows/publish-crates.yml",
       "purpose": "Single owner for crates.io publication after successful SHA-bound CI and post-publish verification",
       "triggers": ["workflow_dispatch", "workflow_run"],
@@ -444,7 +457,8 @@
         "github-release": ["resolve", "publish", "consumer-verification", "publish-image"]
       },
       "timeout_exemptions": {
-        "consumer-verification": "GitHub does not allow timeout-minutes on a reusable-workflow caller; post-publish.yml#verify has a 60 minute timeout"
+        "consumer-verification": "GitHub does not allow timeout-minutes on a reusable-workflow caller; post-publish.yml#verify has a 60 minute timeout",
+        "publish-image": "GitHub does not allow timeout-minutes on a reusable-workflow caller; server-image.yml#image has a 90 minute timeout"
       },
       "artifact_budget": {
         "max_retention_days": 30,
