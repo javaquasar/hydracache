@@ -23,6 +23,7 @@ use tokio::net::TcpListener;
 
 const KEY: &[u8] = b"\0order\xff";
 const VALUE: &[u8] = b"persisted\0\xff";
+const UNAVAILABLE: &[u8] = b"-ERR HydraCache client error: backend unavailable\r\n";
 
 fn scope() -> ReplicaReadScope {
     ReplicaReadScope::new(
@@ -189,8 +190,7 @@ async fn resp_get_reads_the_replicated_store_only_after_a_published_prefix() {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = listener.local_addr().unwrap();
     let server = start_resp(listener, dispatcher);
-    let unavailable = b"-ERR backend unavailable\r\n";
-    assert_eq!(resp(address, &[b"GET", KEY]).unwrap(), unavailable);
+    assert_eq!(resp(address, &[b"GET", KEY]).unwrap(), UNAVAILABLE);
     values
         .install(
             partition,
@@ -198,7 +198,7 @@ async fn resp_get_reads_the_replicated_store_only_after_a_published_prefix() {
             InMemoryReplicatedValueStore::default(),
         )
         .unwrap();
-    assert_eq!(resp(address, &[b"GET", KEY]).unwrap(), unavailable);
+    assert_eq!(resp(address, &[b"GET", KEY]).unwrap(), UNAVAILABLE);
     assert_eq!(values.store_lookups(), 0);
     let mut store = memory_with(
         ReplicatedValueRecord::value(partition, 8, epoch, VALUE),
@@ -227,7 +227,7 @@ async fn resp_get_reads_the_replicated_store_only_after_a_published_prefix() {
     assert_eq!(resp(address, &[b"GET", b""]).unwrap(), b"$0\r\n\r\n");
     assert_eq!(
         resp(address, &[b"SET", KEY, b"would-be-local"]).unwrap(),
-        unavailable
+        UNAVAILABLE
     );
     assert_eq!(values.store_lookups(), 3);
     values

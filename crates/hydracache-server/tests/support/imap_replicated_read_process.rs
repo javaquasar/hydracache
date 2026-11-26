@@ -14,6 +14,7 @@ use serde_json::json;
 const RUN: &str = "HYDRACACHE_RUN_DAEMON_PROCESS_E2E";
 const CHILD: &str = "HYDRACACHE_IMAP_REPLICA_TEST_CHILD";
 const FAULT: &str = "HYDRACACHE_TEST_RAFT_OUTBOUND_FAULT_FILE";
+const DEADLINE: &[u8] = b"-ERR HydraCache client error: deadline exceeded\r\n";
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Status {
@@ -326,7 +327,7 @@ fn isolated_and_restarted_owner_needs_fresh_read_authority_and_replica_prefix() 
             .then_some(())
     });
     let refused = nodes[owner].read().unwrap();
-    assert!(refused == b"-ERR deadline exceeded\r\n" || refused == b"-ERR backend unavailable\r\n");
+    assert!(refused == DEADLINE || refused == UNAVAILABLE);
     let during = nodes[owner].refreshed_status();
     assert_eq!(
         (during.pid, during.lookups, during.receipt),
@@ -350,7 +351,7 @@ fn isolated_and_restarted_owner_needs_fresh_read_authority_and_replica_prefix() 
     let new_epoch = rejoined[owner].epoch;
     assert_ne!(rejoined[owner].pid, initial[owner].pid);
     let stale = nodes[owner].read().unwrap();
-    assert_eq!(stale, b"-ERR backend unavailable\r\n");
+    assert_eq!(stale, UNAVAILABLE);
     assert_eq!(nodes[owner].refreshed_status().lookups, 0);
 
     for node in &nodes {
@@ -365,7 +366,7 @@ fn isolated_and_restarted_owner_needs_fresh_read_authority_and_replica_prefix() 
     });
     for node in &nodes {
         let before = node.status().unwrap().lookups;
-        assert_eq!(node.read().unwrap(), b"-ERR backend unavailable\r\n");
+        assert_eq!(node.read().unwrap(), UNAVAILABLE);
         assert_eq!(node.refreshed_status().lookups, before);
     }
     for node in &nodes {
