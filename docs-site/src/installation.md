@@ -54,3 +54,8 @@ Check the runnable documentation examples:
 ```powershell
 cargo check --manifest-path docs-site/examples/Cargo.toml --all-targets
 ```
+
+## Next Steps
+
+- [Getting Started](getting-started.md) — build the first cache flow
+- [Crate Map](reference/crate-map.md) — pick the crates you need

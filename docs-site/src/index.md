@@ -1,31 +1,53 @@
 # HydraCache
 
-<p class="brand-mark">
-  <img src="assets/brand/hydracache-emblem-orange-256.png" alt="HydraCache emblem">
-</p>
+<div class="hc-hero">
+  <p class="brand-mark hc-hero-brand"><img class="hc-hero-logo" src="assets/brand/hydracache-emblem-orange-256.png" alt="HydraCache emblem"></p>
+  <p class="hc-hero-tagline">The Rust cache that knows your database.</p>
+  <p class="hc-hero-sub">Embedded, query-result-aware, correctness-first — grows from an in-process cache into a distributed cache grid on one codebase.</p>
+  <div class="hc-hero-actions">
+    <a class="hc-btn hc-btn-primary" href="getting-started.html">Get started</a>
+    <a class="hc-btn" href="https://javaquasar.github.io/hydracache/demo/">Try the cluster simulator</a>
+    <a class="hc-btn" href="https://github.com/javaquasar/hydracache">GitHub</a>
+  </div>
+</div>
 
-HydraCache is a Rust-native cache runtime for applications that need cache behavior to be explicit: keys, tags, TTL, single-flight loading, invalidation, query-result caching, and local-first distributed coordination.
-
-The goal is not to hide caching behind a magical map. The goal is to make cache semantics visible enough for production code review. A cache entry should answer three questions:
+Most caches are opaque key→blob stores: they know nothing about the database behind them, so freshness is left to TTL guesses and hand-rolled cache busting. HydraCache lives **inside your Rust service**, next to SQLx, Diesel, or SeaORM, and makes the cache contract explicit enough for code review:
 
 - what exact value is being reused?
 - which writes can make it unsafe?
 - what freshness policy applies while the backing source changes?
 
-HydraCache starts with a local cache because local behavior is the foundation. From there it grows toward database query-result caching and local-first distributed invalidation without hiding the database or repository layer behind magic interception.
-
 ## Why HydraCache
 
-HydraCache is useful when a service needs more than `HashMap`-style reuse:
+<div class="hc-cards">
+  <div class="hc-card">
+    <h3>🔗 Built for SQL-backed services</h3>
+    <p>Cache query results by entity and collection, invalidate them after commit with transaction-aware plans or a transactional outbox, and lint SQL dependencies of cache policies at build time.</p>
+  </div>
+  <div class="hc-card">
+    <h3>✅ Correctness you can audit</h3>
+    <p>Single-flight loading, fail-loud errors instead of silent degradation, per-operation consistency levels, and a deterministic seeded fault simulator with invariant checkers enforced in CI.</p>
+  </div>
+  <div class="hc-card">
+    <h3>📈 Embedded → cluster → geo</h3>
+    <p>Start with an in-process cache. Add distributed invalidation, a raft control plane, peer fetch, resharding, and multi-region links later — opt-in crates that leave embedded behavior unchanged.</p>
+  </div>
+  <div class="hc-card">
+    <h3>🦀 Rust-native, nothing extra to run</h3>
+    <p>No JVM, no sidecar, no proxy for the embedded case. When you want a server, there is a standalone daemon with TLS, a client protocol, and an optional Redis RESP facade.</p>
+  </div>
+</div>
 
-- **Reuse typed values locally.** Local cache with typed serialization boundaries.
-- **Avoid duplicate miss storms.** Single-flight loading for same-key requests.
-- **Expire stale values eventually.** TTL as a fallback freshness bound.
-- **Remove related values after writes.** Tag invalidation by entity, collection, tenant, or query family.
-- **Cache repository/query results.** Database-neutral query policies with explicit keys and tags.
-- **Grow toward multi-node behavior.** Local-first invalidation that can be carried to peers.
+## See It Run
 
-The core idea is simple: a cache key identifies one value, and tags describe which writes can invalidate groups of values. Everything else builds on that contract.
+The cluster layer is developed against a deterministic simulator. The [interactive demo](https://javaquasar.github.io/hydracache/demo/) runs the real `hydracache-sim` engine and invariant checkers in your browser: elect a leader, partition the network, crash a node, and replay any run from its seed.
+
+<figure class="hc-screenshot">
+  <a href="https://javaquasar.github.io/hydracache/demo/?seed=80&amp;steps=60">
+    <img src="assets/screenshots/cluster-simulator.jpg" alt="HydraCache cluster simulator: a three-node cluster with node-0 as leader, messages in flight between nodes, and a verdict panel where every invariant is holding.">
+  </a>
+  <figcaption>Three-node cluster at seed 80, step 60: a leader is elected and every invariant holds. Click to open this exact run.</figcaption>
+</figure>
 
 ## Choose Your Path
 
@@ -37,57 +59,38 @@ The core idea is simple: a cache key identifies one value, and tags describe whi
 | Use function and entity macros | [Macros](guides/macros.md) |
 | Cache repository or query results | [Database Query Caching](guides/database-query-caching.md) |
 | Pick SQLx, Diesel, or SeaORM integration | [SQLx](guides/sqlx-adapter.md), [Diesel](guides/diesel-adapter.md), [SeaORM](guides/seaorm-adapter.md) |
+| Share invalidation across processes | [Distributed Invalidation](guides/distributed-invalidation.md) |
+| Run members, clients, and a cluster | [Client and Member Cluster](guides/client-member-cluster.md) |
 | Expose a Redis-compatible RESP edge | [Redis API](guides/redis-api.md) |
-| Explore cluster behavior in a browser | [Interactive cluster simulator](https://javaquasar.github.io/hydracache/demo/) |
 | Inspect logical memory ownership and retained-byte estimates | [Memory Accounting](guides/memory-accounting.md) |
+| Understand what is guaranteed and how it is checked | [Consistency Model](concepts/consistency-model.md), [How We Test Correctness](concepts/how-we-test-correctness.md) |
+| Compare with Redis, moka, Hazelcast, or ReadySet | [Compared to Alternatives](alternatives.md) |
+| See how performance is measured and what the numbers mean | [Performance](performance.md) |
 | Review production readiness | [Production Checklist](production-checklist.md) |
 | Avoid common cache mistakes | [Anti-patterns](anti-patterns.md) |
+| Copy a solution for a common problem | [Recipes](recipes.md) |
+| Debug stale data, low hit ratio, or memory | [FAQ and Troubleshooting](faq.md) |
 
 ## First Path
 
 If you are new to HydraCache, read these pages in order:
 
 1. [Getting Started](getting-started.md)
-2. [Architecture](architecture.md)
-3. [Decision Guide](decision-guide.md)
-4. [Production Checklist](production-checklist.md)
-5. [Keys and Tags](concepts/keys-and-tags.md)
-6. [Local Cache](guides/local-cache.md)
-7. [Macros](guides/macros.md)
-8. [Database Query Caching](guides/database-query-caching.md)
+2. [Tutorial: Two Instances](tutorial.md)
+3. [Architecture](architecture.md)
+4. [Keys and Tags](concepts/keys-and-tags.md)
+5. [Local Cache](guides/local-cache.md)
+6. [Database Query Caching](guides/database-query-caching.md)
+7. [Decision Guide](decision-guide.md)
+8. [Production Checklist](production-checklist.md)
 
-## Concepts vs Guides
-
-The documentation is split deliberately:
-
-- Concepts explain why the API is shaped this way.
-- Guides show how to use the API in application code.
-- Reference pages describe maintenance rules for the documentation itself.
-
-If you need to make a design decision, start with concepts. If you already know what you want to build, start with guides.
-
-Use [Use Cases](use-cases.md) for concrete scenarios and [API Links](reference/api-links.md) when you need exact Rust signatures on docs.rs.
-
-Common search terms for this site include memoization, function caching, repository cache, query result cache, near cache, read-through cache, stale-if-error, stale while revalidate, single-flight, and distributed invalidation.
-
-## Documentation Shape
-
-This site is intentionally separate from the longer Quarto book draft under `docs/book/`. The docs site is the practical public surface. The book can remain a deeper narrative track for design history and long-form explanation.
-
-The public docs should be self-contained. The article series below is linked as background and publication history, but the material in this site should not require a reader to leave the docs.
+Concepts explain why the API is shaped this way; guides show how to use it. Use [Use Cases](use-cases.md) for concrete scenarios and [API Links](reference/api-links.md) for exact Rust signatures on docs.rs.
 
 ## Project Links
 
 - [GitHub repository](https://github.com/javaquasar/hydracache)
 - [crates.io package](https://crates.io/crates/hydracache)
 - [docs.rs API](https://docs.rs/hydracache/latest/hydracache/)
+- [Release archive](releases/index.md)
 
-## Article Series
-
-The Medium series is the narrative origin of several concepts in this site:
-
-- [Part 1: Why Rust Needs Cache Semantics, Not Just Another Cache Map](https://medium.com/@artur.buzov/why-rust-needs-cache-semantics-not-just-another-cache-map-ecf3c4e01191)
-- [Part 2: Single-flight Is Not an Optimization](https://medium.com/@artur.buzov/single-flight-is-not-an-optimization-85917bdbe77d)
-- [Part 3: TTL Is Not Enough](https://medium.com/@artur.buzov/ttl-is-not-enough-ec4e96d89546)
-- [Part 4: Local-first Distributed Invalidation](https://medium.com/@artur.buzov/local-first-distributed-invalidation-87bf0249e935)
-- [Part 5: Typed Query Caching in Rust](https://medium.com/@artur.buzov/typed-query-caching-in-rust-aac4352599f0)
+Background reading: the Medium series behind several of these concepts — [cache semantics](https://medium.com/@artur.buzov/why-rust-needs-cache-semantics-not-just-another-cache-map-ecf3c4e01191), [single-flight](https://medium.com/@artur.buzov/single-flight-is-not-an-optimization-85917bdbe77d), [TTL is not enough](https://medium.com/@artur.buzov/ttl-is-not-enough-ec4e96d89546), [local-first invalidation](https://medium.com/@artur.buzov/local-first-distributed-invalidation-87bf0249e935), and [typed query caching](https://medium.com/@artur.buzov/typed-query-caching-in-rust-aac4352599f0).

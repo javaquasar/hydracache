@@ -4,6 +4,9 @@ This is the **single context door** for any agent (or human) working in this rep
 Read this file first, then follow the bootstrap recipe below. Keep this file short;
 it links out instead of inlining.
 
+Follow the [temporary shell script rules](AGENTS.md#temporary-shell-scripts)
+when generating local scripts.
+
 HydraCache is a Rust workspace: a local-first cache + DB query-result caching
 adapters (sqlx / diesel / seaorm) + cluster coordination (Local / Client / Member
 roles). Crates live under `crates/`; the workspace version is in the root

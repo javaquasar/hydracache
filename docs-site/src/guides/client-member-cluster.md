@@ -1,5 +1,7 @@
 # Client and Member Cluster
 
+**API:** [`hydracache-cluster`](https://docs.rs/hydracache-cluster/latest/hydracache_cluster/)
+
 `HydraCache::client()` and `HydraCache::member()` are the embedded cluster shape.
 
 A client is an application-side near-cache. A member is a cluster participant. Both can join an `InMemoryCluster`, share invalidation, and expose role, node id, generation, bootstrap, lifecycle, and participant diagnostics.
@@ -36,7 +38,10 @@ It intentionally does not include:
 - certificate issuance or rotation for the embedded HTTP transport (bring your own TLS termination, or use the server's TLS listeners);
 - write-enabled admin APIs on the embedded actuator.
 
-The cluster surface is exercised by a deterministic fault simulator, networked integration tests, and soak runs, but it has limited production operating history. Treat it as staging-ready and plan topology, storage, authentication, supervision, and runbooks before a production rollout. The repository guide `docs/PRODUCTION_CLUSTER_READINESS.md` has the staging and pilot checklists.
+> [!WARNING]
+> The cluster surface is exercised by a deterministic fault simulator, networked integration tests, and soak runs, but it has limited production operating history. Treat it as staging-ready and plan topology, storage, authentication, supervision, and runbooks before a production rollout.
+
+The repository guide `docs/PRODUCTION_CLUSTER_READINESS.md` has the staging and pilot checklists.
 
 ## Optional Adapters
 
@@ -49,3 +54,8 @@ The cluster APIs are split into optional crates so applications can adopt only t
 - use `hydracache-transport-redis` or `hydracache-transport-nats` to carry invalidation across processes.
 
 Start with `InMemoryCluster` for tests and demos. Add real adapters only when the deployment has a real discovery and metadata story.
+
+## Next Steps
+
+- [Consistency Model](../concepts/consistency-model.md) — consistency levels and limits
+- [How We Test Correctness](../concepts/how-we-test-correctness.md) — how the cluster is verified

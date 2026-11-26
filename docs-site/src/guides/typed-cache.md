@@ -1,5 +1,7 @@
 # Typed Cache
 
+**API:** [`TypedCache`](https://docs.rs/hydracache/latest/hydracache/struct.TypedCache.html)
+
 Use a typed cache view when several call sites share one value type and one domain namespace.
 
 ```rust
@@ -11,3 +13,8 @@ The typed view does not create separate storage. It is a namespaced view over th
 The namespace prefixes keys. In the example, the typed key `42` is stored as `profiles:42` in the underlying cache. Use namespaces that match domain boundaries rather than module names.
 
 Typed views are most useful when they remove repeated annotations without hiding cache semantics. Keep keys, tags, and TTLs visible at the call site.
+
+## Next Steps
+
+- [Cacheable Functions](cacheable-functions.md) — cache whole async functions
+- [Database Query Caching](database-query-caching.md) — typed repository results

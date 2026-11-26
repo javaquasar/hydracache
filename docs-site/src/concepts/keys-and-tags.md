@@ -71,3 +71,8 @@ When reviewing a cached read, ask:
 4. Can a future maintainer see why the key and tags were chosen?
 
 If the answer is unclear, keep the cache call explicit. Convenience wrappers should come after the semantics are obvious.
+
+## Next Steps
+
+- [TTL and Invalidation](ttl-and-invalidation.md) — how tags and TTL work together
+- [Recipes: multi-tenant search](../recipes.md#multi-tenant-paginated-search) — a worked key and tag design

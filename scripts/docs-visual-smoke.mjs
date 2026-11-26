@@ -6,6 +6,13 @@ const baseUrl = process.env.DOCS_BASE_URL ?? "http://127.0.0.1:3000";
 const pages = [
   "/",
   "/architecture.html",
+  "/tutorial.html",
+  "/alternatives.html",
+  "/performance.html",
+  "/recipes.html",
+  "/faq.html",
+  "/concepts/consistency-model.html",
+  "/concepts/how-we-test-correctness.html",
   "/production-checklist.html",
   "/guides/database-query-caching.html",
   "/guides/management-center.html",

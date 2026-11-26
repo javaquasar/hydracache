@@ -1,5 +1,7 @@
 # Redis API
 
+**API:** [`hydracache-redis-compat`](https://docs.rs/hydracache-redis-compat/latest/hydracache_redis_compat/)
+
 HydraCache can expose an optional Redis-compatible RESP edge for clients that already speak Redis.
 
 This surface is a compatibility facade over HydraCache client-surface commands. It is not a promise that HydraCache is a full Redis replacement, and it does not add SQL/query semantics. Use it when Redis client interoperability is useful but the application still wants HydraCache ownership of cache data, TTLs, tags, diagnostics, and invalidation intent.
@@ -135,3 +137,8 @@ Review these boundaries before enabling the facade:
 - Redis clients send bytes, not typed Rust values; typed decoding remains a native API concern.
 
 Use Redis compatibility to meet existing clients where they are. Use HydraCache semantics to decide what should be cached and invalidated.
+
+## Next Steps
+
+- [Performance](../performance.md) — what the RESP path has been measured at
+- [Compared to Alternatives](../alternatives.md) — HydraCache vs Redis
