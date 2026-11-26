@@ -335,6 +335,19 @@ mod tests {
     use hydracache::{ClusterGeneration, ClusterNodeId, PartitionReplicaRepair};
     use std::time::SystemTime;
 
+    fn journal_directory() -> std::path::PathBuf {
+        let directory = std::env::temp_dir().join(format!(
+            "hc-w10f-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir(&directory).unwrap();
+        directory
+    }
+
     fn member(node: &str) -> PartitionMember {
         PartitionMember {
             node: ClusterNodeId::new(node),
@@ -436,15 +449,7 @@ mod tests {
         assert_eq!(image, source.export_image(partition, Some(prefix)).unwrap());
         assert!(source.export_image(partition, Some(second)).is_err());
 
-        let directory = std::env::temp_dir().join(format!(
-            "hc-w10f-{}-{}",
-            std::process::id(),
-            SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
-        ));
-        std::fs::create_dir(&directory).unwrap();
+        let directory = journal_directory();
         let accept = |key: &str| matches!(key, "ttl" | "removed" | "latest");
         let target = ValueJournal::open(&directory).unwrap();
         target.bind_scope("tenant", "ns", 1).unwrap();
@@ -650,7 +655,8 @@ mod tests {
     #[test]
     fn live_delta_receipt_is_ordered_idempotent_and_seals_only_the_caught_up_prefix() {
         let source = ValueJournal::temporary();
-        let target = ValueJournal::temporary();
+        let directory = journal_directory();
+        let target = ValueJournal::open(&directory).unwrap();
         let base = write(&source, None, "remove", Some(b"initial".to_vec()), None);
         let image = source.export_image(base.partition, Some(base)).unwrap();
         let manifest = manifest(Some(base), &image);
@@ -746,6 +752,8 @@ mod tests {
         assert!(target
             .receive_image(request(&manifest, transfer(&wrong_first)), |_| true)
             .is_err());
+        drop(target);
+        let target = ValueJournal::open(&directory).unwrap();
         let progress = target
             .receive_image(request(&manifest, RepairStep::Status), |_| true)
             .unwrap();
@@ -794,6 +802,8 @@ mod tests {
         source.finish_capture(&manifest).unwrap();
         assert!(source.captured_transfer().unwrap().is_none());
         assert!(source.captured_image(&manifest).is_err());
+        drop(target);
+        std::fs::remove_dir_all(directory).unwrap();
     }
 
     #[test]

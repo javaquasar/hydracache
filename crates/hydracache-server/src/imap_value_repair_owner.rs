@@ -1,4 +1,5 @@
 use super::*;
+use crate::imap_value_journal::CapturedTransfer;
 use crate::imap_value_repair::{
     admits_repair, admits_transfer, bytes_digest, is_prefix_at_most, version, RepairManifest,
     RepairStep, ReplicaRepairOutcome, CHUNK_BYTES, FINAL_CUT_WAIT, FINAL_DELTA_BYTES,
@@ -181,7 +182,9 @@ impl ValueReplica {
                 return Err(repair_error("recipient did not confirm a durable image"));
             }
             let plan = transfer.finish(installed.applied, deadline).await?;
-            self.clear_capture(&manifest)?;
+            // Once the new epoch is applied, old-epoch owner applies are
+            // fenced and new writes cannot append to this capture.
+            self.journal.finish_capture(&manifest)?;
             Ok(ReplicaRepairOutcome {
                 deltas: version(plan.required) - version(manifest.plan.required),
                 plan,
@@ -267,7 +270,7 @@ async fn acquire_writer(
         .map_err(|_| repair_error("owner writer lane closed"))
 }
 
-struct LiveRepair<'a, S> {
+struct LiveRepair<'a, S: RaftLogStore> {
     raft: &'a RaftMetadataRuntime<S>,
     raft_transport: &'a Arc<dyn RaftMessageSink>,
     transport: &'a dyn ReplicaTransport,

@@ -78,7 +78,7 @@ impl ValueJournal {
         Ok(image.to_vec())
     }
 
-    /// Clear only under this manifest's partition storage lock.
+    /// Clear after its epoch is fenced or under the original storage lock.
     pub(crate) fn finish_capture(&self, manifest: &RepairManifest) -> CacheResult<()> {
         let Some(current) = self.captured_transfer()? else {
             return Ok(());
