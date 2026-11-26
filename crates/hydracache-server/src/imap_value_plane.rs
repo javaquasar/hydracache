@@ -1147,10 +1147,10 @@ impl<S: RaftLogStore> ValueBackend<S> {
                     })?;
                 let outcome_only = decision.change.is_none();
                 if outcome_only && input.identity.is_none() {
-                    let observed = AppliedVersion {
+                    let observed = prior.map(Into::into).unwrap_or(AppliedVersion {
                         epoch: snapshot.epoch,
-                        version: prior.map_or(0, |prefix| prefix.version),
-                    };
+                        version: 0,
+                    });
                     return Ok((None, (decision.response, Some(observed))));
                 }
                 let change = decision.change.unwrap_or_else(Change::tombstone);

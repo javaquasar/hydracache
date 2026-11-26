@@ -8,7 +8,7 @@ use std::time::Duration;
 
 use hydracache::{ClusterEpoch, PartitionId, ReplicationConfig};
 use hydracache_client_protocol::{
-    ClientErrorCode, ClientErrorEnvelope, ClientRequest, Namespace, StructuredKey,
+    ClientErrorCode, ClientErrorEnvelope, ClientRequest, ClientResponse, Namespace, StructuredKey,
 };
 use hydracache_client_transport_axum::{
     ClientBackendFuture, ClientBackendOutcome, ClientDataBackend, VerifiedClientRequest,
@@ -19,6 +19,7 @@ use tokio::time::{timeout_at, Instant};
 use crate::grid_host::send_raft_messages_with_diagnostics;
 use crate::imap_read_barrier::{OwnerReadBarrier, ReadInvocation};
 use crate::imap_topology::{PartitionMember, PartitionTopology};
+use crate::imap_value_plane::AppliedVersion;
 
 const MAX_READ_WAIT: Duration = Duration::from_millis(500);
 
@@ -157,13 +158,7 @@ impl<S: RaftLogStore, V: OwnerReadValues> RaftOwnerReadBackend<S, V> {
         request: &ClientRequest,
         deadline: Instant,
         routed_epoch: Option<ClusterEpoch>,
-    ) -> Result<
-        (
-            hydracache_client_protocol::ClientResponse,
-            OwnerReadProgress,
-        ),
-        ClientErrorEnvelope,
-    > {
+    ) -> Result<(ClientResponse, AppliedVersion), ClientErrorEnvelope> {
         let (ns, key, ttl) = match request {
             ClientRequest::Get { ns, key } => (ns, key, false),
             ClientRequest::GetTtl { ns, key } => (ns, key, true),
@@ -225,6 +220,12 @@ impl<S: RaftLogStore, V: OwnerReadValues> RaftOwnerReadBackend<S, V> {
                 {
                     return Err(unavailable());
                 }
+                let version = snapshot
+                    .value_prefixes
+                    .get(&invocation.partition)
+                    .copied()
+                    .map(Into::into)
+                    .unwrap_or(AppliedVersion { epoch, version: 0 });
                 let topology = PartitionTopology::from_snapshot(
                     snapshot,
                     self.partition_count,
@@ -255,7 +256,7 @@ impl<S: RaftLogStore, V: OwnerReadValues> RaftOwnerReadBackend<S, V> {
                     },
                 )
                 .map_err(|_| unavailable())??;
-                Ok((response, progress))
+                Ok((response, version))
             })
             .map_err(|_| unavailable())?
     }

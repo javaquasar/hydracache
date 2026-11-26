@@ -660,6 +660,14 @@ async fn w10g_distributed_bulk_and_cluster_listeners_recover_under_load() {
         replay[0].receipt.unwrap().applied.unwrap().version,
         interrupted_before.version + 1
     );
+    let after = retry_w10i(|| async {
+        let read = client.batch_outcomes(vec![get(&interrupted)], None).await?;
+        read[0].result.as_ref().map_err(Clone::clone)?;
+        Ok(read[0].receipt.unwrap().applied.unwrap())
+    })
+    .await;
+    assert_eq!(after.epoch, interrupted_before.epoch);
+    assert!(after.version > interrupted_before.version);
     let boundary = tokio::time::timeout(Duration::from_secs(8), events.next_delivery())
         .await
         .unwrap()

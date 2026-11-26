@@ -100,7 +100,7 @@ pub(super) async fn dispatch(
             results[item.index] = Some((item.partition, execution));
         }
     }
-    let mut remaining = MAX_BATCH_REPLY_BYTES;
+    let mut remaining = MAX_BATCH_REPLY_BYTES.saturating_sub(results.len() * 128);
     let topology_epoch = service.topology_epoch();
     let (items, receipts) = results
         .into_iter()

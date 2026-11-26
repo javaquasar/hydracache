@@ -175,15 +175,7 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
                 .read
                 .read_at_proven(tenant, &envelope.request, deadline, Some(epoch))
                 .await
-                .map(|(response, proof)| {
-                    (
-                        response,
-                        Some(AppliedVersion {
-                            epoch: proof.epoch,
-                            version: proof.applied_prefix,
-                        }),
-                    )
-                })
+                .map(|(response, proof)| (response, Some(proof)))
         } else {
             self.owner
                 .write_at_proven(
