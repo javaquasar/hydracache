@@ -695,11 +695,6 @@ pub use grid::invalidation_ring::{
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::lock_session::SessionHeartbeats;
 #[cfg(not(target_arch = "wasm32"))]
-pub use grid::merkle_repair::{
-    foreground_read_repair, ForegroundReadRepairOutcome, KeyRange, MerkleTree, RepairKind,
-    RepairReport, RepairSession, RepairToken,
-};
-#[cfg(not(target_arch = "wasm32"))]
 pub use grid::persistence_config::{
     NamespaceMetricLabels, PersistenceConfig, PersistenceConfigError, PersistenceConfigErrorKind,
     PersistenceDurabilityConfig, PersistenceMaintenanceConfig, PersistenceNamespaceConfig,
@@ -814,6 +809,10 @@ pub use replication_model::consistency_level::{
 pub use replication_model::hinted_handoff::{
     apply_hint, replay_hints, Hint, HintBudget, HintError, HintMetrics, HintOutcome,
     HintReplayDecision, HintStore, InMemoryHintStore,
+};
+pub use replication_model::merkle_repair::{
+    foreground_read_repair, ForegroundReadRepairOutcome, KeyRange, MerkleTree, RepairKind,
+    RepairReport, RepairSession, RepairToken,
 };
 pub use replication_model::value_record::{
     ReplicatedValueRecord, SealedBytes, ValueVersion, REPLICATED_VALUE_RECORD_FORMAT_VERSION,

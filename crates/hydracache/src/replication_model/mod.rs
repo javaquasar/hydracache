@@ -14,6 +14,7 @@ use crate::cluster::{ClusterEpoch, ClusterNodeId};
 
 pub(crate) mod consistency_level;
 pub(crate) mod hinted_handoff;
+pub(crate) mod merkle_repair;
 pub(crate) mod value_record;
 
 /// Stable region identifier used by zone-aware placement.
