@@ -15,17 +15,17 @@
 >   composition is racy, bulk emulation amplifies protocol overhead, and node-local routing,
 >   listeners, retries and expiry prevent an honest distributed IMap claim.
 > - **After (depends on):** published `0.74.0` and retained compatibility receipts. Its source
->   handoff is recorded; D1 still needs paired native/batch baseline measurements because 0.74
->   deferred W11 performance qualification. Release 0.75 must preserve the published native-path
->   behavior; baseline acceptance requires no numerical improvement.
+>   handoff and D1 local performance admission are recorded. W11 retains its broader performance
+>   qualification. Release 0.75 must preserve the published native-path behavior without requiring
+>   a numerical improvement.
 > - **Unblocks:** a practical Hazelcast-to-HydraCache distributed-map migration path, a publishable
 >   cluster comparison, and a shared atomic collection foundation for later `MultiMap` and `Set`
 >   proposals.
 > - **Status:** planned. Production integration is being prepared on the published 0.74 source.
->   W0 and the D1 gate are open.
+>   W0 remains open.
 >   [Main integration record](../testing/imap/0.75/main-integration.md).
->   [D1 local-backend extraction](../testing/imap/0.75/d1-local-backend.md) is in progress;
->   paired B74 performance admission remains open. The owner left W0 public scope open.
+>   [D1 local-backend extraction](../testing/imap/0.75/d1-local-backend.md#d1-admission) passed
+>   for static dispatch at `89ec8970c` on AX42. The owner left W0 public scope open.
 
 Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) · gates:
 [`../GATES.md`](../GATES.md) · original facade plan:

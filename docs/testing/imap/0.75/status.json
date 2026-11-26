@@ -136,8 +136,8 @@
     },
     {
       "id": "accepted-native-batch-baseline",
-      "required_artifact": "paired B74/I75 native, RESP and batch non-regression receipts on the reviewed harness",
-      "reason": "0.74.0 shipped as a maintenance binary while paired W11 qualification was deferred. Use the exact published predecessor as B74 and remeasure it for D1; no throughput improvement is required to accept that baseline"
+      "required_artifact": "remaining W11 native, RESP and batch non-regression receipts on the reviewed release harness",
+      "reason": "D1 admitted static dispatch at 89ec8970c against the exact B74 source on AX42. The release-level performance baseline still requires the broader W11 qualification deferred by 0.74.0"
     },
     {
       "id": "final-wire-durable-identities",

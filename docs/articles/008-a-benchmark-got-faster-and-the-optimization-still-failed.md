@@ -848,6 +848,14 @@ Its goodput estimate was -1.90%, with an interval of -3.06% to -1.37% against a 
 CPU per operation was +1.93%, with an interval of +1.39% to +3.19% against a +3% ceiling. The
 new placement and extra pairs resolved the read calibration. The write intervals kept D1 open.
 
+The raw `PUT` follow-up measured roughly the same instruction count per operation on the two
+binaries. On the split-core profile, the median pair showed about 1.5% more cycles per operation
+for the candidate, at nearly the same effective frequency. The preregistered confirmation kept
+that profile and the original binaries. In forty-eight fresh A/A and forty-eight A/B pairs,
+goodput was -1.46% with an interval of -1.88% to -1.08%. CPU per operation was +1.48% with an
+interval of +1.11% to +1.93%. p99 and allocation also cleared their limits. The nine matching
+cells in the previous matrix and this confirmation together admitted static dispatch for D1.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

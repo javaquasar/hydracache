@@ -103,13 +103,30 @@ with an interval of +1.39% to +3.19% against a +3% ceiling. Raw `PUT` p99 and al
 The verified archive is `target/imap-075/d1-put-clock-20261125/d1-isolated-recalibration-20261126.zip`
 with SHA-256 `71a49123a4eb37584a5202dfcb40b9fc64a490f53ead2d1f4ee79e86140c1812`.
 
-## Open admission gates
+## D1 admission
+
+The AX42 diagnostic used both placement profiles and the same binaries. On `split-3-4` the median
+pair had about 0.06% more estimated instructions per operation and 1.50% more estimated cycles
+per operation for the candidate. The hardware counters establish a lower IPC in that sample.
+
+Fresh raw embedded `PUT` A/A and A/B then used 48 pairs each on `split-3-4`. Goodput passed at
+-1.46% with a 95% interval of -1.88% to -1.08% against the -2% floor. CPU/op passed at +1.48%
+with an interval of +1.11% to +1.93% against the +3% ceiling. p99 was -0.25% and allocation was
+unchanged. All 192 receipts and both calibration and comparison intervals were independently
+verified. The archive is `target/imap-075/d1-put-clock-20261125/d1-raw-put-confirmation-20261126.zip`
+with SHA-256 `d557d11ff52b51c4273b05b7221a03aa01769cf29fbf7eba5aae85219e2528a3`.
+
+**D1 passed for static dispatch at `89ec8970c66df1ae03b7a58bca3d6a7be573cf93`.** The independent
+verifier matched the two archives by original build records, source commits, split-core profile
+and thresholds. The prior nine passing cells and the fresh raw `PUT` cell clear all forty metric
+bounds. Both archives retain their original results. The evidence covers the local D1 workload
+matrix against B74 `bcba511f0c1f4b3e965c9e17f81b248deb0ea331`.
+
+## Remaining release gates
 
 The owner explicitly chose to leave W0 public scope open on 25 November 2026. OD-6 and OD-9
 are not frozen by this extraction; the remaining numerical and delivery decisions also stay open.
 
-D1 remains open until matched measurements against the exact B74 source admit a dispatch
-candidate for embedded/local, direct-native and RESP GET/SET at pipeline 1 and the registered
-pipelined depth. The [B74 intake](d1-b74-intake.md) authenticates the predecessor; it does not
-replace those measurements. No throughput, latency or CPU advantage is claimed here. D2-D16
-and production distributed-map qualification remain separate work.
+The [B74 intake](d1-b74-intake.md) retains the separate signed release and predecessor evidence.
+D2-D16 and production distributed-map qualification remain open. The broader W11 native/batch
+and Hazelcast comparison still have their own release gates.

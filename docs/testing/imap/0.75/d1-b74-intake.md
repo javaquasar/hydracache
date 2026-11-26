@@ -49,14 +49,10 @@ Local files are under `target/imap-075/d1-b74-20261125/`:
 The smoke executable copy is under the owned Linux preparation directory
 `/home/artur/hydracache-075-dbus.F2FOn6/b74-server/`. No existing service was changed.
 
-## Remaining D1 gate
+## Follow-up evidence
 
 This intake authenticates the network-control binary and its bounded functional smoke.
-Embedded and direct-native B74 controls still need builds from the pinned source with their
-frozen build/configuration identities. Upgrade/rollback compatibility evidence still needs its
-own retained replay. The authenticated binary, smoke and maintenance replay are distinct inputs.
-
-D1 remains open until the production local-backend extraction and asynchronous dispatcher pass
-unchanged protocol/conformance suites and matched B74/I75 measurements for local, direct-native
-and RESP GET/SET. The dynamic and static dispatch candidates retain the plan's non-regression
-bounds; this intake contains no throughput or latency comparison result.
+Upgrade and rollback compatibility evidence still needs its own retained replay. The authenticated
+binary, smoke and maintenance replay are distinct inputs. The [D1 decision record](d1-local-backend.md#d1-admission)
+binds the pinned source builds to the paired AX42 measurements and records the static candidate's
+admission.
