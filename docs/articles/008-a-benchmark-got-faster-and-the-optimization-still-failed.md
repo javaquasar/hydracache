@@ -775,6 +775,45 @@ confirm fail-closed replay. At source `9b4d93a7`, all 125 ordinary WSL superviso
 independent packet-verifier tests pass. This proves the local mode/hash boundary, not production
 uid/gid or mount enforcement; those still belong to admitted-host rehearsal.
 
+## The 0.75 dispatcher and the cost of a clock read
+
+HydraCache 0.75 revisited the same rule when it moved the local cache behind an asynchronous
+dispatcher shared by HC/1, HC/2, and RESP. On the first paired screen against the published
+0.74 source, static dispatch lost 7.07% of direct-native `GET` goodput. The boxed future lost
+9.91% and increased allocated bytes per `GET` by 38.87%. Both variants still returned the
+expected responses. The timing and allocation checks exposed a cost that conformance tests
+could not see.
+
+The static path began returning its existing response envelope and skipped audit copies for
+unisolated reads and ordinary writes. Local cache hits became one tree lookup. RESP passed the
+translated request and reply bytes by ownership. On the same Linux host, the follow-up screen
+put direct-native `GET` at +22.35% goodput, RESP pipeline-10 `GET` at +0.85%, and RESP
+pipeline-10 `SET` at -1.19%. All three passed the frozen goodput, CPU, p99, and allocation
+limits. These figures describe local release builds and RESP over loopback TCP.
+
+Direct-native `PUT` still needed its own decision. We ran fifteen same-binary A/A pairs and
+fifteen baseline/candidate pairs, with three million measured writes per process. The goodput
+estimate was -1.89%, with a 95% interval of -2.39% to -1.25%. The p99 estimate was +1.69%,
+with an interval of +0.85% to +3.39%. The point estimates sat inside the -2% and +3% budgets.
+Both intervals crossed a limit, so the D1 gate stayed open.
+
+The next code-level hypothesis came from tracing a plain write. The dispatcher had already
+sampled time for expiry maintenance. The write path sampled again even when there was no TTL
+or idempotency key to timestamp. The focused change keeps the maintenance read and takes the
+second sample only for writes that need it. A test recorded one clock read for a plain write
+and two when a TTL or idempotency key was present. It also checked the stored bytes, expiry,
+mutation event, and replay outcome.
+
+The first AX42 comparison at source `89ec8970c` put direct-native `PUT` goodput at +5.87%.
+One candidate process spent 5.21 ms waiting to run, above the 5 ms scheduler threshold. We
+retained the entire block and repeated all its pairs. In the new fifteen A/A and fifteen A/B
+pairs, `PUT` passed the four limits. Goodput was +5.20% (95% interval +4.19% to +5.69%), CPU/op
+was -4.93%, and p99 was -5.08% (95% interval -5.88% to -3.47%).
+The full D1 screen stayed open on that same source.
+For raw embedded `GET`, the B74-versus-B74 p99 interval ran from -3.91% to +1.73%,
+beyond its ±3% noise budget. The same-binary control also exceeded the goodput and CPU/op
+noise budgets for typed embedded `PUT`.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
