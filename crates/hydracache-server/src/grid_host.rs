@@ -1495,8 +1495,15 @@ enum TestRaftOutboundFaultAction {
     Drop,
     ValueDrop,
     ValueChunkDrop { index: u32 },
+    ValueDeltaDelay { version: u64, millis: u64 },
     Delay { millis: u64 },
     SnapshotDelay { millis: u64 },
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum TestValueSend {
+    Chunk(u32),
+    Delta(u64),
 }
 
 #[derive(Debug, Clone)]
@@ -1565,7 +1572,7 @@ impl TestRaftOutboundFaultController {
         to: &ClusterNodeId,
         is_snapshot: bool,
         is_value: bool,
-        value_chunk: Option<u32>,
+        value_send: Option<TestValueSend>,
     ) -> CacheResult<()> {
         let document = self.load_document()?;
         let Some(rule) = document.rules.iter().find(|rule| rule.to == to.as_str()) else {
@@ -1575,7 +1582,12 @@ impl TestRaftOutboundFaultController {
             return Ok(());
         }
         if let TestRaftOutboundFaultAction::ValueChunkDrop { index } = rule.action {
-            if value_chunk != Some(index) {
+            if value_send != Some(TestValueSend::Chunk(index)) {
+                return Ok(());
+            }
+        }
+        if let TestRaftOutboundFaultAction::ValueDeltaDelay { version, .. } = rule.action {
+            if value_send != Some(TestValueSend::Delta(version)) {
                 return Ok(());
             }
         }
@@ -1608,7 +1620,8 @@ impl TestRaftOutboundFaultController {
                 )))
             }
             TestRaftOutboundFaultAction::Delay { millis }
-            | TestRaftOutboundFaultAction::SnapshotDelay { millis } => {
+            | TestRaftOutboundFaultAction::SnapshotDelay { millis }
+            | TestRaftOutboundFaultAction::ValueDeltaDelay { millis, .. } => {
                 let expected_generation = document.generation;
                 let expected_rule = rule.clone();
                 tokio::time::sleep(Duration::from_millis(millis)).await;
@@ -1652,7 +1665,8 @@ fn validate_test_raft_outbound_fault_document(
             )));
         }
         if let TestRaftOutboundFaultAction::Delay { millis }
-        | TestRaftOutboundFaultAction::SnapshotDelay { millis } = rule.action
+        | TestRaftOutboundFaultAction::SnapshotDelay { millis }
+        | TestRaftOutboundFaultAction::ValueDeltaDelay { millis, .. } = rule.action
         {
             if !(1..=MAX_TEST_RAFT_OUTBOUND_DELAY_MS).contains(&millis) {
                 return Err(CacheError::Backend(format!(
@@ -1907,7 +1921,7 @@ impl HttpRaftMessageSink {
         target: &ClusterNodeId,
         epoch: u64,
         request: &T,
-        value_chunk: Option<u32>,
+        value_send: Option<TestValueSend>,
     ) -> CacheResult<R> {
         let endpoint = self
             .peers
@@ -1919,7 +1933,7 @@ impl HttpRaftMessageSink {
             .ok_or_else(|| CacheError::Backend("value replica peer unavailable".into()))?;
         if let Some(faults) = &self.test_outbound_faults {
             faults
-                .apply_for_route(target, false, true, value_chunk)
+                .apply_for_route(target, false, true, value_send)
                 .await?;
         }
         let payload = serde_json::to_vec(request)
@@ -1982,15 +1996,16 @@ impl ReplicaTransport for HttpRaftMessageSink {
     }
 
     async fn repair(&self, request: RepairRequest) -> CacheResult<RepairReceipt> {
-        let chunk = match request.step {
-            RepairStep::Chunk { index, .. } => Some(index),
+        let value_send = match &request.step {
+            RepairStep::Chunk { index, .. } => Some(TestValueSend::Chunk(*index)),
+            RepairStep::Delta { mutation } => Some(TestValueSend::Delta(mutation.record.version)),
             _ => None,
         };
         self.send_value_message(
             &request.manifest.plan.target.node,
             request.manifest.plan.old_epoch.value(),
             &request,
-            chunk,
+            value_send,
         )
         .await
     }

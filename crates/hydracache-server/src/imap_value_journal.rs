@@ -14,8 +14,11 @@ use sha2::{Digest, Sha256};
 
 use crate::imap_topology::PartitionMember;
 
+#[path = "imap_value_delta.rs"]
+mod delta;
 #[path = "imap_value_snapshot.rs"]
 mod snapshot;
+pub(crate) use delta::CapturedTransfer;
 
 const RETAINED_IDENTITIES: usize = 128;
 
@@ -254,9 +257,18 @@ impl ValueJournal {
         mutation: Mutation,
         owner_request: bool,
     ) -> CacheResult<ApplyResult> {
+        self.apply_with_batch(required, mutation, owner_request, sled::Batch::default())
+    }
+
+    fn apply_with_batch(
+        &self,
+        required: Option<PartitionValuePrefix>,
+        mutation: Mutation,
+        owner_request: bool,
+        mut batch: sled::Batch,
+    ) -> CacheResult<ApplyResult> {
         let partition = mutation.record.partition;
         let mut meta = self.load(partition)?;
-        let mut batch = sled::Batch::default();
         if meta.visible != required {
             let Some(previous) = meta.materialize_pending(required) else {
                 return Ok(ApplyResult::Busy);
@@ -305,6 +317,9 @@ impl ValueJournal {
             if pending.record.epoch > mutation.record.epoch {
                 return Ok(ApplyResult::Busy);
             }
+        }
+        if owner_request && !self.capture_delta(&mut batch, required, &mutation)? {
+            return Ok(ApplyResult::Busy);
         }
         meta.pending = Some(mutation);
         batch.insert(

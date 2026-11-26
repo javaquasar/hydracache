@@ -380,6 +380,11 @@ impl Node {
         replaced: PartitionMember,
         target: PartitionMember,
     ) -> Result<ReplicaRepairOutcome, String> {
+        self.start_repair(serial, replaced, target);
+        self.repair_result(serial)
+    }
+
+    fn start_repair(&self, serial: u32, replaced: PartitionMember, target: PartitionMember) {
         publish_json(
             &self.root.join("repair.json"),
             &RepairCommand {
@@ -388,6 +393,9 @@ impl Node {
                 target,
             },
         );
+    }
+
+    fn repair_result(&self, serial: u32) -> Result<ReplicaRepairOutcome, String> {
         wait_for("snapshot transfer control reply", || {
             read_json::<RepairResponse>(&self.root.join("repair-reply.json"))
                 .filter(|reply| reply.serial == serial)
@@ -675,6 +683,7 @@ fn w10f_resumes_snapshot_and_restores_writes_with_old_owner_stopped() {
         .repair(2, old_identity.clone(), next_identity.clone())
         .unwrap();
     assert_eq!(repair.resumed_from, 1);
+    assert_eq!(repair.deltas, 0);
     assert!(repair.chunks >= 2);
     assert_eq!(repair.plan.owner, promotion.new_owner);
     assert_eq!(repair.plan.target, next_identity);
@@ -717,6 +726,145 @@ fn w10f_resumes_snapshot_and_restores_writes_with_old_owner_stopped() {
     println!("W10f old_pid={} owner_pid={} repaired_replica_pid={} repaired_epoch={epoch} resumed_from={} chunks={} snapshot_digest={:02x?} final_prefix={} final_digest={:02x?} old_process_stopped=true",
         initial[old].pid, initial[owner].pid, initial[target].pid, repair.resumed_from,
         repair.chunks, repair.plan.snapshot_digest, final_cert.version, final_cert.digest);
+}
+
+#[test]
+fn w10f_streams_versioned_changes_while_owner_keeps_accepting_writes() {
+    if std::env::var(RUN).as_deref() != Ok("1") {
+        return;
+    }
+    let mut nodes = start_nodes(true);
+    let initial = wait_for("three members before live repair", || {
+        all_members(&nodes, 0)
+    });
+    let old = expect_owner(&nodes, b"$-1\r\n");
+    let owner = nodes
+        .iter()
+        .position(|node| Some(&node.identity) == initial[old].backup.as_ref())
+        .unwrap();
+    let spare = (0..nodes.len())
+        .find(|index| *index != old && *index != owner)
+        .unwrap();
+    let replaced = nodes[old].member(initial[old].generation);
+    let target = nodes[spare].member(initial[spare].generation);
+    let source = &nodes[owner];
+    let receiver = &nodes[spare];
+    assert_eq!(
+        resp(nodes[old].address, &[b"SET", KEY, b"before"]).unwrap(),
+        b"+OK\r\n"
+    );
+    let mut value = vec![0xaa; 20 * 1024];
+    assert_eq!(
+        nodes[old]
+            .hc1(compare_and_set(b"before", &value), "live-seed")
+            .unwrap(),
+        ClientResponse::CasApplied { new_version: 2 }
+    );
+    wait_for("source inherited the seed certificate", || {
+        (source.status()?.version == 2).then_some(())
+    });
+    let promotion = source.promote(1, vec![replaced.clone()]).unwrap();
+    let old_epoch = promotion.new_epoch.value();
+    wait_for("all members see the promoted placement", || {
+        all_members(&nodes, old_epoch - 1)
+    });
+
+    publish_json(
+        &source.root.join("fault.json"),
+        &json!({
+            "schema_version": 1, "generation": 1, "rules": [{
+                "from": source.identity, "to": receiver.identity,
+                "action": {"kind": "value_chunk_drop", "index": 1}
+            }]
+        }),
+    );
+    assert!(source.repair(1, replaced.clone(), target.clone()).is_err());
+    assert!(fs::read_to_string(source.root.join("child.log"))
+        .unwrap()
+        .contains("ValueChunkDrop { index: 1 }"));
+    assert_eq!(source.refreshed_status().epoch, old_epoch);
+
+    let mut completed = Vec::new();
+    for version in 3..=17 {
+        if version == 6 {
+            publish_json(
+                &source.root.join("fault.json"),
+                &json!({
+                    "schema_version": 1, "generation": 2, "rules": [{
+                        "from": source.identity, "to": receiver.identity,
+                        "action": {"kind": "value_delta_delay", "version": 3, "millis": 1000}
+                    }]
+                }),
+            );
+            source.start_repair(2, replaced.clone(), target.clone());
+            wait_for(
+                "first ordered delta was sent while the old backup is active",
+                || {
+                    fs::read_to_string(source.root.join("child.log"))
+                        .ok()?
+                        .contains("ValueDeltaDelay { version: 3, millis: 1000 }")
+                        .then_some(())
+                },
+            );
+            assert_eq!(receiver.read().unwrap(), UNAVAILABLE);
+        }
+        let next = format!("during-repair-{version}").into_bytes();
+        let request = compare_and_set(&value, &next);
+        let id = format!("w10e:{old_epoch}:live-{version}");
+        assert_eq!(
+            source.hc1(request.clone(), &id).unwrap(),
+            ClientResponse::CasApplied {
+                new_version: version
+            }
+        );
+        completed.push((request, id, version));
+        value = next;
+    }
+    let repaired = source.repair_result(2).unwrap();
+    let new_epoch = repaired.plan.new_epoch.value();
+    assert_eq!(repaired.resumed_from, 1);
+    assert_eq!(repaired.deltas, 15);
+    assert_eq!(repaired.plan.required.unwrap().version, 17);
+    assert_eq!(repaired.plan.target, target);
+    assert_eq!(repaired.plan.old_epoch.value(), old_epoch);
+    wait_for(
+        "replacement applies the final version and activation",
+        || {
+            let status = receiver.status()?;
+            (status.epoch == new_epoch && status.certificate == repaired.plan.required)
+                .then_some(())
+        },
+    );
+    nodes[old].stop();
+    assert!(nodes[old].read().is_err());
+    let after = compare_and_set(&value, VALUE);
+    let id = format!("w10e:{new_epoch}:after-live-repair");
+    assert_eq!(
+        nodes[owner].hc1(after.clone(), &id).unwrap(),
+        ClientResponse::CasApplied { new_version: 18 }
+    );
+    assert_eq!(
+        nodes[owner].hc1(after, &id).unwrap(),
+        ClientResponse::CasApplied { new_version: 18 }
+    );
+    let final_prefix = wait_for("new backup received a write after cutover", || {
+        let status = nodes[spare].status()?;
+        (status.version == 18 && status.applies == 1).then_some(status.certificate?)
+    });
+    let on_replacement = nodes[spare].promote(1, vec![promotion.new_owner]).unwrap();
+    assert_eq!(on_replacement.required, Some(final_prefix));
+    assert_eq!(nodes[spare].read().unwrap(), expected_value());
+    for (request, id, version) in completed {
+        assert_eq!(
+            nodes[spare].hc1(request, &id).unwrap(),
+            ClientResponse::CasApplied {
+                new_version: version
+            }
+        );
+    }
+    assert_eq!(nodes[spare].refreshed_status().owner_applies, 0);
+    println!("W10f live owner_pid={} prior_backup_pid={} replacement_pid={} resumed_from=1 snapshot=2 final_cut=17 deltas=15 live_acks_during_delta_send=12 post_cut=18 replayed=15 final_digest={:02x?}",
+        initial[owner].pid, initial[old].pid, initial[spare].pid, final_prefix.digest);
 }
 
 #[test]

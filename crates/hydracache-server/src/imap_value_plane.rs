@@ -222,14 +222,6 @@ impl ValueReplica {
         let record = &mutation.record;
         let required = snapshot.value_prefixes.get(&record.partition).copied();
         let expected_version = required.map_or(0, |prefix| prefix.version).checked_add(1);
-        let slot_version = match &record.state {
-            ReplicatedSlot::Value { version, value } if value.len() <= MAX_VALUE_BYTES => *version,
-            ReplicatedSlot::Tombstone {
-                version,
-                gc_eligible_after: None,
-            } => *version,
-            _ => return Err(replica_rejected()),
-        };
         let Some(placement) = self.placement(snapshot, record.partition) else {
             return Err(replica_rejected());
         };
@@ -243,21 +235,8 @@ impl ValueReplica {
             || !placement.backups.contains(&self.local)
             || !admitted(snapshot, &self.local)
             || expected_version != Some(record.version)
-            || slot_version != record.version
-            || (record.is_tombstone() && mutation.expires_not_before_ms.is_some())
-            || (mutation.outcome_only
-                && (!record.is_tombstone()
-                    || mutation.identity.is_none()
-                    || mutation.decision.is_none()))
             || mutation.previous != required.map_or([0; 32], |prefix| prefix.digest)
-            || mutation.key.len() > MAX_KEY_HEX_BYTES
-            || mutation
-                .identity
-                .as_ref()
-                .is_some_and(|id| id.is_empty() || id.len() > MAX_ID_BYTES)
-            || !self
-                .scope
-                .admits_storage_key(&mutation.key, record.partition)
+            || !self.admits_mutation(&mutation)
         {
             return Err(replica_rejected());
         }
@@ -273,6 +252,32 @@ impl ValueReplica {
             replica: self.local.clone(),
             prefix,
         })
+    }
+
+    fn admits_mutation(&self, mutation: &Mutation) -> bool {
+        let record = &mutation.record;
+        let slot_version = match &record.state {
+            ReplicatedSlot::Value { version, value } if value.len() <= MAX_VALUE_BYTES => *version,
+            ReplicatedSlot::Tombstone {
+                version,
+                gc_eligible_after: None,
+            } => *version,
+            _ => return false,
+        };
+        slot_version == record.version
+            && (!record.is_tombstone() || mutation.expires_not_before_ms.is_none())
+            && (!mutation.outcome_only
+                || (record.is_tombstone()
+                    && mutation.identity.is_some()
+                    && mutation.decision.is_some()))
+            && mutation.key.len() <= MAX_KEY_HEX_BYTES
+            && mutation
+                .identity
+                .as_ref()
+                .is_none_or(|id| !id.is_empty() && id.len() <= MAX_ID_BYTES)
+            && self
+                .scope
+                .admits_storage_key(&mutation.key, record.partition)
     }
 
     pub(crate) fn prove_replica(

@@ -1,7 +1,8 @@
+use super::delta::consecutive;
 use super::*;
 use crate::imap_value_repair::{
-    bytes_digest, repair_error, RepairManifest, RepairReceipt, RepairRequest, RepairStep,
-    MAX_IMAGE_BYTES, MAX_IMAGE_ROWS,
+    bytes_digest, is_prefix_at_most, repair_error, version, RepairManifest, RepairReceipt,
+    RepairRequest, RepairStep, MAX_DELTA_ROWS, MAX_IMAGE_BYTES, MAX_IMAGE_ROWS,
 };
 
 const TRANSFER_KEY: &[u8] = b"repair";
@@ -95,16 +96,23 @@ impl ValueJournal {
             return Err(repair_error("invalid snapshot size"));
         }
         let chunks = manifest.chunks();
-        let previous = self
+        let mut previous = self
             .0
             .get(TRANSFER_KEY)
             .map_err(storage_error)?
             .map(|bytes| serde_json::from_slice::<RepairReceipt>(&bytes).map_err(storage_error))
             .transpose()?;
+        if let Some(prior) = previous.as_mut().filter(|prior| prior.installed) {
+            // Snapshot-only receipts have no separate delta cursor.
+            prior.applied = prior.applied.or(prior.manifest.plan.required);
+        }
         if previous.as_ref().is_some_and(|prior| {
             !prior.manifest.is_bounded()
                 || prior.next > prior.manifest.chunks()
                 || (prior.installed && prior.next != prior.manifest.chunks())
+                || (prior.installed
+                    && !is_prefix_at_most(prior.manifest.plan.required, prior.applied))
+                || (!prior.installed && prior.applied.is_some())
         }) {
             return Err(repair_error("invalid persisted transfer cursor"));
         }
@@ -124,6 +132,7 @@ impl ValueJournal {
                     manifest,
                     next: 0,
                     installed: false,
+                    applied: None,
                 }
             }
             _ => return Err(repair_error("conflicting or missing staged manifest")),
@@ -175,6 +184,50 @@ impl ValueJournal {
                     self.stage_image(&mut batch, &state.manifest, &bytes, admits_key)?;
                     remove_chunks(&mut batch, chunks);
                     state.installed = true;
+                    state.applied = state.manifest.plan.required;
+                }
+            }
+            RepairStep::Delta { mutation } => {
+                let plan = &state.manifest.plan;
+                let next = mutation.certificate();
+                if !state.installed
+                    || next.partition != plan.partition
+                    || next.epoch != plan.old_epoch
+                    || mutation.owner != plan.owner
+                    || !admits_key(&mutation.key)
+                    || next.version.saturating_sub(version(plan.required)) > MAX_DELTA_ROWS
+                {
+                    return Err(repair_error("delta is outside the installed transfer"));
+                }
+                if state.applied != Some(next) {
+                    if !consecutive(state.applied, next) {
+                        return Err(repair_error("delta does not extend the recipient cursor"));
+                    }
+                    let prior = state.applied;
+                    state.applied = Some(next);
+                    batch.insert(
+                        TRANSFER_KEY,
+                        serde_json::to_vec(&state).map_err(storage_error)?,
+                    );
+                    if self.apply_with_batch(prior, *mutation, false, batch)?
+                        != ApplyResult::Flushed
+                    {
+                        return Err(repair_error("recipient journal refused the next delta"));
+                    }
+                    return Ok(state);
+                }
+                if !self.load(plan.partition)?.covers(Some(next)) {
+                    return Err(repair_error(
+                        "duplicate delta is missing from the recipient journal",
+                    ));
+                }
+            }
+            RepairStep::Seal { prefix } => {
+                if !state.installed
+                    || state.applied != prefix
+                    || !self.load(state.manifest.plan.partition)?.covers(prefix)
+                {
+                    return Err(repair_error("recipient has not reached the final prefix"));
                 }
             }
         }
@@ -253,13 +306,16 @@ impl ValueJournal {
 fn supersedes(prior: &RepairReceipt, next: &RepairManifest) -> bool {
     let old = &prior.manifest.plan;
     let new = &next.plan;
-    prior.installed
-        || old.old_epoch < new.old_epoch
-        || (old.partition == new.partition
-            && old.owner == new.owner
-            && old.target == new.target
-            && old.required.map_or(0, |prefix| prefix.version)
-                < new.required.map_or(0, |prefix| prefix.version))
+    if old.old_epoch != new.old_epoch {
+        return old.old_epoch < new.old_epoch;
+    }
+    if old.partition != new.partition {
+        return prior.installed;
+    }
+    old.owner == new.owner
+        && old.target == new.target
+        && version(old.required) < version(new.required)
+        && is_prefix_at_most(prior.applied, new.required)
 }
 
 fn chunk_key(index: u32) -> [u8; 5] {
@@ -569,5 +625,208 @@ mod tests {
         assert!(journal
             .receive_image(request(&active, RepairStep::Install), |_| true)
             .is_err());
+    }
+
+    fn delta(
+        manifest: &RepairManifest,
+        prior: Option<PartitionValuePrefix>,
+        key: &str,
+        value: Option<Vec<u8>>,
+    ) -> Mutation {
+        let plan = &manifest.plan;
+        Mutation {
+            record: next_record(plan.partition, plan.old_epoch, prior, value).unwrap(),
+            owner: plan.owner.clone(),
+            backups: vec![plan.replaced.clone()],
+            previous: prior.map_or([0; 32], |prefix| prefix.digest),
+            key: key.to_owned(),
+            identity: None,
+            expires_not_before_ms: None,
+            decision: None,
+            outcome_only: false,
+        }
+    }
+
+    #[test]
+    fn live_delta_receipt_is_ordered_idempotent_and_seals_only_the_caught_up_prefix() {
+        let source = ValueJournal::temporary();
+        let target = ValueJournal::temporary();
+        let base = write(&source, None, "remove", Some(b"initial".to_vec()), None);
+        let image = source.export_image(base.partition, Some(base)).unwrap();
+        let manifest = manifest(Some(base), &image);
+        source.start_capture(&manifest, &image).unwrap();
+        assert_eq!(source.captured_image(&manifest).unwrap(), image);
+
+        let mut ttl = delta(&manifest, Some(base), "ttl", Some(b"timed".to_vec()));
+        ttl.expires_not_before_ms = Some(90);
+        let first = ttl.certificate();
+        let tombstone = delta(&manifest, Some(first), "remove", None);
+        let second = tombstone.certificate();
+        let mut outcome = delta(&manifest, Some(second), "remove", None);
+        outcome.identity = Some("failed-cas".into());
+        outcome.decision = Some(CachedDecision {
+            request: [7; 32],
+            response: ClientResponse::CasMismatch { current: None },
+        });
+        outcome.outcome_only = true;
+        let last = outcome.certificate();
+        for (previous, item) in [
+            (base, &ttl),
+            (base, &ttl),
+            (first, &tombstone),
+            (second, &outcome),
+        ] {
+            assert_eq!(
+                source.apply(Some(previous), item.clone(), true).unwrap(),
+                ApplyResult::Flushed
+            );
+        }
+        let unseen = delta(
+            &manifest,
+            Some(last),
+            "not-certified",
+            Some(b"speculative".to_vec()),
+        );
+        assert_eq!(
+            source.apply(Some(last), unseen, true).unwrap(),
+            ApplyResult::Flushed
+        );
+        let (certified, _) = source
+            .captured_deltas(&manifest, Some(base), Some(last))
+            .unwrap();
+        assert_eq!(certified, [ttl, tombstone, outcome]);
+        assert!(source
+            .captured_deltas(
+                &manifest,
+                Some(base),
+                Some(PartitionValuePrefix {
+                    digest: [4; 32],
+                    ..last
+                })
+            )
+            .is_err());
+
+        target
+            .receive_image(request(&manifest, RepairStep::Status), |_| true)
+            .unwrap();
+        let transfer = |item: &Mutation| RepairStep::Delta {
+            mutation: Box::new(item.clone()),
+        };
+        assert!(target
+            .receive_image(request(&manifest, transfer(&certified[0])), |_| true)
+            .is_err());
+        for (index, bytes) in image
+            .chunks(crate::imap_value_repair::CHUNK_BYTES)
+            .enumerate()
+        {
+            target
+                .receive_image(request(&manifest, chunk(index as u32, bytes)), |_| true)
+                .unwrap();
+        }
+        assert_eq!(
+            target
+                .receive_image(request(&manifest, RepairStep::Install), |_| true)
+                .unwrap()
+                .applied,
+            Some(base)
+        );
+        assert!(target
+            .receive_image(request(&manifest, transfer(&certified[1])), |_| true)
+            .is_err());
+        for _ in 0..2 {
+            assert_eq!(
+                target
+                    .receive_image(request(&manifest, transfer(&certified[0])), |_| true)
+                    .unwrap()
+                    .applied,
+                Some(first)
+            );
+        }
+        let wrong_first = delta(&manifest, Some(base), "ttl", Some(b"diverged".to_vec()));
+        assert!(target
+            .receive_image(request(&manifest, transfer(&wrong_first)), |_| true)
+            .is_err());
+        let progress = target
+            .receive_image(request(&manifest, RepairStep::Status), |_| true)
+            .unwrap();
+        assert_eq!(progress.applied, Some(first));
+        assert!(target
+            .receive_image(
+                request(&manifest, RepairStep::Seal { prefix: Some(last) }),
+                |_| true
+            )
+            .is_err());
+        let (rest, _) = source
+            .captured_deltas(&manifest, progress.applied, Some(last))
+            .unwrap();
+        for item in rest {
+            target
+                .receive_image(request(&manifest, transfer(&item)), |_| true)
+                .unwrap();
+        }
+        assert_eq!(
+            target
+                .receive_image(
+                    request(&manifest, RepairStep::Seal { prefix: Some(last) }),
+                    |_| true
+                )
+                .unwrap()
+                .applied,
+            Some(last)
+        );
+        let meta = target.load(base.partition).unwrap();
+        assert!(meta.covers(Some(last)));
+        assert!(meta.retained(Some(last), "failed-cas").is_some());
+        assert!(target
+            .read_entry(base.partition, "remove", &meta, Some(last))
+            .unwrap()
+            .unwrap()
+            .record
+            .is_tombstone());
+        assert!(target
+            .read_entry(base.partition, "not-certified", &meta, Some(last))
+            .unwrap()
+            .is_none());
+        assert_eq!(
+            target.expiry_batch(&mut None, 90, 10).unwrap()[0].deadline,
+            90
+        );
+        source.finish_capture(&manifest).unwrap();
+        assert!(source.captured_transfer().unwrap().is_none());
+        assert!(source.captured_image(&manifest).is_err());
+    }
+
+    #[test]
+    fn a_full_delta_budget_backpressures_before_owner_apply() {
+        let journal = ValueJournal::temporary();
+        let partition = PartitionId::new(7);
+        let image = journal.export_image(partition, None).unwrap();
+        let manifest = manifest(None, &image);
+        journal.start_capture(&manifest, &image).unwrap();
+        let mut prior = None;
+        for _ in 0..MAX_DELTA_ROWS {
+            let item = delta(&manifest, prior, "key", Some(b"bounded".to_vec()));
+            let next = item.certificate();
+            assert_eq!(
+                journal.apply(prior, item, true).unwrap(),
+                ApplyResult::Flushed
+            );
+            prior = Some(next);
+        }
+        let excess = delta(&manifest, prior, "key", Some(b"too far".to_vec()));
+        assert_eq!(
+            journal.apply(prior, excess.clone(), true).unwrap(),
+            ApplyResult::Busy
+        );
+        assert!(journal.load(partition).unwrap().covers(prior));
+        assert!(!journal
+            .load(partition)
+            .unwrap()
+            .covers(Some(excess.certificate())));
+        journal.finish_capture(&manifest).unwrap();
+        assert_eq!(
+            journal.apply(prior, excess, true).unwrap(),
+            ApplyResult::Flushed
+        );
     }
 }

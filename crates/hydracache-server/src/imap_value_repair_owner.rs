@@ -1,7 +1,8 @@
 use super::*;
 use crate::imap_value_repair::{
-    admits_repair, bytes_digest, RepairManifest, RepairStep, ReplicaRepairOutcome, CHUNK_BYTES,
-    REPAIR_WAIT,
+    admits_repair, admits_transfer, bytes_digest, is_prefix_at_most, version, RepairManifest,
+    RepairStep, ReplicaRepairOutcome, CHUNK_BYTES, FINAL_CUT_WAIT, FINAL_DELTA_BYTES,
+    FINAL_DELTA_ROWS, REPAIR_WAIT,
 };
 use hydracache::PartitionReplicaRepair;
 
@@ -31,15 +32,37 @@ impl ValueReplica {
         let lane = self
             .lane(partition)
             .ok_or_else(|| repair_error("unknown partition"))?;
-        let installs = matches!(request.step, RepairStep::Install);
+        let touches_partition = matches!(
+            request.step,
+            RepairStep::Install | RepairStep::Delta { .. } | RepairStep::Seal { .. }
+        );
         let receive = |snapshot: RaftPartitionSnapshot| {
-            if !admits_repair(&snapshot, &request.manifest.plan) {
+            if !admits_transfer(&snapshot, &request.manifest.plan) {
                 return Err(repair_error("recipient has no matching applied cut"));
+            }
+            let latest = snapshot.value_prefixes.get(&partition).copied();
+            match &request.step {
+                RepairStep::Delta { mutation } => {
+                    if !is_prefix_at_most(Some(mutation.certificate()), latest)
+                        || snapshot.value_promotions[&partition].backups != mutation.backups
+                        || !self.admits_mutation(mutation)
+                    {
+                        return Err(repair_error(
+                            "delta is outside the applied certificate or placement",
+                        ));
+                    }
+                }
+                RepairStep::Seal { prefix } if *prefix != latest => {
+                    return Err(repair_error(
+                        "recipient has not applied the final Raft certificate",
+                    ));
+                }
+                _ => {}
             }
             self.journal
                 .receive_image(request, |key| self.scope.admits_storage_key(key, partition))
         };
-        let received = if installs {
+        let received = if touches_partition {
             let _storage = lane
                 .storage
                 .try_lock()
@@ -67,15 +90,12 @@ impl ValueReplica {
         let lane = self
             .lane(partition)
             .ok_or_else(|| repair_error("unknown partition"))?;
-        let _writer = lane
-            .writer
-            .try_acquire()
-            .map_err(|_| repair_error("owner lane busy"))?;
         let deadline = Instant::now() + REPAIR_WAIT;
+        let writer = acquire_writer(lane, deadline).await?;
         let proof = request_read_index(raft, raft_transport, deadline)
             .await
             .map_err(|_| repair_error("owner Raft authority unavailable"))?;
-        let (mut plan, previously_applied) = proof
+        let (plan, previously_applied) = proof
             .with_snapshot(|snapshot, _| {
                 if let Some(prior) = snapshot.value_repairs.get(&partition).filter(|prior| {
                     prior.owner == self.local
@@ -108,24 +128,29 @@ impl ValueReplica {
             })
             .map_err(|_| repair_error("owner Raft authority changed"))??;
         if previously_applied {
+            if let Some(capture) = self
+                .journal
+                .captured_transfer()?
+                .filter(|capture| matches_slot(&capture.manifest.plan, &plan))
+            {
+                self.clear_capture(&capture.manifest)?;
+            }
             return Ok(ReplicaRepairOutcome {
                 plan,
                 resumed_from: 0,
                 chunks: 0,
+                deltas: 0,
             });
         }
-        let image = {
-            let _storage = lane
-                .storage
-                .try_lock()
-                .map_err(|_| repair_error("owner lane busy"))?;
-            self.journal.export_image(partition, plan.required)?
-        };
-        plan.snapshot_digest = bytes_digest(&image);
-        let manifest = RepairManifest {
-            plan: plan.clone(),
-            scope: self.repair_scope(),
-            image_len: image.len(),
+        let (manifest, image) = self.capture_image(plan)?;
+        drop(writer);
+        let transfer = LiveRepair {
+            raft,
+            raft_transport,
+            transport,
+            lane,
+            journal: &self.journal,
+            manifest: &manifest,
         };
         timeout_at(deadline, async {
             let resumed_from = send_step(transport, &manifest, RepairStep::Status)
@@ -151,54 +176,231 @@ impl ValueReplica {
                     return Err(repair_error("recipient acknowledged a different chunk"));
                 }
             }
-            if !send_step(transport, &manifest, RepairStep::Install)
-                .await?
-                .installed
-            {
+            let installed = send_step(transport, &manifest, RepairStep::Install).await?;
+            if !installed.installed {
                 return Err(repair_error("recipient did not confirm a durable image"));
             }
-            let proof = request_read_index(raft, raft_transport, deadline)
-                .await
-                .map_err(|_| repair_error("owner lost authority before activation"))?;
-            let current = proof
-                .with_snapshot(|snapshot, _| admits_repair(&snapshot, &plan))
-                .map_err(|_| repair_error("activation proof was fenced"))?;
-            if !current {
-                return Err(repair_error("certified placement changed during transfer"));
-            }
-            raft.propose_value_repair(plan.clone())?;
-            let _ = send_raft_messages_with_diagnostics(
-                raft_transport,
-                raft.take_outbound_messages(),
-                None,
-            )
-            .await;
-            loop {
-                let snapshot = raft
-                    .partition_snapshot()
-                    .ok_or_else(|| repair_error("activation view unavailable"))?;
-                if snapshot.value_repairs.get(&partition) == Some(&plan) {
-                    return Ok(ReplicaRepairOutcome {
-                        plan,
-                        resumed_from,
-                        chunks: manifest.chunks(),
-                    });
-                }
-                if snapshot.epoch != plan.old_epoch {
-                    return Err(repair_error(
-                        "replacement did not commit at the expected cut",
-                    ));
-                }
-                sleep(Duration::from_millis(5)).await;
-            }
+            let plan = transfer.finish(installed.applied, deadline).await?;
+            self.clear_capture(&manifest)?;
+            Ok(ReplicaRepairOutcome {
+                deltas: version(plan.required) - version(manifest.plan.required),
+                plan,
+                resumed_from,
+                chunks: manifest.chunks(),
+            })
         })
         .await
         .map_err(|_| repair_error("transfer or activation timed out"))?
     }
 
+    fn capture_image(
+        &self,
+        mut plan: PartitionReplicaRepair,
+    ) -> CacheResult<(RepairManifest, Vec<u8>)> {
+        if let Some(CapturedTransfer { manifest, .. }) = self.journal.captured_transfer()? {
+            let prior = &manifest.plan;
+            if prior.old_epoch == plan.old_epoch {
+                if matches_slot(prior, &plan) {
+                    if !is_prefix_at_most(prior.required, plan.required) {
+                        return Err(repair_error("source snapshot prefix is no longer current"));
+                    }
+                    let image = self.journal.captured_image(&manifest)?;
+                    return Ok((manifest, image));
+                }
+                if prior.partition != plan.partition {
+                    return Err(repair_error(
+                        "another partition has an unfinished source capture",
+                    ));
+                }
+            }
+            self.clear_capture(&manifest)?;
+        }
+        let lane = self
+            .lane(plan.partition)
+            .ok_or_else(|| repair_error("unknown partition"))?;
+        let _storage = lane
+            .storage
+            .try_lock()
+            .map_err(|_| repair_error("owner storage lane busy"))?;
+        let image = self.journal.export_image(plan.partition, plan.required)?;
+        plan.snapshot_digest = bytes_digest(&image);
+        let manifest = RepairManifest {
+            plan,
+            scope: self.repair_scope(),
+            image_len: image.len(),
+        };
+        self.journal.start_capture(&manifest, &image)?;
+        Ok((manifest, image))
+    }
+
+    fn clear_capture(&self, manifest: &RepairManifest) -> CacheResult<()> {
+        let lane = self
+            .lane(manifest.plan.partition)
+            .ok_or_else(|| repair_error("unknown partition"))?;
+        let _storage = lane
+            .storage
+            .try_lock()
+            .map_err(|_| repair_error("source storage lane busy"))?;
+        self.journal.finish_capture(manifest)
+    }
+
     fn repair_scope(&self) -> [u8; 32] {
         let (tenant, namespace, generation) = self.scope.identity();
         hash((1u16, tenant, namespace.as_str(), generation.get()))
+    }
+}
+
+fn matches_slot(left: &PartitionReplicaRepair, right: &PartitionReplicaRepair) -> bool {
+    left.partition == right.partition
+        && left.owner == right.owner
+        && left.replaced == right.replaced
+        && left.target == right.target
+}
+
+async fn acquire_writer(
+    lane: &Lane,
+    deadline: Instant,
+) -> CacheResult<tokio::sync::SemaphorePermit<'_>> {
+    timeout_at(deadline, lane.writer.acquire())
+        .await
+        .map_err(|_| repair_error("owner writer lane timed out"))?
+        .map_err(|_| repair_error("owner writer lane closed"))
+}
+
+struct LiveRepair<'a, S> {
+    raft: &'a RaftMetadataRuntime<S>,
+    raft_transport: &'a Arc<dyn RaftMessageSink>,
+    transport: &'a dyn ReplicaTransport,
+    lane: &'a Lane,
+    journal: &'a ValueJournal,
+    manifest: &'a RepairManifest,
+}
+
+impl<S: RaftLogStore> LiveRepair<'_, S> {
+    async fn certified(&self, deadline: Instant) -> CacheResult<Option<PartitionValuePrefix>> {
+        let proof = request_read_index(self.raft, self.raft_transport, deadline)
+            .await
+            .map_err(|_| repair_error("owner Raft authority unavailable during catch-up"))?;
+        proof
+            .with_snapshot(|snapshot, _| {
+                if !admits_transfer(&snapshot, &self.manifest.plan) {
+                    return Err(repair_error("replica placement changed during catch-up"));
+                }
+                Ok(snapshot
+                    .value_prefixes
+                    .get(&self.manifest.plan.partition)
+                    .copied())
+            })
+            .map_err(|_| repair_error("catch-up ReadIndex was fenced"))?
+    }
+
+    async fn finish(
+        &self,
+        mut cursor: Option<PartitionValuePrefix>,
+        deadline: Instant,
+    ) -> CacheResult<PartitionReplicaRepair> {
+        loop {
+            let watermark = self.certified(deadline).await?;
+            let (deltas, _) = self
+                .journal
+                .captured_deltas(self.manifest, cursor, watermark)?;
+            self.send_deltas(deltas).await?;
+            cursor = watermark;
+            let writer = acquire_writer(self.lane, deadline).await?;
+            let cut_deadline = deadline.min(Instant::now() + FINAL_CUT_WAIT);
+            let final_prefix = self.certified(cut_deadline).await?;
+            let (tail, bytes) =
+                self.journal
+                    .captured_deltas(self.manifest, cursor, final_prefix)?;
+            if tail.len() as u64 > FINAL_DELTA_ROWS || bytes > FINAL_DELTA_BYTES {
+                drop(writer);
+                self.send_deltas(tail).await?;
+                cursor = final_prefix;
+                continue;
+            }
+            let result = timeout_at(cut_deadline, async {
+                self.send_deltas(tail).await?;
+                let confirmed = self
+                    .send_progress(RepairStep::Seal {
+                        prefix: final_prefix,
+                    })
+                    .await?;
+                if !confirmed.installed || confirmed.applied != final_prefix {
+                    return Err(repair_error("recipient did not seal the final prefix"));
+                }
+                self.activate(final_prefix).await
+            })
+            .await
+            .map_err(|_| repair_error("final replica cut timed out"))?;
+            drop(writer);
+            return result;
+        }
+    }
+
+    async fn send_deltas(&self, deltas: Vec<Mutation>) -> CacheResult<()> {
+        for mutation in deltas {
+            let expected = mutation.certificate();
+            let ack = self
+                .send_progress(RepairStep::Delta {
+                    mutation: Box::new(mutation),
+                })
+                .await?;
+            if !ack.installed || ack.applied != Some(expected) {
+                return Err(repair_error("recipient acknowledged a different delta"));
+            }
+        }
+        Ok(())
+    }
+
+    async fn send_progress(&self, step: RepairStep) -> CacheResult<RepairReceipt> {
+        // The recipient can be one Raft append behind the source. A retry is
+        // safe because both steps acknowledge the exact durable certificate.
+        for _ in 0..3 {
+            if let Ok(ack) = send_step(self.transport, self.manifest, step.clone()).await {
+                return Ok(ack);
+            }
+            sleep(Duration::from_millis(20)).await;
+        }
+        send_step(self.transport, self.manifest, step).await
+    }
+
+    async fn activate(
+        &self,
+        final_prefix: Option<PartitionValuePrefix>,
+    ) -> CacheResult<PartitionReplicaRepair> {
+        let mut plan = self.manifest.plan.clone();
+        plan.required = final_prefix;
+        if self
+            .raft
+            .with_applied_partition_snapshot(|snapshot| admits_repair(&snapshot, &plan))
+            != Some(true)
+        {
+            return Err(repair_error(
+                "certified placement changed before activation",
+            ));
+        }
+        self.raft.propose_value_repair(plan.clone())?;
+        let _ = send_raft_messages_with_diagnostics(
+            self.raft_transport,
+            self.raft.take_outbound_messages(),
+            None,
+        )
+        .await;
+        loop {
+            let snapshot = self
+                .raft
+                .partition_snapshot()
+                .ok_or_else(|| repair_error("activation view unavailable"))?;
+            if snapshot.value_repairs.get(&plan.partition) == Some(&plan) {
+                return Ok(plan);
+            }
+            if snapshot.epoch != plan.old_epoch {
+                return Err(repair_error(
+                    "replacement did not commit at the expected cut",
+                ));
+            }
+            sleep(Duration::from_millis(5)).await;
+        }
     }
 }
 
@@ -216,6 +418,8 @@ async fn send_step(
     if receipt.manifest != *manifest
         || receipt.next > manifest.chunks()
         || (receipt.installed && receipt.next != manifest.chunks())
+        || (receipt.installed && !is_prefix_at_most(manifest.plan.required, receipt.applied))
+        || (!receipt.installed && receipt.applied.is_some())
     {
         return Err(repair_error("recipient acknowledged another transfer"));
     }
