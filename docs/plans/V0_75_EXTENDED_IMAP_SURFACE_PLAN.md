@@ -1581,6 +1581,70 @@ are copied only for opt-in include-value listeners and remain subject to negotia
 to A observes owner mutations on B/C; migration/reconnect neither hides a gap nor invents exact-once
 delivery; slow listeners do not delay replication acknowledgement or mutation latency.
 
+**Public HC/2 bulk and listener checkpoint.** The configured RF=2 member profile now
+advertises Batch and Subscriptions alongside Data. Bulk validates the complete frame before
+dispatch. It groups items by the owner in a coherent placement view and executes up to four
+owner groups concurrently across the admitted request. Each group preserves input order,
+including operations on duplicate keys. The response restores original input order. Pure
+read groups reuse a successful read for repeated keys and can repeat a transient read once
+within the deadline. Each mutation uses the existing one-hop owner path. A supplied batch
+identity derives a separate stable identity for each mutating input position, including its
+issued epoch when the caller supplies an epoch-scoped identity. The coordinator never
+automatically repeats a mutation.
+
+The Rust `batch_outcomes` and Java `batchOutcomes` APIs expose successful and failed items
+together. The existing batch helpers retain their error behavior. The current result
+carries the input position, serving endpoint's observed topology epoch, and status with
+retry advice. The exact partition and applied certificate version still need typed public
+receipts. Batching inside the member transport remains per item, and each mutation retains
+its own linearization point.
+
+A logical subscription on any member polls bounded pages of certified changes from current
+owners. Each page ties the request to the admitted scope, requesting and serving member
+generations, and an applied epoch. Each source obtains ReadIndex and reads only versions
+covered by the exact applied prefix. The journal retains 16 previous positions per
+partition plus the latest certified pending position. Decision-only versions advance the
+cursor without publishing an event. Value bytes are read for opt-in subscribers, and
+snapshot installation discards the recipient's earlier event history for the moved
+partition. The coordinator tracks each partition cursor, drops duplicate versions and
+emits Gap before resuming after an epoch change or a missing history position. A nonzero
+resume watermark opens with Gap because the scalar watermark cannot restore all owner
+cursors. The existing public Gap applies to the logical stream. Structured partition and
+reason metadata remain open.
+
+Per-member admission caps concurrent bulk requests at eight and cluster subscriptions at
+32. Event pages and HC/2 outbound queues are bounded. Unsubscribe and connection close
+release the polling task. Java serializes each subscription's callbacks. When either SDK's
+event queue fills, it reports a gap after the last queued event. The Rust SDK delivers that
+gap as the consumer drains the queue, even if the server sends no further frames.
+
+**AX42 evidence, 2026-11-26.** Candidate `d84c311cc56a33472d6cabba1d084981874cd639`
+passed the real three-daemon RF=2 `hc2_daemon_process` scenario twice in debug and three
+times in release. Public mTLS batches of 1, 8, 64, and 256 reads preserved their positions.
+During the eight-second write workload, killing the owner produced an item-level failure
+alongside both live-owner results. The subscription got Gap before delivery after
+promotion and again after reconnect with an old watermark. Replaying the batch with the
+original idempotency key produced no duplicate events. All three release runs returned to
+zero active subscriptions and confirmed 136, 163, and 137 foreground writes respectively.
+
+The same checkout passed 141 server tests, nine Rust SDK unit and recovery tests, two live
+Rust SDK tests, 11 Java SDK unit tests, two Java tests against a separate Rust mTLS peer,
+and four Java facade tests. Clippy, `doc-check`, and `imap-contract-check --release 0.75`
+passed. The Python check verified the generated files and locked wheelhouse before the
+host's missing `ensurepip` stopped venv creation. A private Python 3.12 venv using the same
+hash-locked wheels passed dependency checks and all seven Python contract tests.
+
+Logs, the release daemon and test executable, and the Java SDK JAR are in
+`development/w10g-d84c311cc56a33472d6cabba1d084981874cd639` on AX42. The verified
+`w10g.sha256` manifest has SHA-256
+`27e77e4637236e49983bd9bfdd7fb44555e975fa44af40dbc03914054de0e533`.
+[AX42 qualification workspace](../testing/imap/0.75/remote-linux-qualification.md)
+
+The remaining W10g release criteria include owner-side batch transport, typed receipts with
+partition and applied version, partition and reason fields on Gap, and the packaged Java
+facade against the three-member failure schedule. Distributed TTL and the long mixed-workload
+qualification remain open for production admission under W10i.
+
 ### W10h. Add distributed observability, admission, readiness and operational controls
 
 Add bounded, low-cardinality metrics and management snapshots for routing mode, topology epoch,
@@ -1696,9 +1760,9 @@ member storage, the existing authenticated cluster transport and public mTLS. Th
 uses namespace `hc2`, namespace generation 1 and one synchronous backup. HC/1 and RESP are
 disabled in this profile so a second protocol cannot reach a separate local value owner.
 
-The listener offers the HC/2 Data capability. It serves GET, persistent PUT, DELETE, CAS
-and conditional removal. The receiving member forwards a non-owner invocation once, using
-the existing authenticated cluster transport. The owner recomputes the partition and checks
+The first listener checkpoint offered the HC/2 Data capability for GET, persistent PUT,
+DELETE, CAS and conditional removal. The receiving member forwards a non-owner invocation
+once, using the existing authenticated cluster transport. The owner recomputes the partition and checks
 the caller's scope, sender and destination generations, applied epoch and request deadline.
 The existing ReadIndex and replicated write path still authorize the operation. A lost
 forwarded response has an unknown outcome. Opaque retries with a retained outcome replay it.
@@ -1732,8 +1796,8 @@ The verified `diagnostic.sha256` manifest has SHA-256
 `05b7b38267d4a7a68d83ccd2b3315090b63b2fd6dd08f5480d94bd282eb27b58`.
 
 The commands require `--diagnostic` for this profile and produce `production_admitted=false`.
-The production gate still requires distributed TTL with an admitted OD-2 provider,
-cluster-wide bulk and listeners, a live-drain and interrupted-copy schedule exposed to the
+The production gate still requires distributed TTL with an admitted OD-2 provider, the
+remaining W10g release criteria, a live-drain and interrupted-copy schedule exposed to the
 daemon harness, the packaged Rust and Java SDK workload, replica-by-replica reconciliation,
 and accepted OD-3 recovery bounds.
 

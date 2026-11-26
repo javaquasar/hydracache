@@ -1088,6 +1088,33 @@ read through the restarted member confirmed that the key was absent after deleti
 six-hour and 24-hour campaigns remain pending.
 [Release plan](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#w10i-build-the-correctness-and-compatibility-safety-net)
 
+## Partial batches and cluster listeners
+
+One HC/2 batch can reach several owners. HydraCache validates the whole request, groups
+the items by owner, and preserves their original positions. Each owner group executes
+its items in order. A read after a write to the same key observes that write if no
+other write intervenes.
+A failed owner can leave an error in one position while the other results remain
+available. An idempotent batch gives each mutation a stable identity derived from
+the original request and item position.
+
+A subscriber can attach to any member. The receiving process polls the current
+owners and advances separate cursors for their partitions. An owner publishes a change
+only when Raft has certified the version. A duplicate request can return an earlier
+outcome without publishing another event. When ownership changes, the subscriber gets
+a gap before further delivery. The same rule applies when a reconnect supplies only
+the old stream watermark or when the required journal positions have been overwritten.
+This lets clients repair their view without assuming continuity across failover.
+
+In the AX42 fault scenario, three separate daemons served the public mTLS endpoint.
+The test read batches of 1, 8, 64, and 256 items across the three owners. While an
+eight-second writer was running and one listener was left unread, the test killed one
+owner. The two live owners still returned their batch items. After promotion, the listener
+reported a gap and then delivered a confirmed update. It reported a gap again when the
+client reconnected with its old watermark. All three release runs returned to zero active
+subscriptions. The writer received 136, 163, and 137 acknowledgements across those runs.
+[W10g release evidence](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#w10g-make-bulk-operations-and-listeners-cluster-wide)
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
