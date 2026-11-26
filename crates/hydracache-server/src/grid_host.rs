@@ -39,8 +39,9 @@ use crate::cluster_status::{
 };
 use crate::config::{ClusterStartMode, ServerConfig, ServerConfigError};
 use crate::imap_value_plane::{
-    RebalanceHealth, RebalanceRequest, ReplicaApply, ReplicaApplyAck, ReplicaMessage,
-    ReplicaPrefix, ReplicaRebalanceReport, ReplicaTransport, ValueBackend, ValueReplica,
+    BackupObservations, RebalanceHealth, RebalanceRequest, ReplicaApply, ReplicaApplyAck,
+    ReplicaMessage, ReplicaPrefix, ReplicaRebalanceReport, ReplicaTransport, ValueBackend,
+    ValueReplica,
 };
 use crate::imap_value_repair::{
     RepairReceipt, RepairRequest, RepairStep, ReplicaReady, ReplicaRepairOutcome,
@@ -2667,22 +2668,30 @@ impl MemberReadHost {
                 let mut ticks = tokio::time::interval(Duration::from_secs(2));
                 ticks.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
                 let drained = BTreeSet::new();
+                let mut samples = BackupObservations::default();
                 while !*shutdown.borrow() {
                     tokio::select! {
                         _ = shutdown.changed() => return,
                         _ = ticks.tick() => {}
                     }
-                    let health = rebalance_health(&discovery);
-                    let pass = replica.rebalance_backups(
-                        &raft,
-                        &raft_transport,
-                        transport.as_ref(),
-                        RebalanceRequest {
-                            partitions: &[],
-                            drained: &drained,
-                            health: &health,
-                        },
-                    );
+                    let mut health = rebalance_health(&discovery);
+                    let pass = async {
+                        replica
+                            .observe_backups(&raft, transport.as_ref(), &mut samples, &mut health)
+                            .await;
+                        replica
+                            .rebalance_backups(
+                                &raft,
+                                &raft_transport,
+                                transport.as_ref(),
+                                RebalanceRequest {
+                                    partitions: &[],
+                                    drained: &drained,
+                                    health: &health,
+                                },
+                            )
+                            .await
+                    };
                     tokio::select! {
                         _ = shutdown.changed() => return,
                         _ = pass => {}

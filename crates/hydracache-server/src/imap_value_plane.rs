@@ -44,7 +44,7 @@ mod rebalance;
 #[path = "imap_value_repair_owner.rs"]
 mod repair_owner;
 pub use rebalance::ReplicaRebalanceReport;
-pub(crate) use rebalance::{RebalanceHealth, RebalanceRequest};
+pub(crate) use rebalance::{BackupObservations, RebalanceHealth, RebalanceRequest};
 
 const MAX_VALUE_BYTES: usize = 128 * 1024;
 const MAX_KEY_HEX_BYTES: usize = 64 * 1024;

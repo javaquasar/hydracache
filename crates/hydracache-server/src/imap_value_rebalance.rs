@@ -2,7 +2,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use hydracache::ClusterNodeId;
+use hydracache::{ClusterGeneration, ClusterNodeId};
 use serde::{Deserialize, Serialize};
 
 use super::*;
@@ -12,11 +12,35 @@ const MAX_TRANSFERS: usize = 4;
 const MAX_PROBES: usize = 16;
 const PASS_WAIT: Duration = Duration::from_secs(45);
 const PROBE_WAIT: Duration = Duration::from_millis(600);
+const WATCH_PROBES: usize = 8;
 
 #[derive(Default)]
 pub(crate) struct RebalanceHealth {
     pub failed: BTreeSet<ClusterNodeId>,
     pub suspect: BTreeSet<ClusterNodeId>,
+}
+
+#[derive(Default)]
+pub(crate) struct BackupObservations {
+    misses: BTreeMap<ClusterNodeId, (ClusterGeneration, u8)>,
+    next: usize,
+}
+
+impl BackupObservations {
+    fn record(&mut self, replica: &PartitionMember, ready: bool) {
+        if ready {
+            self.misses.remove(&replica.node);
+            return;
+        }
+        let entry = self
+            .misses
+            .entry(replica.node.clone())
+            .or_insert((replica.generation, 0));
+        if entry.0 != replica.generation {
+            *entry = (replica.generation, 0);
+        }
+        entry.1 = (entry.1 + 1).min(2);
+    }
 }
 
 /// Progress from one bounded pass over the local owner's certified partitions.
@@ -39,6 +63,75 @@ impl RebalanceRequest<'_> {
 }
 
 impl ValueReplica {
+    pub(crate) async fn observe_backups<S: RaftLogStore>(
+        &self,
+        raft: &RaftMetadataRuntime<S>,
+        transport: &dyn ReplicaTransport,
+        samples: &mut BackupObservations,
+        health: &mut RebalanceHealth,
+    ) {
+        let Some(snapshot) = raft.partition_snapshot() else {
+            return;
+        };
+        let Ok(topology) =
+            PartitionTopology::from_snapshot(snapshot, D2_PARTITION_COUNT, self.replication)
+        else {
+            return;
+        };
+        let snapshot = topology.snapshot();
+        let peers: BTreeMap<_, _> = snapshot
+            .value_prefixes
+            .keys()
+            .filter_map(|partition| topology.placement(*partition).ok())
+            .filter(|placement| placement.primary == self.local)
+            .flat_map(|placement| placement.backups)
+            .filter(|backup| admitted(snapshot, backup))
+            .map(|backup| (backup.node.clone(), backup))
+            .collect();
+        samples.misses.retain(|id, (generation, _)| {
+            peers
+                .get(id)
+                .is_some_and(|peer| &peer.generation == generation)
+        });
+        let peers: Vec<_> = peers.into_values().collect();
+        let count = peers.len();
+        if count == 0 {
+            return;
+        }
+        let start = samples.next % count;
+        for offset in 0..count.min(WATCH_PROBES) {
+            let peer = &peers[(start + offset) % count];
+            if !health.failed.contains(&peer.node) {
+                let probe = self.candidate_probe(peer.clone(), snapshot.epoch);
+                let ready = timeout_at(
+                    Instant::now() + PROBE_WAIT,
+                    transport.check_candidate(probe.clone()),
+                )
+                .await
+                .is_ok_and(|reply| reply.is_ok_and(|reply| reply == probe));
+                samples.record(peer, ready);
+            }
+        }
+        samples.next = (start + count.min(WATCH_PROBES)) % count;
+        health.failed.extend(
+            samples
+                .misses
+                .iter()
+                .filter(|(_, (_, misses))| *misses >= 2)
+                .map(|(node, _)| node.clone()),
+        );
+    }
+
+    fn candidate_probe(&self, candidate: PartitionMember, epoch: ClusterEpoch) -> ReplicaReady {
+        ReplicaReady {
+            candidate,
+            owner: self.local.clone(),
+            epoch,
+            scope: self.repair_scope(),
+            sync_backups: self.replication.sync_backups,
+        }
+    }
+
     pub(crate) fn check_candidate(
         &self,
         snapshot: &RaftPartitionSnapshot,
@@ -141,13 +234,7 @@ impl ValueReplica {
                 if probes == 0 || Instant::now() >= deadline {
                     break;
                 }
-                let probe = ReplicaReady {
-                    candidate,
-                    owner: self.local.clone(),
-                    epoch: placement.epoch,
-                    scope: self.repair_scope(),
-                    sync_backups: self.replication.sync_backups,
-                };
+                let probe = self.candidate_probe(candidate, placement.epoch);
                 if candidate_ready(transport, &probe, &mut probes, deadline).await {
                     target = Some(probe.candidate);
                     break;
@@ -268,7 +355,7 @@ fn candidates(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hydracache::{ClusterGeneration, ClusterMember, ClusterRole};
+    use hydracache::{ClusterMember, ClusterRole};
     use std::num::NonZeroU64;
 
     fn member(name: &str, generation: u64) -> PartitionMember {
@@ -455,5 +542,21 @@ mod tests {
         assert!(replica
             .check_candidate(&snapshot, "owner", epoch, probe)
             .is_err());
+    }
+
+    #[test]
+    fn missed_health_checks_accumulate_only_for_the_same_incarnation() {
+        let mut checks = BackupObservations::default();
+        let old = member("backup", 1);
+        let restarted = member("backup", 2);
+        checks.record(&old, false);
+        assert_eq!(checks.misses[&old.node], (old.generation, 1));
+        checks.record(&old, false);
+        checks.record(&old, false);
+        assert_eq!(checks.misses[&old.node], (old.generation, 2));
+        checks.record(&restarted, false);
+        assert_eq!(checks.misses[&old.node], (restarted.generation, 1));
+        checks.record(&restarted, true);
+        assert!(checks.misses.is_empty());
     }
 }
