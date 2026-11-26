@@ -389,7 +389,7 @@ impl Node {
         reader.read_exact(&mut body).unwrap();
         let ClientWireMessage::Response(response) = ClientFrame::decode(&body, 1 << 20)
             .unwrap()
-            .to_message()
+            .decode_message()
             .unwrap()
         else {
             panic!("expected HC/1 response");

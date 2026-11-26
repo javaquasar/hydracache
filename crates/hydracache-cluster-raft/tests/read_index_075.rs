@@ -310,7 +310,7 @@ async fn promotion_requires_exact_committed_cut_and_fences_delayed_certificate_a
     use hydracache_cluster_raft::RaftMetadataRuntime;
 
     let raft = RaftMetadataRuntime::single_node("w10e", 1).unwrap();
-    for node in ["old|separator", "potential-backup", "spare"] {
+    for node in ["old", "potential-backup", "spare"] {
         raft.join_member(ClusterCandidate::member(node))
             .await
             .unwrap();
