@@ -282,6 +282,54 @@ mod tests {
     use hydracache::{ClusterGeneration, ClusterNodeId};
 
     #[test]
+    fn topology_gap_identifies_a_new_generation_and_rewinds_a_regressed_cursor() {
+        let member = |generation| {
+            Some(PartitionMember {
+                node: ClusterNodeId::new("owner"),
+                generation: ClusterGeneration::new(generation),
+            })
+        };
+        let changed = PartitionId::new(0);
+        let unchanged = PartitionId::new(1);
+        let restored = PartitionId::new(2);
+        let previous = BTreeMap::from([
+            (changed, member(1)),
+            (unchanged, member(1)),
+            (restored, member(1)),
+        ]);
+        let mut cursors = BTreeMap::from([(changed, 5), (unchanged, 7), (restored, 9)]);
+        let view = ListenerView {
+            epoch: ClusterEpoch::new(4),
+            partitions: BTreeMap::from([
+                (changed, (member(2), 6)),
+                (unchanged, (member(1), 8)),
+                (restored, (member(1), 3)),
+            ]),
+        };
+        let gap = topology_gap(&previous, &mut cursors, &view);
+        assert_eq!(gap.reason, EventGapReason::TopologyChanged as i32);
+        assert_eq!(
+            gap.partitions,
+            [
+                PartitionGap {
+                    partition_id: 0,
+                    previous_version: 5,
+                    observed_version: 6
+                },
+                PartitionGap {
+                    partition_id: 2,
+                    previous_version: 9,
+                    observed_version: 3
+                },
+            ]
+        );
+        assert_eq!(
+            cursors,
+            BTreeMap::from([(changed, 5), (unchanged, 7), (restored, 3)])
+        );
+    }
+
+    #[test]
     fn owner_pages_reject_duplicates_stale_versions_and_unrequested_values() {
         let member = PartitionMember {
             node: ClusterNodeId::new("owner"),

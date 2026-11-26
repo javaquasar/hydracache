@@ -11,7 +11,9 @@
         "Hc2Client", "RecoveringHc2Client", "GrpcMtlsAdapter", "GrpcMtlsConfig",
         "ClientConfig", "ClientLimits", "RequestOptions", "ClientError", "ErrorCode",
         "RetryAdvice", "CacheValue", "MutationResult", "LockAcquireResult", "LockOwnership",
-        "BatchOperation", "BatchItemResult", "BatchItemOutcome", "Subscription", "RecoveringSubscription",
+        "BatchOperation", "BatchItemResult", "BatchItemOutcome", "BatchItemReceipt",
+        "BatchItemState", "AppliedVersion", "Subscription", "RecoveringSubscription",
+        "SubscriptionDelivery", "GapDetails", "GapReason", "PartitionGap",
         "FencedSession", "RecoveringFencedSession", "TopologySnapshot", "ClientMetricsSnapshot"
       ]
     },
@@ -23,7 +25,7 @@
         "HydraCacheClient", "RecoveringHydraCacheClient", "HydraCacheClientConfig",
         "RequestOptions", "HydraCacheException", "ErrorCode", "RetryAdvice", "CacheValue",
         "MutationResult", "LockAcquireResult", "LockOwnership", "Subscription", "FencedSession",
-        "BatchItemOutcome"
+        "BatchItemOutcome", "BatchItemReceipt", "SubscriptionGap"
       ]
     },
     {
@@ -32,7 +34,7 @@
       "version": "0.68.0-alpha.1-SNAPSHOT",
       "public_symbols": [
         "HydraCacheInstance", "HydraMap", "HydraFencedLock", "HydraCodec",
-        "EntryEvent", "EntryListener", "MapListenerRegistration", "HydraCacheFacadeException"
+        "EntryEvent", "EntryListener", "MapListenerRegistration", "MapBatchItem", "HydraCacheFacadeException"
       ]
     },
     {

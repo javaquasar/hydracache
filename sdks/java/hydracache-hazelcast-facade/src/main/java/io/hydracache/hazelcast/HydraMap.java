@@ -1,11 +1,17 @@
 package io.hydracache.hazelcast;
 
+import io.hydracache.client.hc2.BatchItemOutcome;
+import io.hydracache.client.hc2.BatchOperation;
 import io.hydracache.client.hc2.CacheEvent;
 import io.hydracache.client.hc2.CacheEventListener;
 import io.hydracache.client.hc2.HydraCacheClient;
 import io.hydracache.client.hc2.RequestOptions;
 import io.hydracache.client.hc2.Subscription;
+import io.hydracache.client.hc2.SubscriptionGap;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
@@ -65,10 +71,59 @@ public final class HydraMap<K, V> {
         physicalKey(key), valueCodec.encode(expected), options())).applied();
   }
 
+  /** Read keys in input order, including duplicate keys and partial owner failures. */
+  public List<MapBatchItem<K, V>> getAll(List<K> keys, RequestOptions options) {
+    List<K> ordered = List.copyOf(keys);
+    List<BatchOperation> operations = ordered.stream()
+        .<BatchOperation>map(key -> new BatchOperation.Get(physicalKey(key))).toList();
+    return executeBatch(ordered, operations, options);
+  }
+
+  /** Store persistent values, preserving the input map's iteration order. */
+  public List<MapBatchItem<K, V>> putAll(Map<K, V> entries, RequestOptions options) {
+    var keys = new ArrayList<K>(entries.size());
+    var operations = new ArrayList<BatchOperation>(entries.size());
+    entries.forEach((key, value) -> {
+      keys.add(key);
+      operations.add(new BatchOperation.Put(physicalKey(key), valueCodec.encode(value), Duration.ZERO));
+    });
+    return executeBatch(keys, operations, options);
+  }
+
+  /** Remove keys in input order and preserve every outcome. */
+  public List<MapBatchItem<K, V>> removeAll(List<K> keys, RequestOptions options) {
+    List<K> ordered = List.copyOf(keys);
+    List<BatchOperation> operations = ordered.stream()
+        .<BatchOperation>map(key -> new BatchOperation.Delete(physicalKey(key))).toList();
+    return executeBatch(ordered, operations, options);
+  }
+
+  private List<MapBatchItem<K, V>> executeBatch(
+      List<K> keys, List<BatchOperation> operations, RequestOptions options) {
+    if (operations.isEmpty()) return List.of();
+    List<BatchItemOutcome> outcomes = await(client.batchOutcomes(
+        operations, options == null ? options() : options));
+    if (outcomes.size() != keys.size()) {
+      throw new HydraCacheFacadeException("HC/2 batch outcome count did not match the input");
+    }
+    var result = new ArrayList<MapBatchItem<K, V>>(keys.size());
+    for (int index = 0; index < outcomes.size(); index++) {
+      BatchItemOutcome outcome = outcomes.get(index);
+      Optional<V> value = outcome.result().flatMap(item -> item.value())
+          .map(item -> valueCodec.decode(item.value()));
+      result.add(new MapBatchItem<>(keys.get(index), value, outcome));
+    }
+    return List.copyOf(result);
+  }
+
   public MapListenerRegistration addEntryListener(EntryListener<K, V> listener) {
+    return addEntryListener(0, listener);
+  }
+
+  public MapListenerRegistration addEntryListener(long resumeWatermark, EntryListener<K, V> listener) {
     Objects.requireNonNull(listener, "listener");
     Subscription subscription = await(client.subscribe(
-        keySpace.prefix(), 0, true, new CacheEventListener() {
+        keySpace.prefix(), resumeWatermark, true, new CacheEventListener() {
           @Override public void onEvent(CacheEvent event) {
             K key = keyCodec.decode(keySpace.decode(event.key()));
             Optional<V> value = event.removed()
@@ -78,6 +133,10 @@ public final class HydraMap<K, V> {
 
           @Override public void onGap(long subscriptionId, long afterWatermark) {
             listener.onGap(afterWatermark);
+          }
+
+          @Override public void onGap(long subscriptionId, long afterWatermark, SubscriptionGap gap) {
+            listener.onGap(afterWatermark, gap);
           }
         }));
     return subscription::close;

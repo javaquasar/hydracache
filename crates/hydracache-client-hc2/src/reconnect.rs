@@ -20,9 +20,9 @@ use crate::adapter::TransportAdapter;
 use crate::client::SubscriptionControl;
 use crate::{
     BatchItemOutcome, BatchItemResult, BatchOperation, CacheEvent, CacheValue, ClientConfig,
-    ClientError, ClientRetainedStateSnapshot, ErrorCode, FencedSession, Hc2Client,
+    ClientError, ClientRetainedStateSnapshot, ErrorCode, FencedSession, GapDetails, Hc2Client,
     LockAcquireResult, LockOwnership, MutationResult, RequestOptions, RetryAdvice, Subscription,
-    SubscriptionEvent, TransportKind,
+    SubscriptionDelivery, SubscriptionEvent, TransportKind,
 };
 
 /// One named endpoint and its already validated, security-owning adapter.
@@ -991,7 +991,7 @@ struct SubscriptionState {
     last_watermark: AtomicU64,
     accepted_watermark: AtomicU64,
     repair_required: AtomicBool,
-    pending_gap: Mutex<Option<u64>>,
+    pending_gap: Mutex<Option<(u64, Option<GapDetails>)>>,
     terminal: Mutex<Option<ClientError>>,
     events: mpsc::Sender<CacheEvent>,
     notify: Notify,
@@ -1003,12 +1003,18 @@ struct SubscriptionState {
 
 impl SubscriptionState {
     fn require_repair(&self) {
+        self.require_repair_with(None);
+    }
+
+    fn require_repair_with(&self, details: Option<GapDetails>) {
         if !self.repair_required.swap(true, Ordering::AcqRel) {
             let watermark = self.last_watermark.load(Ordering::Acquire);
+            let details =
+                details.filter(|_| self.accepted_watermark.load(Ordering::Acquire) == watermark);
             *self
                 .pending_gap
                 .lock()
-                .expect("subscription gap mutex poisoned") = Some(watermark);
+                .expect("subscription gap mutex poisoned") = Some((watermark, details));
             if let Some(runtime) = self.runtime.upgrade() {
                 runtime
                     .metrics
@@ -1060,18 +1066,26 @@ impl RecoveringSubscription {
 
     /// Read the next event, explicit repair boundary, or terminal failure.
     pub async fn next(&mut self) -> Option<SubscriptionEvent> {
+        self.next_delivery().await.map(|delivery| delivery.event)
+    }
+
+    /// Read the next event together with any partition repair information.
+    pub async fn next_delivery(&mut self) -> Option<SubscriptionDelivery> {
         loop {
             let notified = self.state.notify.notified();
-            if let Some(after_watermark) = self
+            if let Some((after_watermark, gap)) = self
                 .state
                 .pending_gap
                 .lock()
                 .expect("subscription gap mutex poisoned")
                 .take()
             {
-                return Some(SubscriptionEvent::Gap {
-                    subscription_id: self.state.id,
-                    after_watermark,
+                return Some(SubscriptionDelivery {
+                    event: SubscriptionEvent::Gap {
+                        subscription_id: self.state.id,
+                        after_watermark,
+                    },
+                    gap,
                 });
             }
             if self.state.closed.load(Ordering::Acquire) {
@@ -1086,7 +1100,10 @@ impl RecoveringSubscription {
                     .expect("subscription terminal mutex poisoned")
                     .take()
                 {
-                    return Some(SubscriptionEvent::Closed(error));
+                    return Some(SubscriptionDelivery {
+                        event: SubscriptionEvent::Closed(error),
+                        gap: None,
+                    });
                 }
                 return None;
             }
@@ -1097,7 +1114,7 @@ impl RecoveringSubscription {
                         self.state
                             .last_watermark
                             .store(event.watermark, Ordering::Release);
-                        return Some(SubscriptionEvent::Event(event));
+                        return Some(SubscriptionDelivery { event: SubscriptionEvent::Event(event), gap: None });
                     }
                     return None;
                 },
@@ -1231,7 +1248,7 @@ fn spawn_subscription_forwarder(
             {
                 return;
             }
-            let Some(event) = subscription.next().await else {
+            let Some(delivery) = subscription.next_delivery().await else {
                 if state.closed.load(Ordering::Acquire)
                     || state.binding.load(Ordering::Acquire) != binding
                 {
@@ -1242,7 +1259,7 @@ fn spawn_subscription_forwarder(
                 }
                 return;
             };
-            match event {
+            match delivery.event {
                 SubscriptionEvent::Event(mut event) => {
                     if state.repair_required.load(Ordering::Acquire) {
                         continue;
@@ -1273,7 +1290,7 @@ fn spawn_subscription_forwarder(
                     }
                     state.accepted_watermark.store(watermark, Ordering::Release);
                 }
-                SubscriptionEvent::Gap { .. } => state.require_repair(),
+                SubscriptionEvent::Gap { .. } => state.require_repair_with(delivery.gap),
                 SubscriptionEvent::Closed(error) => {
                     if let Some(runtime) = runtime.upgrade() {
                         if error.retry_advice() == RetryAdvice::ReconnectIdempotent {

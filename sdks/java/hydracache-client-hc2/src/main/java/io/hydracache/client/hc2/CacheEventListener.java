@@ -4,4 +4,8 @@ package io.hydracache.client.hc2;
 public interface CacheEventListener {
   void onEvent(CacheEvent event);
   void onGap(long subscriptionId, long afterWatermark);
+
+  default void onGap(long subscriptionId, long afterWatermark, SubscriptionGap gap) {
+    onGap(subscriptionId, afterWatermark);
+  }
 }

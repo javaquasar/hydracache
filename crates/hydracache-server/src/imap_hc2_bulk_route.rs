@@ -2,6 +2,7 @@
 
 use super::*;
 use crate::imap_value_decision::WriteOp;
+use crate::imap_value_plane::MAX_VALUE_BYTES;
 use hydracache_client_protocol::ClientResponse;
 use hydracache_cluster_transport_axum::{
     ClusterOpaqueMessage, MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES,
@@ -129,7 +130,7 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
         let refused =
             |error: ClientErrorEnvelope| vec![BatchExecution::not_applied(error); call.items.len()];
         let unknown = || vec![BatchExecution::unknown(); call.items.len()];
-        let Ok(body) = serde_json::to_vec(call).map_err(|_| ()) else {
+        let Ok(body) = serde_json::to_vec(call) else {
             return refused(batch_too_large());
         };
         let wire = ClusterOpaqueMessage::new(
@@ -226,7 +227,8 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
         }
         let mut previous = None;
         for item in &call.items {
-            if previous.is_some_and(|index| index >= item.index)
+            if item.index >= MAX_ITEMS
+                || previous.is_some_and(|index| index >= item.index)
                 || self.batch_partition(&call.tenant, &item.envelope)? != item.partition
                 || !self
                     .owner
@@ -312,7 +314,7 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
         let (namespace, key) = operation_key(&envelope.request).ok_or_else(unsupported)?;
         if !matches!(envelope.request, ClientRequest::Get { .. })
             && !WriteOp::request(&envelope.request)
-                .is_some_and(|(_, _, op)| op.fits(self.max_value_bytes))
+                .is_some_and(|(_, _, op)| op.fits(self.max_value_bytes.min(MAX_VALUE_BYTES)))
         {
             return Err(batch_too_large());
         }

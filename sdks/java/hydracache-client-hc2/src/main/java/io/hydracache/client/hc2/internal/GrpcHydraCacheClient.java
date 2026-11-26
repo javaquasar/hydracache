@@ -7,6 +7,7 @@ import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import io.hydracache.client.hc2.BatchItemOutcome;
+import io.hydracache.client.hc2.BatchItemReceipt;
 import io.hydracache.client.hc2.BatchItemResult;
 import io.hydracache.client.hc2.BatchOperation;
 import io.hydracache.client.hc2.CacheEventListener;
@@ -25,6 +26,7 @@ import io.hydracache.client.hc2.NodeEndpoint;
 import io.hydracache.client.hc2.RequestOptions;
 import io.hydracache.client.hc2.RetryAdvice;
 import io.hydracache.client.hc2.Subscription;
+import io.hydracache.client.hc2.SubscriptionGap;
 import io.hydracache.client.hc2.TopologySnapshot;
 import io.hydracache.client.hc2.internal.wire.BatchItem;
 import io.hydracache.client.hc2.internal.wire.BatchRequest;
@@ -678,7 +680,7 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
   private void dispatchGap(EventGap gap) {
     ActiveSubscription subscription = subscriptions.get(gap.getSubscriptionId());
     if (subscription == null) return;
-    subscription.enqueueGap(gap.getAfterWatermark());
+    subscription.enqueueGap(gap.getAfterWatermark(), mapGap(gap.getDetails()));
   }
 
   private void acceptTopology(TopologyUpdate update) {
@@ -734,16 +736,23 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
     if (!response.hasBatch()) throw local(ErrorCode.INTERNAL, "peer omitted batch result");
     BatchResult batch = response.getBatch();
     if (batch.getItemsCount() != expected) throw local(ErrorCode.INTERNAL, "batch result count mismatch");
+    boolean hasReceipts = batch.getReceiptsCount() != 0;
+    if (hasReceipts && batch.getReceiptsCount() != expected) {
+      throw local(ErrorCode.INTERNAL, "batch receipt count mismatch");
+    }
     List<BatchItemOutcome> results = new ArrayList<>(expected);
     for (int index = 0; index < expected; index++) {
       InvocationResponse item = batch.getItems(index);
       int id = index + 1;
       long epoch = item.getMeta().getTopologyEpoch();
+      Optional<BatchItemReceipt> receipt = hasReceipts
+          ? Optional.of(mapBatchReceipt(batch.getReceipts(index), id)) : Optional.empty();
       if (item.getMeta().getError()
           != io.hydracache.client.hc2.internal.wire.StableErrorCode.STABLE_ERROR_UNSPECIFIED) {
         ResponseMeta meta = item.getMeta();
         results.add(new BatchItemOutcome(id, epoch, Optional.empty(), Optional.of(
-            new HydraCacheException(mapError(meta.getError()), mapRetry(meta.getRetry()), meta.getSafeDetail()))));
+            new HydraCacheException(mapError(meta.getError()), mapRetry(meta.getRetry()), meta.getSafeDetail())),
+            receipt));
         continue;
       }
       Optional<CacheValue> value = Optional.empty();
@@ -756,9 +765,53 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
         mutation = Optional.of(new MutationResult(item.getMutation().getApplied()));
       }
       results.add(new BatchItemOutcome(id, epoch,
-          Optional.of(new BatchItemResult(id, value, mutation)), Optional.empty()));
+          Optional.of(new BatchItemResult(id, value, mutation)), Optional.empty(), receipt));
     }
     return List.copyOf(results);
+  }
+
+  private static BatchItemReceipt mapBatchReceipt(
+      io.hydracache.client.hc2.internal.wire.BatchItemReceipt wire, int id) {
+    BatchItemReceipt.State state = switch (wire.getState()) {
+      case BATCH_ITEM_STATE_CONFIRMED -> BatchItemReceipt.State.CONFIRMED;
+      case BATCH_ITEM_STATE_NOT_APPLIED -> BatchItemReceipt.State.NOT_APPLIED;
+      case BATCH_ITEM_STATE_OUTCOME_UNKNOWN -> BatchItemReceipt.State.OUTCOME_UNKNOWN;
+      default -> throw local(ErrorCode.INTERNAL, "unknown batch receipt state");
+    };
+    if (wire.getItemId() != id || wire.getPartitionId() < 0
+        || wire.hasAppliedEpoch() != wire.hasAppliedVersion()
+        || (wire.hasAppliedEpoch() && (wire.getAppliedEpoch() <= 0 || wire.getAppliedVersion() < 0
+            || state != BatchItemReceipt.State.CONFIRMED))) {
+      throw local(ErrorCode.INTERNAL, "invalid batch receipt");
+    }
+    return new BatchItemReceipt(wire.getPartitionId(), state, wire.hasAppliedEpoch()
+        ? Optional.of(new BatchItemReceipt.AppliedVersion(wire.getAppliedEpoch(), wire.getAppliedVersion()))
+        : Optional.empty());
+  }
+
+  static SubscriptionGap mapGap(io.hydracache.client.hc2.internal.wire.EventGapDetails wire) {
+    SubscriptionGap.Reason reason = switch (wire.getReason()) {
+      case EVENT_GAP_REASON_TOPOLOGY_CHANGED -> SubscriptionGap.Reason.TOPOLOGY_CHANGED;
+      case EVENT_GAP_REASON_HISTORY_LOST -> SubscriptionGap.Reason.HISTORY_LOST;
+      case EVENT_GAP_REASON_RESUME_UNBOUND -> SubscriptionGap.Reason.RESUME_UNBOUND;
+      case EVENT_GAP_REASON_CLIENT_OVERFLOW -> SubscriptionGap.Reason.CLIENT_OVERFLOW;
+      default -> SubscriptionGap.Reason.UNKNOWN;
+    };
+    if (reason == SubscriptionGap.Reason.UNKNOWN || wire.getPartitionsCount() > 1024) {
+      return new SubscriptionGap(SubscriptionGap.Reason.UNKNOWN, List.of());
+    }
+    int previous = -1;
+    var partitions = new ArrayList<SubscriptionGap.Partition>(wire.getPartitionsCount());
+    for (var partition : wire.getPartitionsList()) {
+      if (partition.getPartitionId() <= previous
+          || partition.getPreviousVersion() < 0 || partition.getObservedVersion() < 0) {
+        return new SubscriptionGap(SubscriptionGap.Reason.UNKNOWN, List.of());
+      }
+      previous = partition.getPartitionId();
+      partitions.add(new SubscriptionGap.Partition(
+          previous, partition.getPreviousVersion(), partition.getObservedVersion()));
+    }
+    return new SubscriptionGap(reason, partitions);
   }
 
   private static void requireSuccess(ResponseMeta meta) {
@@ -914,6 +967,8 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
     void transferOwnership() { released.set(true); }
   }
 
+  private record QueuedGap(long afterWatermark, SubscriptionGap details) {}
+
   private final class ActiveSubscription implements Subscription {
     private static final int MAX_CALLBACKS = 64;
     private static final int MAX_CALLBACK_BYTES = 8 * 1024 * 1024;
@@ -924,7 +979,7 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
     private final ArrayDeque<io.hydracache.client.hc2.internal.wire.CacheEvent> queue = new ArrayDeque<>();
     private int queuedBytes;
     private boolean delivering;
-    private Long pendingGap;
+    private QueuedGap pendingGap;
     private long lastQueued;
     ActiveSubscription(long id, long initialWatermark, CacheEventListener listener) {
       this.id = id; this.initialWatermark = initialWatermark; this.listener = listener;
@@ -939,18 +994,26 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
           queue.addLast(event);
           queuedBytes += bytes;
           lastQueued = event.getWatermark();
-        } else if (pendingGap == null) {
-          pendingGap = lastQueued;
+        } else {
+          long after = pendingGap == null ? lastQueued : pendingGap.afterWatermark();
+          pendingGap = new QueuedGap(after,
+              new SubscriptionGap(SubscriptionGap.Reason.CLIENT_OVERFLOW, List.of()));
         }
         if (delivering) return;
         delivering = true;
       }
       scheduleDelivery();
     }
-    void enqueueGap(long afterWatermark) {
+    void enqueueGap(long afterWatermark, SubscriptionGap details) {
       synchronized (this) {
         if (stopped.get()) return;
-        pendingGap = pendingGap == null ? afterWatermark : Math.min(pendingGap, afterWatermark);
+        if (pendingGap == null) {
+          pendingGap = new QueuedGap(Math.min(lastQueued, afterWatermark), details);
+        } else {
+          SubscriptionGap merged = pendingGap.details().reason() == SubscriptionGap.Reason.CLIENT_OVERFLOW
+              ? pendingGap.details() : new SubscriptionGap(SubscriptionGap.Reason.UNKNOWN, List.of());
+          pendingGap = new QueuedGap(Math.min(pendingGap.afterWatermark(), afterWatermark), merged);
+        }
         if (delivering) return;
         delivering = true;
       }
@@ -967,7 +1030,7 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
     private void deliver() {
       while (!stopped.get()) {
         io.hydracache.client.hc2.internal.wire.CacheEvent event;
-        Long gap;
+        QueuedGap gap;
         synchronized (this) {
           event = queue.pollFirst();
           if (event != null) {
@@ -984,7 +1047,7 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
         }
         try {
           if (event == null) {
-            listener.onGap(id, gap);
+            listener.onGap(id, gap.afterWatermark(), gap.details());
           } else {
             listener.onEvent(new io.hydracache.client.hc2.CacheEvent(
                 id, event.getWatermark(), event.getKey().toByteArray(),

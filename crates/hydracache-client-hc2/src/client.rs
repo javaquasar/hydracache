@@ -1945,6 +1945,32 @@ mod tests {
     }
 
     #[test]
+    fn receipt_rejects_inconsistent_proof_without_confusing_version_zero() {
+        let mut wire = crate::wire::BatchItemReceipt {
+            item_id: 1,
+            partition_id: 0,
+            state: crate::wire::BatchItemState::Confirmed as i32,
+            applied_epoch: Some(4),
+            applied_version: Some(0),
+        };
+        assert_eq!(
+            decode_batch_receipt(0, wire).unwrap().applied,
+            Some(AppliedVersion {
+                epoch: 4,
+                version: 0
+            })
+        );
+        assert!(decode_batch_receipt(1, wire).is_err());
+        wire.state = crate::wire::BatchItemState::OutcomeUnknown as i32;
+        assert!(decode_batch_receipt(0, wire).is_err());
+        wire.applied_epoch = None;
+        wire.applied_version = None;
+        let rejected = decode_batch_receipt(0, wire).unwrap();
+        assert_eq!(rejected.state, BatchItemState::OutcomeUnknown);
+        assert!(rejected.applied.is_none());
+    }
+
+    #[test]
     fn retained_state_reports_every_map_queue_and_permit_then_close_releases_owners() {
         let (runtime, _receiver) = runtime_for_retained_state();
         let invocation_permit = Arc::clone(&runtime.invocation_permits)

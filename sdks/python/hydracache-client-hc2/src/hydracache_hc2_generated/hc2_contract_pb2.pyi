@@ -40,6 +40,21 @@ class RetryDirective(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     RETRY_DIRECTIVE_SAME_CONNECTION: _ClassVar[RetryDirective]
     RETRY_DIRECTIVE_RECONNECT_IDEMPOTENT: _ClassVar[RetryDirective]
     RETRY_DIRECTIVE_REPAIR_REQUIRED: _ClassVar[RetryDirective]
+
+class BatchItemState(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    BATCH_ITEM_STATE_UNSPECIFIED: _ClassVar[BatchItemState]
+    BATCH_ITEM_STATE_CONFIRMED: _ClassVar[BatchItemState]
+    BATCH_ITEM_STATE_NOT_APPLIED: _ClassVar[BatchItemState]
+    BATCH_ITEM_STATE_OUTCOME_UNKNOWN: _ClassVar[BatchItemState]
+
+class EventGapReason(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    EVENT_GAP_REASON_UNSPECIFIED: _ClassVar[EventGapReason]
+    EVENT_GAP_REASON_TOPOLOGY_CHANGED: _ClassVar[EventGapReason]
+    EVENT_GAP_REASON_HISTORY_LOST: _ClassVar[EventGapReason]
+    EVENT_GAP_REASON_RESUME_UNBOUND: _ClassVar[EventGapReason]
+    EVENT_GAP_REASON_CLIENT_OVERFLOW: _ClassVar[EventGapReason]
 CAPABILITY_UNSPECIFIED: Capability
 CAPABILITY_DATA: Capability
 CAPABILITY_BATCH: Capability
@@ -65,6 +80,15 @@ RETRY_DIRECTIVE_NEVER: RetryDirective
 RETRY_DIRECTIVE_SAME_CONNECTION: RetryDirective
 RETRY_DIRECTIVE_RECONNECT_IDEMPOTENT: RetryDirective
 RETRY_DIRECTIVE_REPAIR_REQUIRED: RetryDirective
+BATCH_ITEM_STATE_UNSPECIFIED: BatchItemState
+BATCH_ITEM_STATE_CONFIRMED: BatchItemState
+BATCH_ITEM_STATE_NOT_APPLIED: BatchItemState
+BATCH_ITEM_STATE_OUTCOME_UNKNOWN: BatchItemState
+EVENT_GAP_REASON_UNSPECIFIED: EventGapReason
+EVENT_GAP_REASON_TOPOLOGY_CHANGED: EventGapReason
+EVENT_GAP_REASON_HISTORY_LOST: EventGapReason
+EVENT_GAP_REASON_RESUME_UNBOUND: EventGapReason
+EVENT_GAP_REASON_CLIENT_OVERFLOW: EventGapReason
 
 class RequestMeta(_message.Message):
     __slots__ = ("deadline_unix_ms", "idempotency_key", "tenant", "topology_epoch")
@@ -276,11 +300,27 @@ class LockOwnershipResult(_message.Message):
     fence: int
     def __init__(self, locked: bool = ..., fence: _Optional[int] = ...) -> None: ...
 
+class BatchItemReceipt(_message.Message):
+    __slots__ = ("item_id", "partition_id", "state", "applied_epoch", "applied_version")
+    ITEM_ID_FIELD_NUMBER: _ClassVar[int]
+    PARTITION_ID_FIELD_NUMBER: _ClassVar[int]
+    STATE_FIELD_NUMBER: _ClassVar[int]
+    APPLIED_EPOCH_FIELD_NUMBER: _ClassVar[int]
+    APPLIED_VERSION_FIELD_NUMBER: _ClassVar[int]
+    item_id: int
+    partition_id: int
+    state: BatchItemState
+    applied_epoch: int
+    applied_version: int
+    def __init__(self, item_id: _Optional[int] = ..., partition_id: _Optional[int] = ..., state: _Optional[_Union[BatchItemState, str]] = ..., applied_epoch: _Optional[int] = ..., applied_version: _Optional[int] = ...) -> None: ...
+
 class BatchResult(_message.Message):
-    __slots__ = ("items",)
+    __slots__ = ("items", "receipts")
     ITEMS_FIELD_NUMBER: _ClassVar[int]
+    RECEIPTS_FIELD_NUMBER: _ClassVar[int]
     items: _containers.RepeatedCompositeFieldContainer[InvocationResponse]
-    def __init__(self, items: _Optional[_Iterable[_Union[InvocationResponse, _Mapping]]] = ...) -> None: ...
+    receipts: _containers.RepeatedCompositeFieldContainer[BatchItemReceipt]
+    def __init__(self, items: _Optional[_Iterable[_Union[InvocationResponse, _Mapping]]] = ..., receipts: _Optional[_Iterable[_Union[BatchItemReceipt, _Mapping]]] = ...) -> None: ...
 
 class InvocationResponse(_message.Message):
     __slots__ = ("meta", "value", "mutation", "batch", "lock", "lock_ownership")
@@ -346,13 +386,33 @@ class CacheEvent(_message.Message):
     removed: bool
     def __init__(self, subscription_id: _Optional[int] = ..., watermark: _Optional[int] = ..., key: _Optional[bytes] = ..., value: _Optional[bytes] = ..., removed: bool = ...) -> None: ...
 
+class PartitionGap(_message.Message):
+    __slots__ = ("partition_id", "previous_version", "observed_version")
+    PARTITION_ID_FIELD_NUMBER: _ClassVar[int]
+    PREVIOUS_VERSION_FIELD_NUMBER: _ClassVar[int]
+    OBSERVED_VERSION_FIELD_NUMBER: _ClassVar[int]
+    partition_id: int
+    previous_version: int
+    observed_version: int
+    def __init__(self, partition_id: _Optional[int] = ..., previous_version: _Optional[int] = ..., observed_version: _Optional[int] = ...) -> None: ...
+
+class EventGapDetails(_message.Message):
+    __slots__ = ("reason", "partitions")
+    REASON_FIELD_NUMBER: _ClassVar[int]
+    PARTITIONS_FIELD_NUMBER: _ClassVar[int]
+    reason: EventGapReason
+    partitions: _containers.RepeatedCompositeFieldContainer[PartitionGap]
+    def __init__(self, reason: _Optional[_Union[EventGapReason, str]] = ..., partitions: _Optional[_Iterable[_Union[PartitionGap, _Mapping]]] = ...) -> None: ...
+
 class EventGap(_message.Message):
-    __slots__ = ("subscription_id", "after_watermark")
+    __slots__ = ("subscription_id", "after_watermark", "details")
     SUBSCRIPTION_ID_FIELD_NUMBER: _ClassVar[int]
     AFTER_WATERMARK_FIELD_NUMBER: _ClassVar[int]
+    DETAILS_FIELD_NUMBER: _ClassVar[int]
     subscription_id: int
     after_watermark: int
-    def __init__(self, subscription_id: _Optional[int] = ..., after_watermark: _Optional[int] = ...) -> None: ...
+    details: EventGapDetails
+    def __init__(self, subscription_id: _Optional[int] = ..., after_watermark: _Optional[int] = ..., details: _Optional[_Union[EventGapDetails, _Mapping]] = ...) -> None: ...
 
 class NodeEndpoint(_message.Message):
     __slots__ = ("node_id", "node_epoch", "endpoint_uri", "server_name")

@@ -454,7 +454,13 @@ public final class RecoveringHydraCacheClient implements HydraCacheClient {
           listener.onEvent(new CacheEvent(id, event.watermark(), event.key(), event.value(), event.removed()));
         }
 
-        @Override public void onGap(long ignoredId, long afterWatermark) { requireRepair(); }
+        @Override public void onGap(long ignoredId, long afterWatermark) {
+          if (binding.get() == bindingId) requireRepair();
+        }
+
+        @Override public void onGap(long ignoredId, long afterWatermark, SubscriptionGap gap) {
+          if (binding.get() == bindingId) requireRepair(gap);
+        }
       };
       return connection.client().subscribe(keyPrefix, lastWatermark.get(), includeValue, forwarding)
           .thenAccept(next -> {
@@ -469,11 +475,15 @@ public final class RecoveringHydraCacheClient implements HydraCacheClient {
     }
 
     void requireRepair() {
+      requireRepair(new SubscriptionGap(SubscriptionGap.Reason.UNKNOWN, List.of()));
+    }
+
+    void requireRepair(SubscriptionGap gap) {
       if (!repairRequired.compareAndSet(false, true) || closed.get()) return;
       recoveryMetrics.gapRepairsRequired.increment();
       try {
         endpoints.get(current.get().endpointIndex()).config().callbackExecutor()
-            .execute(() -> listener.onGap(id, lastWatermark.get()));
+            .execute(() -> listener.onGap(id, lastWatermark.get(), gap));
       } catch (RuntimeException ignored) { }
     }
 

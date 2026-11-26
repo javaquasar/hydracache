@@ -28,9 +28,7 @@ const OWNER_BUDGET: Duration = Duration::from_millis(2_000);
 
 #[path = "imap_hc2_bulk_route.rs"]
 mod bulk;
-pub(crate) use bulk::{
-    BatchExecution, BatchState, OwnerBatchCall, OwnerBatchItem, OwnerBatchReply,
-};
+pub(crate) use bulk::{BatchExecution, BatchState, OwnerBatchCall, OwnerBatchReply};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
