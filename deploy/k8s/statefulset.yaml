@@ -21,7 +21,7 @@ spec:
       terminationGracePeriodSeconds: 45
       containers:
         - name: hydracache
-          image: ghcr.io/javaquasar/hydracache-server:0.48.0
+          image: ghcr.io/javaquasar/hydracache-server:0.74.1
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

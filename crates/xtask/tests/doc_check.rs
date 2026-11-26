@@ -823,3 +823,90 @@ depends_on = []
         "missing test-name check: {joined}"
     );
 }
+
+const DEPLOY_MANIFEST: &str = r#"
+[[release]]
+version = "0.37.0"
+file = "docs/plans/A.md"
+status = "planned"
+depends_on = []
+"#;
+
+/// Scratch root with a workspace at `version` and the three deploy artifacts
+/// pinned to `chart_version`, `values_tag`, and `k8s_tag`.
+fn deploy_root(version: &str, chart_version: &str, values_tag: &str, k8s_tag: &str) -> PathBuf {
+    let root = scratch_root(DEPLOY_MANIFEST, &["docs/plans/A.md"]);
+    fs::write(
+        root.join("Cargo.toml"),
+        format!("[workspace]\nmembers = []\n\n[workspace.package]\nversion = \"{version}\"\n"),
+    )
+    .unwrap();
+    fs::create_dir_all(root.join("scripts")).unwrap();
+    fs::write(root.join("scripts/package-publishable.ps1"), "").unwrap();
+    fs::write(root.join("scripts/verify-release-readiness.ps1"), "").unwrap();
+    fs::create_dir_all(root.join("deploy/helm/hydracache")).unwrap();
+    fs::create_dir_all(root.join("deploy/k8s")).unwrap();
+    fs::write(
+        root.join("deploy/helm/hydracache/Chart.yaml"),
+        format!("apiVersion: v2\nname: hydracache\nversion: {chart_version}\nappVersion: \"{chart_version}\"\n"),
+    )
+    .unwrap();
+    fs::write(
+        root.join("deploy/helm/hydracache/values.yaml"),
+        format!(
+            "image:\n  repository: ghcr.io/javaquasar/hydracache-server\n  tag: \"{values_tag}\"\n"
+        ),
+    )
+    .unwrap();
+    fs::write(
+        root.join("deploy/k8s/statefulset.yaml"),
+        format!(
+            "apiVersion: apps/v1\nkind: StatefulSet\nspec:\n  template:\n    spec:\n      containers:\n        - name: hydracache\n          image: ghcr.io/javaquasar/hydracache-server:{k8s_tag}\n"
+        ),
+    )
+    .unwrap();
+    root
+}
+
+#[test]
+fn accepts_deploy_artifacts_pinned_to_workspace_version() {
+    let root = deploy_root("0.74.1", "0.74.1", "0.74.1", "0.74.1");
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+    assert!(
+        problems.is_empty(),
+        "expected no problems, got: {problems:?}"
+    );
+}
+
+#[test]
+fn detects_stale_deploy_image_versions() {
+    let root = deploy_root("0.74.1", "0.48.0", "0.48.0", "0.56.0");
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+    for needle in [
+        "deploy/helm/hydracache/Chart.yaml: version",
+        "deploy/helm/hydracache/Chart.yaml: appVersion",
+        "deploy/helm/hydracache/values.yaml: image.tag",
+        "deploy/k8s/statefulset.yaml: container image",
+    ] {
+        assert!(
+            problems.iter().any(|problem| problem.starts_with(needle)),
+            "missing problem {needle:?} in {problems:?}"
+        );
+    }
+}
+
+#[test]
+fn detects_missing_deploy_artifact_instead_of_passing() {
+    let root = deploy_root("0.74.1", "0.74.1", "0.74.1", "0.74.1");
+    fs::remove_file(root.join("deploy/k8s/statefulset.yaml")).unwrap();
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+    assert!(
+        problems
+            .iter()
+            .any(|problem| problem.starts_with("deploy/k8s/statefulset.yaml: cannot read")),
+        "expected missing deploy artifact problem, got: {problems:?}"
+    );
+}

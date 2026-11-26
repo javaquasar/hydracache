@@ -26,6 +26,9 @@
 //! - every ADR uses the single `0001-title.md` filename scheme, has a unique
 //!   number, and is listed from `docs/adr/README.md`.
 //! - every publishable workspace crate is present in both release publish scripts.
+//! - the Helm chart (`version`, `appVersion`, default image tag) and the raw k8s
+//!   manifest pin the workspace version, so a release cannot ship deploy
+//!   artifacts that point at a stale or unpublished `hydracache-server` image.
 //!
 //! This turns the "release sequencing is recorded, not implied" rule into an
 //! executable gate so doc drift (e.g. two plans claiming the same version, or a
@@ -174,6 +177,14 @@ struct WorkspaceManifest {
 struct WorkspaceTable {
     #[serde(default)]
     members: Vec<String>,
+    #[serde(default)]
+    package: Option<WorkspacePackageTable>,
+}
+
+#[derive(serde::Deserialize)]
+struct WorkspacePackageTable {
+    #[serde(default)]
+    version: Option<String>,
 }
 
 #[derive(serde::Deserialize)]
@@ -316,6 +327,7 @@ pub fn check(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     problems.extend(check_in_prose_plan_links(root)?);
     problems.extend(check_adr_index(root)?);
     problems.extend(check_publishable_crates_in_publish_scripts(root)?);
+    problems.extend(check_deploy_image_versions(root)?);
     problems.extend(check_redis_compat_conformance(root)?);
     problems.extend(check_redis_compat_docs_examples(root)?);
 
@@ -555,6 +567,132 @@ fn check_publishable_crates_in_publish_scripts(root: &Path) -> Result<Vec<String
             problems.push(format!(
                 "{script}: publishable crate '{package}' is missing from the publish package list"
             ));
+        }
+    }
+
+    Ok(problems)
+}
+
+const SERVER_IMAGE_REPOSITORY: &str = "ghcr.io/javaquasar/hydracache-server";
+const HELM_CHART: &str = "deploy/helm/hydracache/Chart.yaml";
+const HELM_VALUES: &str = "deploy/helm/hydracache/values.yaml";
+const K8S_STATEFULSET: &str = "deploy/k8s/statefulset.yaml";
+
+/// Deploy artifacts must reference the image the release publishes.
+///
+/// Skipped only when the root has no workspace `Cargo.toml` (scratch fixtures).
+/// Once a workspace exists, every deploy file is required: deleting one must not
+/// turn the check into a silent pass.
+fn check_deploy_image_versions(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
+    let workspace_manifest_path = root.join("Cargo.toml");
+    if !workspace_manifest_path.is_file() {
+        return Ok(Vec::new());
+    }
+    let workspace_text = fs::read_to_string(&workspace_manifest_path)
+        .map_err(|err| format!("reading {}: {err}", workspace_manifest_path.display()))?;
+    let workspace: WorkspaceManifest = toml::from_str(&workspace_text)
+        .map_err(|err| format!("parsing {}: {err}", workspace_manifest_path.display()))?;
+    let Some(version) = workspace
+        .workspace
+        .package
+        .and_then(|package| package.version)
+    else {
+        return Ok(vec![
+            "Cargo.toml: [workspace.package] version is required for deploy image checks"
+                .to_owned(),
+        ]);
+    };
+
+    let mut problems = Vec::new();
+    let read_yaml = |relative: &str, problems: &mut Vec<String>| -> Option<serde_yaml::Value> {
+        let path = root.join(relative);
+        let text = match fs::read_to_string(&path) {
+            Ok(text) => text,
+            Err(err) => {
+                problems.push(format!("{relative}: cannot read deploy artifact: {err}"));
+                return None;
+            }
+        };
+        match serde_yaml::from_str(&text) {
+            Ok(value) => Some(value),
+            Err(err) => {
+                problems.push(format!("{relative}: invalid YAML: {err}"));
+                None
+            }
+        }
+    };
+    fn expect(
+        problems: &mut Vec<String>,
+        relative: &str,
+        field: &str,
+        actual: Option<&str>,
+        expected: &str,
+    ) {
+        if actual != Some(expected) {
+            problems.push(format!(
+                "{relative}: {field} is {actual:?}, expected {expected:?}"
+            ));
+        }
+    }
+
+    let chart = read_yaml(HELM_CHART, &mut problems);
+    let values = read_yaml(HELM_VALUES, &mut problems);
+    let statefulset = read_yaml(K8S_STATEFULSET, &mut problems);
+
+    if let Some(chart) = &chart {
+        expect(
+            &mut problems,
+            HELM_CHART,
+            "version",
+            chart["version"].as_str(),
+            &version,
+        );
+        expect(
+            &mut problems,
+            HELM_CHART,
+            "appVersion",
+            chart["appVersion"].as_str(),
+            &version,
+        );
+    }
+    if let Some(values) = &values {
+        expect(
+            &mut problems,
+            HELM_VALUES,
+            "image.repository",
+            values["image"]["repository"].as_str(),
+            SERVER_IMAGE_REPOSITORY,
+        );
+        expect(
+            &mut problems,
+            HELM_VALUES,
+            "image.tag",
+            values["image"]["tag"].as_str(),
+            &version,
+        );
+    }
+    if let Some(statefulset) = &statefulset {
+        let expected_image = format!("{SERVER_IMAGE_REPOSITORY}:{version}");
+        let containers = statefulset["spec"]["template"]["spec"]["containers"].as_sequence();
+        let images: Vec<&str> = containers
+            .map(|containers| {
+                containers
+                    .iter()
+                    .filter_map(|container| container["image"].as_str())
+                    .collect()
+            })
+            .unwrap_or_default();
+        if images.is_empty() {
+            problems.push(format!("{K8S_STATEFULSET}: no container image found"));
+        }
+        for image in images {
+            expect(
+                &mut problems,
+                K8S_STATEFULSET,
+                "container image",
+                Some(image),
+                &expected_image,
+            );
         }
     }
 

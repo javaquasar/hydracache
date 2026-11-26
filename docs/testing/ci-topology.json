@@ -90,6 +90,7 @@
           "migration-conformance-admission-069",
           "hc2-linux-required",
           "hc2-docker-interop",
+          "server-image-smoke",
           "performance-067-shared-tripwire",
           "performance-ci-instruction-v1",
           "msrv"
@@ -434,12 +435,13 @@
         "release-only": [],
         "scheduled-diagnostic": [],
         "manual-protected": [],
-        "publish": ["resolve", "publish", "consumer-verification", "github-release"]
+        "publish": ["resolve", "publish", "consumer-verification", "publish-image", "github-release"]
       },
       "dependencies": {
         "publish": ["resolve"],
         "consumer-verification": ["resolve", "publish"],
-        "github-release": ["resolve", "publish", "consumer-verification"]
+        "publish-image": ["resolve", "publish", "consumer-verification"],
+        "github-release": ["resolve", "publish", "consumer-verification", "publish-image"]
       },
       "timeout_exemptions": {
         "consumer-verification": "GitHub does not allow timeout-minutes on a reusable-workflow caller; post-publish.yml#verify has a 60 minute timeout"

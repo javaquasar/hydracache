@@ -43,6 +43,37 @@ order includes `hydracache-client-hc2`, and post-publication verification adds
 the registry crate to a clean external consumer. This does not publish the
 Java or Python preview packages.
 
+### Container image
+
+After the crates are published and the clean consumer verification passes, the
+`publish-image` job builds `hydracache-server` from the same source SHA, runs
+`scripts/ci/docker-image-smoke.sh` against the local candidate, pushes it to
+`ghcr.io/javaquasar/hydracache-server`, attests its build provenance, and runs
+the smoke test again on the pushed digest. The GitHub Release is created only
+after that job succeeds and lists the image tag and digest.
+
+Tags: `X.Y.Z` always; `X.Y` and `latest` only for stable releases, and
+`latest` only when `X.Y.Z` is the newest stable tag in the repository.
+Pre-releases get only their exact tag. The image tag in
+`deploy/helm/hydracache/Chart.yaml`, `values.yaml`, and
+`deploy/k8s/statefulset.yaml` must equal the workspace version in the release
+commit; `cargo xtask doc-check` fails otherwise, so bump them together with
+`Cargo.toml`.
+
+One-time: the first push creates the GHCR package as private. A repository
+admin makes it public under the package's settings on GitHub and links it to
+this repository.
+
+Verify a published image:
+
+```powershell
+docker pull ghcr.io/javaquasar/hydracache-server:X.Y.Z
+gh attestation verify oci://ghcr.io/javaquasar/hydracache-server:X.Y.Z --owner javaquasar
+```
+
+Never overwrite a pushed `X.Y.Z` tag. If a published image is broken, ship a
+new patch release.
+
 The `shipped` check is intentional: it prevents an implementation still marked
 as in progress from becoming an immutable crates.io release. Set the status in
 the release commit, merge that commit to `main`, wait for full CI to pass, and
