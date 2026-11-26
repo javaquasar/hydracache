@@ -1020,6 +1020,27 @@ repaired a fourth partition while writes continued to the first three. After rec
 CAS and its retry returned the expected results on all four partitions. We repeated the
 same scenario four times on one binary.
 
+## Moving primaries across owners
+
+Changing one partition's assignment advances a shared epoch, so two uncoordinated
+handoffs can interrupt each other's copy. Raft now holds an ordered list of primary
+moves. The owner of the first partition does the work and the next task becomes eligible
+when the first handoff commits.
+
+A new destination first receives the snapshot and the later certified changes. An
+existing synchronous backup can prove the final prefix directly. At the handoff the
+current owner briefly holds the writer, and the new owner must prove the exact
+certificate before Raft changes the assignment. The previous owner becomes a backup.
+Cancelling the wave advances the epoch and fences a copy still in flight.
+
+On AX42 we queued two primaries on different members and blocked the first destination.
+Both original owners continued to accept writes. The second move stayed queued even
+though its destination already held the partition as a backup. Once the first copy
+caught up, the handoffs committed in order. The two new owners started accepting writes
+and returned the recorded outcomes of earlier CAS requests. We then cancelled another
+wave with a snapshot chunk in flight. The current owner kept the value it had just
+written. The four-process scenario passed four times with the same binary.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

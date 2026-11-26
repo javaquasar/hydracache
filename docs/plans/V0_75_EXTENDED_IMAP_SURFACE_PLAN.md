@@ -1405,9 +1405,8 @@ the snapshot, delta, and final seal checks before Raft can replace the slot. A f
 repair of a rendezvous-assigned partition carries the exact prior backup order and pins
 the resulting assignment in Raft. Later repair and promotion read that pinned assignment.
 
-The worker is opt-in on the staged value-plane host. The scope covers backup movement
-while the owner stays authoritative. General primary migration, cluster-wide scheduling
-across owners, production bandwidth limits, and OD-3 qualification remain open.
+This checkpoint enabled an opt-in worker for backup movement while the owner stayed
+authoritative. The subsequent primary handoff checkpoint adds coordination across owners.
 
 On AX42, source `94e9dbb8ea8a294bc2e38f3fa02b18695ae695cf` exercised four separate member
 processes with RF=2. A planned drain moved the synchronous backups of three partitions to
@@ -1433,6 +1432,51 @@ Reproduce with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test --locked -p hydra
 [qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
 The verified `artifacts.sha256` manifest has SHA-256
 `16f9bd7d035b913b07be7b6c118b339503b0ef7d9eef1ec31acbd3cd68f3d797`.
+
+**Primary handoff across owners.** Raft allows one active wave at a time. A wave binds
+one value scope to an ordered list of up to 16 certified partitions and pins the source
+and destination generations for every task. Any attached member can submit or cancel a wave. Each source processes its task when it reaches the head.
+Raft defers independent promotions and backup replacements during the wave. Foreground
+writes still use the current placement. The task advances in the same applied command that
+changes its primary, so a restarted coordinator can recover the head from Raft.
+
+A destination outside the replica set first catches up through the existing bounded
+snapshot and ordered delta transfer. An existing synchronous backup can proceed to the
+handoff directly. During a bounded writer pause, the source obtains a fresh ReadIndex and
+the destination proves the exact final certificate for the current wave. Raft checks that
+certificate, the active task and the assignment before advancing the epoch. The former
+owner stays in the replica set as the replacement synchronous backup. The new owner uses
+the same generation, prefix and idempotency checks for reads and writes.
+
+Cancelling advances the epoch, fences late activations and preserves committed steps. If a destination already joined as a backup, the backup assignment remains
+committed. A changed generation can leave the task pending until the operator cancels and
+submits a new wave. This checkpoint uses explicitly chosen primary destinations and an
+attached staged value plane. Production routing, automatic primary placement policy and
+bandwidth and recovery qualification remain open.
+
+On AX42, source `e8cc34aaf501b1ac438992f49853be44776776ff` passed a four-process RF=2
+scenario in the full suite and three independent repeats on the same binary. The two
+partitions started on different owners. We blocked the first destination and verified that
+both owners continued accepting writes while the second task stayed queued. The first
+destination caught up from a snapshot and deltas. The second was already a synchronous
+backup. Their handoffs committed in order at epochs 7 and 8. Both new owners accepted
+foreground writes, and both former endpoints refused owner reads and writes. The new
+owners replayed the retained CAS outcomes at their original versions.
+
+A second wave was cancelled while its snapshot chunk was delayed in transport. The
+current owner retained a write it accepted during that copy, and the delayed destination
+never took ownership. Raft tests cover out-of-order and stale commands, rejection of a
+stale final prefix, recovery of the next task from a metadata snapshot, and fencing a
+cancelled wave even after a new one opens.
+
+Reproduce with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test --locked -p hydracache-server
+--features hydracache/durable-value-store --test imap_replicated_read_075 --
+--exact processes::w10f_primary_wave_moves_two_owners_and_fences_a_cancelled_copy_under_load
+--nocapture`. Logs, the test binary and checksums are under
+`development/w10f-primary-e8cc34aaf501b1ac438992f49853be44776776ff` in the AX42
+[qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
+The verified `artifacts.sha256` manifest has SHA-256
+`9164c218df0a48d2ac85f9bfa44235b40f6049f99b15b3e80298e6ee535ba09c`.
 
 ### W10g. Make bulk operations and listeners cluster-wide
 
