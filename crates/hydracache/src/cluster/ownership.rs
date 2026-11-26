@@ -104,44 +104,7 @@ fn rendezvous_score(key: &str, node_id: &ClusterNodeId) -> u64 {
     hash
 }
 
-/// Stable partition id used as a thin indirection over rendezvous ownership.
-#[derive(
-    Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
-)]
-pub struct PartitionId(u32);
-
-impl PartitionId {
-    /// Create a partition id from its numeric value.
-    pub const fn new(value: u32) -> Self {
-        Self(value)
-    }
-
-    /// Return the numeric partition id.
-    pub const fn value(self) -> u32 {
-        self.0
-    }
-}
-
-/// Return the deterministic partition for a key.
-///
-/// A zero `partition_count` is normalized to one partition so callers cannot
-/// accidentally divide by zero while validating a partially built config.
-pub fn partition_for_key(key: impl AsRef<str>, partition_count: u32) -> PartitionId {
-    let partition_count = partition_count.max(1);
-    PartitionId((stable_key_hash(key.as_ref()) % u64::from(partition_count)) as u32)
-}
-
-fn stable_key_hash(key: &str) -> u64 {
-    const FNV_OFFSET: u64 = 0xcbf29ce484222325;
-    const FNV_PRIME: u64 = 0x100000001b3;
-
-    let mut hash = FNV_OFFSET;
-    for byte in key.bytes() {
-        hash ^= u64::from(byte);
-        hash = hash.wrapping_mul(FNV_PRIME);
-    }
-    hash
-}
+pub use crate::replication_model::{partition_for_key, PartitionId};
 
 /// Replica/quorum pilot configuration error.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

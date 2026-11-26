@@ -4,8 +4,9 @@ use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 
-use crate::cluster::{ClusterEpoch, ClusterNodeId, PartitionId};
-use crate::grid::hardening::{ReplicatedValueRecord, SealedBytes, ValueVersion};
+use crate::cluster::{ClusterEpoch, ClusterNodeId};
+use crate::replication_model::value_record::{ReplicatedValueRecord, SealedBytes, ValueVersion};
+use crate::replication_model::PartitionId;
 
 /// Missed write captured for a replica that was temporarily unavailable.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

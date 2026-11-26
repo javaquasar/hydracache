@@ -23,7 +23,6 @@ pub(crate) mod durable_store;
 pub(crate) mod elasticity;
 pub(crate) mod failure_detector;
 pub(crate) mod hardening;
-pub(crate) mod hinted_handoff;
 pub(crate) mod invalidation_ring;
 pub(crate) mod lock_session;
 pub(crate) mod merkle_repair;
@@ -198,48 +197,7 @@ fn rebalance_task_sort_key(task: &RebalanceTask) -> (u32, u8, String, String) {
     }
 }
 
-/// Replicated value slot with tombstones participating in version ordering.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub enum ReplicatedSlot<V> {
-    /// Live value bytes or decoded value.
-    Value {
-        /// Stored value.
-        value: V,
-        /// Monotonic version.
-        version: u64,
-    },
-    /// Deletion marker that beats values at the same version.
-    Tombstone {
-        /// Monotonic tombstone version.
-        version: u64,
-        /// Epoch after which GC is allowed, once repair confirmed every backup.
-        gc_eligible_after: Option<ClusterEpoch>,
-    },
-}
-
-impl<V> ReplicatedSlot<V> {
-    /// Return the slot version.
-    pub fn version(&self) -> u64 {
-        match self {
-            Self::Value { version, .. } | Self::Tombstone { version, .. } => *version,
-        }
-    }
-
-    /// Return whether this slot is a tombstone.
-    pub fn is_tombstone(&self) -> bool {
-        matches!(self, Self::Tombstone { .. })
-    }
-
-    /// Merge two slots: higher version wins; on ties tombstone wins.
-    pub fn merge(self, other: Self) -> Self {
-        match self.version().cmp(&other.version()) {
-            std::cmp::Ordering::Greater => self,
-            std::cmp::Ordering::Less => other,
-            std::cmp::Ordering::Equal if self.is_tombstone() => self,
-            std::cmp::Ordering::Equal => other,
-        }
-    }
-}
+pub use crate::replication_model::ReplicatedSlot;
 
 /// Compose the version used for replicated values/tombstones.
 pub fn replicated_slot_version(generation: ClusterGeneration, message_id: u64) -> u64 {
