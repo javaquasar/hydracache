@@ -170,6 +170,7 @@ impl<S: RaftLogStore> RaftRuntimeState<S> {
             commit_index: self.raw_node.raft.hard_state().commit,
             applied_index: self.applied_index,
             members: self.cluster.members(),
+            value_prefixes: self.value_prefixes.clone(),
         })
     }
 

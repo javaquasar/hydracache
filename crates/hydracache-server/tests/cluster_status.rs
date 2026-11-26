@@ -340,6 +340,7 @@ fn imap_topology_requires_the_coherent_view_even_when_legacy_status_is_available
         commit_index: 10,
         applied_index: 10,
         members: vec![member("new-owner", 4)],
+        value_prefixes: Default::default(),
     });
     let placed = PartitionTopology::from_control_plane(&grid, count, replication)
         .unwrap()

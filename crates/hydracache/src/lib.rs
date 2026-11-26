@@ -583,7 +583,7 @@ pub use cluster::{
     ClusterStagingCounters, ClusterStagingHealth, ClusterStorage, HydraCacheClientBuilder,
     HydraCacheMemberBuilder, InMemoryCluster, InMemoryClusterDiscovery, InMemoryClusterStorage,
     InMemoryPeerFetch, LogicalDuration, LogicalTime, ManualClusterClock, MetaDataContainer,
-    NearCacheRepairAction, OutboundClusterMessage, PartitionId, RaftMetadataCommand,
+    NearCacheRepairAction, OutboundClusterMessage, PartitionId, PartitionValuePrefix, RaftMetadataCommand,
     RaftMetadataSnapshot, RaftStyleMetadataControlPlane, RendezvousClusterOwnership, RoutingMode,
     StorageOp, StorageOpKind, StorageResult, TopologyFence, TransportPosture,
     CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,

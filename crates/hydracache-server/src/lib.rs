@@ -20,6 +20,9 @@ pub mod imap_read_barrier;
 pub mod imap_replicated_read;
 #[doc(hidden)]
 pub mod imap_topology;
+mod imap_value_journal;
+#[doc(hidden)]
+pub mod imap_value_plane;
 pub mod management_aggregation;
 pub mod management_history;
 mod management_http;

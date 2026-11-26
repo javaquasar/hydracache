@@ -181,7 +181,7 @@ async fn replay_command(runtime: &RaftMetadataRuntime, envelope: &RaftMetadataCo
                 .await
                 .expect("leave tail replay");
         }
-        RaftMetadataCommand::CommitTopology { .. } => {}
+        RaftMetadataCommand::CommitTopology { .. } | RaftMetadataCommand::CommitValuePrefix(_) => {}
     }
 }
 

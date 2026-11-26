@@ -200,6 +200,7 @@ impl ReferenceMetadataModel {
                 }
                 self.committed_topology = Some((*epoch, members));
             }
+            RaftMetadataCommand::CommitValuePrefix(_) => {}
         }
         Ok(())
     }
@@ -319,6 +320,9 @@ fn expected_command_id(command: &RaftMetadataCommand) -> String {
             epoch.value(),
             members.iter().map(escaped).collect::<Vec<_>>().join(",")
         ),
+        RaftMetadataCommand::CommitValuePrefix(prefix) => {
+            format!("w10c-prefix-{}-{:02x?}", prefix.partition.value(), prefix.digest)
+        }
     }
 }
 

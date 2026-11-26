@@ -13,6 +13,7 @@ use serde_json::json;
 
 const RUN: &str = "HYDRACACHE_RUN_DAEMON_PROCESS_E2E";
 const CHILD: &str = "HYDRACACHE_IMAP_REPLICA_TEST_CHILD";
+const LIVE: &str = "HYDRACACHE_IMAP_TEST_LIVE_WRITES";
 const FAULT: &str = "HYDRACACHE_TEST_RAFT_OUTBOUND_FAULT_FILE";
 const DEADLINE: &[u8] = b"-ERR HydraCache client error: deadline exceeded\r\n";
 
@@ -25,6 +26,9 @@ struct Status {
     generation: u64,
     receipt: u32,
     lookups: u64,
+    version: u64,
+    applies: u64,
+    backup: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -49,6 +53,10 @@ async fn imap_replica_child() {
         sync_backups: 1,
         ..ReplicationConfig::local_first()
     };
+    if std::env::var(LIVE).as_deref() == Ok("1") {
+        run_live(config.listen_addr, &root, identity, host, replication).await;
+        return;
+    }
     let dispatcher = host
         .dispatcher(Default::default(), replication, values.clone())
         .unwrap();
@@ -88,6 +96,69 @@ async fn imap_replica_child() {
                     generation,
                     receipt: serial,
                     lookups: values.store_lookups(),
+                    version: 0,
+                    applies: 0,
+                    backup: None,
+                },
+            );
+        }
+        assert!(!task.is_finished());
+        tokio::time::sleep(Duration::from_millis(25)).await;
+    }
+}
+
+async fn run_live(
+    address: SocketAddr,
+    root: &Path,
+    identity: &str,
+    host: MemberReadHost,
+    replication: ReplicationConfig,
+) {
+    let (dispatcher, values) = host
+        .value_dispatcher(
+            &root.join("live-values"),
+            Default::default(),
+            replication,
+            scope(),
+        )
+        .unwrap();
+    let task = start_resp(TcpListener::bind(address).await.unwrap(), dispatcher);
+    let partition = scope().locate(KEY.to_vec()).unwrap().0;
+    let mut sample = 0;
+    loop {
+        if let Some(snapshot) = host.partition_snapshot() {
+            sample += 1;
+            let backup =
+                PartitionTopology::from_snapshot(snapshot.clone(), D2_PARTITION_COUNT, replication)
+                    .and_then(|topology| topology.placement(partition))
+                    .ok()
+                    .filter(|placement| placement.primary.node.as_str() == identity)
+                    .and_then(|placement| {
+                        placement
+                            .backups
+                            .first()
+                            .map(|backup| backup.node.to_string())
+                    });
+            publish_json(
+                &root.join("status.json"),
+                &Status {
+                    pid: std::process::id(),
+                    sample,
+                    members: snapshot.members.len(),
+                    epoch: snapshot.epoch.value(),
+                    generation: snapshot
+                        .members
+                        .iter()
+                        .find(|member| member.node_id.as_str() == identity)
+                        .map_or(0, |member| member.generation.value()),
+                    receipt: 0,
+                    lookups: values.store_lookups(),
+                    version: snapshot
+                        .value_prefixes
+                        .get(&partition)
+                        .map_or(0, |prefix| prefix.version),
+                    applies: values.replica_applies(),
+                    backup,
                 },
             );
         }
@@ -101,6 +172,7 @@ struct Node {
     address: SocketAddr,
     identity: String,
     child: Option<Child>,
+    live: bool,
 }
 
 impl Node {
@@ -115,6 +187,7 @@ impl Node {
             Command::new(std::env::current_exe().unwrap())
                 .args(["--exact", "processes::imap_replica_child", "--nocapture"])
                 .env(CHILD, &self.root)
+                .env(LIVE, if self.live { "1" } else { "0" })
                 .env(FAULT, self.root.join("fault.json"))
                 .stdout(Stdio::from(log.try_clone().unwrap()))
                 .stderr(Stdio::from(log))
@@ -251,11 +324,7 @@ fn fault_generation(nodes: &[Node], isolated: Option<usize>, generation: u32) {
     }
 }
 
-#[test]
-fn isolated_and_restarted_owner_needs_fresh_read_authority_and_replica_prefix() {
-    if std::env::var(RUN).as_deref() != Ok("1") {
-        return;
-    }
+fn start_nodes(live: bool) -> Vec<Node> {
     let timestamp = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap()
@@ -295,6 +364,7 @@ fn isolated_and_restarted_owner_needs_fresh_read_authority_and_replica_prefix() 
                 address: config.listen_addr,
                 identity,
                 child: None,
+                live,
             }
         })
         .collect();
@@ -304,6 +374,15 @@ fn isolated_and_restarted_owner_needs_fresh_read_authority_and_replica_prefix() 
         node.start();
     }
     println!("D2 process artifacts {}", root.display());
+    nodes
+}
+
+#[test]
+fn isolated_and_restarted_owner_needs_fresh_read_authority_and_replica_prefix() {
+    if std::env::var(RUN).as_deref() != Ok("1") {
+        return;
+    }
+    let mut nodes = start_nodes(false);
     let initial = wait_for("three admitted member processes", || all_members(&nodes, 0));
     let epoch = initial[0].epoch;
     for node in &nodes {
@@ -375,4 +454,80 @@ fn isolated_and_restarted_owner_needs_fresh_read_authority_and_replica_prefix() 
     let recovered = expect_owner(&nodes, &value);
     println!("D2 restart old_pid={} new_pid={} epoch={new_epoch} stale_lookups=0 lagging_lookups=0 recovered_owner={}",
         initial[owner].pid, rejoined[owner].pid, nodes[recovered].identity);
+}
+
+#[test]
+fn live_write_requires_backup_and_recovery_never_reads_uncertified_value() {
+    if std::env::var(RUN).as_deref() != Ok("1") {
+        return;
+    }
+    let mut nodes = start_nodes(true);
+    let initial = wait_for("three W10c member processes", || all_members(&nodes, 0));
+    let owner = expect_owner(&nodes, b"$-1\r\n");
+    let backup_id = initial[owner].backup.as_ref().unwrap();
+    let backup = nodes
+        .iter()
+        .position(|node| &node.identity == backup_id)
+        .unwrap();
+    assert_eq!(
+        resp(nodes[owner].address, &[b"SET", KEY, VALUE]).unwrap(),
+        b"+OK\r\n"
+    );
+    wait_for("first Raft prefix and exact replica apply", || {
+        (nodes[owner].status()?.version == 1 && nodes[backup].status()?.applies == 1).then_some(())
+    });
+    assert_eq!(nodes[owner].read().unwrap(), expected_value());
+
+    publish_json(
+        &nodes[owner].root.join("fault.json"),
+        &json!({
+            "schema_version": 1, "generation": 1, "rules": [{
+                "from": nodes[owner].identity, "to": nodes[backup].identity, "action": {"kind": "value_drop"}
+            }]
+        }),
+    );
+    let newer = b"after-backup";
+    assert_eq!(
+        resp(nodes[owner].address, &[b"SET", KEY, newer]).unwrap(),
+        UNAVAILABLE
+    );
+    let log = fs::read_to_string(nodes[owner].root.join("child.log")).unwrap();
+    assert!(log.contains("action=ValueDrop"));
+    assert_eq!(nodes[owner].refreshed_status().version, 1);
+    assert_eq!(nodes[backup].refreshed_status().applies, 1);
+    assert_eq!(nodes[owner].read().unwrap(), expected_value());
+    println!("W10c missed replica application: SET refused, GET kept prefix=1");
+
+    fault_generation(&nodes, None, 2);
+    nodes[owner].stop();
+    nodes[owner].start();
+    let recovered = wait_for(
+        "same owner with a new generation and retained certificate",
+        || {
+            all_members(&nodes, initial[owner].epoch).filter(|statuses| {
+                statuses[owner].version == 1
+                    && statuses[owner].generation > initial[owner].generation
+            })
+        },
+    );
+    assert_ne!(recovered[owner].pid, initial[owner].pid);
+    assert_eq!(expect_owner(&nodes, &expected_value()), owner);
+    assert_eq!(
+        resp(nodes[owner].address, &[b"SET", KEY, newer]).unwrap(),
+        b"+OK\r\n"
+    );
+    assert_eq!(nodes[owner].read().unwrap(), b"$12\r\nafter-backup\r\n");
+    wait_for("second replica catch-up", || {
+        (nodes[backup].status()?.version == 2).then_some(())
+    });
+    assert_eq!(
+        resp(nodes[owner].address, &[b"HC.INVALIDATE", KEY]).unwrap(),
+        b"+OK\r\n"
+    );
+    assert_eq!(nodes[owner].read().unwrap(), b"$-1\r\n");
+    assert_eq!(nodes[owner].refreshed_status().version, 3);
+    println!(
+        "W10c recovered old pid={} new pid={} epoch={} SET prefix=2 tombstone prefix=3",
+        initial[owner].pid, recovered[owner].pid, recovered[owner].epoch
+    );
 }

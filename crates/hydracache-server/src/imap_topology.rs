@@ -21,7 +21,7 @@ pub struct PartitionTopology {
 }
 
 /// A logical member identity bound to a specific process incarnation.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct PartitionMember {
     pub node: ClusterNodeId,
     pub generation: ClusterGeneration,

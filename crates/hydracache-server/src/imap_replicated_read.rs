@@ -30,6 +30,9 @@ pub struct ReplicaReadScope {
 }
 
 impl ReplicaReadScope {
+    pub(crate) fn identity(&self) -> (&str, &Namespace, NonZeroU64) {
+        (&self.tenant, &self.namespace, self.generation)
+    }
     /// Bind one tenant and namespace incarnation to its admitted wire key decoder.
     pub fn new(
         tenant: String,
@@ -63,7 +66,26 @@ impl ReplicaReadScope {
         Ok((partition, storage_key))
     }
 
-    fn admits_storage_key(&self, storage_key: &str, partition: PartitionId) -> bool {
+    pub(crate) fn route_key(
+        &self,
+        tenant: &str,
+        namespace: &Namespace,
+        key: &StructuredKey,
+    ) -> Option<(OwnerReadRoute, String)> {
+        if tenant != self.tenant || namespace != &self.namespace {
+            return None;
+        }
+        let (partition, storage_key) = self.locate((self.decode_key)(key)?).ok()?;
+        Some((
+            OwnerReadRoute {
+                namespace_generation: self.generation,
+                partition,
+            },
+            storage_key,
+        ))
+    }
+
+    pub(crate) fn admits_storage_key(&self, storage_key: &str, partition: PartitionId) -> bool {
         let bounds = CanonicalMapKeyBounds::default();
         if storage_key.len() > bounds.max_frame_bytes * 2
             || !storage_key.len().is_multiple_of(2)
@@ -241,15 +263,10 @@ impl<S: ReplicatedValueStore + 'static> OwnerReadValues for ReplicatedReadValues
         namespace: &Namespace,
         key: &StructuredKey,
     ) -> Option<OwnerReadRoute> {
-        let scope = &self.0.scope;
-        if tenant != scope.tenant || namespace != &scope.namespace {
-            return None;
-        }
-        let (partition, _) = scope.locate((scope.decode_key)(key)?).ok()?;
-        Some(OwnerReadRoute {
-            namespace_generation: scope.generation,
-            partition,
-        })
+        self.0
+            .scope
+            .route_key(tenant, namespace, key)
+            .map(|(route, _)| route)
     }
 
     fn try_lock_lane(&self, invocation: &ReadInvocation<'_>) -> Option<Self::Lane<'_>> {

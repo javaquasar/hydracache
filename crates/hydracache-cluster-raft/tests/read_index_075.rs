@@ -239,3 +239,63 @@ async fn a_completed_proof_cannot_cross_a_voter_change_in_the_same_term() {
         Err(RaftReadIndexError::Unavailable)
     ));
 }
+
+#[tokio::test]
+async fn committed_value_prefix_requires_exact_predecessor_and_recovers_from_snapshot() {
+    use hydracache::{ClusterEpoch, PartitionId, PartitionValuePrefix};
+    use hydracache_cluster_raft::RaftMetadataRuntime;
+
+    let raft = RaftMetadataRuntime::single_node("w10c", 1).unwrap();
+    raft.join_member(ClusterCandidate::member("owner"))
+        .await
+        .unwrap();
+    let epoch = raft.partition_snapshot().unwrap().epoch;
+    let partition = PartitionId::new(6);
+    let first = PartitionValuePrefix {
+        partition,
+        epoch,
+        version: 1,
+        previous: [0; 32],
+        digest: [1; 32],
+    };
+    raft.propose_value_prefix(first).unwrap();
+    for invalid in [
+        PartitionValuePrefix {
+            version: 3,
+            previous: [1; 32],
+            digest: [3; 32],
+            ..first
+        },
+        PartitionValuePrefix {
+            version: 2,
+            previous: [2; 32],
+            digest: [4; 32],
+            ..first
+        },
+        PartitionValuePrefix {
+            epoch: ClusterEpoch::new(0),
+            version: 2,
+            previous: [1; 32],
+            digest: [5; 32],
+            ..first
+        },
+    ] {
+        raft.propose_value_prefix(invalid).unwrap();
+        assert_eq!(
+            raft.partition_snapshot().unwrap().value_prefixes[&partition],
+            first
+        );
+    }
+    let second = PartitionValuePrefix {
+        version: 2,
+        previous: [1; 32],
+        digest: [2; 32],
+        ..first
+    };
+    raft.propose_value_prefix(second).unwrap();
+    let recovered = RaftMetadataRuntime::from_snapshot(raft.export_snapshot()).unwrap();
+    assert_eq!(
+        recovered.partition_snapshot().unwrap().value_prefixes[&partition],
+        second
+    );
+}

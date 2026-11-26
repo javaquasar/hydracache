@@ -2662,6 +2662,7 @@ dependencies = [
  "fs2",
  "futures-util",
  "hydra-raft",
+ "hydra-sled",
  "hydracache",
  "hydracache-actuator-axum",
  "hydracache-client-hc2",

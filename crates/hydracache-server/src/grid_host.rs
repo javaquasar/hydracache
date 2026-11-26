@@ -7,7 +7,7 @@ use std::net::{SocketAddr, TcpListener as StdTcpListener};
 use std::path::{Path, PathBuf};
 use std::pin::Pin;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::{Arc, Mutex, Once, RwLock};
+use std::sync::{Arc, Mutex, Once, OnceLock, RwLock};
 use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
@@ -27,7 +27,8 @@ use hydracache_cluster_raft::{
 use hydracache_cluster_transport_axum::{
     tls::TlsStartupPolicy, AllowAllAuthorizer, AxumClusterMessageService, ClusterMessageAck,
     ClusterMessageHandler, ClusterOpaqueMessage, ClusterRoute, ClusterRouteAuth,
-    StaticNodeIdentityProvider, DEFAULT_RAFT_APPEND_PATH, MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES,
+    StaticNodeIdentityProvider, DEFAULT_RAFT_APPEND_PATH, DEFAULT_REPLICATION_PATH,
+    MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES,
 };
 use serde::{Deserialize, Serialize};
 use tokio::sync::watch;
@@ -37,6 +38,9 @@ use crate::cluster_status::{
     Reachability, ReshardPhase,
 };
 use crate::config::{ClusterStartMode, ServerConfig, ServerConfigError};
+use crate::imap_value_plane::{
+    ReplicaApply, ReplicaApplyAck, ReplicaTransport, ValueBackend, ValueReplica,
+};
 use crate::management_aggregation::{
     HttpManagementPeerTransport, LocalManagementSnapshotProvider, ManagementConsensusObservation,
     ManagementMemberSnapshot, ManagementPeerTarget, ManagementPeerTransport,
@@ -208,8 +212,8 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     let use_network_sink =
         topology.multi_voter || matches!(start_mode, ResolvedClusterStartMode::Join);
     let drive_diagnostics = Arc::new(GridDriveDiagnostics::default());
-    let message_sink: Arc<dyn RaftMessageSink> = if use_network_sink {
-        Arc::new(
+    let network_sink = if use_network_sink {
+        Some(Arc::new(
             HttpRaftMessageSink::new(
                 node_id.clone(),
                 raft_node_id,
@@ -218,10 +222,15 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
                 config,
             )?
             .with_snapshot_feedback(raft.clone(), drive_diagnostics.clone()),
-        )
+        ))
     } else {
-        Arc::new(NoopRaftMessageSink)
+        None
     };
+    let message_sink: Arc<dyn RaftMessageSink> = match &network_sink {
+        Some(sink) => sink.clone(),
+        None => Arc::new(NoopRaftMessageSink),
+    };
+    let value_replica = Arc::new(OnceLock::new());
     let draining = Arc::new(AtomicBool::new(false));
     let drain_remove_proposed = Arc::new(AtomicBool::new(false));
     let (shutdown, _) = watch::channel(false);
@@ -255,6 +264,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
             message_sink: message_sink.clone(),
             raft_peers: raft_peers.clone(),
             drive_diagnostics: drive_diagnostics.clone(),
+            value_replica: value_replica.clone(),
         },
         route_auth.clone(),
         test_snapshot_handler_delay,
@@ -305,6 +315,8 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         discovery,
         bridge,
         message_sink,
+        network_sink,
+        value_replica,
         drive_diagnostics,
         draining,
         drain_remove_proposed,
@@ -440,6 +452,7 @@ struct ClusterTransportHandles {
     message_sink: Arc<dyn RaftMessageSink>,
     raft_peers: SharedRaftPeers,
     drive_diagnostics: Arc<GridDriveDiagnostics>,
+    value_replica: Arc<OnceLock<Arc<ValueReplica>>>,
 }
 
 #[derive(Debug)]
@@ -516,6 +529,7 @@ async fn spawn_cluster_transport(
             message_sink: handles.message_sink,
             raft_peers: handles.raft_peers,
             drive_diagnostics: handles.drive_diagnostics,
+            value_replica: handles.value_replica,
             test_snapshot_handler_delay,
         }),
         auth.clone(),
@@ -1477,6 +1491,7 @@ struct TestRaftOutboundFaultRule {
 #[serde(tag = "kind", rename_all = "snake_case")]
 enum TestRaftOutboundFaultAction {
     Drop,
+    ValueDrop,
     Delay { millis: u64 },
     SnapshotDelay { millis: u64 },
 }
@@ -1539,10 +1554,22 @@ impl TestRaftOutboundFaultController {
     }
 
     async fn apply(&self, to: &ClusterNodeId, is_snapshot: bool) -> CacheResult<()> {
+        self.apply_for_route(to, is_snapshot, false).await
+    }
+
+    async fn apply_for_route(
+        &self,
+        to: &ClusterNodeId,
+        is_snapshot: bool,
+        is_value: bool,
+    ) -> CacheResult<()> {
         let document = self.load_document()?;
         let Some(rule) = document.rules.iter().find(|rule| rule.to == to.as_str()) else {
             return Ok(());
         };
+        if rule.action == TestRaftOutboundFaultAction::ValueDrop && !is_value {
+            return Ok(());
+        }
         if matches!(
             rule.action,
             TestRaftOutboundFaultAction::SnapshotDelay { .. }
@@ -1563,10 +1590,12 @@ impl TestRaftOutboundFaultController {
             );
         }
         match rule.action {
-            TestRaftOutboundFaultAction::Drop => Err(CacheError::Backend(format!(
-                "test raft outbound fault generation {} dropped message {} -> {}",
-                document.generation, rule.from, rule.to
-            ))),
+            TestRaftOutboundFaultAction::Drop | TestRaftOutboundFaultAction::ValueDrop => {
+                Err(CacheError::Backend(format!(
+                    "test raft outbound fault generation {} dropped message {} -> {}",
+                    document.generation, rule.from, rule.to
+                )))
+            }
             TestRaftOutboundFaultAction::Delay { millis }
             | TestRaftOutboundFaultAction::SnapshotDelay { millis } => {
                 let expected_generation = document.generation;
@@ -1858,6 +1887,68 @@ impl HttpRaftMessageSink {
             )));
         }
         Ok(())
+    }
+}
+
+#[async_trait::async_trait]
+impl ReplicaTransport for HttpRaftMessageSink {
+    async fn apply(&self, request: ReplicaApply) -> CacheResult<ReplicaApplyAck> {
+        let target = request.target.node.clone();
+        let endpoint = self
+            .peers
+            .read()
+            .expect("raft peer map poisoned")
+            .get(&raft_node_id(&target))
+            .filter(|peer| peer.node_id == target)
+            .map(|peer| peer.endpoint.clone())
+            .ok_or_else(|| CacheError::Backend("value replica peer unavailable".into()))?;
+        if let Some(faults) = &self.test_outbound_faults {
+            faults.apply_for_route(&target, false, true).await?;
+        }
+        let payload = serde_json::to_vec(&request)
+            .map_err(|_| CacheError::Encode("W10c replica request".into()))?;
+        let wire = ClusterOpaqueMessage::new(
+            self.local_node_id.to_string(),
+            target.to_string(),
+            request.epoch(),
+            &payload,
+        );
+        let body = wire.encode_json()?;
+        if body.len() > MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES {
+            return Err(CacheError::Encode(
+                "W10c replica request exceeds transport bounds".into(),
+            ));
+        }
+        let response = self
+            .client
+            .post(format!(
+                "{}://{}{}",
+                self.scheme, endpoint, DEFAULT_REPLICATION_PATH
+            ))
+            .headers(self.authenticated_headers()?)
+            .header(reqwest::header::CONTENT_TYPE, "application/json")
+            .body(body)
+            .send()
+            .await
+            .and_then(reqwest::Response::error_for_status)
+            .map_err(|_| CacheError::Backend("W10c replica unavailable".into()))?;
+        let ack: ClusterMessageAck = response
+            .json()
+            .await
+            .map_err(|_| CacheError::Decode("invalid W10c acknowledgement envelope".into()))?;
+        if ack.route != ClusterRoute::Replicate
+            || ack.handled_by != target.as_str()
+            || ack.payload_len != payload.len()
+        {
+            return Err(CacheError::Decode(
+                "wrong W10c acknowledgement envelope".into(),
+            ));
+        }
+        serde_json::from_value(
+            ack.application
+                .ok_or_else(|| CacheError::Decode("typed replica ACK missing".into()))?,
+        )
+        .map_err(|_| CacheError::Decode("invalid W10c application acknowledgement".into()))
     }
 }
 
@@ -2340,6 +2431,8 @@ struct NetworkedMemberStack {
     discovery: Arc<ChitchatDiscovery>,
     bridge: ClusterAdmissionBridge,
     message_sink: Arc<dyn RaftMessageSink>,
+    network_sink: Option<Arc<HttpRaftMessageSink>>,
+    value_replica: Arc<OnceLock<Arc<ValueReplica>>>,
     drive_diagnostics: Arc<GridDriveDiagnostics>,
     draining: Arc<AtomicBool>,
     drain_remove_proposed: Arc<AtomicBool>,
@@ -2357,6 +2450,8 @@ struct NetworkedGridHandle {
     discovery: Arc<ChitchatDiscovery>,
     _bridge: ClusterAdmissionBridge,
     _message_sink: Arc<dyn RaftMessageSink>,
+    network_sink: Option<Arc<HttpRaftMessageSink>>,
+    value_replica: Arc<OnceLock<Arc<ValueReplica>>>,
     drive_diagnostics: Arc<GridDriveDiagnostics>,
     draining: Arc<AtomicBool>,
     drain_remove_proposed: Arc<AtomicBool>,
@@ -2375,7 +2470,9 @@ impl MemberReadHost {
     pub fn start(config: &ServerConfig) -> Result<Self, ServerConfigError> {
         config.validate()?;
         if config.role != crate::config::ServerRole::Member {
-            return Err(ServerConfigError::GridHostStart("the IMap read host requires member role".to_owned()));
+            return Err(ServerConfigError::GridHostStart(
+                "the IMap read host requires member role".to_owned(),
+            ));
         }
         let (stack, runtime) = start_networked_member_stack(config)?;
         Ok(Self(NetworkedGridHandle::new(stack, Some(runtime))))
@@ -2385,12 +2482,71 @@ impl MemberReadHost {
         self.0.raft.partition_snapshot()
     }
 
+    /// Attach the experimental synchronous value plane to this live member.
+    pub fn value_dispatcher(
+        &self,
+        journal: &Path,
+        limits: hydracache_client_transport_axum::ClientSurfaceLimits,
+        replication: hydracache::ReplicationConfig,
+        scope: crate::imap_replicated_read::ReplicaReadScope,
+    ) -> CacheResult<(
+        Arc<hydracache_client_transport_axum::ClientSurfaceDispatcher>,
+        Arc<ValueReplica>,
+    )> {
+        use crate::imap_owner_read::RaftOwnerReadBackend;
+        use crate::imap_replicated_read::D2_PARTITION_COUNT;
+        use crate::imap_topology::PartitionMember;
+        use hydracache_client_transport_axum::ClientSurfaceDispatcher;
+
+        let local = PartitionMember {
+            node: self.0.node_id.clone(),
+            generation: self.0.generation,
+        };
+        let replica = Arc::new(ValueReplica::open(
+            journal,
+            local.clone(),
+            scope,
+            replication,
+        )?);
+        let read = RaftOwnerReadBackend::new(
+            self.0.raft.clone(),
+            self.0._message_sink.clone(),
+            replica.clone(),
+            local,
+            D2_PARTITION_COUNT,
+            replication,
+        );
+        let dispatcher = ClientSurfaceDispatcher::from_backend(
+            limits,
+            Arc::new(ValueBackend {
+                raft: self.0.raft.clone(),
+                raft_transport: self.0._message_sink.clone(),
+                value_transport: self
+                    .0
+                    .network_sink
+                    .clone()
+                    .map(|sink| sink as Arc<dyn ReplicaTransport>),
+                read,
+                replica: replica.clone(),
+            }),
+        )
+        .map_err(|error| CacheError::Backend(error.to_string()))?;
+        self.0
+            .value_replica
+            .set(replica.clone())
+            .map_err(|_| CacheError::Backend("value plane already attached".into()))?;
+        Ok((Arc::new(dispatcher), replica))
+    }
+
     pub fn dispatcher<S: hydracache::ReplicatedValueStore + 'static>(
         &self,
         limits: hydracache_client_transport_axum::ClientSurfaceLimits,
         replication: hydracache::ReplicationConfig,
         values: crate::imap_replicated_read::ReplicatedReadValues<S>,
-    ) -> Result<Arc<hydracache_client_transport_axum::ClientSurfaceDispatcher>, hydracache_client_transport_axum::ClientSurfaceError> {
+    ) -> Result<
+        Arc<hydracache_client_transport_axum::ClientSurfaceDispatcher>,
+        hydracache_client_transport_axum::ClientSurfaceError,
+    > {
         use crate::imap_owner_read::RaftOwnerReadBackend;
         use crate::imap_replicated_read::D2_PARTITION_COUNT;
         use crate::imap_topology::PartitionMember;
@@ -2400,7 +2556,10 @@ impl MemberReadHost {
             self.0.raft.clone(),
             self.0._message_sink.clone(),
             values,
-            PartitionMember { node: self.0.node_id.clone(), generation: self.0.generation },
+            PartitionMember {
+                node: self.0.node_id.clone(),
+                generation: self.0.generation,
+            },
             D2_PARTITION_COUNT,
             replication,
         );
@@ -2419,6 +2578,8 @@ impl NetworkedGridHandle {
             discovery: stack.discovery,
             _bridge: stack.bridge,
             _message_sink: stack.message_sink,
+            network_sink: stack.network_sink,
+            value_replica: stack.value_replica,
             drive_diagnostics: stack.drive_diagnostics,
             draining: stack.draining,
             drain_remove_proposed: stack.drain_remove_proposed,
@@ -3059,6 +3220,7 @@ struct RaftClusterMessageHandler {
     raft_peers: SharedRaftPeers,
     drive_diagnostics: Arc<GridDriveDiagnostics>,
     test_snapshot_handler_delay: Option<Duration>,
+    value_replica: Arc<OnceLock<Arc<ValueReplica>>>,
 }
 
 impl fmt::Debug for RaftClusterMessageHandler {
@@ -3084,11 +3246,21 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
     ) -> CacheResult<ClusterMessageAck> {
         let payload = message.decode_payload()?;
         if matches!(route, ClusterRoute::Replicate) {
-            return Ok(ClusterMessageAck::new(
-                route,
-                self.node_id.to_string(),
-                payload.len(),
-            ));
+            let mut ack = ClusterMessageAck::new(route, self.node_id.to_string(), payload.len());
+            if let Some(replica) = self.value_replica.get() {
+                let request = serde_json::from_slice(&payload)
+                    .map_err(|_| CacheError::Decode("invalid W10c application message".into()))?;
+                let snapshot = self.raft.partition_snapshot().ok_or_else(|| {
+                    CacheError::Backend("value replica topology unavailable".into())
+                })?;
+                let applied =
+                    replica.apply_replica(&snapshot, &message.from, message.term, request)?;
+                ack.application = Some(
+                    serde_json::to_value(applied)
+                        .map_err(|_| CacheError::Encode("invalid W10c acknowledgement".into()))?,
+                );
+            }
+            return Ok(ack);
         }
 
         let wire_message = RaftWireMessage {
@@ -4330,6 +4502,7 @@ mod tests {
             raft_peers: Arc::new(RwLock::new(peers)),
             drive_diagnostics: Arc::new(GridDriveDiagnostics::default()),
             test_snapshot_handler_delay: None,
+            value_replica: Arc::new(OnceLock::new()),
         }
     }
 

@@ -103,6 +103,18 @@ pub enum RaftMetadataCommand {
         /// Authoritative member ids in stable order.
         members: Vec<ClusterNodeId>,
     },
+    /// W10c's staged commitment to one consecutively applied replica write.
+    CommitValuePrefix(PartitionValuePrefix),
+}
+
+/// A replicated commitment for one partition. Value bytes stay on the value plane.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct PartitionValuePrefix {
+    pub partition: super::PartitionId,
+    pub epoch: ClusterEpoch,
+    pub version: u64,
+    pub previous: [u8; 32],
+    pub digest: [u8; 32],
 }
 
 /// Snapshot of the raft-style metadata journal.

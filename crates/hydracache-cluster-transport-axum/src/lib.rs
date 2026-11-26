@@ -597,6 +597,9 @@ pub struct ClusterMessageAck {
     pub handled_by: String,
     /// Number of decoded payload bytes.
     pub payload_len: usize,
+    /// Optional typed application result. Legacy envelopes omit it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub application: Option<serde_json::Value>,
 }
 
 impl ClusterMessageAck {
@@ -606,6 +609,7 @@ impl ClusterMessageAck {
             route,
             handled_by: handled_by.into(),
             payload_len,
+            application: None,
         }
     }
 }

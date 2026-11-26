@@ -10632,6 +10632,13 @@ fn raft_command_report(command: &RaftMetadataCommand) -> RaftMetadataCommandRepo
             generation: None,
             epoch: epoch.value(),
         },
+        RaftMetadataCommand::CommitValuePrefix(prefix) => RaftMetadataCommandReport {
+            kind: "commit-value-prefix",
+            node_id: String::new(),
+            role: None,
+            generation: None,
+            epoch: prefix.epoch.value(),
+        },
     }
 }
 

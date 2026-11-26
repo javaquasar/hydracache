@@ -43,6 +43,13 @@ pub struct OwnerReadProgress {
 pub trait OwnerReadLane {
     fn progress(&self) -> OwnerReadProgress;
 
+    fn prove_prefix(
+        &mut self,
+        _snapshot: &hydracache_cluster_raft::RaftPartitionSnapshot,
+    ) -> Result<OwnerReadProgress, ClientErrorEnvelope> {
+        Ok(self.progress())
+    }
+
     fn lookup(&self, key: &StructuredKey) -> ClientBackendOutcome;
 }
 
@@ -155,33 +162,19 @@ impl<S: RaftLogStore, V: OwnerReadValues> RaftOwnerReadBackend<S, V> {
         }
         check_deadline(deadline)?;
 
-        let proof = timeout_at(deadline, async {
-            let (pending, outbound) = self.raft.begin_read_index().map_err(|_| unavailable())?;
-            let sending = send_raft_messages_with_diagnostics(&self.transport, outbound, None);
-            let proof = pending.complete();
-            tokio::pin!(proof);
-            // A failed peer send can coexist with a successful quorum. Raft
-            // is the authority for completion and the deadline bounds both futures.
-            let result = tokio::select! {
-                result = &mut proof => result,
-                _ = sending => proof.await,
-            };
-            result.map_err(|_| unavailable())
-        })
-        .await
-        .map_err(|_| deadline_exceeded())??;
+        let proof = request_read_index(&self.raft, &self.transport, deadline).await?;
 
         check_deadline(deadline)?;
         // Lock order is value lane, then Raft apply lock. No await or Raft
         // reentry is allowed while reading the value under both guards.
-        let lane = self
+        let mut lane = self
             .values
             .try_lock_lane(&invocation)
             .ok_or_else(unavailable)?;
         proof
             .with_snapshot(|snapshot, index| {
                 check_deadline(deadline)?;
-                let progress = lane.progress();
+                let progress = lane.prove_prefix(&snapshot)?;
                 if progress.epoch != epoch
                     || progress.namespace_generation != invocation.namespace_generation
                 {
@@ -216,6 +209,27 @@ impl<S: RaftLogStore, V: OwnerReadValues> RaftOwnerReadBackend<S, V> {
             })
             .map_err(|_| unavailable())?
     }
+}
+
+pub(crate) async fn request_read_index<'a, S: RaftLogStore>(
+    raft: &'a RaftMetadataRuntime<S>,
+    transport: &Arc<dyn RaftMessageSink>,
+    deadline: Instant,
+) -> Result<hydracache_cluster_raft::RaftReadIndexProof<'a, S>, ClientErrorEnvelope> {
+    timeout_at(deadline, async {
+        let (pending, outbound) = raft.begin_read_index().map_err(|_| unavailable())?;
+        let sending = send_raft_messages_with_diagnostics(transport, outbound, None);
+        let proof = pending.complete();
+        tokio::pin!(proof);
+        // A failed peer send can coexist with a successful quorum.
+        let result = tokio::select! {
+            result = &mut proof => result,
+            _ = sending => proof.await,
+        };
+        result.map_err(|_| unavailable())
+    })
+    .await
+    .map_err(|_| deadline_exceeded())?
 }
 
 impl<S: RaftLogStore + 'static, V: OwnerReadValues> ClientDataBackend

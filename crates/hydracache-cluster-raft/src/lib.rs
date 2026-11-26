@@ -86,7 +86,7 @@
 //! # }
 //! ```
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 #[cfg(feature = "sled-log-store")]
 use std::path::Path;
@@ -353,6 +353,8 @@ pub struct RaftPartitionSnapshot {
     pub applied_index: u64,
     /// Applied member records, including process generations.
     pub members: Vec<ClusterMember>,
+    /// Latest accepted value certificate of each touched partition.
+    pub value_prefixes: BTreeMap<hydracache::PartitionId, hydracache::PartitionValuePrefix>,
 }
 
 /// Read-only durable-log progress around the server compaction seam.
@@ -620,6 +622,7 @@ struct StagedMetadataSnapshot {
     applied_index: u64,
     commands: Vec<RaftMetadataCommandEnvelope>,
     applied_command_ids: BTreeSet<String>,
+    value_prefixes: BTreeMap<hydracache::PartitionId, hydracache::PartitionValuePrefix>,
 }
 
 const RAFT_METADATA_SNAPSHOT_PAYLOAD_MAGIC: &[u8; 8] = b"HCMETA01";
@@ -809,6 +812,7 @@ where
     outbound_messages: Vec<RaftWireMessage>,
     applied_index: u64,
     partition_view_fenced: bool,
+    value_prefixes: BTreeMap<hydracache::PartitionId, hydracache::PartitionValuePrefix>,
     reads: read_index::ReadIndexes,
     snapshot_installs: u64,
     max_wire_bytes: u64,
@@ -1018,6 +1022,7 @@ where
             outbound_messages: Vec::new(),
             applied_index: 0,
             partition_view_fenced: false,
+            value_prefixes: BTreeMap::new(),
             reads: read_index::ReadIndexes::default(),
             snapshot_installs: 0,
             max_wire_bytes,
@@ -1105,6 +1110,17 @@ where
     pub fn partition_snapshot(&self) -> Option<RaftPartitionSnapshot> {
         let state = self.raft.lock().expect("raft metadata state poisoned");
         state.partition_snapshot()
+    }
+
+    /// Submit an owner-issued certificate after replica application. The caller
+    /// must observe this exact certificate in the applied view before replying.
+    pub fn propose_value_prefix(
+        &self,
+        prefix: hydracache::PartitionValuePrefix,
+    ) -> CacheResult<()> {
+        let command = RaftMetadataCommand::CommitValuePrefix(prefix);
+        self.commit_command(command_id_for(&command), command)?;
+        Ok(())
     }
 
     /// Return connected client snapshots from the runtime control plane.
@@ -1384,6 +1400,7 @@ where
         {
             let mut state = self.raft.lock().expect("raft metadata state poisoned");
             state.commands.clear();
+            state.value_prefixes.clear();
             state.applied_command_ids.clear();
             state.results.clear();
             state.applied_index = 0;
@@ -1464,6 +1481,8 @@ where
             .applied_command_ids
             .insert(envelope.command_id.clone())
         {
+            let epoch = self.cluster.epoch();
+            apply_value_prefix(&mut state.value_prefixes, epoch, &envelope.command);
             state.commands.push(envelope);
         }
         state.applied_index = state.applied_index.max(index);
@@ -1518,6 +1537,32 @@ fn command_id_for(command: &RaftMetadataCommand) -> String {
                 .collect::<Vec<_>>()
                 .join(",")
         ),
+        RaftMetadataCommand::CommitValuePrefix(prefix) => {
+            format!(
+                "w10c-prefix-{}-{:02x?}",
+                prefix.partition.value(),
+                prefix.digest
+            )
+        }
+    }
+}
+
+fn apply_value_prefix(
+    prefixes: &mut BTreeMap<hydracache::PartitionId, hydracache::PartitionValuePrefix>,
+    epoch: ClusterEpoch,
+    command: &RaftMetadataCommand,
+) {
+    if let RaftMetadataCommand::CommitValuePrefix(prefix) = command {
+        let (version, digest) = prefixes
+            .get(&prefix.partition)
+            .map_or((0, [0; 32]), |old| (old.version, old.digest));
+        if prefix.partition.value() < 271
+            && epoch == prefix.epoch
+            && version.checked_add(1) == Some(prefix.version)
+            && digest == prefix.previous
+        {
+            prefixes.insert(prefix.partition, *prefix);
+        }
     }
 }
 
@@ -1590,6 +1635,7 @@ fn stage_metadata_snapshot(
     validate_snapshot_apply_contract(&snapshot)?;
     let staged_cluster = InMemoryCluster::new(snapshot.cluster_name.clone());
     let mut applied_command_ids = BTreeSet::new();
+    let mut value_prefixes = BTreeMap::new();
     for (offset, envelope) in snapshot.commands.iter().enumerate() {
         let tail_index = offset + 1;
         materialize_snapshot_command(&staged_cluster, &envelope.command).map_err(|error| {
@@ -1600,6 +1646,11 @@ fn stage_metadata_snapshot(
                 error,
             )
         })?;
+        apply_value_prefix(
+            &mut value_prefixes,
+            staged_cluster.epoch(),
+            &envelope.command,
+        );
         if !applied_command_ids.insert(envelope.command_id.clone()) {
             return Err(snapshot_apply_error(
                 snapshot.applied_index,
@@ -1614,6 +1665,7 @@ fn stage_metadata_snapshot(
         applied_index: snapshot.applied_index,
         commands: snapshot.commands,
         applied_command_ids,
+        value_prefixes,
     })
 }
 
@@ -1774,7 +1826,9 @@ fn materialize_command(
                 Ok(None)
             }
         }
-        RaftMetadataCommand::CommitTopology { .. } => Ok(None),
+        RaftMetadataCommand::CommitTopology { .. } | RaftMetadataCommand::CommitValuePrefix(_) => {
+            Ok(None)
+        }
     }
 }
 
@@ -1838,7 +1892,9 @@ fn materialize_committed_command(
                 return Ok(());
             }
         }
-        RaftMetadataCommand::CommitTopology { .. } => return Ok(()),
+        RaftMetadataCommand::CommitTopology { .. } | RaftMetadataCommand::CommitValuePrefix(_) => {
+            return Ok(())
+        }
     }
     materialize_command(cluster, command).map(|_| ())
 }
@@ -1862,6 +1918,7 @@ where
 
         self.commands = staged.commands;
         self.applied_command_ids = staged.applied_command_ids;
+        self.value_prefixes = staged.value_prefixes;
         self.results.clear();
         self.applied_index = staged.applied_index;
         // The cluster names were checked above, so replacement has no
@@ -2138,6 +2195,11 @@ where
                     let envelope = decode_envelope(entry.data.as_ref())?;
                     if self.applied_command_ids.insert(envelope.command_id.clone()) {
                         materialize_committed_command(&self.cluster, &envelope.command)?;
+                        apply_value_prefix(
+                            &mut self.value_prefixes,
+                            self.cluster.epoch(),
+                            &envelope.command,
+                        );
                         self.commands.push(envelope);
                         self.applied_index = self.applied_index.max(self.commands.len() as u64);
                     }
@@ -2385,6 +2447,11 @@ fn encode_command(command: &RaftMetadataCommand) -> Vec<u8> {
                 .join(",")
         )
         .into_bytes(),
+        RaftMetadataCommand::CommitValuePrefix(prefix) => format!(
+            "w10c-prefix|{}",
+            serde_json::to_string(prefix).expect("value prefix serializes")
+        )
+        .into_bytes(),
     }
 }
 
@@ -2443,6 +2510,9 @@ fn decode_command(data: &[u8]) -> CacheResult<RaftMetadataCommand> {
                 .map(|member| ClusterNodeId::from(member.to_owned()))
                 .collect(),
         }),
+        ["w10c-prefix", prefix] => serde_json::from_str(prefix)
+            .map(RaftMetadataCommand::CommitValuePrefix)
+            .map_err(|error| CacheError::Decode(format!("invalid value prefix: {error}"))),
         _ => Err(CacheError::Backend(format!(
             "invalid raft metadata command: {text}"
         ))),
