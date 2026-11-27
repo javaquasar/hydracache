@@ -241,8 +241,17 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
     }
     let profile = imap_hc2_campaign::Profile::from_env();
     let _guard = async_daemon_process_guard().await;
-    let mut cluster = MemberCluster::start("distributed-imap").await;
+    let mut cluster = MemberCluster::start_fixture(
+        "distributed-imap",
+        &pki(),
+        MemberOptions {
+            interrupt_copy: profile.interrupt_copy,
+            ..Default::default()
+        },
+    )
+    .await;
     let hot = cluster.key_for(0, Some(1), "w10i-\0-");
+    let hot_partition = fixture_imap_scope().locate(hot.to_vec()).unwrap().0;
     let control = cluster.key_for(1, Some(2), "w10i-\0-");
     let clients = &mut cluster.clients;
     let initial = Bytes::from_static(b"initial");
@@ -383,7 +392,10 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
     let rejoined = cluster.daemons[0].0.id();
     let rejoined_at_ms = started.elapsed().as_millis() as u64;
     let drain = if profile.live_drain {
-        Some(imap_hc2_campaign::exercise_live_drain(&mut cluster, started, profile.duration).await)
+        Some(
+            imap_hc2_campaign::exercise_live_drain(&mut cluster, started, &profile, hot_partition)
+                .await,
+        )
     } else {
         None
     };
@@ -1808,7 +1820,7 @@ struct MemberClusterSpec {
     server_cert: PathBuf,
     server_key: PathBuf,
     ca: PathBuf,
-    event_fault: Option<PathBuf>,
+    outbound_faults: [Option<PathBuf>; 3],
     drain_timeout_ms: Option<u64>,
     raft_compaction: bool,
 }
@@ -1816,22 +1828,39 @@ struct MemberClusterSpec {
 #[derive(Default)]
 struct MemberOptions {
     event_fault: bool,
+    interrupt_copy: bool,
     drain_timeout_ms: Option<u64>,
     raft_compaction: bool,
 }
 
 impl MemberClusterSpec {
     fn set_value_fault(&self, generation: u64, enabled: bool) {
-        let target = self.event_fault.as_ref().unwrap();
+        self.set_outbound_fault(
+            2,
+            1,
+            generation,
+            enabled.then(|| serde_json::json!({"kind": "value_drop"})),
+        );
+    }
+
+    fn set_outbound_fault(
+        &self,
+        from: usize,
+        to: usize,
+        generation: u64,
+        action: Option<serde_json::Value>,
+    ) {
+        let target = self.outbound_faults[from].as_ref().unwrap();
         std::fs::create_dir_all(target.parent().unwrap()).unwrap();
         let incoming = target.with_extension("incoming");
-        let rules = if enabled {
-            vec![serde_json::json!({
-                "from": self.names[2], "to": self.names[1], "action": {"kind": "value_drop"}
-            })]
-        } else {
-            Vec::new()
-        };
+        let rules: Vec<_> = action
+            .into_iter()
+            .map(|action| {
+                serde_json::json!({
+                    "from": self.names[from], "to": self.names[to], "action": action
+                })
+            })
+            .collect();
         std::fs::write(
             &incoming,
             serde_json::json!({
@@ -1889,7 +1918,7 @@ impl MemberClusterSpec {
             &self.server_key,
             &self.ca,
         );
-        if let Some(fault) = self.event_fault.as_ref().filter(|_| index == 2) {
+        if let Some(fault) = &self.outbound_faults[index] {
             command.env("HYDRACACHE_TEST_RAFT_OUTBOUND_FAULT_FILE", fault);
         }
         if let Some(timeout) = self.drain_timeout_ms {
@@ -1976,15 +2005,18 @@ impl MemberCluster {
                     .map(|addr| format!("member-{}", addr.to_string().replace(['.', ':'], "-")))
                     .collect();
                 let members = placement_members(&names);
-                let pairs: std::collections::BTreeSet<_> = (0..D2_PARTITION_COUNT.get())
-                    .map(|n| {
-                        let placement = RendezvousClusterOwnership
-                            .replicas_for_key(&format!("partition-{n}"), &members, 2)
-                            .unwrap();
-                        (placement.primary, placement.backups)
-                    })
-                    .collect();
-                (pairs.len() == 6).then_some((addresses, reservations, names))
+                let mut pairs = std::collections::BTreeMap::new();
+                for n in 0..D2_PARTITION_COUNT.get() {
+                    let placement = RendezvousClusterOwnership
+                        .replicas_for_key(&format!("partition-{n}"), &members, 2)
+                        .unwrap();
+                    *pairs
+                        .entry((placement.primary, placement.backups))
+                        .or_insert(0) += 1;
+                }
+                let original_pair = (members[0].node_id.clone(), vec![members[1].node_id.clone()]);
+                (pairs.len() == 6 && (!options.interrupt_copy || pairs[&original_pair] >= 2))
+                    .then_some((addresses, reservations, names))
             })
             .expect("fixture needs all six primary/backup pairs");
         let seeds = addresses[..3]
@@ -1993,9 +2025,15 @@ impl MemberCluster {
             .collect::<Vec<_>>()
             .join(",");
         let spec = MemberClusterSpec {
-            event_fault: options
-                .event_fault
-                .then(|| root.join(&names[2]).join("event-fault.json")),
+            outbound_faults: [
+                options
+                    .interrupt_copy
+                    .then(|| root.join(&names[0]).join("copy-fault.json")),
+                None,
+                options
+                    .event_fault
+                    .then(|| root.join(&names[2]).join("event-fault.json")),
+            ],
             drain_timeout_ms: options.drain_timeout_ms,
             raft_compaction: options.raft_compaction,
             root,
@@ -2008,6 +2046,9 @@ impl MemberCluster {
         };
         if options.event_fault {
             spec.set_value_fault(1, false);
+        }
+        if options.interrupt_copy {
+            spec.set_outbound_fault(0, 2, 1, None);
         }
         drop(reservations);
         let daemons = (0..3).map(|index| spec.spawn(index)).collect();
@@ -2072,17 +2113,25 @@ impl MemberCluster {
         backup: Option<usize>,
         key: impl Fn(u32) -> Vec<u8>,
     ) -> Bytes {
-        let scope = ReplicaReadScope::new(
-            "w10i".to_owned(),
-            Namespace::new("hc2").unwrap(),
-            std::num::NonZeroU64::MIN,
-            |_| None,
-        );
+        self.pick_key(primary, backup, key, |_| true)
+    }
+
+    fn pick_key(
+        &self,
+        primary: usize,
+        backup: Option<usize>,
+        key: impl Fn(u32) -> Vec<u8>,
+        allow_partition: impl Fn(hydracache::PartitionId) -> bool,
+    ) -> Bytes {
+        let scope = fixture_imap_scope();
         let members = placement_members(&self.spec.names);
         (0..5000)
             .find_map(|n| {
                 let key = key(n);
                 let (partition, _) = scope.locate(key.clone()).unwrap();
+                if !allow_partition(partition) {
+                    return None;
+                }
                 let ranking = RendezvousClusterOwnership
                     .replicas_for_key(&format!("partition-{}", partition.value()), &members, 2)
                     .unwrap();
@@ -2092,6 +2141,15 @@ impl MemberCluster {
             })
             .unwrap_or_else(|| panic!("no key for primary {primary} and backup {backup:?}"))
     }
+}
+
+fn fixture_imap_scope() -> ReplicaReadScope {
+    ReplicaReadScope::new(
+        "w10i".to_owned(),
+        Namespace::new("hc2").unwrap(),
+        std::num::NonZeroU64::MIN,
+        |_| None,
+    )
 }
 
 fn placement_members(names: &[String]) -> Vec<ClusterMember> {

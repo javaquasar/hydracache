@@ -18,6 +18,8 @@ const MAX_INTER_ROUND_GAP_MS: u64 = 20_000;
 const MIN_DRAIN_DIAGNOSTIC_SECONDS: u64 = 45;
 const MIN_POST_RETURN_MS: u64 = 5_000;
 const DRAIN_PROBE_VALUE: &[u8] = b"w10i-live-drain-probe";
+static INTERRUPTED_COPY_VALUE: [u8; 96 * 1024] = [0x5a; 96 * 1024];
+const MIN_COPY_HOLD_MS: u64 = 1_500;
 const SCENARIO: &str = "distributed_hc2_routes_public_requests_and_recovers_after_owner_kill";
 
 type RunResult<T> = Result<T, Box<dyn Error>>;
@@ -34,11 +36,13 @@ struct Options {
     output: PathBuf,
     prior: Option<PathBuf>,
     live_drain: bool,
+    interrupt_copy: bool,
 }
 
 fn parse(args: Vec<String>, mode: Mode) -> RunResult<Options> {
     let mut diagnostic = false;
     let mut live_drain = false;
+    let mut interrupt_copy = false;
     let mut release = None;
     let mut duration = None;
     let mut output = None;
@@ -52,6 +56,10 @@ fn parse(args: Vec<String>, mode: Mode) -> RunResult<Options> {
             }
             "--live-drain" if !live_drain => {
                 live_drain = true;
+                continue;
+            }
+            "--interrupt-copy" if !interrupt_copy => {
+                interrupt_copy = true;
                 continue;
             }
             "--release" => &mut release,
@@ -85,6 +93,7 @@ fn parse(args: Vec<String>, mode: Mode) -> RunResult<Options> {
     if !diagnostic {
         return Err("W10i production admission requires packaged mixed HC/2 workloads, distributed TTL and listeners, live drain and replica proof, and accepted OD-2/OD-3 bounds; the available runs require --diagnostic".into());
     }
+    let live_drain = live_drain || interrupt_copy;
     if live_drain && seconds < MIN_DRAIN_DIAGNOSTIC_SECONDS {
         return Err(
             "W10i --live-drain requires at least 45 seconds for both faults and recovery".into(),
@@ -102,6 +111,7 @@ fn parse(args: Vec<String>, mode: Mode) -> RunResult<Options> {
             .into(),
         prior: prior.map(Into::into),
         live_drain,
+        interrupt_copy,
     })
 }
 
@@ -155,6 +165,19 @@ struct Drain {
     value_sha256: String,
     before: [CopyObservation; 2],
     after: [CopyObservation; 2],
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    interrupted_copy: Option<InterruptedCopy>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct InterruptedCopy {
+    hit_at_ms: u64,
+    observed_at_ms: u64,
+    resumed_at_ms: u64,
+    blocked_chunk: u32,
+    forbidden_restart_chunk: u32,
+    held_placement: [CopyObservation; 3],
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -172,6 +195,8 @@ struct CopyObservation {
 struct DrainProgress {
     verified_during_drain: u64,
     verified_after_return: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    verified_while_copy_interrupted: Option<u64>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -206,7 +231,7 @@ pub fn run(args: Vec<String>, mode: Mode) -> RunResult<()> {
     let prior = opts
         .prior
         .as_ref()
-        .map(|directory| read_prior(directory, &source, opts.live_drain))
+        .map(|directory| read_prior(directory, &source, opts.live_drain, opts.interrupt_copy))
         .transpose()?;
     fs::create_dir(&opts.output)?;
     let directory = opts.output.canonicalize()?;
@@ -247,6 +272,10 @@ pub fn run(args: Vec<String>, mode: Mode) -> RunResult<()> {
             "HYDRACACHE_W10I_LIVE_DRAIN",
             if opts.live_drain { "1" } else { "0" },
         )
+        .env(
+            "HYDRACACHE_W10I_INTERRUPT_COPY",
+            if opts.interrupt_copy { "1" } else { "0" },
+        )
         .stdout(Stdio::from(log.try_clone()?))
         .stderr(Stdio::from(log))
         .status()?;
@@ -261,7 +290,14 @@ pub fn run(args: Vec<String>, mode: Mode) -> RunResult<()> {
         return Err("W10i source changed during the diagnostic".into());
     }
     let worker: Receipt = read_json(&directory.join("worker.json"))?;
-    let drain_progress = verify(&worker, &directory, &source, opts.seconds, opts.live_drain)?;
+    let drain_progress = verify(
+        &worker,
+        &directory,
+        &source,
+        opts.seconds,
+        opts.live_drain,
+        opts.interrupt_copy,
+    )?;
     let qualification_sha256 = prior
         .map(|(digest, previous)| {
             match_candidate(&previous.worker, &worker)?;
@@ -287,7 +323,12 @@ pub fn run(args: Vec<String>, mode: Mode) -> RunResult<()> {
     Ok(())
 }
 
-fn read_prior(directory: &Path, source: &str, live_drain: bool) -> RunResult<(String, Published)> {
+fn read_prior(
+    directory: &Path,
+    source: &str,
+    live_drain: bool,
+    interrupt_copy: bool,
+) -> RunResult<(String, Published)> {
     let path = directory.join("report.json");
     let report: Published = read_json(&path)?;
     if report.qualification_sha256.is_some()
@@ -301,6 +342,7 @@ fn read_prior(directory: &Path, source: &str, live_drain: bool) -> RunResult<(St
         source,
         QUALIFICATION_SECONDS,
         live_drain,
+        interrupt_copy,
     )? != report.drain_progress
     {
         return Err("W10i qualification parent's drain progress does not match its ledger".into());
@@ -324,11 +366,17 @@ fn verify(
     source: &str,
     seconds: u64,
     live_drain: bool,
+    interrupt_copy: bool,
 ) -> RunResult<Option<DrainProgress>> {
     let expected_ms = seconds * 1_000;
     let fault = &receipt.fault;
-    if receipt.schema_version != if live_drain { 2 } else { 1 }
+    if receipt.schema_version != 1 + u16::from(live_drain) + u16::from(interrupt_copy)
         || receipt.drain.is_some() != live_drain
+        || receipt
+            .drain
+            .as_ref()
+            .is_some_and(|drain| drain.interrupted_copy.is_some())
+            != interrupt_copy
         || receipt.production_admitted
         || receipt.source_sha != source
         || receipt.seconds != seconds
@@ -366,6 +414,12 @@ fn verify(
 fn verify_drain(drain: &Drain, fault: &Fault, expected_ms: u64) -> RunResult<()> {
     let [old_primary, old_backup] = &drain.before;
     let [survivor_one, survivor_two] = &drain.after;
+    let interrupted = drain.interrupted_copy.is_some();
+    let value = if interrupted {
+        INTERRUPTED_COPY_VALUE.as_slice()
+    } else {
+        DRAIN_PROBE_VALUE
+    };
     let valid_copy = |copy: &CopyObservation| {
         copy.certified_version == drain.certified_version && copy.primary != copy.backup
     };
@@ -381,12 +435,12 @@ fn verify_drain(drain: &Drain, fault: &Fault, expected_ms: u64) -> RunResult<()>
         || drain.returned_at_ms > expected_ms.saturating_sub(MIN_POST_RETURN_MS)
         || drain.partition >= 271
         || drain.certified_version == 0
-        || drain.value_sha256 != crate::imap_qualification_075::digest(DRAIN_PROBE_VALUE)
+        || drain.value_sha256 != crate::imap_qualification_075::digest(value)
         || !drain.before.iter().chain(&drain.after).all(valid_copy)
         || old_primary.member_slot != 0
         || !old_primary.primary
         || old_primary.epoch == 0
-        || old_backup.member_slot != 2
+        || old_backup.member_slot != if interrupted { 1 } else { 2 }
         || !old_backup.backup
         || old_backup.epoch != old_primary.epoch
         || survivor_one.member_slot != 1
@@ -397,6 +451,35 @@ fn verify_drain(drain: &Drain, fault: &Fault, expected_ms: u64) -> RunResult<()>
     {
         return Err("invalid W10i live drain sequence or certified placement".into());
     }
+    if let Some(copy) = &drain.interrupted_copy {
+        verify_interrupted_copy(copy, drain)?;
+    }
+    Ok(())
+}
+
+fn verify_interrupted_copy(copy: &InterruptedCopy, drain: &Drain) -> RunResult<()> {
+    if copy.blocked_chunk != 1
+        || copy.forbidden_restart_chunk != 0
+        || copy.hit_at_ms < drain.started_at_ms
+        || copy.observed_at_ms.saturating_sub(copy.hit_at_ms) < MIN_COPY_HOLD_MS
+        || copy.observed_at_ms > copy.resumed_at_ms
+        || copy.resumed_at_ms >= drain.completed_at_ms
+        || !drain.after[1].primary
+        || drain.after[0].epoch <= copy.held_placement[0].epoch
+        || !copy
+            .held_placement
+            .iter()
+            .enumerate()
+            .all(|(slot, observation)| {
+                usize::from(observation.member_slot) == slot
+                    && observation.certified_version == drain.certified_version
+                    && Some(observation.epoch) == drain.before[0].epoch.checked_add(1)
+                    && observation.primary == (slot == 0)
+                    && observation.backup == (slot == 1)
+            })
+    {
+        return Err("invalid W10i interrupted snapshot copy or premature ownership change".into());
+    }
     Ok(())
 }
 
@@ -406,7 +489,10 @@ fn verify_ledger(
     drain: Option<&Drain>,
 ) -> RunResult<(Counts, Option<DrainProgress>)> {
     let mut counts = Counts::default();
-    let mut progress = drain.map(|_| DrainProgress::default());
+    let mut progress = drain.map(|drain| DrainProgress {
+        verified_while_copy_interrupted: drain.interrupted_copy.as_ref().map(|_| 0),
+        ..Default::default()
+    });
     let mut last = 0;
     let mut last_verified = 0;
     let mut line = Vec::new();
@@ -468,6 +554,15 @@ fn verify_ledger(
             if row.elapsed_ms >= drain.returned_at_ms && completed <= expected_ms {
                 progress.verified_after_return += ack;
             }
+            if let Some((copy, verified)) = drain
+                .interrupted_copy
+                .as_ref()
+                .zip(progress.verified_while_copy_interrupted.as_mut())
+            {
+                if row.elapsed_ms >= copy.hit_at_ms && completed <= copy.observed_at_ms {
+                    *verified += ack;
+                }
+            }
         } else if row.verified_at_ms.is_some() {
             return Err("unexpected W10i live drain timing in the original ledger profile".into());
         }
@@ -487,6 +582,14 @@ fn verify_ledger(
         return Err(
             "W10i ledger must prove verified traffic during drain and after the member returned"
                 .into(),
+        );
+    }
+    if progress
+        .as_ref()
+        .is_some_and(|p| p.verified_while_copy_interrupted == Some(0))
+    {
+        return Err(
+            "W10i ledger lacks verified traffic while the snapshot copy was interrupted".into(),
         );
     }
     Ok((counts, progress))
@@ -551,6 +654,18 @@ mod tests {
 
     #[test]
     fn duration_and_production_gates_are_fail_closed() {
+        let copy = args(&[
+            "--release",
+            "0.75",
+            "--duration",
+            "60s",
+            "--diagnostic",
+            "--interrupt-copy",
+            "--output",
+            "out",
+        ]);
+        let options = parse(copy, Mode::Qualification).unwrap();
+        assert!(options.interrupt_copy && options.live_drain);
         let run = args(&[
             "--release",
             "0.75",
@@ -711,23 +826,23 @@ mod tests {
             },
         };
         let previous = serde_json::from_value(serde_json::to_value(&worker).unwrap()).unwrap();
-        verify(&worker, dir.path(), &worker.source_sha, 10, false).unwrap();
+        verify(&worker, dir.path(), &worker.source_sha, 10, false, false).unwrap();
         match_candidate(&previous, &worker).unwrap();
         worker.runner_sha256 = "d".repeat(64);
         assert!(match_candidate(&previous, &worker).is_err());
-        assert!(verify(&worker, dir.path(), "another-source", 10, false).is_err());
-        assert!(verify(&worker, dir.path(), &worker.source_sha, 60, false).is_err());
+        assert!(verify(&worker, dir.path(), "another-source", 10, false, false).is_err());
+        assert!(verify(&worker, dir.path(), &worker.source_sha, 60, false, false).is_err());
         worker.fault.rejoined_pid = worker.fault.killed_pid;
-        assert!(verify(&worker, dir.path(), &worker.source_sha, 10, false).is_err());
+        assert!(verify(&worker, dir.path(), &worker.source_sha, 10, false, false).is_err());
         worker.fault.rejoined_pid = 43;
         worker.fault.rejoined_at_ms = 10_001;
-        assert!(verify(&worker, dir.path(), &worker.source_sha, 10, false).is_err());
+        assert!(verify(&worker, dir.path(), &worker.source_sha, 10, false, false).is_err());
         worker.fault.rejoined_at_ms = 5_000;
         worker.production_admitted = true;
-        assert!(verify(&worker, dir.path(), &worker.source_sha, 10, false).is_err());
+        assert!(verify(&worker, dir.path(), &worker.source_sha, 10, false, false).is_err());
         worker.production_admitted = false;
         fs::write(&path, rows(&[row(0, 0), row(1, 9_950)])).unwrap();
-        assert!(verify(&worker, dir.path(), &worker.source_sha, 10, false).is_err());
+        assert!(verify(&worker, dir.path(), &worker.source_sha, 10, false, false).is_err());
     }
 
     #[test]
@@ -751,6 +866,7 @@ mod tests {
             value_sha256: crate::imap_qualification_075::digest(DRAIN_PROBE_VALUE),
             before: [copy(0, 7, true), copy(2, 7, false)],
             after: [copy(1, 8, true), copy(2, 8, false)],
+            interrupted_copy: None,
         };
         let fault = Fault {
             killed_pid: 42,
@@ -796,5 +912,90 @@ mod tests {
         ledger[4]["verified_at_ms"] = Value::Null;
         assert!(check(&ledger).is_err());
         assert!(verify_ledger(rows(&ledger).as_slice(), 60_000, None).is_err());
+    }
+
+    #[test]
+    fn interrupted_copy_requires_old_placement_and_progress_before_resume() {
+        let copy = |member_slot, epoch, primary, backup| CopyObservation {
+            member_slot,
+            epoch,
+            certified_version: 5,
+            primary,
+            backup,
+        };
+        let mut drain = Drain {
+            departed_pid: 43,
+            returned_pid: 44,
+            started_at_ms: 30_000,
+            completed_at_ms: 35_000,
+            audited_at_ms: 36_000,
+            returned_at_ms: 44_000,
+            partition: 11,
+            certified_version: 5,
+            value_sha256: crate::imap_qualification_075::digest(&INTERRUPTED_COPY_VALUE),
+            before: [copy(0, 7, true, false), copy(1, 7, false, true)],
+            after: [copy(1, 11, false, true), copy(2, 11, true, false)],
+            interrupted_copy: Some(InterruptedCopy {
+                hit_at_ms: 30_100,
+                observed_at_ms: 32_000,
+                resumed_at_ms: 32_000,
+                blocked_chunk: 1,
+                forbidden_restart_chunk: 0,
+                held_placement: [
+                    copy(0, 8, true, false),
+                    copy(1, 8, false, true),
+                    copy(2, 8, false, false),
+                ],
+            }),
+        };
+        let fault = Fault {
+            killed_pid: 42,
+            killed_at_ms: 20_000,
+            recovered_at_ms: 24_000,
+            rejoined_pid: 43,
+            rejoined_at_ms: 25_000,
+        };
+        verify_drain(&drain, &fault, 60_000).unwrap();
+        drain.interrupted_copy.as_mut().unwrap().held_placement[2].primary = true;
+        assert!(verify_drain(&drain, &fault, 60_000).is_err());
+        drain.interrupted_copy.as_mut().unwrap().held_placement[2].primary = false;
+        drain
+            .interrupted_copy
+            .as_mut()
+            .unwrap()
+            .forbidden_restart_chunk = 1;
+        assert!(verify_drain(&drain, &fault, 60_000).is_err());
+        drain
+            .interrupted_copy
+            .as_mut()
+            .unwrap()
+            .forbidden_restart_chunk = 0;
+        drain.interrupted_copy.as_mut().unwrap().observed_at_ms = 31_000;
+        assert!(verify_drain(&drain, &fault, 60_000).is_err());
+        drain.interrupted_copy.as_mut().unwrap().observed_at_ms = 32_000;
+
+        let mut ledger: Vec<_> = [0, 15_000, 30_500, 45_000, 59_000]
+            .into_iter()
+            .enumerate()
+            .map(|(seq, time)| {
+                let mut entry = row(seq as u64, time);
+                entry["verified_at_ms"] = json!(time + 100);
+                entry
+            })
+            .collect();
+        let check = |ledger: &[Value]| verify_ledger(rows(ledger).as_slice(), 60_000, Some(&drain));
+        assert_eq!(
+            check(&ledger)
+                .unwrap()
+                .1
+                .unwrap()
+                .verified_while_copy_interrupted,
+            Some(3)
+        );
+        ledger[2]["verified_at_ms"] = json!(32_001);
+        assert!(check(&ledger)
+            .unwrap_err()
+            .to_string()
+            .contains("while the snapshot copy was interrupted"));
     }
 }

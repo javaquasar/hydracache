@@ -10,6 +10,7 @@ pub(super) const WINDOW_INTERVAL: Duration = Duration::from_millis(100);
 pub(super) struct Profile {
     pub duration: Duration,
     pub live_drain: bool,
+    pub interrupt_copy: bool,
     evidence: Option<PathBuf>,
 }
 
@@ -45,6 +46,8 @@ pub(super) struct Fault {
 }
 
 const DRAIN_PROBE_VALUE: &[u8] = b"w10i-live-drain-probe";
+static INTERRUPTED_COPY_VALUE: [u8; 96 * 1024] = [0x5a; 96 * 1024];
+const COPY_INTERRUPTION_HOLD: Duration = Duration::from_millis(1_500);
 
 #[derive(Debug, Serialize)]
 pub(super) struct Drain {
@@ -59,6 +62,18 @@ pub(super) struct Drain {
     value_sha256: String,
     before: [CopyObservation; 2],
     after: [CopyObservation; 2],
+    #[serde(skip_serializing_if = "Option::is_none")]
+    interrupted_copy: Option<InterruptedCopy>,
+}
+
+#[derive(Debug, Serialize)]
+struct InterruptedCopy {
+    hit_at_ms: u64,
+    observed_at_ms: u64,
+    resumed_at_ms: u64,
+    blocked_chunk: u32,
+    forbidden_restart_chunk: u32,
+    held_placement: [CopyObservation; 3],
 }
 
 #[derive(Debug, Serialize)]
@@ -68,6 +83,8 @@ struct CopyObservation {
     certified_version: u64,
     primary: bool,
     backup: bool,
+    #[serde(skip)]
+    healthy: bool,
 }
 
 impl Profile {
@@ -101,11 +118,15 @@ impl Profile {
         };
         let live_drain =
             evidence.is_some() && std::env::var("HYDRACACHE_W10I_LIVE_DRAIN").as_deref() == Ok("1");
+        let interrupt_copy = evidence.is_some()
+            && std::env::var("HYDRACACHE_W10I_INTERRUPT_COPY").as_deref() == Ok("1");
         assert!(!live_drain || duration >= Duration::from_secs(45));
+        assert!(!interrupt_copy || live_drain);
         Self {
             duration,
             evidence,
             live_drain,
+            interrupt_copy,
         }
     }
 
@@ -133,8 +154,12 @@ impl Profile {
             return Ok(());
         };
         assert_eq!(self.live_drain, drain.is_some());
+        assert_eq!(
+            self.interrupt_copy,
+            drain.as_ref().is_some_and(|d| d.interrupted_copy.is_some())
+        );
         let mut receipt = serde_json::json!({
-            "schema_version": if self.live_drain { 2 } else { 1 },
+            "schema_version": 1 + u16::from(self.live_drain) + u16::from(self.interrupt_copy),
             "production_admitted": false,
             "source_sha": std::env::var("HYDRACACHE_W10I_SOURCE_SHA").unwrap(),
             "seconds": self.duration.as_secs(),
@@ -238,8 +263,10 @@ pub(super) async fn exercise_control(
 pub(super) async fn exercise_live_drain(
     cluster: &mut MemberCluster,
     started: tokio::time::Instant,
-    duration: Duration,
+    profile: &Profile,
+    hot_partition: hydracache::PartitionId,
 ) -> Drain {
+    let duration = profile.duration;
     // Leave five seconds for measured traffic after the drained member returns.
     tokio::time::timeout_at(started + duration - Duration::from_secs(5), async {
         use hydracache_client_hc2::BatchOperation;
@@ -253,9 +280,11 @@ pub(super) async fn exercise_live_drain(
         let seed_epoch = ready["epoch"].as_u64().unwrap();
         let seed_identity = Bytes::from(format!("w10e:{seed_epoch}:w10i-live-drain-seed"));
 
-        // The earlier fault probe used primary 0/backup 1. This is a different, untouched partition.
-        let key = cluster.key_for(0, Some(2), "w10i-live-drain/");
-        let value = Bytes::from_static(DRAIN_PROBE_VALUE);
+        // After the kill, slot 1 owns the promoted and control partitions. For the copy
+        // scenario slot 1 holds the probe backup, so the less loaded slot 2 needs a snapshot.
+        let backup_slot = if profile.interrupt_copy { 1 } else { 2 };
+        let key = cluster.pick_key(0, Some(backup_slot), |i| format!("w10i-live-drain/{i}").into_bytes(), |partition| partition != hot_partition);
+        let value = Bytes::from_static(if profile.interrupt_copy { &INTERRUPTED_COPY_VALUE } else { DRAIN_PROBE_VALUE });
         let receipt = retry_w10i(|| async {
             let reply = cluster.clients[1]
                 .batch_outcomes(
@@ -288,7 +317,7 @@ pub(super) async fn exercise_live_drain(
         let before = observe_copies(
             &http,
             admins,
-            [0, 2],
+            [0, backup_slot as u8],
             partition,
             certified_version,
             |pair| pair[0].primary && pair[1].backup,
@@ -297,20 +326,30 @@ pub(super) async fn exercise_live_drain(
 
         tokio::time::sleep_until(started + duration / 2).await;
         let departed_pid = cluster.daemons[0].0.id();
+        if profile.interrupt_copy {
+            set_copy_fault(&cluster.spec, 2, 1);
+        }
         let started_at_ms = started.elapsed().as_millis() as u64;
-        let response = w10h_admin(http.post(format!("http://{}{ADMIN_DRAIN_PATH}", admins[0])))
-            .send()
-            .await
-            .unwrap()
-            .error_for_status()
-            .unwrap()
-            .json::<serde_json::Value>()
-            .await
-            .unwrap();
-        let completed_at_ms = started.elapsed().as_millis() as u64;
+        let (drained, interrupted_copy) = tokio::join!(async {
+            let response = w10h_admin(http.post(format!("http://{}{ADMIN_DRAIN_PATH}", admins[0])))
+                .send().await.unwrap().error_for_status().unwrap().json::<serde_json::Value>().await.unwrap();
+            (response, started.elapsed().as_millis() as u64)
+        }, async {
+            if profile.interrupt_copy {
+                Some(interrupt_and_resume(&cluster.spec, &http, admins, started, partition, &before[0]).await)
+            } else {
+                None
+            }
+        });
+        let (response, completed_at_ms) = drained;
         assert_eq!(response["drain"]["timed_out"], false);
         println!("W10i live drain completed started_at_ms={started_at_ms} completed_at_ms={completed_at_ms}");
         wait_success(&mut cluster.daemons[0].0, Duration::from_secs(8));
+        if let Some(proof) = &interrupted_copy {
+            assert!(proof.resumed_at_ms < completed_at_ms);
+            assert!(!copy_fault_hit(&cluster.spec, 3, 0), "resumed transfer tried to replay its first chunk");
+            cluster.spec.set_outbound_fault(0, 2, 4, None);
+        }
         wait_management_json(&http, admins[1], ADMIN_CLUSTER_OVERVIEW_PATH, |body| {
             body["members"].as_array().is_some_and(|members| {
                 members.len() == 2
@@ -326,7 +365,8 @@ pub(super) async fn exercise_live_drain(
             [1, 2],
             partition,
             certified_version,
-            |pair| pair[0].primary != pair[1].primary && pair[0].epoch > before[0].epoch,
+            |pair| pair[0].primary != pair[1].primary && pair[0].epoch > before[0].epoch
+                && (!profile.interrupt_copy || pair[1].primary),
         )
         .await;
         for client in &cluster.clients[1..] {
@@ -356,10 +396,84 @@ pub(super) async fn exercise_live_drain(
             value_sha256: sha256_hex(&value),
             before,
             after,
+            interrupted_copy,
         }
     })
     .await
     .expect("W10i live drain and rejoin exceeded the campaign window")
+}
+
+fn set_copy_fault(spec: &MemberClusterSpec, generation: u64, index: u32) {
+    spec.set_outbound_fault(
+        0,
+        2,
+        generation,
+        Some(serde_json::json!({"kind":"value_chunk_drop", "index": index})),
+    );
+}
+
+fn copy_fault_hit(spec: &MemberClusterSpec, generation: u64, index: u32) -> bool {
+    let event = format!("HYDRACACHE_TEST_RAFT_OUTBOUND_FAULT_HIT generation={generation} from={} to={} action=ValueChunkDrop {{ index: {index} }}", spec.names[0], spec.names[2]);
+    std::fs::read_to_string(spec.root.join("member-0.log"))
+        .unwrap()
+        .lines()
+        .any(|line| line == event)
+}
+
+async fn interrupt_and_resume(
+    spec: &MemberClusterSpec,
+    http: &reqwest::Client,
+    admins: &[SocketAddr],
+    started: tokio::time::Instant,
+    partition: u32,
+    before: &CopyObservation,
+) -> InterruptedCopy {
+    while !copy_fault_hit(spec, 2, 1) {
+        tokio::time::sleep(Duration::from_millis(25)).await;
+    }
+    let hit_at_ms = started.elapsed().as_millis() as u64;
+    println!("W10i interrupted snapshot copy partition={partition} chunk=1 at_ms={hit_at_ms}");
+    tokio::time::sleep(COPY_INTERRUPTION_HOLD).await;
+    let held_placement = loop {
+        let version = before.certified_version;
+        let (source, backup, target) = tokio::join!(
+            observe_partition(http, admins[0], 0, partition, version),
+            observe_partition(http, admins[1], 1, partition, version),
+            observe_partition(http, admins[2], 2, partition, version),
+        );
+        if let (Some(source), Some(backup), Some(target)) = (source, backup, target) {
+            assert!(
+                source.primary
+                    && !source.backup
+                    && backup.backup
+                    && !backup.primary
+                    && !target.primary
+                    && !target.backup,
+                "copy changed placement before it could commit"
+            );
+            let placement = [source, backup, target];
+            assert!(
+                placement
+                    .iter()
+                    .all(|p| Some(p.epoch) == before.epoch.checked_add(1)),
+                "copy was observed outside its Raft wave epoch"
+            );
+            break placement;
+        }
+        tokio::time::sleep(Duration::from_millis(50)).await;
+    };
+    let observed_at_ms = started.elapsed().as_millis() as u64;
+    // Keep denying chunk zero. A full restart cannot complete this transfer.
+    set_copy_fault(spec, 3, 0);
+    let resumed_at_ms = started.elapsed().as_millis() as u64;
+    InterruptedCopy {
+        hit_at_ms,
+        observed_at_ms,
+        resumed_at_ms,
+        blocked_chunk: 1,
+        forbidden_restart_chunk: 0,
+        held_placement,
+    }
 }
 
 async fn observe_copies(
@@ -372,14 +486,14 @@ async fn observe_copies(
 ) -> [CopyObservation; 2] {
     loop {
         let (first, second) = tokio::join!(
-            observe_copy(
+            observe_partition(
                 http,
                 admins[usize::from(slots[0])],
                 slots[0],
                 partition,
                 version
             ),
-            observe_copy(
+            observe_partition(
                 http,
                 admins[usize::from(slots[1])],
                 slots[1],
@@ -389,7 +503,12 @@ async fn observe_copies(
         );
         if let (Some(first), Some(second)) = (first, second) {
             let pair = [first, second];
-            if pair[0].epoch == pair[1].epoch && matches(&pair) {
+            if pair[0].epoch == pair[1].epoch
+                && pair
+                    .iter()
+                    .all(|copy| copy.healthy && copy.primary != copy.backup)
+                && matches(&pair)
+            {
                 return pair;
             }
         }
@@ -397,7 +516,7 @@ async fn observe_copies(
     }
 }
 
-async fn observe_copy(
+async fn observe_partition(
     http: &reqwest::Client,
     admin: SocketAddr,
     member_slot: u8,
@@ -429,18 +548,16 @@ async fn observe_copy(
     let backup = row["local_backup"].as_bool()?;
     let certified_version = row["certified_version"].as_u64()?;
     let epoch = body["observation_epoch"].as_u64()?;
-    (body["complete"] == true
-        && row["id"] == partition
-        && row["state"] == "healthy"
-        && certified_version == version
-        && primary != backup)
-        .then_some(CopyObservation {
+    (body["complete"] == true && row["id"] == partition && certified_version == version).then_some(
+        CopyObservation {
             member_slot,
             epoch,
             certified_version,
             primary,
             backup,
-        })
+            healthy: row["state"] == "healthy",
+        },
+    )
 }
 
 fn acknowledged(
