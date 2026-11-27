@@ -121,7 +121,7 @@ async fn run_cohort(scenario: Scenario) {
     let partition = scope.locate(hot.to_vec()).unwrap().0.value();
     let http = w10h_http();
     let mut expected = Vec::new();
-    let mut before = None;
+    let mut promoted_epoch = None;
     let mut outage = 0..0;
     let killed = cluster.daemons[0].0.id();
     for (phase, [rust_first, rust_second, java_first, java_second]) in keys.into_iter().enumerate()
@@ -174,13 +174,10 @@ async fn run_cohort(scenario: Scenario) {
         }
         rust.require(result, "check", expected.len());
         if phase == 0 {
-            before = Some(owner_checkpoint(&http, &cluster.spec, [0, 1], partition, 1, 1).await);
+            let original = owner_checkpoint(&http, &cluster.spec, [0, 1], partition, 1, 1).await;
             outage.start = started.elapsed().as_millis() as u64;
             cluster.daemons[0].0.kill().unwrap();
             assert!(!cluster.daemons[0].0.wait().unwrap().success());
-        } else if phase == 1 {
-            assert!(cluster.daemons[0].0.try_wait().unwrap().is_some());
-            let original = before.take().unwrap();
             let promoted = owner_checkpoint(
                 &http,
                 &cluster.spec,
@@ -196,10 +193,27 @@ async fn run_cohort(scenario: Scenario) {
                 original.epoch(),
                 promoted.epoch()
             );
+            promoted_epoch = Some(promoted.epoch());
+        } else if phase == 1 {
+            assert!(cluster.daemons[0].0.try_wait().unwrap().is_some());
             outage.end = started.elapsed().as_millis() as u64;
             cluster.daemons[0] = cluster.spec.spawn(0);
             cluster.clients[0] = connect_w10i(&cluster.adapters[0], "w10i").await;
             assert_ne!(killed, cluster.daemons[0].0.id());
+            // Transport readiness can precede agreement on the returning process's generation.
+            let prior_epoch = promoted_epoch.unwrap();
+            let rejoined = wait_cluster_imap(&http, cluster.spec.addresses[7], |body| {
+                body["ready"] == true
+                    && cluster_imap_members(body).len() == 3
+                    && body["epoch"]
+                        .as_u64()
+                        .is_some_and(|epoch| epoch > prior_epoch)
+            })
+            .await;
+            println!(
+                "W10i SDK cohort authority restored epoch={}",
+                rejoined["epoch"]
+            );
         }
     }
     let status = child_exit(&mut probe.0).await;
