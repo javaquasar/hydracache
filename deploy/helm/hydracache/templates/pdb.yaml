@@ -1,7 +1,7 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ include "hydracache.fullname" . | default "hydracache" }}
+  name: {{ include "hydracache.fullname" . }}
 spec:
   minAvailable: 2
   selector:

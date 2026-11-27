@@ -32,7 +32,13 @@ fn deploy_smoke_k8s_manifests_wire_stateful_identity_storage_tls_backup_and_prob
     assert!(statefulset.contains("volumeClaimTemplates"));
     assert!(statefulset.contains("HYDRACACHE_SEEDS"));
     assert!(statefulset.contains("HYDRACACHE_TLS_ENABLED"));
-    assert!(statefulset.contains("HYDRACACHE_BACKUP_LOCATION"));
+    // A TLS member refuses to start without cluster auth.
+    assert!(statefulset.contains("HYDRACACHE_CLUSTER_AUTH_KEY_ID"));
+    assert!(statefulset.contains("HYDRACACHE_CLUSTER_AUTH_TOKEN_FILE"));
+    assert!(statefulset.contains("secretName: hydracache-cluster-auth"));
+    // Backup stays off until an operator supplies a real destination.
+    assert!(statefulset.contains("HYDRACACHE_BACKUP_ENABLED"));
+    assert!(!statefulset.contains("s3://"));
     assert!(statefulset.contains("HYDRACACHE_ADMIN_ADDR"));
     assert!(statefulset.contains("name: admin"));
     assert!(statefulset.contains("livenessProbe"));
@@ -96,15 +102,23 @@ fn deploy_smoke_helm_chart_exposes_replicas_rf_tls_and_backup_values() {
     let helpers = include_str!("../../../deploy/helm/hydracache/templates/_helpers.tpl");
     let statefulset = include_str!("../../../deploy/helm/hydracache/templates/statefulset.yaml");
 
-    assert!(chart.contains("version: 0.48.0"));
+    // `cargo xtask set-version` keeps the chart on the workspace version.
+    let version = env!("CARGO_PKG_VERSION");
+    assert!(chart.contains(&format!("\nversion: {version}\n")));
+    assert!(chart.contains(&format!("\nappVersion: \"{version}\"")));
     assert!(helpers.contains(r#"define "hydracache.fullname""#));
+    assert!(helpers.contains(r#"define "hydracache.validate""#));
     assert!(values.contains("replicaCount: 3"));
     assert!(values.contains("replicationFactor: 3"));
     assert!(values.contains("tls:"));
+    assert!(values.contains("clusterAuth:"));
     assert!(values.contains("backup:"));
     assert!(values.contains("adminPort: 9091"));
+    assert!(statefulset.contains(r#"include "hydracache.validate""#));
     assert!(statefulset.contains("{{ .Values.tls.enabled | quote }}"));
     assert!(statefulset.contains("{{ .Values.backup.location | quote }}"));
+    assert!(statefulset.contains("HYDRACACHE_CLUSTER_AUTH_TOKEN_FILE"));
+    assert!(statefulset.contains("HYDRACACHE_SEEDS"));
     assert!(statefulset.contains("HYDRACACHE_ADMIN_ADDR"));
     assert!(statefulset.contains("path: /healthz"));
     assert!(statefulset.contains("path: /readyz"));
