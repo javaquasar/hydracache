@@ -43,6 +43,69 @@ order includes `hydracache-client-hc2`, and post-publication verification adds
 the registry crate to a clean external consumer. This does not publish the
 Java or Python preview packages.
 
+### Container image
+
+After the crates are published and the clean consumer verification passes, the
+`publish-image` job calls the reusable `Server Image` workflow
+(`.github/workflows/server-image.yml`) in `release` mode. It builds
+`hydracache-server` from the same source SHA, runs
+`scripts/ci/docker-image-smoke.sh` against the local candidate, refuses to
+continue if the `X.Y.Z` tag already exists, pushes to
+`ghcr.io/javaquasar/hydracache-server`, attests its build provenance, smoke-tests
+the pushed digest again, and verifies the attestation with `gh attestation
+verify`. The GitHub Release is created only after that job succeeds and lists
+the image tag and digest.
+
+Tags: `X.Y.Z` always; `X.Y` and `latest` only for stable releases, and
+`latest` only when `X.Y.Z` is the newest stable tag in the repository.
+Pre-releases get only their exact tag.
+
+Dry run: dispatching `Server Image` manually always runs in dry-run mode. It
+runs the same login, push, attestation and pull-by-digest steps against the
+scratch package `ghcr.io/javaquasar/hydracache-server-dryrun`, with a
+`<workspace version>-ci.<run id>.<attempt>` tag unless a version is given, and
+never touches `hydracache-server`. Run it after changing the image workflow and
+before the first release that depends on the change:
+
+```powershell
+gh workflow run server-image.yml --ref main
+```
+
+Bump the release version with one command, never by hand:
+
+```powershell
+cargo xtask set-version X.Y.Z
+cargo update --workspace --offline
+```
+
+`set-version` rewrites `[workspace.package] version`, the in-repo
+`[workspace.dependencies]` versions, `deploy/helm/hydracache/Chart.yaml`
+(`version`, `appVersion`), and the image in `deploy/k8s/statefulset.yaml`, then
+re-runs the deploy checks and fails if anything still disagrees. The Helm image
+tag has no copy of its own: `values.yaml` keeps `image.tag: ""` and the template
+falls back to the chart `appVersion`.
+
+`cargo xtask doc-check` (CI `rust` job and `cargo xtask verify`) blocks a
+release commit where any of these disagree with the workspace version, where
+`values.yaml` pins its own tag, or where the Dockerfile builder toolchain
+differs from the `rust` CI job toolchain or is below `rust-version`. When CI
+moves to a new toolchain, bump `RUST_IMAGE` in the `Dockerfile` (tag and
+digest) in the same change.
+
+One-time: the first push creates the GHCR package as private. A repository
+admin makes it public under the package's settings on GitHub and links it to
+this repository.
+
+Verify a published image:
+
+```powershell
+docker pull ghcr.io/javaquasar/hydracache-server:X.Y.Z
+gh attestation verify oci://ghcr.io/javaquasar/hydracache-server:X.Y.Z --owner javaquasar
+```
+
+Never overwrite a pushed `X.Y.Z` tag. If a published image is broken, ship a
+new patch release.
+
 The `shipped` check is intentional: it prevents an implementation still marked
 as in progress from becoming an immutable crates.io release. Set the status in
 the release commit, merge that commit to `main`, wait for full CI to pass, and

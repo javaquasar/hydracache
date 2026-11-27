@@ -9,3 +9,8 @@ console/node_modules
 docs-site/node_modules
 **/__pycache__
 **/*.pyc
+**/node_modules
+.claude
+_tmp
+docs-site/dist
+docs-site/build

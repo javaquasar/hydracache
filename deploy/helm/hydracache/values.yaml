@@ -1,6 +1,8 @@
 image:
   repository: ghcr.io/javaquasar/hydracache-server
-  tag: "0.48.0"
+  # Empty means the chart appVersion, which `cargo xtask set-version` keeps
+  # equal to the workspace version. Set it only to pin a different image.
+  tag: ""
   pullPolicy: IfNotPresent
 
 replicaCount: 3
@@ -16,13 +18,30 @@ storage:
   size: 20Gi
   mountPath: /var/lib/hydracache
 
+# Cluster transport security. The chart refuses to render a configuration the
+# server would refuse to start with, instead of producing pods that crash-loop:
+# - tls.enabled requires tls.secretName (a Secret with tls.crt, tls.key,
+#   ca.crt) and clusterAuth (a TLS member rejects unauthenticated raft peers).
+# - tls.enabled=false requires tls.acknowledgeInsecure=true, because members
+#   listen on non-loopback addresses and plaintext is refused by default.
 tls:
   enabled: true
-  secretName: hydracache-mtls
+  secretName: ""
+  acknowledgeInsecure: false
   certPath: /etc/hydracache/tls/tls.crt
   keyPath: /etc/hydracache/tls/tls.key
   caPath: /etc/hydracache/tls/ca.crt
 
+# Peer authentication for the cluster (raft) listener. `secretName` names a
+# Secret whose `tokenKey` item holds the shared token for `keyId`.
+clusterAuth:
+  keyId: ""
+  secretName: ""
+  tokenKey: token
+  mountPath: /etc/hydracache/cluster-auth
+
+# Background backup/PITR. Off by default: there is no destination that is safe
+# to assume. Enabling it requires backup.location.
 backup:
-  enabled: true
-  location: s3://hydracache-backups/prod
+  enabled: false
+  location: ""
