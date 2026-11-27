@@ -41,8 +41,18 @@ case "$exposed" in
   *) fail "admin port 9091/tcp is not exposed (ExposedPorts=$exposed)" ;;
 esac
 
+# A member needs seeds; a lone smoke member bootstraps a one-node cluster that
+# seeds itself. Both runs below use it, so the only difference between them is
+# the TLS acknowledgement and a refusal can only come from the TLS rule.
+single_member=(
+  -e HYDRACACHE_NODE_ID=smoke-0
+  -e HYDRACACHE_CLUSTER_START=bootstrap
+  -e HYDRACACHE_CLUSTER_ADVERTISE_ADDR=127.0.0.1:7000
+  -e HYDRACACHE_SEEDS=127.0.0.1:7000
+)
+
 # 2. Default configuration must refuse plaintext non-loopback listeners.
-docker run -d --name "${container}-insecure-default" "$image" >/dev/null
+docker run -d --name "${container}-insecure-default" "${single_member[@]}" "$image" >/dev/null
 refuse_deadline=$((SECONDS + 20))
 while [ "$(docker inspect --format '{{.State.Running}}' "${container}-insecure-default")" = "true" ]; do
   [ "$SECONDS" -lt "$refuse_deadline" ] \
@@ -50,16 +60,31 @@ while [ "$(docker inspect --format '{{.State.Running}}' "${container}-insecure-d
   sleep 1
 done
 exit_code="$(docker inspect --format '{{.State.ExitCode}}' "${container}-insecure-default")"
+refusal_log="$(docker logs "${container}-insecure-default" 2>&1 || true)"
 [ "$exit_code" != "0" ] || fail "insecure default run exited 0"
+case "$refusal_log" in
+  *NonLoopbackWithoutTls* | *"non-loopback listeners require TLS"*) ;;
+  *)
+    echo "$refusal_log" >&2
+    fail "insecure default run exited $exit_code for a reason other than the plaintext refusal"
+    ;;
+esac
 echo "ok: default image refuses plaintext non-loopback listeners (exit $exit_code)"
 
 # 3. Explicitly acknowledged insecure single member must become healthy and ready.
 docker run -d --name "$container" \
+  "${single_member[@]}" \
   -e HYDRACACHE_TLS_ACK_INSECURE=true \
   -p 127.0.0.1::9091 \
   "$image" >/dev/null
-admin_port="$(docker port "$container" 9091/tcp | head -n1 | sed 's/.*://')"
-[ -n "$admin_port" ] || fail "could not resolve published admin port"
+
+show_logs_and_fail() {
+  docker logs "$container" >&2 || true
+  fail "$1"
+}
+
+admin_port="$(docker port "$container" 9091/tcp 2>/dev/null | head -n1 | sed 's/.*://' || true)"
+[ -n "$admin_port" ] || show_logs_and_fail "could not resolve published admin port (container not running?)"
 
 probe() {
   curl --silent --output /dev/null --write-out '%{http_code}' --max-time 2 \
@@ -71,10 +96,7 @@ health=""
 ready=""
 while [ "$SECONDS" -lt "$deadline" ]; do
   running="$(docker inspect --format '{{.State.Running}}' "$container")"
-  if [ "$running" != "true" ]; then
-    docker logs "$container" >&2 || true
-    fail "container exited before becoming ready"
-  fi
+  [ "$running" = "true" ] || show_logs_and_fail "container exited before becoming ready"
   health="$(probe /healthz)"
   ready="$(probe /readyz)"
   if [ "$health" = "200" ] && [ "$ready" = "200" ]; then
@@ -85,5 +107,4 @@ while [ "$SECONDS" -lt "$deadline" ]; do
   sleep 1
 done
 
-docker logs "$container" >&2 || true
-fail "timed out after ${timeout_seconds}s (last /healthz=$health /readyz=$ready)"
+show_logs_and_fail "timed out after ${timeout_seconds}s (last /healthz=$health /readyz=$ready)"
