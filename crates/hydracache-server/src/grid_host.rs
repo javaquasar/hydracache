@@ -2653,11 +2653,26 @@ impl MemberReadHost {
             ..hydracache::ReplicationConfig::local_first()
         };
         let operations = Arc::new(crate::imap_ops::IMapOps::new(profile.value_plane));
+        #[cfg(target_os = "linux")]
+        let clock = profile.chrony.as_ref().map(|config| {
+            let clock = Arc::new(crate::imap_chrony::linux::ChronyClock::new());
+            self.0
+                ._runtime
+                .as_ref()
+                .expect("member owns a runtime")
+                .spawn(clock.clone().run(config.clone(), self.0.shutdown.subscribe()));
+            crate::imap_value_plane::ReplicaClock {
+                authority: clock,
+                maximum_uncertainty_ms: config.policy.maximum_uncertainty_ms,
+            }
+        });
+        #[cfg(not(target_os = "linux"))]
+        let clock = None;
         let backend = self.attach_value_backend(
             &storage.join(IMAP_HC2_DIR),
             replication,
             scope,
-            None,
+            clock,
             Some(operations.clone()),
         )?;
         let limits = config.client_api.limits;

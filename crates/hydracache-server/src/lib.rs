@@ -14,9 +14,9 @@ pub mod config;
 mod generated_console_assets;
 mod grid_host;
 pub mod hc2;
-mod imap_hc2_route;
 #[doc(hidden)]
 pub mod imap_chrony;
+mod imap_hc2_route;
 mod imap_ops;
 pub use imap_ops::{IMapPartitionCounts, IMapReadiness, IMapReadinessReason};
 #[doc(hidden)]
@@ -31,9 +31,9 @@ mod imap_value_decision;
 mod imap_value_journal;
 mod imap_value_repair;
 mod value_plane_subscription;
+pub use imap_value_plane::audit::IMapReplicaDigest;
 #[doc(hidden)]
 pub use imap_value_plane::ReplicaRebalanceReport;
-pub use imap_value_plane::audit::IMapReplicaDigest;
 #[doc(hidden)]
 pub use imap_value_repair::ReplicaRepairOutcome;
 #[doc(hidden)]
@@ -69,8 +69,9 @@ pub use cluster_status::{
 };
 pub use config::{
     AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ClusterStartMode,
-    DistributedHc2Config, Hc2ClientPlaneConfig, IMapOperationalConfig, ManagementHistoryConfig,
-    RedisApiConfig, ServerConfig, ServerConfigError, ServerRole, TlsConfig,
+    DistributedHc2Config, Hc2ClientPlaneConfig, IMapChronyConfig, IMapOperationalConfig,
+    ManagementHistoryConfig, RedisApiConfig, ServerConfig, ServerConfigError, ServerRole,
+    TlsConfig,
 };
 #[doc(hidden)]
 pub use grid_host::MemberReadHost;

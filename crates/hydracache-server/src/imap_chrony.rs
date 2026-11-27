@@ -6,6 +6,9 @@ use hydracache::TimeObservation;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+#[cfg(target_os = "linux")]
+pub(crate) mod linux;
+
 const NS_PER_MS: u64 = 1_000_000;
 const NS_PER_SEC: u64 = 1_000_000_000;
 // Account for rounding of the three tracking fields printed with nine decimal places.
@@ -22,7 +25,8 @@ pub struct ClockReading {
 }
 
 /// Bounds selected by the managed host profile, including its maximum slew rate.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ChronyPolicy {
     pub maximum_uncertainty_ms: u64,
     pub maximum_snapshot_age_ms: u64,

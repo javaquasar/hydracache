@@ -154,6 +154,9 @@ pub struct DistributedHc2Config {
     /// Bounded controls for the distributed IMap profile.
     #[serde(default)]
     pub value_plane: IMapOperationalConfig,
+    /// Optional managed Linux clock for distributed TTL.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub chrony: Option<IMapChronyConfig>,
 }
 
 impl std::fmt::Debug for DistributedHc2Config {
@@ -161,7 +164,53 @@ impl std::fmt::Debug for DistributedHc2Config {
         formatter
             .debug_struct("DistributedHc2Config")
             .field("value_plane", &self.value_plane)
+            .field("chrony", &self.chrony)
             .finish_non_exhaustive()
+    }
+}
+
+/// Clock settings for a managed chronyd instance on the member's own host.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct IMapChronyConfig {
+    /// Absolute path to the local monitoring client.
+    pub chronyc: PathBuf,
+    /// Permitted addresses of upstream chrony references.
+    pub references: Vec<std::net::IpAddr>,
+    /// Polling interval in milliseconds.
+    pub sample_interval_ms: u64,
+    /// Explicit uncertainty, freshness and drift bounds for the host.
+    pub policy: crate::imap_chrony::ChronyPolicy,
+}
+
+impl IMapChronyConfig {
+    fn validate(&self) -> Result<(), ServerConfigError> {
+        let policy = self.policy;
+        if !cfg!(target_os = "linux")
+            || !self.chronyc.is_absolute()
+            || self.references.is_empty()
+            || self.references.iter().any(|ip| {
+                ip.is_loopback() || ip.is_unspecified() || ip.is_multicast()
+            })
+            || policy.maximum_uncertainty_ms == 0
+            || policy.maximum_reference_age_ms == 0
+            || policy.maximum_acquisition_ms == 0
+            || policy.maximum_acquisition_ms >= self.sample_interval_ms
+            || self.sample_interval_ms >= policy.maximum_snapshot_age_ms
+            || [
+                policy.maximum_uncertainty_ms,
+                policy.maximum_reference_age_ms,
+                policy.maximum_snapshot_age_ms,
+            ]
+            .iter()
+            .any(|ms| ms.checked_mul(1_000_000).is_none())
+            || !(1..1_000_000).contains(&policy.maximum_drift_ppm)
+        {
+            return Err(ServerConfigError::InvalidDistributedHc2(
+                "chrony requires Linux, an absolute executable path, external reference addresses, and valid finite time bounds",
+            ));
+        }
+        Ok(())
     }
 }
 
@@ -673,6 +722,9 @@ impl ServerConfig {
         }
         if let Some(profile) = &self.distributed_hc2 {
             profile.value_plane.validate()?;
+            if let Some(chrony) = &profile.chrony {
+                chrony.validate()?;
+            }
             if self.role != ServerRole::Member
                 || !self.hc2_client_plane.enabled
                 || !self.tls.enabled

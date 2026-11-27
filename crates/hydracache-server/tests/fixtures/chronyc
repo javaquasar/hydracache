@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+test "$*" = "-n -c -h 127.0.0.1 tracking"
+case "$(cat "$HYDRACACHE_TEST_CHRONYC_FEED")" in
+    live) reference=$(date -u +%s.%N) ;;
+    stale) reference=1000.000000000 ;;
+    *) exit 1 ;;
+esac
+printf 'C0000201,192.0.2.1,2,%s,0.000000000,0.000000000,0.000000000,0.000,0.000,0.000,0.001000000,0.001000000,1.0,Normal\n' "$reference"

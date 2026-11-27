@@ -34,6 +34,9 @@ mod hc2_pki;
 use hc2_pki::{pki, write_pki, TestPki};
 #[path = "support/imap_hc2_campaign.rs"]
 mod imap_hc2_campaign;
+#[cfg(target_os = "linux")]
+#[path = "support/imap_chrony_process.rs"]
+mod imap_chrony_process;
 #[path = "support/imap_sdk_cohort.rs"]
 mod imap_sdk_cohort;
 
@@ -199,6 +202,7 @@ fn member_hc2_has_no_node_local_fallback() {
         tenant: "tenant-a".into(),
         client_cert_sha256: "a".repeat(64),
         value_plane: Default::default(),
+        chrony: None,
     });
     config.validate().unwrap();
     let profile = config.distributed_hc2.clone().unwrap();
@@ -1910,6 +1914,7 @@ struct MemberClusterSpec {
     outbound_faults: [Option<PathBuf>; 3],
     drain_timeout_ms: Option<u64>,
     raft_compaction: bool,
+    chrony_feed: Option<PathBuf>,
 }
 
 #[derive(Default)]
@@ -1918,6 +1923,7 @@ struct MemberOptions {
     interrupt_copy: bool,
     drain_timeout_ms: Option<u64>,
     raft_compaction: bool,
+    chrony_fixture: bool,
 }
 
 impl MemberClusterSpec {
@@ -2014,6 +2020,9 @@ impl MemberClusterSpec {
         if self.raft_compaction {
             command.env("HYDRACACHE_RAFT_COMPACTION", "true");
         }
+        if let Some(feed) = &self.chrony_feed {
+            command.env("HYDRACACHE_TEST_CHRONYC_FEED", feed);
+        }
         if value_profile {
             command.env(
                 "HYDRACACHE_DISTRIBUTED_HC2_CONFIG",
@@ -2069,14 +2078,29 @@ impl MemberCluster {
         let mut pem = std::io::BufReader::new(pki.client_cert.as_bytes());
         let leaf = <rustls::pki_types::CertificateDer as rustls::pki_types::pem::PemObject>
             ::from_pem_reader(&mut pem).unwrap();
-        std::fs::write(
-            root.join("imap.toml"),
-            format!(
-                "tenant = \"w10i\"\nclient_cert_sha256 = \"{}\"\n",
-                sha256_hex(leaf.as_ref())
-            ),
-        )
-        .unwrap();
+        let chrony_feed = options.chrony_fixture.then(|| root.join("chronyc-feed"));
+        let chrony = chrony_feed.as_ref().map(|feed| {
+            std::fs::write(feed, "live").unwrap();
+            hydracache_server::IMapChronyConfig {
+                chronyc: Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/chronyc"),
+                references: vec!["192.0.2.1".parse().unwrap()],
+                sample_interval_ms: 250,
+                policy: hydracache_server::imap_chrony::ChronyPolicy {
+                    maximum_uncertainty_ms: 100,
+                    maximum_snapshot_age_ms: 1_000,
+                    maximum_reference_age_ms: 1_000,
+                    maximum_acquisition_ms: 75,
+                    maximum_drift_ppm: 500,
+                },
+            }
+        });
+        let profile = hydracache_server::DistributedHc2Config {
+            tenant: "w10i".into(),
+            client_cert_sha256: sha256_hex(leaf.as_ref()),
+            value_plane: Default::default(),
+            chrony,
+        };
+        std::fs::write(root.join("imap.toml"), toml::to_string(&profile).unwrap()).unwrap();
         std::fs::write(
             root.join("cluster-token"),
             format!("fixture-only-{}", root.display()),
@@ -2123,6 +2147,7 @@ impl MemberCluster {
             ],
             drain_timeout_ms: options.drain_timeout_ms,
             raft_compaction: options.raft_compaction,
+            chrony_feed,
             root,
             addresses,
             names,

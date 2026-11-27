@@ -55,5 +55,9 @@ redis.workspace = true
 tower.workspace = true
 tokio = { workspace = true, features = ["test-util"] }
 
+[target.'cfg(target_os = "linux")'.dependencies]
+rustix = { version = "1.1", features = ["time"] }
+tokio = { workspace = true, features = ["process"] }
+
 [lints]
 workspace = true
