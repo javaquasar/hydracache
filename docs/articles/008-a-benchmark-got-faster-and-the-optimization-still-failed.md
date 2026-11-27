@@ -1184,6 +1184,19 @@ The ledgers verified 37 and 42 mutations during drain and 333 and 339 after retu
 kept unknown outcomes in a separate count.
 [W10i qualification plan](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#w10i-build-the-correctness-and-compatibility-safety-net)
 
+## Proving that a copy resumed
+
+A transfer can retry and still hide a full restart. The W10i diagnostic drops the second
+snapshot chunk after the destination has acknowledged the first. Three member observations
+check that the old primary and backup still own the certified version while the copy is paused.
+The controller counts traffic on a separate control partition during that pause.
+
+The worker then lets the second chunk through and blocks any attempt to send the first again.
+The drain must finish under that rule. It verifies the new primary and backup at a later epoch
+and reads the complete value through the survivors and the returning member. On AX42, the two
+60-second runs each verified 15 mutations on the control partition while the copy was blocked.
+[Interrupted copy diagnostic](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#interrupted-copy-before-primary-cutover)
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

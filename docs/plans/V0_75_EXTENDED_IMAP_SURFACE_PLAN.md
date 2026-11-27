@@ -1953,9 +1953,8 @@ The verified `diagnostic.sha256` manifest has SHA-256
 `05b7b38267d4a7a68d83ccd2b3315090b63b2fd6dd08f5480d94bd282eb27b58`.
 
 The commands require `--diagnostic` for this profile and produce `production_admitted=false`.
-The production gate still requires distributed TTL with an admitted OD-2 provider, interrupted
-copy under load, the packaged Rust and Java SDK mixed workload, replica-by-replica reconciliation,
-and accepted OD-3 recovery bounds.
+The production gate still requires distributed TTL with an admitted OD-2 provider, the packaged
+Rust and Java SDK mixed workload, replica-by-replica reconciliation and accepted OD-3 recovery bounds.
 
 An opt-in `--live-drain` phase runs in the same diagnostic processes and keeps the existing
 control workload active through both faults. After the killed member recovers, the runner seeds
@@ -1992,6 +1991,44 @@ unknown outcomes. The reports, ledgers, logs and exact binaries are under
 `development/w10i-live-drain-54f1e21fb0fbade6bd278f74524cb50031b2e0e2` on AX42. The verified
 `w10i-live-drain.sha256` manifest has SHA-256
 `a51de2aa036f676d841bece456cbe5d3494b4442a1a9055fdff3b2f672f34d0d`.
+
+#### Interrupted copy before primary cutover
+
+`--interrupt-copy` includes the live drain and selects a populated partition whose new primary
+needs a snapshot. The worker uses a 96 KiB value and the existing loopback-only test transport
+fault to drop the second chunk, after the first chunk has been durably acknowledged. It holds
+the fault for at least 1.5 seconds. Authenticated observations from all three members must still
+show the old primary and backup at the original certified version in the new wave epoch. The
+target must hold neither role at this checkpoint.
+
+The worker then permits delivery of the second chunk while denying any replay of the first.
+The drain can finish only if the transfer resumes. Both surviving members must then show the
+same certified version at the later placement epoch, with the copy destination as primary.
+The worker reads the full value through both survivors and through the departed member after
+it rejoins. The controller verifies completed mutations with readback inside the fault window
+in addition to the existing drain and post-return windows. Confirmation requires a six-hour
+report with the same schedule and exact source and binaries.
+
+```text
+cargo xtask imap-distributed-qualification --release 0.75 --duration 60s --diagnostic --interrupt-copy --output <new-directory>
+```
+
+Both 60-second release diagnostics on AX42 at
+`2237ff12868f4c8d00913ea29698c7a455aaf8a4` passed. The probe stayed at certified version 1.
+The wave advanced epoch 7 to 8 with the original placement intact. After resume, the survivors
+reported the new placement at epoch 12. Five controller tests, Clippy for the controller and the
+daemon process test, and the W10g partition history-gap regression passed on the same source.
+
+| Run | Time copy held | Verified while interrupted | Drain duration | Verified during drain | Verified after return |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1 | 1.501 s | 15 | 5.416 s | 54 | 258 |
+| 2 | 1.502 s | 15 | 5.244 s | 59 | 303 |
+
+The separate `--live-drain` control also passed with 32 verified mutations during drain and 282
+after return. AX42 retains the reports, ledgers, binaries and both transport fault witnesses under
+`development/w10i-interrupt-copy-2237ff12868f4c8d00913ea29698c7a455aaf8a4`. The verified
+`w10i-interrupt-copy.sha256` manifest has SHA-256
+`0238433424b439017d10191154d7e516c223b4ac5d885b40ef4ca240b1f42513`.
 
 #### Under-load failover and rebalance qualification
 
