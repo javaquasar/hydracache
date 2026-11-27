@@ -394,7 +394,10 @@ pub(super) async fn exercise_live_drain(
         let started_at_ms = started.elapsed().as_millis() as u64;
         let (drained, interrupted_copy) = tokio::join!(async {
             let response = w10h_admin(http.post(format!("http://{}{ADMIN_DRAIN_PATH}", admins[0])))
-                .send().await.unwrap().error_for_status().unwrap().json::<serde_json::Value>().await.unwrap();
+                .send().await.unwrap();
+            let status = response.status();
+            let response = response.json::<serde_json::Value>().await.unwrap();
+            assert!(status.is_success(), "W10i admin drain returned {status}: {response}");
             (response, started.elapsed().as_millis() as u64)
         }, async {
             if interrupt_copy {
@@ -717,6 +720,9 @@ async fn interrupt_and_resume(
     println!("W10i interrupted snapshot copy partition={partition} chunk=1 at_ms={hit_at_ms}");
     tokio::time::sleep(COPY_INTERRUPTION_HOLD).await;
     while_copy_held.await;
+    let expected_epoch = before.epoch.checked_add(1).expect("copy wave epoch");
+    let mut evidence = HeldPlacement::new(expected_epoch);
+    let mut report_after = tokio::time::Instant::now() + Duration::from_secs(5);
     let held_placement = loop {
         let version = before.certified_version;
         let (source, backup, target) = tokio::join!(
@@ -724,24 +730,18 @@ async fn interrupt_and_resume(
             observe_partition(http, admins[1], 1, partition, version),
             observe_partition(http, admins[2], 2, partition, version),
         );
-        if let (Some(source), Some(backup), Some(target)) = (source, backup, target) {
-            assert!(
-                source.primary
-                    && !source.backup
-                    && backup.backup
-                    && !backup.primary
-                    && !target.primary
-                    && !target.backup,
-                "copy changed placement before it could commit"
-            );
-            let placement = [source, backup, target];
-            assert!(
-                placement
-                    .iter()
-                    .all(|p| Some(p.epoch) == before.epoch.checked_add(1)),
-                "copy was observed outside its Raft wave epoch"
-            );
+        for member in [source, backup, target].into_iter().flatten() {
+            evidence.observe(member).expect("held copy placement");
+        }
+        if let Some(placement) = evidence.complete() {
             break placement;
+        }
+        if tokio::time::Instant::now() >= report_after {
+            println!(
+                "W10i held copy still waiting for placement partition={partition} epoch={expected_epoch} observed={:?}",
+                evidence.slots.each_ref().map(Option::is_some)
+            );
+            report_after = tokio::time::Instant::now() + Duration::from_secs(5);
         }
         tokio::time::sleep(Duration::from_millis(50)).await;
     };
@@ -749,6 +749,7 @@ async fn interrupt_and_resume(
     // Keep denying chunk zero. A full restart cannot complete this transfer.
     set_copy_fault(spec, 3, 0);
     let resumed_at_ms = started.elapsed().as_millis() as u64;
+    println!("W10i snapshot copy released partition={partition} epoch={expected_epoch} observed_at_ms={observed_at_ms} resumed_at_ms={resumed_at_ms}");
     InterruptedCopy {
         hit_at_ms,
         observed_at_ms,
@@ -757,6 +758,66 @@ async fn interrupt_and_resume(
         forbidden_restart_chunk: 0,
         held_placement,
     }
+}
+
+struct HeldPlacement {
+    epoch: u64,
+    slots: [Option<CopyObservation>; 3],
+}
+
+impl HeldPlacement {
+    fn new(epoch: u64) -> Self {
+        Self {
+            epoch,
+            slots: [None, None, None],
+        }
+    }
+
+    fn observe(&mut self, observation: CopyObservation) -> Result<(), &'static str> {
+        // The fault remains armed until we have all three observations.
+        // Fresh responses need not arrive in a single polling iteration.
+        if observation.epoch < self.epoch {
+            return Ok(());
+        }
+        if observation.epoch > self.epoch {
+            return Err("copy advanced beyond its held epoch");
+        }
+        let slot = observation.member_slot;
+        if slot > 2 || observation.primary != (slot == 0) || observation.backup != (slot == 1) {
+            return Err("copy changed placement before it could commit");
+        }
+        self.slots[usize::from(slot)] = Some(observation);
+        Ok(())
+    }
+
+    fn complete(&mut self) -> Option<[CopyObservation; 3]> {
+        if !self.slots.iter().all(Option::is_some) {
+            return None;
+        }
+        Some(self.slots.each_mut().map(|slot| slot.take().unwrap()))
+    }
+}
+
+#[test]
+fn held_copy_reconciles_independent_samples_at_one_epoch() {
+    let sample = |member_slot, epoch| CopyObservation {
+        member_slot,
+        epoch,
+        certified_version: 1,
+        primary: member_slot == 0,
+        backup: member_slot == 1,
+        healthy: true,
+    };
+    let mut held = HeldPlacement::new(8);
+    held.observe(sample(0, 8)).unwrap();
+    held.observe(sample(1, 7)).unwrap();
+    held.observe(sample(2, 8)).unwrap();
+    assert!(held.complete().is_none());
+    assert!(held.observe(sample(1, 9)).is_err());
+    assert!(held.observe(CopyObservation { primary: true, ..sample(2, 8) }).is_err());
+    held.observe(sample(1, 8)).unwrap();
+    let result = held.complete().unwrap();
+    assert_eq!(result.map(|item| (item.member_slot, item.epoch)), [(0, 8), (1, 8), (2, 8)]);
 }
 
 async fn observe_copies(
