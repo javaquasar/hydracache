@@ -1615,7 +1615,7 @@ async fn assert_old_b74_refuses_copy(
         .env("HYDRACACHE_CLUSTER_ADDR", cluster.to_string())
         .env("HYDRACACHE_CLUSTER_ADVERTISE_ADDR", cluster.to_string())
         .env("HYDRACACHE_NODE_ID", &spec.names[victim])
-        .env("HYDRACACHE_SEEDS", "")
+        .env("HYDRACACHE_SEEDS", cluster.to_string())
         .env("HYDRACACHE_STORAGE_DIR", copy)
         .env("HYDRACACHE_CLUSTER_AUTH_KEY_ID", "w10i-fixture")
         .env(
