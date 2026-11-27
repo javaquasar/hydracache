@@ -8,6 +8,8 @@ use std::io::Read;
 use std::path::Path;
 use std::time::Duration;
 
+mod workload;
+
 const PACKAGE_SHA256: &str = env!("W10I_RUST_ARTIFACT_SHA256");
 const MAX_ITEMS: usize = 14;
 const MAX_MANIFEST_BYTES: usize = 128 * 1024;
@@ -23,6 +25,16 @@ async fn main() {
     let [action, root, endpoint, rows @ ..] = args.as_slice() else {
         panic!("expected action, credentials directory, endpoint and key/value pairs");
     };
+    if matches!(action.as_str(), "load" | "watch") {
+        let root = Path::new(root);
+        let client = connect(root, endpoint, true).await;
+        if action == "load" {
+            workload::load(&client, root, rows).await;
+        } else {
+            workload::watch(&client, root, rows).await;
+        }
+        return;
+    }
     assert!(
         matches!(action.as_str(), "put" | "check" | "check-file" | "mixed"),
         "unknown cohort action"
@@ -72,22 +84,7 @@ async fn main() {
             })
             .unzip()
     };
-    let read = |name| std::fs::read(root.join(name)).expect("read fixture credential");
-    let adapter = GrpcMtlsAdapter::new(
-        GrpcMtlsConfig::new(
-            format!("https://{endpoint}"),
-            "localhost",
-            read("clients.pem"),
-            read("java-client.pem"),
-            read("java-client.key"),
-        )
-        .expect("configure packaged Rust transport"),
-    );
-    let mut config = ClientConfig::new("w10i-packaged-rust", "w10i");
-    config.capabilities = vec![Capability::Data, Capability::Batch];
-    let client = Hc2Client::connect(&adapter, config)
-        .await
-        .expect("connect packaged Rust client");
+    let client = connect(root, endpoint, false).await;
     let options = RequestOptions {
         timeout: Duration::from_secs(4),
         idempotency_key: Default::default(),
@@ -129,6 +126,28 @@ async fn main() {
         "W10i Rust package sha256={PACKAGE_SHA256} action={action} confirmed={}",
         count
     );
+}
+
+async fn connect(root: &Path, endpoint: &str, subscribe: bool) -> Hc2Client {
+    let read = |name| std::fs::read(root.join(name)).expect("read fixture credential");
+    let adapter = GrpcMtlsAdapter::new(
+        GrpcMtlsConfig::new(
+            format!("https://{endpoint}"),
+            "localhost",
+            read("clients.pem"),
+            read("java-client.pem"),
+            read("java-client.key"),
+        )
+        .expect("configure packaged Rust transport"),
+    );
+    let mut config = ClientConfig::new("w10i-packaged-rust", "w10i");
+    config.capabilities = vec![Capability::Data, Capability::Batch];
+    if subscribe {
+        config.capabilities.push(Capability::Subscriptions);
+    }
+    Hc2Client::connect(&adapter, config)
+        .await
+        .expect("connect packaged Rust client")
 }
 
 fn mixed_batch(entries: &[(Vec<u8>, Option<&str>)]) -> (Vec<BatchOperation>, Vec<Expected>) {

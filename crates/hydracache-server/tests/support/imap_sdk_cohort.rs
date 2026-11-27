@@ -3,6 +3,10 @@ use imap_hc2_campaign::{exercise_control, exercise_live_drain, owner_checkpoint}
 use std::ffi::OsStr;
 use std::ops::Range;
 
+#[path = "imap_packaged_workload.rs"]
+mod packaged_workload;
+use packaged_workload::{PackageCommands, PackagedWorkload, WatchCut};
+
 const PROFILE: &str = "HYDRACACHE_RUN_W10I_SDK_COHORT";
 const MAP_NAME: &[u8] = b"w10i-sdk-cohort";
 
@@ -141,6 +145,43 @@ async fn run_cohort(scenario: Scenario) {
     let mut promoted_epoch = None;
     let mut outage = 0..0;
     let killed = cluster.daemons[0].0.id();
+    let commands = PackageCommands {
+        root,
+        rust: &executable,
+        java: &java,
+        classpath: &classpath,
+    };
+    let witness = cluster.pick_key(
+        1,
+        Some(2),
+        |n| format!("w10i-watch/{n}").into_bytes(),
+        |p| p != control_partition,
+    );
+    let mut package_load = if interrupt_copy {
+        Some(PackagedWorkload::start(&commands, &cluster, control_partition, started).await)
+    } else {
+        None
+    };
+    let mut watermarks = Vec::new();
+    let mut watcher = if interrupt_copy {
+        Some(
+            commands
+                .watch(
+                    WatchCut {
+                        label: "before-kill",
+                        address: cluster.spec.addresses[9],
+                        resume: [0; 2],
+                        previous: "-",
+                        hold: true,
+                    },
+                    &witness,
+                    &cluster.clients[2],
+                )
+                .await,
+        )
+    } else {
+        None
+    };
     for (phase, [rust_first, rust_second, java_first, java_second]) in keys.into_iter().enumerate()
     {
         let seed = [rust_first, rust_second].map(|key| {
@@ -223,6 +264,9 @@ async fn run_cohort(scenario: Scenario) {
             outage.start = started.elapsed().as_millis() as u64;
             cluster.daemons[0].0.kill().unwrap();
             assert!(!cluster.daemons[0].0.wait().unwrap().success());
+            if let Some(before) = watcher.take() {
+                watermarks.push(before.finish(&commands).await);
+            }
             let promoted = owner_checkpoint(
                 &http,
                 &cluster.spec,
@@ -239,6 +283,23 @@ async fn run_cohort(scenario: Scenario) {
                 promoted.epoch()
             );
             promoted_epoch = Some(promoted.epoch());
+            if let Some(workload) = &mut package_load {
+                workload.checkpoint("promoted", &cluster.clients[1]).await;
+                let survivor = commands
+                    .watch(
+                        WatchCut {
+                            label: "after-kill",
+                            address: cluster.spec.addresses[10],
+                            resume: *watermarks.last().unwrap(),
+                            previous: "before-kill",
+                            hold: false,
+                        },
+                        &witness,
+                        &cluster.clients[2],
+                    )
+                    .await;
+                watermarks.push(survivor.finish(&commands).await);
+            }
         } else if phase == 1 {
             assert!(cluster.daemons[0].0.try_wait().unwrap().is_some());
             outage.end = started.elapsed().as_millis() as u64;
@@ -259,6 +320,23 @@ async fn run_cohort(scenario: Scenario) {
                 "W10i SDK cohort authority restored epoch={}",
                 rejoined["epoch"]
             );
+            if interrupt_copy {
+                watcher = Some(
+                    commands
+                        .watch(
+                            WatchCut {
+                                label: "before-drain",
+                                address: cluster.spec.addresses[9],
+                                resume: *watermarks.last().unwrap(),
+                                previous: "after-kill",
+                                hold: true,
+                            },
+                            &witness,
+                            &cluster.clients[2],
+                        )
+                        .await,
+                );
+            }
         }
     }
     let status = child_exit(&mut probe.0).await;
@@ -269,7 +347,13 @@ async fn run_cohort(scenario: Scenario) {
     let drain_checks = if interrupt_copy {
         let addresses = cluster.spec.addresses;
         let mut held_reads = None;
+        let reader_during_hold = cluster.clients[1].clone();
         let check_while_held = async {
+            package_load
+                .as_mut()
+                .unwrap()
+                .checkpoint("copy-held", &reader_during_hold)
+                .await;
             held_reads = Some(
                 packaged_readback(
                     &rust,
@@ -294,6 +378,26 @@ async fn run_cohort(scenario: Scenario) {
         let held = held_reads.expect("the SDKs did not read while the copy was held");
         let hold = drain.interrupted_window().unwrap();
         assert!(hold.start <= held.start && held.end <= hold.end);
+        watermarks.push(watcher.take().unwrap().finish(&commands).await);
+        package_load
+            .as_mut()
+            .unwrap()
+            .checkpoint("after-drain", &cluster.clients[1])
+            .await;
+        let survivor = commands
+            .watch(
+                WatchCut {
+                    label: "after-drain",
+                    address: addresses[10],
+                    resume: *watermarks.last().unwrap(),
+                    previous: "before-drain",
+                    hold: false,
+                },
+                &witness,
+                &cluster.clients[2],
+            )
+            .await;
+        watermarks.push(survivor.finish(&commands).await);
         let mut final_values = expected.clone();
         final_values.push((drain.probe.0.clone(), Some(drain.probe.1.clone())));
         let returned = packaged_readback(
@@ -327,6 +431,17 @@ async fn run_cohort(scenario: Scenario) {
     );
     println!("W10i SDK cohort retained={} killed_pid={killed} rejoined_pid={rejoined} control_verified={} control_verified_offline={verified_while_offline} offline_from_ms={} offline_to_ms={}", expected.len(), counts.verified, outage.start, outage.end);
     if let Some((drain, held, returned)) = drain_checks {
+        package_load
+            .take()
+            .unwrap()
+            .finish(
+                &cluster.clients[1],
+                &outage,
+                &drain.interrupted_window().unwrap(),
+                &(drain.returned_at_ms..duration.as_millis() as u64),
+                &watermarks,
+            )
+            .await;
         let held_progress = verified_control(&rows, &drain.interrupted_window().unwrap());
         let returned_progress =
             verified_control(&rows, &(drain.returned_at_ms..duration.as_millis() as u64));
