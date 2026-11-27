@@ -208,6 +208,7 @@ fn check_contract_at(root: &Path) -> Result<(), Box<dyn Error>> {
         return Err("H22 fixed-host contract differs from the reviewed profile".into());
     }
     let expected_actions = [
+        "cache",
         "checkout",
         "download-artifact",
         "rust-toolchain",

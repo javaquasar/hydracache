@@ -708,7 +708,18 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-          cache: maven
+
+      # Per-job Maven cache: each job saves the plugins it resolves, and a
+      # rerun after a Maven Central throttle restores what was already fetched.
+      - name: Restore Maven repository
+        id: maven-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-${{ github.job }}-
+            maven-${{ runner.os }}-
 
       - name: Install Python for HC/2 offline generated-language proof
         uses: actions/setup-python@v6
@@ -929,6 +940,17 @@ jobs:
         if: always()
         run: rm -rf target/tests
 
+      - name: Drop Maven failed-download markers
+        if: always() && steps.maven-cache.outputs.cache-hit != 'true'
+        run: find ~/.m2/repository -name '*.lastUpdated' -delete 2>/dev/null || true
+
+      - name: Save Maven repository
+        if: always() && steps.maven-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.m2/repository
+          key: ${{ steps.maven-cache.outputs.cache-primary-key }}
+
   migration-conformance-fast-evidence-069:
     name: Migration Conformance Fast Evidence 0.69
     if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
@@ -1023,7 +1045,16 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-          cache: maven
+
+      - name: Restore Maven repository
+        id: maven-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-${{ github.job }}-
+            maven-${{ runner.os }}-
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -1072,6 +1103,17 @@ jobs:
             target/test-evidence/0.69/**
             target/release-evidence/**
           if-no-files-found: warn
+
+      - name: Drop Maven failed-download markers
+        if: always() && steps.maven-cache.outputs.cache-hit != 'true'
+        run: find ~/.m2/repository -name '*.lastUpdated' -delete 2>/dev/null || true
+
+      - name: Save Maven repository
+        if: always() && steps.maven-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.m2/repository
+          key: ${{ steps.maven-cache.outputs.cache-primary-key }}
 
   migration-conformance-postgres-069:
     name: Migration Conformance PostgreSQL 0.69 (${{ matrix.postgres.series }})
