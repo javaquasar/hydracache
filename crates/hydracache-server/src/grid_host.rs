@@ -270,10 +270,16 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
                 )
                 .await;
             }
-            wait_for_raft_leader(&raft).await?;
+            wait_for_raft_leader(&raft, &drive_diagnostics).await?;
         }
         ResolvedClusterStartMode::Join => {
-            wait_for_join_complete(&raft, raft_node_id, config.join_timeout()).await?;
+            wait_for_join_complete(
+                &raft,
+                raft_node_id,
+                config.join_timeout(),
+                &drive_diagnostics,
+            )
+            .await?;
         }
         ResolvedClusterStartMode::Bootstrap => {}
     }
@@ -1845,8 +1851,10 @@ impl HttpRaftMessageSink {
             .await
             .map_err(|error| {
                 CacheError::Backend(format!(
-                    "failed to send raft message to {} at {}: {error}",
-                    peer.node_id, peer.endpoint
+                    "failed to send raft message to {} at {}: {}",
+                    peer.node_id,
+                    peer.endpoint,
+                    error_chain(&error)
                 ))
             })?;
         if !response.status().is_success() {
@@ -1939,16 +1947,48 @@ fn install_default_rustls_provider() {
     });
 }
 
-async fn wait_for_raft_leader(raft: &Arc<NetworkedRaftRuntime>) -> CacheResult<()> {
+/// Renders an error and every `source()` beneath it. Transport errors such as
+/// reqwest's only name the request in their own `Display`; the actual cause
+/// (refused connection, DNS failure, certificate not valid for the peer name)
+/// lives further down the chain and must reach the operator.
+fn error_chain(error: &(dyn std::error::Error + 'static)) -> String {
+    let mut rendered = error.to_string();
+    let mut source = error.source();
+    while let Some(cause) = source {
+        let cause_text = cause.to_string();
+        if !rendered.contains(&cause_text) {
+            rendered.push_str(": ");
+            rendered.push_str(&cause_text);
+        }
+        source = cause.source();
+    }
+    rendered
+}
+
+/// Appended to a startup wait timeout so the operator sees why peers could not
+/// be reached instead of only that no leader appeared.
+fn last_peer_error_context(diagnostics: &GridDriveDiagnostics) -> String {
+    match diagnostics.snapshot().last_error {
+        Some(error) => format!("; last raft peer error: {error}"),
+        None => "; no raft peer error was recorded".to_owned(),
+    }
+}
+
+async fn wait_for_raft_leader(
+    raft: &Arc<NetworkedRaftRuntime>,
+    diagnostics: &GridDriveDiagnostics,
+) -> CacheResult<()> {
     let deadline = tokio::time::Instant::now() + GRID_LEADER_WAIT_TIMEOUT;
     loop {
         if raft.leader_id().is_some() {
             return Ok(());
         }
         if tokio::time::Instant::now() >= deadline {
-            return Err(CacheError::Backend(
-                "timed out waiting for networked raft leader".to_owned(),
-            ));
+            return Err(CacheError::Backend(format!(
+                "timed out after {}ms waiting for networked raft leader{}",
+                GRID_LEADER_WAIT_TIMEOUT.as_millis(),
+                last_peer_error_context(diagnostics)
+            )));
         }
         tokio::time::sleep(GRID_DRIVE_INTERVAL).await;
     }
@@ -1958,6 +1998,7 @@ async fn wait_for_join_complete(
     raft: &Arc<NetworkedRaftRuntime>,
     raft_node_id: u64,
     deadline: Duration,
+    diagnostics: &GridDriveDiagnostics,
 ) -> CacheResult<()> {
     let timeout_ms = deadline.as_millis();
     let deadline = tokio::time::Instant::now() + deadline;
@@ -1967,7 +2008,8 @@ async fn wait_for_join_complete(
         }
         if tokio::time::Instant::now() >= deadline {
             return Err(CacheError::Backend(format!(
-                "timed out after {timeout_ms}ms waiting for joining raft member {raft_node_id} to become a voter; check seed reachability, cluster auth/TLS compatibility, and live leader availability"
+                "timed out after {timeout_ms}ms waiting for joining raft member {raft_node_id} to become a voter; check seed reachability, cluster auth/TLS compatibility, and live leader availability{}",
+                last_peer_error_context(diagnostics)
             )));
         }
         tokio::time::sleep(GRID_DRIVE_INTERVAL).await;
@@ -3856,9 +3898,40 @@ mod tests {
     async fn wait_for_join_complete_returns_when_self_is_voter() {
         let raft = test_raft_runtime();
 
-        wait_for_join_complete(&raft, 1, Duration::from_millis(1))
+        wait_for_join_complete(
+            &raft,
+            1,
+            Duration::from_millis(1),
+            &GridDriveDiagnostics::default(),
+        )
+        .await
+        .unwrap();
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn join_wait_timeout_names_the_last_raft_peer_error() {
+        let dir = unique_test_dir("join-timeout-cause");
+        let raft = Arc::new(
+            RaftMetadataRuntime::sled_with_config(
+                RaftMetadataRuntimeConfig::try_joining(DEFAULT_CLUSTER_NAME, 2, [1]).unwrap(),
+                &dir,
+            )
+            .unwrap(),
+        );
+        let diagnostics = GridDriveDiagnostics::default();
+        diagnostics.record_send_failure("peer refused connection".to_owned());
+
+        let error = wait_for_join_complete(&raft, 2, Duration::from_millis(1), &diagnostics)
             .await
-            .unwrap();
+            .unwrap_err()
+            .to_string();
+
+        assert!(error.contains("to become a voter"), "{error}");
+        assert!(
+            error.ends_with("; last raft peer error: peer refused connection"),
+            "{error}"
+        );
+        let _ = fs::remove_dir_all(dir);
     }
 
     #[tokio::test]
@@ -4603,12 +4676,99 @@ mod tests {
             .unwrap(),
         );
 
-        let error = wait_for_raft_leader(&raft).await.unwrap_err();
+        let error = wait_for_raft_leader(&raft, &GridDriveDiagnostics::default())
+            .await
+            .unwrap_err()
+            .to_string();
 
-        assert!(error
-            .to_string()
-            .contains("timed out waiting for networked raft leader"));
+        assert!(
+            error.contains("timed out after 5000ms waiting for networked raft leader"),
+            "{error}"
+        );
+        assert!(
+            error.ends_with("; no raft peer error was recorded"),
+            "{error}"
+        );
         let _ = fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn leader_wait_timeout_names_the_last_raft_peer_error() {
+        let dir = unique_test_dir("leader-timeout-cause");
+        let raft = Arc::new(
+            RaftMetadataRuntime::sled_with_config(
+                RaftMetadataRuntimeConfig::try_joining(DEFAULT_CLUSTER_NAME, 2, [1]).unwrap(),
+                &dir,
+            )
+            .unwrap(),
+        );
+        let diagnostics = GridDriveDiagnostics::default();
+        diagnostics.record_send_failure("first failure".to_owned());
+        diagnostics.record_send_failure(
+            "failed to send raft message to hydracache-1 at hydracache-1.hydracache-headless:7000:              invalid peer certificate: NotValidForName"
+                .to_owned(),
+        );
+
+        let error = wait_for_raft_leader(&raft, &diagnostics)
+            .await
+            .unwrap_err()
+            .to_string();
+
+        assert!(
+            error.ends_with("invalid peer certificate: NotValidForName"),
+            "{error}"
+        );
+        assert!(!error.contains("first failure"), "{error}");
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn error_chain_renders_nested_causes_once() {
+        #[derive(Debug)]
+        struct Layer {
+            text: &'static str,
+            source: Option<Box<Layer>>,
+        }
+        impl fmt::Display for Layer {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                f.write_str(self.text)
+            }
+        }
+        impl std::error::Error for Layer {
+            fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+                self.source
+                    .as_deref()
+                    .map(|layer| layer as &(dyn std::error::Error + 'static))
+            }
+        }
+        let error = Layer {
+            text: "error sending request for url (https://peer:7000/raft)",
+            source: Some(Box::new(Layer {
+                text: "client error (Connect)",
+                source: Some(Box::new(Layer {
+                    text: "invalid peer certificate: NotValidForName",
+                    source: None,
+                })),
+            })),
+        };
+        let lone = Layer {
+            text: "connection refused",
+            source: None,
+        };
+        let repeated = Layer {
+            text: "connect failed: connection refused",
+            source: Some(Box::new(Layer {
+                text: "connection refused",
+                source: None,
+            })),
+        };
+
+        assert_eq!(
+            error_chain(&error),
+            "error sending request for url (https://peer:7000/raft): client error (Connect): invalid peer certificate: NotValidForName"
+        );
+        assert_eq!(error_chain(&lone), "connection refused");
+        assert_eq!(error_chain(&repeated), "connect failed: connection refused");
     }
 
     #[test]
