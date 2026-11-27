@@ -7,6 +7,13 @@ The site is intentionally separate from the long-form Quarto book under `docs/bo
 - `docs-site/` is the practical public documentation surface.
 - `docs/book/` remains the longer manuscript/book track.
 
+Each tool does one job. The mdBook site stays a lightweight reference: guides,
+concepts, checked examples, published on GitHub Pages. The Quarto book is the
+place for narrative chapters and polished long-form output: it already renders
+HTML and PDF, and can add EPUB later. Content is not shared between the two
+today. Whether the book should later reuse docs-site pages or stay a separate
+editorial product is an open question.
+
 ## Local Build
 
 Build the site:
