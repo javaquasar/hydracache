@@ -1197,6 +1197,22 @@ and reads the complete value through the survivors and the returning member. On 
 60-second runs each verified 15 mutations on the control partition while the copy was blocked.
 [Interrupted copy diagnostic](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#interrupted-copy-before-primary-cutover)
 
+## Comparing the replicas at cutover
+
+An HC/2 readback checks the client path. W10i also asks each replica for a digest of its local
+journal at the same Raft-certified prefix. Each member checks the epoch and its role before
+and after computing the digest. The image includes values, tombstones, expiry deadlines and
+retained mutation decisions. A certified write gives the same image before and after the journal
+materializes it.
+
+The worker compares the primary and backup before drain, then compares the two survivors after
+cutover. The controller checks all four digests, the full prefix and the member identities in the
+receipt. This makes the diagnostic sensitive to a divergent backup even if the HC/2 readback
+succeeds. On AX42, the four digests and counts matched in each of three 60-second runs, including
+two with an interrupted snapshot copy. The production campaign still needs these checks at each
+fault checkpoint across the mixed workload.
+[W10i replica reconciliation](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#replica-journal-reconciliation-at-cutover)
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

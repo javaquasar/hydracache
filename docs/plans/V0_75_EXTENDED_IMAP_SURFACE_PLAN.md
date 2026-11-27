@@ -2030,6 +2030,45 @@ after return. AX42 retains the reports, ledgers, binaries and both transport fau
 `w10i-interrupt-copy.sha256` manifest has SHA-256
 `0238433424b439017d10191154d7e516c223b4ac5d885b40ef4ca240b1f42513`.
 
+#### Replica journal reconciliation at cutover
+
+The W10i live-drain worker requests `GET /management/v1/imap/replica-digest` on the primary
+and backup before drain and on the two surviving members after cutover. Each request names the
+partition, topology epoch and certified version. Each member uses Raft ReadIndex on both sides of
+its local scan and returns a digest only while its process generation, placement and full certified
+prefix agree with that cut. Management read authorization applies. The scan shares the snapshot
+limits of 4 MiB and 4,096 rows, with one scan in flight per member and a two-second request budget.
+
+The SHA-256 covers the normalized snapshot, including live rows, tombstones, TTL deadlines and
+retained mutation decisions. A certified pending record hashes the same as its materialized form.
+Uncertified writes, expiry indexes and listener event history are outside the image. The endpoint
+verifies the stored row checksums and returns the prefix, member identity, digest and counts.
+
+The controller requires four matching image digests, full prefixes and row and decision counts,
+with each observation bound to its placement and member generation. It rejects missing proofs,
+divergent contents and duplicated or changed member identities. Live-drain receipts now use
+schema 4 and interrupted-copy receipts use schema 5. The probe demonstrates reconciliation for
+the selected partition around one cutover. Production qualification still requires the checkpoints
+and mixed-load reconciliation below.
+
+AX42 diagnostic evidence for `b40358622083af09dde7654b816be7d11bb0d0fc`. Each run used a
+60-second load window and matched all four local images at certified version 1, with one row and
+one retained decision in each image. Both interrupted copies resumed from the verified cursor
+while the control partition continued to acknowledge writes and verify them with reads.
+
+| Run | Partition | Topology epochs before / after | Verified acknowledgements | Unknown outcomes | Verified while copy was interrupted |
+| --- | ---: | --- | ---: | ---: | ---: |
+| Interrupted copy 1 | 57 | 7 / 12 | 758 | 18 | 18 |
+| Interrupted copy 2 | 241 | 7 / 12 | 633 | 10 | 12 |
+| Live-drain control | 48 | 7 / 11 | 734 | 9 | N/A |
+
+Six snapshot tests and five controller tests passed. The process runs also verified management
+authorization and refusal for an invalid partition, stale epoch, wrong version and unassigned
+member. The three reports, ledgers, binaries and fault markers were verified against
+`development/w10i-reconcile-b40358622083af09dde7654b816be7d11bb0d0fc/w10i-reconcile.sha256`
+on AX42. The manifest SHA-256 is
+`bb6de83c9525493fc27933d7498c98e888e794701ba93ff53064511cb1b5ac5f`.
+
 #### Under-load failover and rebalance qualification
 
 KiviDB's cluster soak pairs continuous mixed load with planned failovers, process kills, slot
