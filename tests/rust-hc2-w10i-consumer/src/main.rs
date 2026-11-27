@@ -21,7 +21,7 @@ async fn main() {
         "unknown cohort action"
     );
     assert!(
-        rows.len() % 2 == 0 && (2..=MAX_ITEMS * 2).contains(&rows.len()),
+        rows.len().is_multiple_of(2) && (2..=MAX_ITEMS * 2).contains(&rows.len()),
         "invalid cohort size"
     );
     let root = Path::new(root);
@@ -100,7 +100,7 @@ async fn main() {
 }
 
 fn decode_key(key: &str) -> Vec<u8> {
-    assert!(key.is_ascii() && key.len() % 2 == 0 && (2..=256).contains(&key.len()));
+    assert!(key.is_ascii() && key.len().is_multiple_of(2) && (2..=256).contains(&key.len()));
     (0..key.len())
         .step_by(2)
         .map(|index| {
