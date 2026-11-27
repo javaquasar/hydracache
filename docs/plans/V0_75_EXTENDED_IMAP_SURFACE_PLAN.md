@@ -2046,8 +2046,8 @@ verifies the stored row checksums and returns the prefix, member identity, diges
 
 The controller requires four matching image digests, full prefixes and row and decision counts,
 with each observation bound to its placement and member generation. It rejects missing proofs,
-divergent contents and duplicated or changed member identities. Live-drain receipts now use
-schema 4 and interrupted-copy receipts use schema 5. The probe demonstrates reconciliation for
+divergent contents and duplicated or changed member identities. The original live-drain receipts
+used schema 4 and interrupted-copy receipts used schema 5. The probe demonstrates reconciliation for
 the selected partition around one cutover. Production qualification still requires the checkpoints
 and mixed-load reconciliation below.
 
@@ -2068,6 +2068,43 @@ member. The three reports, ledgers, binaries and fault markers were verified aga
 `development/w10i-reconcile-b40358622083af09dde7654b816be7d11bb0d0fc/w10i-reconcile.sha256`
 on AX42. The manifest SHA-256 is
 `bb6de83c9525493fc27933d7498c98e888e794701ba93ff53064511cb1b5ac5f`.
+
+#### Replica journal reconciliation after owner kill
+
+The W10i worker independently audits the two active replicas of the faulted partition at five
+checkpoints. It captures the winning CAS at version 2 before the kill. After the old backup has
+become primary and restored a synchronous backup, the worker requires the same certified prefix,
+image and retained decision. The successful idempotent replay must preserve that cut.
+
+A fresh conditional write advances the certified prefix to version 3 while the old owner is still
+offline. The worker captures the same image again after the old owner returns with a higher process
+generation. HC/2 reads through the returning endpoint verify the recovered value and, after a
+conditional removal, its absence. Both active replicas must then agree on version 4 with a tombstone.
+The controller verifies the previous digest links for both new versions and rejects cuts that
+change the active identities or report a stale generation for the returning member. If an audit
+request loses its epoch to a concurrent Raft change, the worker observes placement again before
+retrying the requested certified version.
+
+The owner-kill, live-drain and interrupted-copy receipts now use schemas 6, 7 and 8. All three
+require the owner-kill audit, and the combined modes also require their cutover evidence.
+
+AX42 passed all three profiles on `c7b8210512c67591cb965c26b942ea6a74b69292`. The five
+checkpoints agreed replica by replica in each run, at certified versions `2, 2, 3, 3, 4`
+and topology epochs `3, 6, 6, 7, 7`. The former owner returned at generation 2 in each run.
+
+| Profile | Load window | Faulted partition | Verified acknowledgements | Unknown outcomes |
+| --- | ---: | ---: | ---: | ---: |
+| Owner kill | 30 s | 240 | 352 | 8 |
+| Owner kill and live drain | 60 s | 242 | 782 | 11 |
+| Owner kill and interrupted copy | 60 s | 249 | 758 | 16 |
+
+The observed kill-to-fresh-write interval was 7.072–7.360 seconds, including the scripted CAS
+replay and replica audit. The combined profiles preserved the separate cutover evidence. The
+interrupted-copy run verified 15 control-partition mutations while copy was blocked. Six controller
+tests and both Clippy checks passed. The reports, ledgers, binaries and fault marker were checked
+against `development/w10i-owner-kill-c7b8210512c67591cb965c26b942ea6a74b69292/w10i-owner-kill.sha256`
+on AX42. The manifest SHA-256 is
+`2353789088f6d688f5a63e25f2f73af8301de38026749ffbc8f906c6a562e984`.
 
 #### Under-load failover and rebalance qualification
 

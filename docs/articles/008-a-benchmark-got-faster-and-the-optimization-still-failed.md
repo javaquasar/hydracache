@@ -1213,6 +1213,18 @@ two with an interrupted snapshot copy. The production campaign still needs these
 fault checkpoint across the mixed workload.
 [W10i replica reconciliation](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#replica-journal-reconciliation-at-cutover)
 
+## Following the certified prefix after a process kill
+
+The owner-kill diagnostic compares the primary and backup before the fault, then compares the
+promoted backup and its new synchronous replica after an idempotent retry. The same certified
+prefix and image must survive the change of owners. A fresh conditional write advances the prefix
+while the old owner is still offline. The two active replicas must preserve that version when the
+old owner rejoins with a new generation. A final conditional removal advances the prefix again,
+and the two journals must agree on the tombstone while the returned HC/2 endpoint reports absence.
+On AX42, all five replica comparisons passed in each of the three diagnostic profiles. Across the
+profiles, 1,892 control-partition acknowledgements were verified by readback.
+[W10i owner-kill reconciliation](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#replica-journal-reconciliation-after-owner-kill)
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
