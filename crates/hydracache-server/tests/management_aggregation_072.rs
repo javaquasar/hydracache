@@ -22,7 +22,7 @@ use hydracache_server::{
     ManagementSnapshotRequest, ManagementSnapshotRpcService, MemberRole, MemberStatus,
     Reachability, ReshardPhase, ServerConfig, ServerRole, ServerRuntime, StatusSource,
     CLUSTER_MANAGEMENT_CAPABILITIES_PATH, CLUSTER_MANAGEMENT_SNAPSHOT_PATH,
-    MANAGEMENT_CONSENSUS_PROGRESS_PATH, MANAGEMENT_FORMATION_PATH,
+    IMAP_SNAPSHOT_SCHEMA_VERSION, MANAGEMENT_CONSENSUS_PROGRESS_PATH, MANAGEMENT_FORMATION_PATH,
     MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES, MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES,
 };
 use tower::ServiceExt;
@@ -142,8 +142,12 @@ fn secure_auth() -> ClusterRouteAuth {
 }
 
 fn request(epoch: u64, headers: Option<HeaderMap>) -> Request<Body> {
+    versioned_request(MANAGEMENT_API_SCHEMA_VERSION, epoch, headers)
+}
+
+fn versioned_request(schema_version: u16, epoch: u64, headers: Option<HeaderMap>) -> Request<Body> {
     let body = serde_json::to_vec(&ManagementSnapshotRequest {
-        schema_version: MANAGEMENT_API_SCHEMA_VERSION,
+        schema_version,
         authority_epoch: epoch,
     })
     .unwrap();
@@ -182,12 +186,39 @@ async fn protected_rpc_authenticates_before_reading_local_source() {
 
     let mut headers = HeaderMap::new();
     auth.apply_outbound_headers(&mut headers).unwrap();
-    let accepted = app.oneshot(request(9, Some(headers))).await.unwrap();
+    let accepted = app
+        .clone()
+        .oneshot(request(9, Some(headers.clone())))
+        .await
+        .unwrap();
     assert_eq!(accepted.status(), StatusCode::OK);
     let bytes = to_bytes(accepted.into_body(), usize::MAX).await.unwrap();
     let snapshot: ManagementMemberSnapshot = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(snapshot, member());
-    assert_eq!(provider.calls.load(Ordering::SeqCst), 1);
+    assert!(serde_json::from_slice::<serde_json::Value>(&bytes)
+        .unwrap()
+        .get("imap")
+        .is_none());
+    let denied = app
+        .clone()
+        .oneshot(versioned_request(IMAP_SNAPSHOT_SCHEMA_VERSION, 9, None))
+        .await
+        .unwrap();
+    assert_eq!(denied.status(), StatusCode::UNAUTHORIZED);
+    let accepted = app
+        .oneshot(versioned_request(
+            IMAP_SNAPSHOT_SCHEMA_VERSION,
+            9,
+            Some(headers),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(accepted.status(), StatusCode::OK);
+    let bytes = to_bytes(accepted.into_body(), usize::MAX).await.unwrap();
+    let snapshot: ManagementMemberSnapshot = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(snapshot.schema_version, IMAP_SNAPSHOT_SCHEMA_VERSION);
+    assert!(snapshot.imap.is_none());
+    assert_eq!(provider.calls.load(Ordering::SeqCst), 2);
 }
 
 #[tokio::test]
@@ -209,7 +240,7 @@ async fn protected_rpc_fails_loud_for_epoch_schema_method_and_body_bounds() {
     assert_eq!(stale.status(), StatusCode::CONFLICT);
 
     let incompatible_body = serde_json::to_vec(&ManagementSnapshotRequest {
-        schema_version: MANAGEMENT_API_SCHEMA_VERSION + 1,
+        schema_version: u16::MAX,
         authority_epoch: 9,
     })
     .unwrap();
@@ -581,6 +612,61 @@ async fn real_http_transport_probes_capability_before_posting_to_an_old_member()
 
     assert_eq!(result, Err(ManagementAggregationIssue::Incompatible));
     assert_eq!(snapshot_posts.load(Ordering::SeqCst), 0);
+    server.abort();
+}
+
+#[tokio::test]
+async fn imap_negotiation_bounds_chunked_capabilities_and_does_not_post_to_schema_one() {
+    let oversized = Router::new().route(
+        CLUSTER_MANAGEMENT_CAPABILITIES_PATH,
+        get(|| async {
+            Body::from_stream(futures_util::stream::iter([
+                Ok::<_, std::convert::Infallible>(vec![
+                    b'x';
+                    MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES
+                ]),
+                Ok(vec![b'x']),
+            ]))
+        }),
+    );
+    let (endpoint, server) = spawn_test_server(oversized).await;
+    let auth = ClusterRouteAuth::missing_provider().acknowledge_insecure_trust_boundary(true);
+    let transport = HttpManagementPeerTransport::new(reqwest::Client::new(), auth, false);
+    let mut target = ManagementPeerTarget {
+        node_id: "peer".to_owned(),
+        generation: 1,
+        endpoint,
+        management_schema_version: Some(MANAGEMENT_API_SCHEMA_VERSION),
+    };
+    let request = ManagementSnapshotRequest {
+        schema_version: IMAP_SNAPSHOT_SCHEMA_VERSION,
+        authority_epoch: 7,
+    };
+    assert_eq!(
+        transport.fetch(&target, request).await,
+        Err(ManagementAggregationIssue::Oversize)
+    );
+    server.abort();
+
+    let posts = Arc::new(AtomicUsize::new(0));
+    let count = posts.clone();
+    let legacy = with_snapshot_capability(Router::new().route(
+        CLUSTER_MANAGEMENT_SNAPSHOT_PATH,
+        post(move || {
+            let count = count.clone();
+            async move {
+                count.fetch_add(1, Ordering::Relaxed);
+                StatusCode::NOT_ACCEPTABLE
+            }
+        }),
+    ));
+    let (endpoint, server) = spawn_test_server(legacy).await;
+    target.endpoint = endpoint;
+    assert_eq!(
+        transport.fetch(&target, request).await,
+        Err(ManagementAggregationIssue::Incompatible)
+    );
+    assert_eq!(posts.load(Ordering::Relaxed), 0);
     server.abort();
 }
 
