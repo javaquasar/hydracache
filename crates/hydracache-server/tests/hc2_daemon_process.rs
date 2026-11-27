@@ -20,7 +20,7 @@ use hydracache_client_transport_axum::{
     CLIENT_DATA_PATH, HYDRACACHE_ADMIN_HEADER, HYDRACACHE_CLIENT_ID_HEADER,
     HYDRACACHE_TENANT_HEADER,
 };
-use hydracache_server::imap_replicated_read::ReplicaReadScope;
+use hydracache_server::imap_replicated_read::{ReplicaReadScope, D2_PARTITION_COUNT};
 use hydracache_server::{
     ADMIN_CLUSTER_OVERVIEW_PATH, ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH, ADMIN_READYZ_PATH,
     MANAGEMENT_IMAP_PATH,
@@ -1480,11 +1480,27 @@ impl MemberCluster {
             format!("fixture-only-{}", root.display()),
         )
         .unwrap();
-        let (addresses, reservations) = reserve_addrs::<12>();
-        let names: Vec<String> = addresses[..3]
-            .iter()
-            .map(|addr| format!("member-{}", addr.to_string().replace(['.', ':'], "-")))
-            .collect();
+        // Socket-derived names affect rendezvous placement. Select a roster that
+        // can actually exercise each directed primary/backup pair in this suite.
+        let (addresses, reservations, names) = (0..16)
+            .find_map(|_| {
+                let (addresses, reservations) = reserve_addrs::<12>();
+                let names: Vec<String> = addresses[..3]
+                    .iter()
+                    .map(|addr| format!("member-{}", addr.to_string().replace(['.', ':'], "-")))
+                    .collect();
+                let members = placement_members(&names);
+                let pairs: std::collections::BTreeSet<_> = (0..D2_PARTITION_COUNT.get())
+                    .map(|n| {
+                        let placement = RendezvousClusterOwnership
+                            .replicas_for_key(&format!("partition-{n}"), &members, 2)
+                            .unwrap();
+                        (placement.primary, placement.backups)
+                    })
+                    .collect();
+                (pairs.len() == 6).then_some((addresses, reservations, names))
+            })
+            .expect("fixture needs all six primary/backup pairs");
         let seeds = addresses[..3]
             .iter()
             .map(ToString::to_string)
@@ -1530,23 +1546,26 @@ impl MemberCluster {
         println!("HC/2 member process artifacts {}", spec.root.display());
         let deadline = tokio::time::Instant::now() + Duration::from_secs(18);
         let status = reqwest::Client::new();
-        let endpoint = format!("http://{}{ADMIN_CLUSTER_OVERVIEW_PATH}", addresses[7]);
-        loop {
-            if let Ok(response) = status.get(&endpoint).send().await {
-                if let Ok(status) = response.json::<serde_json::Value>().await {
-                    if status["members"]
-                        .as_array()
-                        .is_some_and(|members| members.len() == 3)
-                    {
-                        break;
+        for &address in &addresses[6..9] {
+            let endpoint = format!("http://{address}{ADMIN_CLUSTER_OVERVIEW_PATH}");
+            loop {
+                if let Ok(response) = status.get(&endpoint).send().await {
+                    if let Ok(status) = response.json::<serde_json::Value>().await {
+                        if status["members"]
+                            .as_array()
+                            .is_some_and(|members| members.len() == 3)
+                        {
+                            break;
+                        }
                     }
                 }
+                assert!(
+                    tokio::time::Instant::now() < deadline,
+                    "three members were never admitted at {address}"
+                );
+                tokio::time::sleep(Duration::from_millis(70)).await;
             }
-            assert!(
-                tokio::time::Instant::now() < deadline,
-                "three members were never admitted"
-            );
-            tokio::time::sleep(Duration::from_millis(70)).await;
+            wait_imap_readiness(&status, address, "ready").await;
         }
         Self {
             spec,
@@ -1572,19 +1591,7 @@ impl MemberCluster {
             std::num::NonZeroU64::MIN,
             |_| None,
         );
-        let members: Vec<_> = self
-            .spec
-            .names
-            .iter()
-            .map(|name| ClusterMember {
-                node_id: ClusterNodeId::new(name),
-                generation: ClusterGeneration::new(1),
-                role: ClusterRole::Member,
-                epoch: ClusterEpoch::new(3),
-                endpoints: Default::default(),
-                metadata: Default::default(),
-            })
-            .collect();
+        let members = placement_members(&self.spec.names);
         (0..5000)
             .find_map(|n| {
                 let key = key(n);
@@ -1596,8 +1603,22 @@ impl MemberCluster {
                     && backup.is_none_or(|b| ranking.backups == [members[b].node_id.clone()]))
                 .then(|| Bytes::from(key))
             })
-            .unwrap()
+            .unwrap_or_else(|| panic!("no key for primary {primary} and backup {backup:?}"))
     }
+}
+
+fn placement_members(names: &[String]) -> Vec<ClusterMember> {
+    names
+        .iter()
+        .map(|name| ClusterMember {
+            node_id: ClusterNodeId::new(name),
+            generation: ClusterGeneration::new(1),
+            role: ClusterRole::Member,
+            epoch: ClusterEpoch::new(3),
+            endpoints: Default::default(),
+            metadata: Default::default(),
+        })
+        .collect()
 }
 
 async fn connect_w10i(adapter: &GrpcMtlsAdapter, tenant: &str) -> Hc2Client {
