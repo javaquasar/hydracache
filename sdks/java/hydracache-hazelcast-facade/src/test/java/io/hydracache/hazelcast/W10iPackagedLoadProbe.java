@@ -114,12 +114,12 @@ public final class W10iPackagedLoadProbe {
     var listener = new CacheEventListener() {
       @Override public void onEvent(CacheEvent event) { events.add(event); }
       @Override public void onGap(long id, long after) { events.add(after); }
-      @Override public void onGap(long id, long after, SubscriptionGap gap) { events.add(new Gap(after, gap)); }
+      @Override public void onGap(long id, long after, SubscriptionGap gap) { events.add(new Gap(id, after, gap)); }
     };
     try (var subscription = client.subscribe(key, resume, true, listener).join()) {
       if (resume > 0) {
         var first = events.poll(10, TimeUnit.SECONDS);
-        require(first instanceof Gap gap && gap.after() == resume
+        require(first instanceof Gap gap && gap.subscription() == subscription.id() && gap.after() == resume
             && gap.detail().reason() == SubscriptionGap.Reason.RESUME_UNBOUND
             && gap.detail().partitions().isEmpty(), "missing Java resume boundary: " + first);
       }
@@ -129,7 +129,8 @@ public final class W10iPackagedLoadProbe {
       var received = events.poll(10, TimeUnit.SECONDS);
       require(received instanceof CacheEvent, "missing fresh Java event: " + received);
       var event = (CacheEvent) received;
-      require(!event.removed() && Arrays.equals(event.key(), key) && Arrays.equals(event.value(), bytes(args[7]))
+      require(event.subscriptionId() == subscription.id() && !event.removed()
+          && Arrays.equals(event.key(), key) && Arrays.equals(event.value(), bytes(args[7]))
           && event.watermark() > resume, "invalid fresh Java event");
       var marker = Files.writeString(root.resolve("java-" + label + ".tmp"), Long.toString(event.watermark()));
       Files.move(marker, root.resolve("java-" + label + ".seen"));
@@ -145,7 +146,7 @@ public final class W10iPackagedLoadProbe {
     }
   }
 
-  private record Gap(long after, SubscriptionGap detail) {}
+  private record Gap(long subscription, long after, SubscriptionGap detail) {}
 
   private static boolean unavailable(Throwable failure) {
     return failure instanceof HydraCacheException error

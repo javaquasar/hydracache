@@ -92,8 +92,8 @@ impl PackageCommands<'_> {
                 .await
                 .applied
         );
-        for index in 0..SDKS.len() {
-            let name = format!("{}-{}.seen", SDKS[index], cut.label);
+        for (index, sdk) in SDKS.iter().enumerate() {
+            let name = format!("{sdk}-{}.seen", cut.label);
             let child = &mut pair.children[index].0;
             await_java_marker(child, self.root, &name).await;
             pair.marks[index] = std::fs::read_to_string(self.root.join(name))
@@ -336,7 +336,9 @@ async fn reconcile<'a>(reader: &Hc2Client, rounds: impl Iterator<Item = &'a ledg
         .await;
         assert_eq!(outcomes.len(), chunk.len());
         for (outcome, (key, allowed)) in outcomes.into_iter().zip(chunk) {
-            assert_eq!(outcome.receipt.unwrap().state, BatchItemState::Confirmed);
+            let receipt = outcome.receipt.unwrap();
+            assert_eq!(receipt.state, BatchItemState::Confirmed);
+            assert!(receipt.applied.is_some());
             let value = outcome.result.unwrap().value;
             assert!(
                 ledger::admits(*allowed, value.as_ref().map(|value| value.value.as_ref())),
