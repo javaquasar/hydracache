@@ -150,7 +150,8 @@ pub(crate) async fn watch(client: &Hc2Client, root: &Path, args: &[String]) {
             .unwrap()
             .unwrap();
         assert!(
-            matches!(gap.event, SubscriptionEvent::Gap { after_watermark } if after_watermark == watermark)
+            matches!(gap.event, SubscriptionEvent::Gap { subscription_id, after_watermark }
+                if subscription_id == stream.id() && after_watermark == watermark)
         );
         let detail = gap.gap.unwrap();
         assert_eq!(detail.reason, GapReason::ResumeUnbound);
