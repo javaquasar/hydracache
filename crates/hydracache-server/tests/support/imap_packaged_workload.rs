@@ -2,13 +2,12 @@ use super::*;
 use hydracache_client_hc2::{BatchItemState, BatchOperation};
 use std::ffi::OsStr;
 use std::fs::File;
-use std::ops::Range;
+use std::io::{BufReader, BufWriter, Write};
 
-#[path = "imap_packaged_ledger.rs"]
-mod ledger;
+use hydracache_cluster_testkit::w10i_packaged_ledger as ledger;
 
 const SDKS: [&str; 2] = ["rust", "java"];
-const PLANNED_ROUNDS: usize = 360;
+const AUDIT_CHUNK: usize = 256;
 
 pub(super) struct PackageCommands<'a> {
     pub root: &'a Path,
@@ -141,15 +140,53 @@ impl WatchPair {
     }
 }
 
-struct KeyPlan {
-    text: String,
-    partitions: Vec<[u32; 2]>,
+pub(super) fn prepare_plans(
+    root: &Path,
+    cluster: &MemberCluster,
+    reserved: &[hydracache::PartitionId],
+    duration: Duration,
+) -> usize {
+    let rounds = ledger::planned_rounds(duration.as_secs()).expect("valid packaged duration");
+    let scope = fixture_imap_scope();
+    let members = placement_members(&cluster.spec.names);
+    let eligible: Vec<_> = (0..D2_PARTITION_COUNT.get())
+        .map(|id| {
+            let place = RendezvousClusterOwnership
+                .replicas_for_key(&format!("partition-{id}"), &members, 2)
+                .unwrap();
+            !reserved.contains(&hydracache::PartitionId::new(id))
+                && place.primary == members[1].node_id
+                && place.backups == [members[2].node_id.clone()]
+        })
+        .collect();
+    assert!(
+        eligible.iter().any(|&eligible| eligible),
+        "no partition for packaged load"
+    );
+    for sdk in SDKS {
+        let mut plan =
+            BufWriter::new(File::create_new(root.join(format!("{sdk}-load.plan"))).unwrap());
+        let mut candidates = 0..;
+        let mut key = || loop {
+            let key = format!("w10i-load/{sdk}/{}", candidates.next().unwrap());
+            let (partition, _) = scope.locate(key.as_bytes().to_vec()).unwrap();
+            if eligible[partition.value() as usize] {
+                break (hex_digest(key.as_bytes()), partition.value());
+            }
+        };
+        for _ in 0..rounds {
+            let [(a, pa), (b, pb)] = [key(), key()];
+            writeln!(plan, "{a}\t{b}\t{pa}\t{pb}").unwrap();
+        }
+        plan.flush().unwrap();
+    }
+    rounds
 }
 
 pub(super) struct PackagedWorkload<'a> {
     commands: &'a PackageCommands<'a>,
     children: [ChildGuard; 2],
-    plans: [KeyPlan; 2],
+    limit: usize,
     checkpoints: Vec<serde_json::Value>,
 }
 
@@ -157,38 +194,9 @@ impl<'a> PackagedWorkload<'a> {
     pub(super) async fn start(
         commands: &'a PackageCommands<'a>,
         cluster: &MemberCluster,
-        reserved: &[hydracache::PartitionId],
+        limit: usize,
         started: tokio::time::Instant,
     ) -> Self {
-        use std::fmt::Write as _;
-        let scope = fixture_imap_scope();
-        let plans = SDKS.map(|sdk| {
-            let mut plan = KeyPlan {
-                text: String::new(),
-                partitions: Vec::with_capacity(PLANNED_ROUNDS),
-            };
-            for round in 0..PLANNED_ROUNDS {
-                let keys = ["a", "b"].map(|side| {
-                    cluster.pick_key(
-                        1,
-                        Some(2),
-                        |n| format!("w10i-load/{sdk}/{round}/{side}/{n}").into_bytes(),
-                        |p| !reserved.contains(&p),
-                    )
-                });
-                writeln!(
-                    plan.text,
-                    "{}\t{}",
-                    hex_digest(&keys[0]),
-                    hex_digest(&keys[1])
-                )
-                .unwrap();
-                plan.partitions
-                    .push(keys.map(|key| scope.locate(key.to_vec()).unwrap().0.value()));
-            }
-            std::fs::write(commands.root.join(format!("{sdk}-load.plan")), &plan.text).unwrap();
-            plan
-        });
         let origin = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -209,27 +217,37 @@ impl<'a> PackagedWorkload<'a> {
         Self {
             commands,
             children,
-            plans,
+            limit,
             checkpoints: Vec::new(),
         }
     }
 
     pub(super) async fn checkpoint(&mut self, label: &str, reader: &Hc2Client) {
         let mut entries = Vec::new();
-        for (index, sdk) in SDKS.iter().enumerate() {
-            let body = self.body(sdk);
-            let rounds = self.replay(index, &body, false);
-            let first = rounds
-                .iter()
-                .find(|round| round.complete())
+        for sdk in SDKS {
+            let root = self.commands.root.to_owned();
+            let limit = self.limit;
+            let selected = tokio::task::spawn_blocking(move || {
+                let mut first = None;
+                let mut last = None;
+                for round in replay(&root, sdk, false, limit) {
+                    let round = round.unwrap_or_else(|error| panic!("{sdk} load ledger: {error}"));
+                    if round.complete() {
+                        if first.is_none() {
+                            first = Some(round);
+                        } else {
+                            last = Some(round);
+                        }
+                    }
+                }
+                [first, last].into_iter().flatten().collect::<Vec<_>>()
+            })
+            .await
+            .unwrap();
+            let last = selected
+                .last()
                 .expect("packaged SDK has no confirmed round at checkpoint");
-            let last = rounds.iter().rfind(|round| round.complete()).unwrap();
-            let selected = if first.keys == last.keys {
-                vec![first]
-            } else {
-                vec![first, last]
-            };
-            reconcile(reader, selected.iter().copied()).await;
+            reconcile(reader, &selected).await;
             entries.push(serde_json::json!({"sdk": sdk, "keys": selected.len() * 2, "last_completed_ms": last.end}));
         }
         println!("W10i packaged workload checkpoint {label}: {entries:?}");
@@ -240,12 +258,10 @@ impl<'a> PackagedWorkload<'a> {
     pub(super) async fn finish(
         mut self,
         reader: &Hc2Client,
-        outage: &Range<u64>,
-        held: &Range<u64>,
-        returned: &Range<u64>,
+        windows: &ledger::Windows,
         watermarks: &[[u64; 2]],
     ) {
-        File::create(self.commands.root.join("packaged-load.stop")).unwrap();
+        File::create_new(self.commands.root.join("packaged-load.stop")).unwrap();
         let mut summaries = Vec::new();
         for (index, sdk) in SDKS.iter().enumerate() {
             let status = super::child_exit(&mut self.children[index].0).await;
@@ -253,69 +269,58 @@ impl<'a> PackagedWorkload<'a> {
                 .unwrap();
             assert!(status.success(), "packaged {sdk} load failed: {log}");
             print!("{log}");
-            let body = self.body(sdk);
-            let rounds = self.replay(index, &body, true);
-            assert!(!rounds.is_empty());
-            let first = &rounds[0];
-            let last = rounds.last().unwrap();
-            assert!(
-                last.end + 1_000 >= returned.end
-                    && last.end <= returned.end + 10_000
-                    && first.start < outage.start
-            );
-            assert!(rounds
-                .windows(2)
-                .all(|pair| pair[1].start - pair[0].end <= 1_000));
-            let [offline, copying, post] = [outage, held, returned].map(|window| {
-                rounds
-                    .iter()
-                    .filter(|round| round.in_window(window))
-                    .count()
-            });
-            assert!(
-                offline > 0 && copying > 0 && post > 0,
-                "{sdk} lacked complete rounds during a fault or after rejoin"
-            );
-            reconcile(reader, rounds.iter()).await;
-            let counts = rounds
-                .iter()
-                .fold(ledger::Counts::default(), |mut all, round| {
-                    all.confirmed += round.counts.confirmed;
-                    all.rejected += round.counts.rejected;
-                    all.not_applied += round.counts.not_applied;
-                    all.unknown += round.counts.unknown;
-                    all
-                });
-            summaries.push(serde_json::json!({"sdk": sdk, "counts": counts, "rounds": rounds.len(), "keys": rounds.len() * 2,
-                "offline_rounds": offline, "held_rounds": copying, "post_return_rounds": post, "ledger_sha256": sha256_hex(body.as_bytes())}));
+            let mut coverage = ledger::Coverage::default();
+            let mut chunk = Vec::with_capacity(AUDIT_CHUNK);
+            for round in replay(self.commands.root, sdk, true, self.limit) {
+                let round = round.unwrap_or_else(|error| panic!("{sdk} load ledger: {error}"));
+                coverage
+                    .observe(&round, windows)
+                    .unwrap_or_else(|error| panic!("{sdk}: {error}"));
+                chunk.push(round);
+                if chunk.len() == AUDIT_CHUNK {
+                    reconcile(reader, &chunk).await;
+                    chunk.clear();
+                }
+            }
+            reconcile(reader, &chunk).await;
+            let progress = coverage
+                .finish(windows)
+                .unwrap_or_else(|error| panic!("{sdk}: {error}"));
+            let root = self.commands.root;
+            summaries.push(serde_json::json!({
+                "sdk": sdk, "progress": progress,
+                "ledger_sha256": imap_hc2_campaign::digest_file(&root.join(format!("{sdk}-load.tsv"))).unwrap(),
+                "plan_sha256": imap_hc2_campaign::digest_file(&root.join(format!("{sdk}-load.plan"))).unwrap(),
+            }));
         }
-        let report = serde_json::json!({"schema_version": 1, "sdk": summaries, "checkpoints": self.checkpoints,
-            "watermarks": watermarks, "outage": outage, "held": held, "returned": returned});
-        let file = File::create(self.commands.root.join("packaged-workload.json")).unwrap();
-        serde_json::to_writer_pretty(file, &report).unwrap();
+        let report = serde_json::json!({
+            "schema_version": 2, "sdk": summaries, "checkpoints": self.checkpoints,
+            "watermarks": watermarks, "windows": windows,
+        });
+        let file = File::create_new(self.commands.root.join("packaged-workload.json")).unwrap();
+        serde_json::to_writer_pretty(&file, &report).unwrap();
+        file.sync_all().unwrap();
         println!("W10i packaged load reconciled: {report}");
-    }
-
-    fn body(&self, sdk: &str) -> String {
-        std::fs::read_to_string(self.commands.root.join(format!("{sdk}-load.tsv"))).unwrap()
-    }
-
-    fn replay<'b>(&self, index: usize, body: &'b str, sealed: bool) -> Vec<ledger::Round<'b>> {
-        ledger::replay(
-            body,
-            &self.plans[index].text,
-            &self.plans[index].partitions,
-            sealed,
-        )
-        .unwrap_or_else(|error| panic!("{} load ledger: {error}", SDKS[index]))
     }
 }
 
-async fn reconcile<'a>(reader: &Hc2Client, rounds: impl Iterator<Item = &'a ledger::Round<'a>>) {
+fn replay(
+    root: &Path,
+    sdk: &str,
+    sealed: bool,
+    limit: usize,
+) -> ledger::Replay<BufReader<File>, BufReader<File>> {
+    let open =
+        |suffix| BufReader::new(File::open(root.join(format!("{sdk}-load.{suffix}"))).unwrap());
+    ledger::Replay::new(open("tsv"), open("plan"), sealed, limit, sdk)
+}
+
+async fn reconcile(reader: &Hc2Client, rounds: &[ledger::Round]) {
     let keys = rounds
-        .flat_map(|round| round.keys.into_iter().zip(round.allowed))
+        .iter()
+        .flat_map(|round| round.keys.iter().zip(round.allowed))
         .collect::<Vec<_>>();
-    for chunk in keys.chunks(16) {
+    for chunk in keys.chunks(64) {
         let outcomes = retry_w10i(|| async {
             let operations = chunk
                 .iter()

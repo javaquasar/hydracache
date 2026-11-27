@@ -1944,6 +1944,7 @@ struct MemberOptions {
     drain_timeout_ms: Option<u64>,
     raft_compaction: bool,
     chrony_fixture: bool,
+    artifact_root: Option<PathBuf>,
 }
 
 impl MemberClusterSpec {
@@ -2093,7 +2094,7 @@ impl MemberCluster {
     }
 
     async fn start_fixture(label: &str, pki: &TestPki, options: MemberOptions) -> Self {
-        let root = test_root(label);
+        let root = options.artifact_root.unwrap_or_else(|| test_root(label));
         let (server_cert, server_key, ca) = write_pki(&root, pki);
         let mut pem = std::io::BufReader::new(pki.client_cert.as_bytes());
         let leaf = <rustls::pki_types::CertificateDer as rustls::pki_types::pem::PemObject>

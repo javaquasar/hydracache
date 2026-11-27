@@ -144,6 +144,10 @@ struct CopyObservation {
 }
 
 impl Profile {
+    pub fn evidence_directory(&self) -> Option<&Path> {
+        self.evidence.as_deref()
+    }
+
     pub fn from_env() -> Self {
         let (duration, evidence) = match std::env::var_os("HYDRACACHE_W10I_RUN_DIR") {
             Some(path) => {
@@ -238,7 +242,7 @@ impl Profile {
     }
 }
 
-fn digest_file(path: &Path) -> io::Result<String> {
+pub(super) fn digest_file(path: &Path) -> io::Result<String> {
     let mut hash = Sha256::new();
     let mut file = File::open(path)?;
     let mut buffer = [0; 16 * 1024];

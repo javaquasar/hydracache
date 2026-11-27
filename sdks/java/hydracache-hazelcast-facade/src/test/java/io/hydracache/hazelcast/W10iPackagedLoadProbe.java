@@ -41,12 +41,13 @@ public final class W10iPackagedLoadProbe {
 
   private static void load(HydraCacheClient client, Path root, long origin) throws Exception {
     var stop = root.resolve("packaged-load.stop");
-    var plan = Files.readAllLines(root.resolve("java-load.plan"));
     int seq = 0;
-    try (var file = new FileOutputStream(root.resolve("java-load.tsv").toFile());
+    try (var plan = Files.newBufferedReader(root.resolve("java-load.plan"), StandardCharsets.UTF_8);
+         var file = new FileOutputStream(root.resolve("java-load.tsv").toFile());
          var ledger = new BufferedWriter(new OutputStreamWriter(file, StandardCharsets.UTF_8))) {
-      while (seq < plan.size() && !Files.exists(stop)) {
-        var pair = plan.get(seq).split("\t", 2);
+      String row;
+      while (!Files.exists(stop) && (row = plan.readLine()) != null) {
+        var pair = row.split("\t", 3);
         var a = HexFormat.of().parseHex(pair[0]);
         var b = HexFormat.of().parseHex(pair[1]);
         var batch = List.<BatchOperation>of(new BatchOperation.Put(a, bytes("seed"), null),
@@ -54,7 +55,7 @@ public final class W10iPackagedLoadProbe {
             new BatchOperation.CompareAndSet(a, bytes("seed"), bytes("updated"), null),
             new BatchOperation.Get(a), new BatchOperation.Put(b, bytes("seed"), null),
             new BatchOperation.Delete(b), new BatchOperation.Get(b));
-        ledger.write("submit\t" + seq + "\t" + (System.currentTimeMillis() - origin) + "\t" + plan.get(seq) + "\n");
+        ledger.write("submit\t" + seq + "\t" + (System.currentTimeMillis() - origin) + "\t" + pair[0] + "\t" + pair[1] + "\n");
         ledger.flush();
         String encoded;
         try {

@@ -23,6 +23,9 @@ static INTERRUPTED_COPY_VALUE: [u8; 96 * 1024] = [0x5a; 96 * 1024];
 const MIN_COPY_HOLD_MS: u64 = 1_500;
 const SCENARIO: &str = "distributed_hc2_routes_public_requests_and_recovers_after_owner_kill";
 
+#[path = "imap_distributed_packaged_075.rs"]
+mod packaged;
+
 type RunResult<T> = Result<T, Box<dyn Error>>;
 
 #[derive(Clone, Copy)]
@@ -38,6 +41,7 @@ struct Options {
     prior: Option<PathBuf>,
     live_drain: bool,
     interrupt_copy: bool,
+    sdk_profile: Option<PathBuf>,
 }
 
 fn parse(args: Vec<String>, mode: Mode) -> RunResult<Options> {
@@ -48,6 +52,7 @@ fn parse(args: Vec<String>, mode: Mode) -> RunResult<Options> {
     let mut duration = None;
     let mut output = None;
     let mut prior = None;
+    let mut sdk_profile = None;
     let mut args = args.into_iter();
     while let Some(option) = args.next() {
         let slot = match option.as_str() {
@@ -67,6 +72,7 @@ fn parse(args: Vec<String>, mode: Mode) -> RunResult<Options> {
             "--duration" => &mut duration,
             "--output" => &mut output,
             "--qualification" => &mut prior,
+            "--sdk-profile" => &mut sdk_profile,
             _ => return Err(format!("unsupported or duplicate W10i option {option}").into()),
         };
         if slot.is_some() {
@@ -94,6 +100,10 @@ fn parse(args: Vec<String>, mode: Mode) -> RunResult<Options> {
     if !diagnostic {
         return Err("W10i production admission requires packaged mixed HC/2 workloads, distributed TTL and listeners, live drain and replica proof, and accepted OD-2/OD-3 bounds; the available runs require --diagnostic".into());
     }
+    if sdk_profile.is_some() && seconds < 60 {
+        return Err("W10i packaged diagnostics require 60s for the full fault schedule".into());
+    }
+    let interrupt_copy = interrupt_copy || sdk_profile.is_some();
     let live_drain = live_drain || interrupt_copy;
     if live_drain && seconds < MIN_DRAIN_DIAGNOSTIC_SECONDS {
         return Err(
@@ -113,6 +123,7 @@ fn parse(args: Vec<String>, mode: Mode) -> RunResult<Options> {
         prior: prior.map(Into::into),
         live_drain,
         interrupt_copy,
+        sdk_profile: sdk_profile.map(Into::into),
     })
 }
 
@@ -273,6 +284,9 @@ pub fn run(args: Vec<String>, mode: Mode) -> RunResult<()> {
     let opts = parse(args, mode)?;
     let root = crate::doc_check::find_repo_root()?;
     let source = crate::imap_ci_075::source_state(&root)?;
+    if let Some(profile) = &opts.sdk_profile {
+        return packaged::run(&opts, &root, &source, profile);
+    }
     let prior = opts
         .prior
         .as_ref()
@@ -280,7 +294,7 @@ pub fn run(args: Vec<String>, mode: Mode) -> RunResult<()> {
         .transpose()?;
     fs::create_dir(&opts.output)?;
     let directory = opts.output.canonicalize()?;
-    let mut cargo = Command::new(std::env::var_os("CARGO").unwrap_or_else(|| "cargo".into()));
+    let mut cargo = worker_command(&root, &directory, &source, &opts, SCENARIO);
     if let Some((_, previous)) = &prior {
         cargo
             .env(
@@ -292,45 +306,7 @@ pub fn run(args: Vec<String>, mode: Mode) -> RunResult<()> {
                 &previous.worker.runner_sha256,
             );
     }
-    let log = new_file(&directory.join("cargo.log"))?;
-    let status = cargo
-        .current_dir(&root)
-        .args([
-            "test",
-            "--locked",
-            "--offline",
-            "--release",
-            "-p",
-            "hydracache-server",
-            "--test",
-            "hc2_daemon_process",
-            "--",
-            "--exact",
-            SCENARIO,
-            "--nocapture",
-        ])
-        .env("HYDRACACHE_RUN_DAEMON_PROCESS_E2E", "1")
-        .env("HYDRACACHE_W10I_RUN_DIR", &directory)
-        .env("HYDRACACHE_W10I_SOURCE_SHA", &source)
-        .env("HYDRACACHE_W10I_DURATION_SECONDS", opts.seconds.to_string())
-        .env(
-            "HYDRACACHE_W10I_LIVE_DRAIN",
-            if opts.live_drain { "1" } else { "0" },
-        )
-        .env(
-            "HYDRACACHE_W10I_INTERRUPT_COPY",
-            if opts.interrupt_copy { "1" } else { "0" },
-        )
-        .stdout(Stdio::from(log.try_clone()?))
-        .stderr(Stdio::from(log))
-        .status()?;
-    if !status.success() {
-        return Err(format!(
-            "W10i diagnostic failed; see {}",
-            directory.join("cargo.log").display()
-        )
-        .into());
-    }
+    run_worker(cargo, &directory)?;
     if crate::imap_ci_075::source_state(&root)? != source {
         return Err("W10i source changed during the diagnostic".into());
     }
@@ -365,6 +341,32 @@ pub fn run(args: Vec<String>, mode: Mode) -> RunResult<()> {
         "W10i diagnostic complete: {}",
         directory.join("report.json").display()
     );
+    Ok(())
+}
+
+fn worker_command(root: &Path, directory: &Path, source: &str, opts: &Options, scenario: &str) -> Command {
+    let mut cargo = Command::new(std::env::var_os("CARGO").unwrap_or_else(|| "cargo".into()));
+    cargo
+        .current_dir(root)
+        .args([
+            "test", "--locked", "--offline", "--release", "-p", "hydracache-server",
+            "--test", "hc2_daemon_process", "--", "--exact", scenario, "--nocapture",
+        ])
+        .env("HYDRACACHE_RUN_DAEMON_PROCESS_E2E", "1")
+        .env("HYDRACACHE_W10I_RUN_DIR", directory)
+        .env("HYDRACACHE_W10I_SOURCE_SHA", source)
+        .env("HYDRACACHE_W10I_DURATION_SECONDS", opts.seconds.to_string())
+        .env("HYDRACACHE_W10I_LIVE_DRAIN", if opts.live_drain { "1" } else { "0" })
+        .env("HYDRACACHE_W10I_INTERRUPT_COPY", if opts.interrupt_copy { "1" } else { "0" });
+    cargo
+}
+
+fn run_worker(mut cargo: Command, directory: &Path) -> RunResult<()> {
+    let log = new_file(&directory.join("cargo.log"))?;
+    let status = cargo.stdout(Stdio::from(log.try_clone()?)).stderr(Stdio::from(log)).status()?;
+    if !status.success() {
+        return Err(format!("W10i diagnostic failed; see {}", directory.join("cargo.log").display()).into());
+    }
     Ok(())
 }
 
@@ -660,9 +662,18 @@ fn verify_interrupted_copy(copy: &InterruptedCopy, drain: &Drain) -> RunResult<(
 }
 
 fn verify_ledger(
+    input: impl BufRead,
+    expected_ms: u64,
+    drain: Option<&Drain>,
+) -> RunResult<(Counts, Option<DrainProgress>)> {
+    scan_ledger(input, expected_ms, drain, |_| {})
+}
+
+fn scan_ledger(
     mut input: impl BufRead,
     expected_ms: u64,
     drain: Option<&Drain>,
+    mut observe: impl FnMut(&Round),
 ) -> RunResult<(Counts, Option<DrainProgress>)> {
     let mut counts = Counts::default();
     let mut progress = drain.map(|drain| DrainProgress {
@@ -745,6 +756,7 @@ fn verify_ledger(
         counts.acknowledgements += ack;
         counts.verified += ack;
         counts.unknown += row.unknown;
+        observe(&row);
     }
     if counts.acknowledgements == 0
         || expected_ms - last > MAX_INTER_ROUND_GAP_MS.min(expected_ms / 2)
@@ -910,6 +922,36 @@ mod tests {
                 accepted
             );
         }
+    }
+
+    #[test]
+    fn sdk_profile_selects_the_full_schedule_for_each_diagnostic_duration() {
+        for (duration, mode, parent) in [
+            ("60s", Mode::Qualification, false),
+            ("6h", Mode::Qualification, false),
+            ("24h", Mode::Confirmation, true),
+        ] {
+            let mut command = args(&[
+                "--release", "0.75", "--duration", duration, "--diagnostic",
+                "--sdk-profile", "sdk.json", "--output", "new",
+            ]);
+            if parent {
+                command.extend(args(&["--qualification", "parent"]));
+            }
+            let options = parse(command.clone(), mode).unwrap();
+            assert_eq!(options.sdk_profile.as_deref(), Some(Path::new("sdk.json")));
+            assert!(options.live_drain && options.interrupt_copy);
+            let worker = worker_command(Path::new("."), Path::new("out"), "sha", &options, "sdk-test");
+            let values: Vec<_> = worker.get_args().collect();
+            assert!(values.contains(&std::ffi::OsStr::new("sdk-test")));
+            command.retain(|arg| arg != "--diagnostic");
+            assert!(parse(command, mode).is_err());
+        }
+        let short = args(&[
+            "--release", "0.75", "--duration", "45s", "--diagnostic", "--sdk-profile",
+            "sdk.json", "--output", "new",
+        ]);
+        assert!(parse(short, Mode::Qualification).is_err());
     }
 
     fn row(sequence: u64, elapsed_ms: u64) -> Value {

@@ -1,5 +1,8 @@
 use super::*;
-use imap_hc2_campaign::{exercise_control, exercise_live_drain, owner_checkpoint};
+use hydracache_cluster_testkit::w10i_packaged_ledger::Windows;
+use imap_hc2_campaign::{
+    digest_file, exercise_control, exercise_live_drain, owner_checkpoint, Profile,
+};
 use std::ffi::OsStr;
 use std::ops::Range;
 
@@ -53,12 +56,24 @@ async fn run_cohort(scenario: Scenario) {
     let _guard = async_daemon_process_guard().await;
     let credentials = pki();
     let interrupt_copy = scenario == Scenario::InterruptedCopy;
-    let duration = Duration::from_secs(if interrupt_copy { 60 } else { 30 });
+    let campaign = std::env::var_os("HYDRACACHE_W10I_RUN_DIR").map(|_| {
+        assert!(
+            interrupt_copy,
+            "the packaged campaign requires the full interrupted-copy scenario"
+        );
+        Profile::from_env()
+    });
+    let output = campaign.as_ref().and_then(Profile::evidence_directory);
+    let duration = campaign.as_ref().map_or_else(
+        || Duration::from_secs(if interrupt_copy { 60 } else { 30 }),
+        |campaign| campaign.duration,
+    );
     let mut cluster = MemberCluster::start_fixture(
         "w10i-sdk-cohort",
         &credentials,
         MemberOptions {
             interrupt_copy,
+            artifact_root: output.map(|path| path.join("sdk-run")),
             ..Default::default()
         },
     )
@@ -100,6 +115,67 @@ async fn run_cohort(scenario: Scenario) {
             .to_owned()
     };
     let expected_value = |sdk, key: &[u8]| Bytes::from(format!("{sdk}:{}", logical(key)));
+    let hot_partition = scope.locate(hot.to_vec()).unwrap().0;
+    let partition = hot_partition.value();
+    let http = w10h_http();
+    let mut expected = Vec::new();
+    let mut promotion = None;
+    let mut rejoined_at_ms = 0;
+    let mut outage = 0..0;
+    let killed = cluster.daemons[0].0.id();
+    let commands = PackageCommands {
+        root,
+        rust: &executable,
+        java: &java,
+        classpath: &classpath,
+    };
+    let witness = cluster.pick_key(
+        1,
+        Some(2),
+        |n| format!("w10i-watch/{n}").into_bytes(),
+        |p| p != control_partition,
+    );
+    let planned = if interrupt_copy {
+        let mut reserved = vec![
+            control_partition,
+            hot_partition,
+            scope.locate(witness.to_vec()).unwrap().0,
+        ];
+        reserved.extend(
+            keys.iter()
+                .flatten()
+                .map(|key| scope.locate(key.to_vec()).unwrap().0),
+        );
+        Some(packaged_workload::prepare_plans(
+            root, &cluster, &reserved, duration,
+        ))
+    } else {
+        None
+    };
+    let started = tokio::time::Instant::now();
+    let ledger = root.join("control-ledger.jsonl");
+    let load = matches!(scenario, Scenario::Correct | Scenario::InterruptedCopy).then(|| {
+        tokio::spawn(exercise_control(
+            cluster.clients[2].clone(),
+            cluster.clients[1].clone(),
+            control,
+            started,
+            duration,
+            Some(std::io::BufWriter::new(
+                std::fs::File::create(&ledger).unwrap(),
+            )),
+            true,
+        ))
+    });
+    let mut package_load = match planned {
+        Some(limit) => Some(PackagedWorkload::start(&commands, &cluster, limit, started).await),
+        None => None,
+    };
+    // Long and controller-driven short runs warm up with SDK traffic before
+    // creating the bounded Java cohort and the subscription for the first fault.
+    if campaign.is_some() {
+        tokio::time::sleep_until(started + duration / 3).await;
+    }
     let log_path = root.join("java-probe.log");
     let log = std::fs::File::create(&log_path).unwrap();
     let mut probe = ChildGuard(
@@ -123,55 +199,6 @@ async fn run_cohort(scenario: Scenario) {
     );
     await_java_marker(&mut probe.0, root, "cohort-ready").await;
 
-    let started = tokio::time::Instant::now();
-    let ledger = root.join("control-ledger.jsonl");
-    let load = matches!(scenario, Scenario::Correct | Scenario::InterruptedCopy).then(|| {
-        tokio::spawn(exercise_control(
-            cluster.clients[2].clone(),
-            cluster.clients[1].clone(),
-            control,
-            started,
-            duration,
-            Some(std::io::BufWriter::new(
-                std::fs::File::create(&ledger).unwrap(),
-            )),
-            true,
-        ))
-    });
-    let hot_partition = scope.locate(hot.to_vec()).unwrap().0;
-    let partition = hot_partition.value();
-    let http = w10h_http();
-    let mut expected = Vec::new();
-    let mut promoted_epoch = None;
-    let mut outage = 0..0;
-    let killed = cluster.daemons[0].0.id();
-    let commands = PackageCommands {
-        root,
-        rust: &executable,
-        java: &java,
-        classpath: &classpath,
-    };
-    let witness = cluster.pick_key(
-        1,
-        Some(2),
-        |n| format!("w10i-watch/{n}").into_bytes(),
-        |p| p != control_partition,
-    );
-    let mut package_load = if interrupt_copy {
-        let mut reserved = vec![
-            control_partition,
-            hot_partition,
-            scope.locate(witness.to_vec()).unwrap().0,
-        ];
-        reserved.extend(
-            keys.iter()
-                .flatten()
-                .map(|key| scope.locate(key.to_vec()).unwrap().0),
-        );
-        Some(PackagedWorkload::start(&commands, &cluster, &reserved, started).await)
-    } else {
-        None
-    };
     let mut watermarks = Vec::new();
     let mut watcher = if interrupt_copy {
         Some(
@@ -292,7 +319,7 @@ async fn run_cohort(scenario: Scenario) {
                 original.epoch(),
                 promoted.epoch()
             );
-            promoted_epoch = Some(promoted.epoch());
+            promotion = Some((original, promoted));
             if let Some(workload) = &mut package_load {
                 workload.checkpoint("promoted", &cluster.clients[1]).await;
                 let survivor = commands
@@ -317,7 +344,7 @@ async fn run_cohort(scenario: Scenario) {
             cluster.clients[0] = connect_w10i(&cluster.adapters[0], "w10i").await;
             assert_ne!(killed, cluster.daemons[0].0.id());
             // Transport readiness can precede agreement on the returning process's generation.
-            let prior_epoch = promoted_epoch.unwrap();
+            let prior_epoch = promotion.as_ref().unwrap().1.epoch();
             let rejoined = wait_cluster_imap(&http, cluster.spec.addresses[7], |body| {
                 body["ready"] == true
                     && cluster_imap_members(body).len() == 3
@@ -330,23 +357,7 @@ async fn run_cohort(scenario: Scenario) {
                 "W10i SDK cohort authority restored epoch={}",
                 rejoined["epoch"]
             );
-            if interrupt_copy {
-                watcher = Some(
-                    commands
-                        .watch(
-                            WatchCut {
-                                label: "before-drain",
-                                address: cluster.spec.addresses[9],
-                                resume: *watermarks.last().unwrap(),
-                                previous: "after-kill",
-                                hold: true,
-                            },
-                            &witness,
-                            &cluster.clients[2],
-                        )
-                        .await,
-                );
-            }
+            rejoined_at_ms = started.elapsed().as_millis() as u64;
         }
     }
     let status = child_exit(&mut probe.0).await;
@@ -355,6 +366,24 @@ async fn run_cohort(scenario: Scenario) {
     print!("{log}");
     let rejoined = cluster.daemons[0].0.id();
     let drain_checks = if interrupt_copy {
+        // The held Java watcher has a short timeout, so attach it at the drain
+        // boundary instead of keeping it idle during the multi-hour warmup.
+        tokio::time::sleep_until(started + duration / 2).await;
+        watcher = Some(
+            commands
+                .watch(
+                    WatchCut {
+                        label: "before-drain",
+                        address: cluster.spec.addresses[9],
+                        resume: *watermarks.last().unwrap(),
+                        previous: "after-kill",
+                        hold: true,
+                    },
+                    &witness,
+                    &cluster.clients[2],
+                )
+                .await,
+        );
         let addresses = cluster.spec.addresses;
         let mut held_reads = None;
         let reader_during_hold = cluster.clients[1].clone();
@@ -430,31 +459,37 @@ async fn run_cohort(scenario: Scenario) {
         "control load ended before cohort verification"
     );
     let counts = load.await.unwrap();
-    let rows: Vec<_> = std::io::BufReader::new(std::fs::File::open(ledger).unwrap())
-        .lines()
-        .map(|line| serde_json::from_str::<serde_json::Value>(&line.unwrap()).unwrap())
-        .collect();
-    let verified_while_offline = verified_control(&rows, &outage);
+    let traffic_elapsed_ms = started.elapsed().as_millis() as u64;
+    let held_window = drain_checks
+        .as_ref()
+        .and_then(|(drain, _, _)| drain.interrupted_window());
+    let returned_window = drain_checks
+        .as_ref()
+        .map(|(drain, _, _)| drain.returned_at_ms..duration.as_millis() as u64);
+    let [verified_while_offline, held_progress, returned_progress] = verified_control(
+        &ledger,
+        [
+            Some(&outage),
+            held_window.as_ref(),
+            returned_window.as_ref(),
+        ],
+    );
     assert!(
         verified_while_offline > 0,
         "no verified control round during the owner outage"
     );
     println!("W10i SDK cohort retained={} killed_pid={killed} rejoined_pid={rejoined} control_verified={} control_verified_offline={verified_while_offline} offline_from_ms={} offline_to_ms={}", expected.len(), counts.verified, outage.start, outage.end);
     if let Some((drain, held, returned)) = drain_checks {
+        let windows = Windows {
+            outage: outage.clone(),
+            held: held_window.unwrap(),
+            returned: returned_window.unwrap(),
+        };
         package_load
             .take()
             .unwrap()
-            .finish(
-                &cluster.clients[1],
-                &outage,
-                &drain.interrupted_window().unwrap(),
-                &(drain.returned_at_ms..duration.as_millis() as u64),
-                &watermarks,
-            )
+            .finish(&cluster.clients[1], &windows, &watermarks)
             .await;
-        let held_progress = verified_control(&rows, &drain.interrupted_window().unwrap());
-        let returned_progress =
-            verified_control(&rows, &(drain.returned_at_ms..duration.as_millis() as u64));
         assert!(
             held_progress > 0 && returned_progress > 0,
             "missing control progress during the hold or after rejoin"
@@ -469,21 +504,50 @@ async fn run_cohort(scenario: Scenario) {
             &report,
         )
         .unwrap();
+        if let Some(output) = output {
+            let (before, promoted) = promotion.unwrap();
+            let report = serde_json::json!({
+                "schema_version": 1,
+                "production_admitted": false,
+                "source_sha": std::env::var("HYDRACACHE_W10I_SOURCE_SHA").unwrap(),
+                "seconds": duration.as_secs(),
+                "traffic_elapsed_ms": traffic_elapsed_ms,
+                "daemon_sha256": digest_file(Path::new(env!("CARGO_BIN_EXE_hydracache-server"))).unwrap(),
+                "runner_sha256": digest_file(&std::env::current_exe().unwrap()).unwrap(),
+                "rust_package_sha256": package,
+                "control_sha256": digest_file(&ledger).unwrap(),
+                "workload_sha256": digest_file(&root.join("packaged-workload.json")).unwrap(),
+                "drain_sha256": digest_file(&root.join("sdk-drain.json")).unwrap(),
+                "killed_pid": killed, "rejoined_pid": rejoined, "rejoined_at_ms": rejoined_at_ms,
+                "partition": partition, "before": before, "promoted": promoted,
+                "outage": outage,
+            });
+            let file = std::fs::File::create_new(output.join("sdk-worker.json")).unwrap();
+            serde_json::to_writer(&file, &report).unwrap();
+            file.sync_all().unwrap();
+        }
         println!("W10i packaged SDK drain retained=13 migrated=1 held_verified={held_progress} returned_verified={returned_progress}");
     }
 }
 
-fn verified_control(rows: &[serde_json::Value], window: &Range<u64>) -> usize {
-    rows.iter()
-        .filter(|row| {
-            window.contains(&row["elapsed_ms"].as_u64().unwrap())
-                && window.contains(&row["verified_at_ms"].as_u64().unwrap())
-                && row["put_ack"] == true
-                && row["cas_ack"] == true
-                && row["delete_ack"] == true
-        })
-        .count()
-        * 3
+fn verified_control<const N: usize>(
+    ledger: &Path,
+    windows: [Option<&Range<u64>>; N],
+) -> [usize; N] {
+    let mut counts = [0; N];
+    for line in BufReader::new(std::fs::File::open(ledger).unwrap()).lines() {
+        let row = serde_json::from_str::<serde_json::Value>(&line.unwrap()).unwrap();
+        if row["put_ack"] == true && row["cas_ack"] == true && row["delete_ack"] == true {
+            let first = row["elapsed_ms"].as_u64().unwrap();
+            let last = row["verified_at_ms"].as_u64().unwrap();
+            for (count, window) in counts.iter_mut().zip(windows) {
+                if window.is_some_and(|window| window.contains(&first) && window.contains(&last)) {
+                    *count += 3;
+                }
+            }
+        }
+    }
+    counts
 }
 
 async fn packaged_readback(

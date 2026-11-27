@@ -2,7 +2,7 @@ use hydracache_client_hc2::{
     BatchItemOutcome, BatchItemState, BatchOperation, ErrorCode, GapReason, Hc2Client,
     RequestOptions, SubscriptionEvent,
 };
-use std::io::{BufWriter, Write};
+use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::Path;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
@@ -20,14 +20,17 @@ pub(crate) async fn load(client: &Hc2Client, root: &Path, args: &[String]) {
             .as_millis()
             - origin
     };
-    let plan = std::fs::read_to_string(root.join("rust-load.plan")).unwrap();
+    let plan = BufReader::new(std::fs::File::open(root.join("rust-load.plan")).unwrap());
     let mut ledger = BufWriter::new(std::fs::File::create(root.join("rust-load.tsv")).unwrap());
     let mut rounds = 0;
     for (seq, pair) in plan.lines().enumerate() {
         if root.join("packaged-load.stop").exists() {
             break;
         }
-        let (a, b) = pair.split_once('\t').expect("load key pair");
+        let pair = pair.unwrap();
+        let mut columns = pair.split('\t');
+        let a = columns.next().expect("first load key");
+        let b = columns.next().expect("second load key");
         let update = decode_key(a);
         let remove = decode_key(b);
         let compare = |expected: &[u8]| BatchOperation::CompareAndSet {
