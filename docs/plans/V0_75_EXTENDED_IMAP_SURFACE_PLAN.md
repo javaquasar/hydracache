@@ -2106,6 +2106,39 @@ against `development/w10i-owner-kill-c7b8210512c67591cb965c26b942ea6a74b69292/w1
 on AX42. The manifest SHA-256 is
 `2353789088f6d688f5a63e25f2f73af8301de38026749ffbc8f906c6a562e984`.
 
+#### Cross-SDK retained cohort through an owner outage
+
+The `imap_sdk_cohort` process tests run the Rust HC/2 SDK and a separate JVM using the packaged
+HC/2 and Hazelcast facade JARs from the candidate. Before the kill, during the outage, and after
+the member rejoins, each SDK writes two unique keys and reads back the other SDK's retained
+values. Java also seeds one key on the partition whose owner is killed. The two active replicas
+must preserve that key's certified image across promotion. Both SDKs read all 13 keys through
+the returned endpoint at the final checkpoint. Java requires a confirmed receipt with an
+applied version for each batch item. The wrong-value canary verifies that a divergent Rust value
+terminates the Java probe before it reports phase completion.
+
+The separate Rust control stream continues with puts, conditional updates and deletes. The
+process test requires at least one complete round with readbacks between the kill and restart
+markers, and retains the timed control ledger. The test runs with
+`HYDRACACHE_RUN_W10I_SDK_COHORT=1`, `HYDRACACHE_W10G_JAVA` and
+`HYDRACACHE_W10G_JAVA_CLASSPATH`. Run the filter `imap_sdk_cohort::` in the `hc2_daemon_process`
+target. The Rust SDK is linked from the same checkout. An independently packaged Rust consumer,
+the full operation mix and the complete fault schedule still belong to the campaign below.
+
+On AX42, candidate `21edeef07a6cf9049d120772ffec756539fbc8b6` passed the Maven reactor with 48
+tests, Clippy, and both process tests on each JVM. The faulted partition preserved certified
+version 1 across epochs 3 and 6 on both runs. The timed control ledger was checked independently.
+
+| JVM | Retained keys verified by each SDK | Control mutations verified | Control mutations verified during the outage |
+| --- | ---: | ---: | ---: |
+| Java 17 | 13 | 376 | 96 |
+| Java 21 | 13 | 375 | 84 |
+
+The candidate JARs, process binaries, ledgers, and positive and negative probe logs are recorded in
+`development/w10i-sdk-qualified-21edeef07a6cf9049d120772ffec756539fbc8b6/w10i-sdk-cohort.sha256`
+on AX42. The verified manifest SHA-256 is
+`2f2b203f6a1c480a11182394bf9ccbe7971720a211fe9d2050abfd6eafea463f`.
+
 #### Under-load failover and rebalance qualification
 
 KiviDB's cluster soak pairs continuous mixed load with planned failovers, process kills, slot

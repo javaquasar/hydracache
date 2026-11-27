@@ -1225,6 +1225,17 @@ On AX42, all five replica comparisons passed in each of the three diagnostic pro
 profiles, 1,892 control-partition acknowledgements were verified by readback.
 [W10i owner-kill reconciliation](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#replica-journal-reconciliation-after-owner-kill)
 
+## Reading the other SDK's writes after failover
+
+The W10i retained cohort gives Rust and Java separate keys and has each SDK read what the other
+wrote before the owner is killed, while it is offline, and after it returns. Java writes through
+the packaged facade and checks each bulk receipt. At the last checkpoint both SDKs read all 13
+retained keys through the returning member. A second run deliberately stores the wrong Rust
+value and requires the Java probe to stop before it marks the phase complete.
+Both checks passed on Java 17 and 21 on AX42. The separate Rust control stream verified 96 and
+84 mutations, respectively, with each complete round contained inside the owner outage.
+[W10i cross-SDK cohort](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#cross-sdk-retained-cohort-through-an-owner-outage)
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
