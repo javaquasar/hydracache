@@ -14,6 +14,7 @@ You are reading: Draft.
 - [Part 5: Typed Query Caching in Rust](https://medium.com/@artur.buzov/typed-query-caching-in-rust-aac4352599f0)
 - [Part 6: How to Measure Cache Performance Without Measuring Noise](https://medium.com/@artur.buzov/how-to-measure-cache-performance-without-measuring-noise-926c10d713f5)
 - Draft: Optimization Starts With Measurement: Reading Allocations, RSS, and Runtime Together
+- Draft: Run the Real Code in the Browser: Compiling Production Rules to WebAssembly for Honest Simulations
 
 GitHub:
 

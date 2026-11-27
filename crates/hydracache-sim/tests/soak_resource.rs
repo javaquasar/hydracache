@@ -128,7 +128,11 @@ fn one_time_stepup_then_plateau_is_not_a_leak() {
 fn subscriber_pending_stays_bounded_under_slow_consumer() {
     let mut world = SimWorld::new(0x58_20, SimConfig::default());
     world.set_workload_enabled(false);
-    world.subscribe("client-a", "ns");
+    // Clients join through the Raft metadata path, so the cluster forms first.
+    world.run(8);
+    world
+        .subscribe("client-a", "ns")
+        .expect("subscribe admits the client");
 
     for index in 0..(MAX_SUBSCRIBER_BUFFER + 8) {
         world

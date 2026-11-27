@@ -54,15 +54,36 @@ guarantee.
   connected both ways, a leader that no longer reaches a quorum steps down, and a
   node that cannot reach a quorum does not campaign.
 - **Cluster / node FSM, client routing, and heartbeat traffic are approximations.**
-  `connected_node` (which node a client/subscriber attaches to) is a deterministic
-  hash, not the real smart-routing logic; follower→leader heartbeat acks exist for
-  legibility.
-- **Replication factor = the whole cluster.** The simulator is a single
-  fully-replicated Raft group: every committed value lives on every node. The
-  product has a configurable `ReplicationConfig` (replication factor, read/write
-  quorums, sync/async backups; default is local-first `replication_factor = 1`).
-  The demo does **not** model partition placement, backup counts, or quorum
-  reads/writes.
+  A client connects to one member, picked by a deterministic hash of its name,
+  and stays there until that member goes down (snapshot schema 10). That is
+  not the real smart-routing logic. A new client is admitted only while there
+  is a leader (a simulated `ClientUpsert`). Follower→leader heartbeat acks exist
+  for legibility.
+- **The write path is a choice** (Clients tab, *Write path*; snapshot schema 11):
+  - *full broadcast* is the simulator's original model and the default: the
+    writer's member sends every write to every node. The built-in workload
+    and its invariants run only in this model.
+  - *local-first* is the product default: the writer's member keeps the
+    value and the other members drop their copy.
+  - *replicated* models the product's opt-in placement and consistency
+    primitives: rendezvous owners (`rank_replicas`), a forward to the primary,
+    copies to the backups, and acknowledgements counted with
+    `ConsistencyLevel`. A write the live owners cannot meet is refused with the
+    product's reason.
+
+  The product ships those primitives but no runtime replicated write path, so
+  *replicated* is a model, not shipped behaviour.
+- **Hints and repair run product code under a simulator driver** (snapshot
+  schema 12–13; counters under *Write path*):
+  - hints live in the product `InMemoryHintStore` and replay through
+    `apply_hint`;
+  - copies apply by `ReplicatedValueRecord::merge`;
+  - repair diffs product `MerkleTree`s;
+  - a routed restart is cold.
+
+  The driver is the simulator's: a perfect failure detector, one partition, and
+  a repair pass every 5 steps. The consistency panel says which replica set it
+  was computed on.
 
 ### Visualization only — no engine meaning
 
@@ -129,13 +150,13 @@ guarantee.
   off. The client → node → replication →
   subscriber **pulse** fired on a push replays what the engine did: it is
   built from the snapshot right after the push (the push step and the entry
-  node that applied it, the engine's preferred write node) and the settled
+  node that applied it: the member the writer is connected to) and the settled
   snapshot (each replica's `applied_at_step`, copies still in flight, copies
   that will never arrive, each subscriber's delivery step). Two parts are
   drawn, not engine facts: its wall-clock pace (a fixed time per engine
-  step), and the request's path, which follows drawn links (the writer's link
-  to the node it is attached to, then a forward over a cluster link to the
-  entry node) while the engine hands the write straight to that node. Its "fan out to
+  step), and the shape of the writer's link. Since snapshot schema 10 the
+  write enters on the writer's own member, as in the product, so the request
+  travels only along that link; the Raft leader is not on the path. Its "fan out to
   every node" matches the simulator's full-replication model, not the
   product's configurable RF.
 - **Auto-stepping after an intervention** (`settleAfterIntervention`) is a UI
@@ -275,7 +296,14 @@ shared link cannot make the page render another server's verdict.
   subscribers of their namespace. A push lights each graph vertex up when its copy
   arrives, timed by the engine: the entry node when the request arrives,
   each replica after as many steps as the engine took to deliver it, each
-  subscriber at its delivery step. A replica whose copy is still in flight
+  subscriber at its delivery step. A subscriber hears from the member its
+  client is connected to, once that member applies the write (`upserted`) or,
+  in local-first, the invalidation (`invalidated`). In replicated, a member
+  that does not own the key never stores it, so its subscribers get no event.
+  In the routed write paths, small green dots carry the acknowledgements back
+  (backup → primary → coordinator → client). A client admission is drawn on a
+  separate, dashed Raft metadata lane to the leader and back. The leader takes
+  no part in a write. A replica whose copy is still in flight
   does not flash; one that will never get it (down, or behind a cut) shows
   the copy fading with a loss marker. Reduced motion flashes at once.
 - **Keys heatmap.** A replica that takes a new value fades from its old colour to the new one; hovering a cell gives the whole checksum and the step the page saw it written. One row per sampled key, one column per node. A cell's

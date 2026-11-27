@@ -153,6 +153,12 @@ pub enum ControlActionV1 {
     },
     /// Remove a writer client; its recorded history stays (0.74).
     RemoveClient { at_step: u64, client: String },
+    /// Choose the write path for manual pushes (TD-0016 step 3). Needs the
+    /// built-in workload to be off.
+    SetReplication {
+        at_step: u64,
+        model: crate::SimReplicationModel,
+    },
     /// Change the UI/lab mode.
     ModeChange { at_step: u64, mode: SimMode },
     /// Crash a node.
@@ -203,6 +209,7 @@ impl ControlActionV1 {
             | Self::AddClient { at_step, .. }
             | Self::Unsubscribe { at_step, .. }
             | Self::RemoveClient { at_step, .. }
+            | Self::SetReplication { at_step, .. }
             | Self::ModeChange { at_step, .. }
             | Self::Crash { at_step, .. }
             | Self::Restart { at_step, .. }

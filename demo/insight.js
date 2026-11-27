@@ -58,11 +58,47 @@ export function leaderOf(snapshot) {
 // Per-key replica comparison from the engine's stored checksums. Agreement is
 // judged over live (not crashed, not disabled) nodes; a live node without the
 // key counts as disagreeing because it would serve a miss.
+// Under a routed write path (snapshot schema 11) a node without the value is
+// expected: in local_first the other members dropped their copy, and in
+// replicated only the key's owners hold it. Agreement is then judged on the
+// copies that exist, among the owners.
 export function keyAgreement(snapshot) {
   const nodes = (snapshot.nodes || []).map((node) => node.id);
   const live = new Set(liveNodeIds(snapshot));
+  const routed = ["local_first", "replicated"].includes(snapshot.replication?.model);
   const keys = (snapshot.keys || []).map((key) => {
     const byNode = new Map(key.replicas.map((replica) => [replica.node_id, replica.version]));
+    const owners = key.owners ? new Set([key.owners.primary, ...key.owners.backups]) : null;
+    const isOwner = (id) => !owners || owners.has(id);
+    if (routed) {
+      const held = nodes.filter((id) => live.has(id) && isOwner(id)).map((id) => byNode.get(id) ?? null);
+      const present = held.filter((version) => version !== null);
+      const counts = new Map();
+      for (const version of present) counts.set(version, (counts.get(version) ?? 0) + 1);
+      let majority = null;
+      let best = -1;
+      for (const [version, count] of counts) {
+        if (count > best) {
+          majority = version;
+          best = count;
+        }
+      }
+      // An owner still waiting for the value lags; a missing copy elsewhere is fine.
+      const lagging = (id, version) => key.owners && version === null && majority !== null;
+      const cells = nodes.map((id) => {
+        const version = byNode.get(id) ?? null;
+        const owner = isOwner(id);
+        return {
+          node: id,
+          version,
+          live: live.has(id),
+          owner,
+          primary: key.owners?.primary === id,
+          diverged: live.has(id) && owner && ((version !== null && version !== majority) || lagging(id, version)),
+        };
+      });
+      return { key: key.key, cells, majority, agree: cells.every((cell) => !cell.diverged) && majority !== null };
+    }
     const liveVersions = nodes.filter((id) => live.has(id)).map((id) => byNode.get(id) ?? null);
     const counts = new Map();
     for (const version of liveVersions) {
@@ -139,6 +175,10 @@ export function describeAction(action) {
       return `add writer ${action.client} on ${action.ns}`;
     case "remove_client":
       return `remove writer ${action.client}`;
+    case "set_replication":
+      return action.model?.kind === "replicated"
+        ? `write path replicated RF ${action.model.replication_factor} at ${action.model.write_level}`
+        : `write path ${String(action.model?.kind ?? "").replaceAll("_", " ")}`;
     case "push_event":
       return `push ${action.ns}/${action.key} from ${action.client}`;
     case "mode_change":

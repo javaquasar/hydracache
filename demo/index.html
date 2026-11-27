@@ -417,6 +417,38 @@
           <div id="tabpanel-clients" class="tab-panel" role="tabpanel" aria-labelledby="tab-clients" data-tabpanel="clients" hidden>
             <section class="glass-panel">
               <details class="panel" open>
+                <summary><h2>Write path</h2></summary>
+                <p class="panel-note">How a push travels. The product default is local-first; replicated models the opt-in placement and consistency rules.</p>
+                <div class="manual-controls">
+                  <label>
+                    Model
+                    <select id="replication-model" data-testid="replication-model">
+                      <option value="full_broadcast">full broadcast (simulator)</option>
+                      <option value="local_first">local-first (product default)</option>
+                      <option value="replicated">replicated (opt-in primitives)</option>
+                    </select>
+                  </label>
+                  <label>
+                    RF
+                    <input id="replication-factor" type="number" min="1" max="9" value="2" data-testid="replication-factor" />
+                  </label>
+                  <label>
+                    Write level
+                    <select id="write-level" data-testid="write-level">
+                      <option value="one">ONE</option>
+                      <option value="quorum" selected>QUORUM</option>
+                      <option value="all">ALL</option>
+                    </select>
+                  </label>
+                  <div class="button-row">
+                    <button id="apply-replication" type="button" data-testid="apply-replication">Apply</button>
+                  </div>
+                </div>
+                <div id="replication-panel" data-testid="replication-panel"></div>
+              </details>
+            </section>
+            <section class="glass-panel">
+              <details class="panel" open>
                 <summary><h2>Writers</h2></summary>
                 <p class="panel-note">A writer pushes values into one namespace. Push from its row, or click it on the graph.</p>
                 <div class="manual-controls">

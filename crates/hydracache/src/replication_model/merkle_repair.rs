@@ -2,9 +2,9 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
 
-use crate::cluster::{ClusterNodeId, PartitionId};
-use crate::grid::hardening::ReplicatedValueRecord;
-use crate::grid::ReplicatedSlot;
+use crate::cluster::ClusterNodeId;
+use crate::replication_model::value_record::ReplicatedValueRecord;
+use crate::replication_model::{PartitionId, ReplicatedSlot};
 
 /// Inclusive key range that needs repair.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]

@@ -1,21 +1,33 @@
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 use hydracache::{
-    ClientAck, ClientOp, ClusterNode, ClusterNodeConfig, ClusterNodeId, LogicalDuration,
-    LogicalTime, OutboundClusterMessage, StorageOpKind,
+    ClientAck, ClientOp, ClusterNode, ClusterNodeConfig, ClusterNodeId, ClusterNodeMessage,
+    ConsistencyLevel, EffectiveReplicationMap, LogicalDuration, LogicalTime,
+    OutboundClusterMessage, RegionId, Replicas, StorageOpKind,
 };
 
+use crate::replication::{
+    grid_write_id, level_name, GridWrite, GridWriteStatus, RepairStats, SimHint,
+    GRID_SEQUENCE_BASE, MAX_HINTS, MAX_HINT_AGE_MILLIS, MAX_HINT_BYTES, REPAIR_INTERVAL_STEPS,
+};
+use crate::snapshot::SIM_REGION;
 #[cfg(not(target_arch = "wasm32"))]
 use crate::SimRaftCluster;
+use crate::SimReplicationModel;
 use crate::{
     BoundedGrowthChecker, ControlActionV1, ControlApplyError, ElectionDriver,
     ElectionDriverSnapshot, History, InvariantChecker, InvariantReport, LinkFault,
     PartitionSymmetry, ReplayScriptV1, ResourceBudget, ResourceSample, SimClock, SimNetwork,
-    SimRng, SimSnapshot, SimStorage, SubscriberEventView, WorkloadConfig, WorkloadGenerator,
-    WorkloadOp, WorkloadResult, MAX_SUBSCRIBER_BUFFER,
+    SimSnapshot, SimStorage, SubscriberEventView, WorkloadConfig, WorkloadGenerator, WorkloadOp,
+    WorkloadResult, MAX_SUBSCRIBER_BUFFER,
+};
+use hydracache::{
+    apply_hint, partition_for_key, ClusterEpoch, Hint, HintBudget, HintOutcome, HintReplayDecision,
+    HintStore, InMemoryHintStore, MerkleTree, ReplicatedValueRecord,
 };
 
 const BUS_EVENT_UPSERTED: &str = "upserted";
+const BUS_EVENT_INVALIDATED: &str = "invalidated";
 
 /// Configuration for a deterministic simulation run.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -94,7 +106,27 @@ struct PendingSubscriberEvent {
     key: String,
     version: u64,
     commit_index: u64,
+    /// Routed write this event is about.
+    write: Option<u64>,
+    /// Step of the push, for the full-broadcast rule.
+    pushed_at_step: u64,
 }
+
+/// A client process the cluster knows about, and the member it is connected to.
+#[derive(Debug, Clone)]
+struct ClientSession {
+    /// Member the client's connection is open to. It coordinates the client's
+    /// writes, the way a product member handles writes from its own clients.
+    attached: Option<ClusterNodeId>,
+    /// Step at which the simulated `ClientUpsert` committed. `None` for the
+    /// built-in workload fleet, which the simulator treats as admitted with
+    /// the cluster (disclosed in the Raft control-plane gap register).
+    admitted_at_step: Option<u64>,
+}
+
+/// Product error text for a metadata proposal with no leader
+/// (`hydracache-cluster-raft`, `commit_command`).
+const NO_LEADER_PROPOSAL: &str = "no raft leader; retry metadata proposal after election";
 
 #[derive(Debug, Clone)]
 struct SimSubscriber {
@@ -128,7 +160,6 @@ pub enum ElectionBackend {
 pub struct SimWorld {
     seed: u64,
     cfg: SimConfig,
-    rng: SimRng,
     clock: SimClock,
     network: SimNetwork,
     election_backend: ElectionBackend,
@@ -144,6 +175,19 @@ pub struct SimWorld {
     nodes: BTreeMap<ClusterNodeId, SimNode>,
     clients: BTreeMap<String, SimClientActor>,
     subscribers: BTreeMap<String, SimSubscriber>,
+    sessions: BTreeMap<String, ClientSession>,
+    replication: SimReplicationModel,
+    grid_writes: BTreeMap<u64, GridWrite>,
+    /// Each holder's product hint store, and a display index of what it holds.
+    hint_stores: BTreeMap<ClusterNodeId, InMemoryHintStore>,
+    hints: Vec<SimHint>,
+    /// Hint copies on their way to their target, by (write, target).
+    hints_in_flight: BTreeSet<(u64, ClusterNodeId)>,
+    /// Newest routed write each node applied per key, as a product versioned
+    /// record (`true` = tombstone): an older copy never overwrites it.
+    applied_write: BTreeMap<(ClusterNodeId, String), (u64, bool)>,
+    repair_stats: RepairStats,
+    next_grid_write: u64,
     crashed_nodes: BTreeSet<ClusterNodeId>,
     isolated_nodes: BTreeSet<ClusterNodeId>,
     disabled_nodes: BTreeSet<ClusterNodeId>,
@@ -190,7 +234,6 @@ impl SimWorld {
         Self {
             seed,
             cfg,
-            rng: SimRng::from_seed(seed),
             clock: SimClock::default(),
             network: SimNetwork::from_seed(seed ^ 0x44_44_44_44),
             election_backend: ElectionBackend::Model,
@@ -212,6 +255,15 @@ impl SimWorld {
             nodes,
             clients: BTreeMap::new(),
             subscribers: BTreeMap::new(),
+            sessions: BTreeMap::new(),
+            replication: SimReplicationModel::default(),
+            grid_writes: BTreeMap::new(),
+            hint_stores: BTreeMap::new(),
+            hints: Vec::new(),
+            hints_in_flight: BTreeSet::new(),
+            applied_write: BTreeMap::new(),
+            repair_stats: RepairStats::default(),
+            next_grid_write: 1,
             crashed_nodes: BTreeSet::new(),
             isolated_nodes: BTreeSet::new(),
             disabled_nodes: BTreeSet::new(),
@@ -259,11 +311,17 @@ impl SimWorld {
             self.clock.now().as_millis()
         ));
 
+        self.reattach_sessions();
         self.drive_election();
         self.deliver_network();
         self.tick_nodes();
         self.issue_smoke_workload();
         self.drain_node_effects();
+        // After storage applied this step's deliveries, so a hint sees what
+        // its target already holds.
+        self.replay_hints();
+        self.repair_pass();
+        self.fail_unreachable_writes();
         self.deliver_subscriber_events();
         self.refresh_invariant_report();
     }
@@ -283,6 +341,11 @@ impl SimWorld {
     /// Return the current logical time.
     pub fn now(&self) -> LogicalTime {
         self.clock.now()
+    }
+
+    /// Return the deterministic event trace recorded so far.
+    pub fn trace(&self) -> &[String] {
+        &self.trace
     }
 
     /// Return the recorded workload history.
@@ -309,8 +372,42 @@ impl SimWorld {
     }
 
     /// Enable or disable the built-in smoke workload.
+    ///
+    /// # Panics
+    ///
+    /// Panics when enabling the workload under a routed replication model: the
+    /// workload and its invariants run on the full-broadcast model only.
     pub fn set_workload_enabled(&mut self, enabled: bool) {
+        assert!(
+            !(enabled && self.replication.is_routed()),
+            "the built-in workload runs only in the full_broadcast replication model"
+        );
         self.workload_enabled = enabled;
+    }
+
+    /// Choose the write path manual pushes follow. Fails loud while the
+    /// built-in workload runs (it and its invariants use the full-broadcast
+    /// model) and on a replication factor of zero.
+    pub fn set_replication(&mut self, model: SimReplicationModel) -> Result<(), ControlApplyError> {
+        if model.is_routed() && self.workload_enabled {
+            return Err(ControlApplyError::InvalidAction(
+                "turn the built-in workload off first: it runs only in the full_broadcast model"
+                    .to_owned(),
+            ));
+        }
+        if let SimReplicationModel::Replicated {
+            replication_factor, ..
+        } = model
+        {
+            if replication_factor == 0 {
+                return Err(ControlApplyError::InvalidAction(
+                    "replication_factor must be at least 1".to_owned(),
+                ));
+            }
+        }
+        self.replication = model;
+        self.record(format!("replication:{}", model.as_str()));
+        Ok(())
     }
 
     /// Return whether the built-in smoke workload is enabled.
@@ -347,13 +444,11 @@ impl SimWorld {
                 value,
                 ..
             } => self.push_event(client, ns, key, value),
-            ControlActionV1::Subscribe { client, ns, .. } => {
-                self.subscribe(client, ns);
-                Ok(())
-            }
+            ControlActionV1::Subscribe { client, ns, .. } => self.subscribe(client, ns),
             ControlActionV1::AddClient { client, ns, .. } => self.add_client(client, ns),
             ControlActionV1::Unsubscribe { client, ns, .. } => self.unsubscribe(client, ns),
             ControlActionV1::RemoveClient { client, .. } => self.remove_client(client),
+            ControlActionV1::SetReplication { model, .. } => self.set_replication(model),
             ControlActionV1::ModeChange { mode, .. } => {
                 self.mode = mode;
                 Ok(())
@@ -427,8 +522,15 @@ impl SimWorld {
                     ControlApplyError::InvalidAction("delay references an unknown link".to_owned())
                 }),
             ControlActionV1::Workload { enabled, .. } => {
-                self.set_workload_enabled(enabled);
-                Ok(())
+                if enabled && self.replication.is_routed() {
+                    Err(ControlApplyError::InvalidAction(
+                        "the built-in workload runs only in the full_broadcast replication model"
+                            .to_owned(),
+                    ))
+                } else {
+                    self.set_workload_enabled(enabled);
+                    Ok(())
+                }
             }
         };
         if result.is_ok() {
@@ -489,21 +591,32 @@ impl SimWorld {
     ///
     /// Creates only the subscriber (a reader); a writer with the same name is
     /// registered by [`Self::add_client`] or by its first push. Subscribing an
-    /// existing subscriber again is a no-op.
-    pub fn subscribe(&mut self, client: impl Into<String>, namespace: impl Into<String>) {
+    /// existing subscriber again is a no-op. A client name the cluster has not
+    /// seen is admitted first, which fails loud while there is no leader.
+    pub fn subscribe(
+        &mut self,
+        client: impl Into<String>,
+        namespace: impl Into<String>,
+    ) -> Result<(), ControlApplyError> {
         let client = client.into();
         let namespace = namespace.into();
         let id = subscriber_id(&client, &namespace);
-        self.subscribers
-            .entry(id.clone())
-            .or_insert_with(|| SimSubscriber {
+        if self.subscribers.contains_key(&id) {
+            return Ok(());
+        }
+        self.admit_client(&client)?;
+        self.subscribers.insert(
+            id.clone(),
+            SimSubscriber {
                 id,
                 client_id: client,
                 namespace,
                 pending: VecDeque::new(),
                 last_event: None,
                 dropped: 0,
-            });
+            },
+        );
+        Ok(())
     }
 
     /// Register a manual-mode writer client for a namespace without writing.
@@ -527,6 +640,7 @@ impl SimWorld {
                 "client '{client}' already exists"
             )));
         }
+        self.admit_client(&client)?;
         self.ensure_client_actor(&client, &namespace);
         self.record(format!("manual_add_client:{client}:{namespace}"));
         Ok(())
@@ -553,7 +667,8 @@ impl SimWorld {
 
     /// Remove a manual-mode writer client. Its operations already recorded in
     /// the history stay (they happened); a later push under the same name
-    /// registers a new writer. Fails loud when no such writer exists.
+    /// registers a new writer. The client process stays admitted and connected
+    /// (no `NodeLeft` is modeled). Fails loud when no such writer exists.
     pub fn remove_client(&mut self, client: impl Into<String>) -> Result<(), ControlApplyError> {
         let client = client.into();
         if self.clients.remove(&client).is_none() {
@@ -577,9 +692,13 @@ impl SimWorld {
         let namespace = namespace.into();
         let key = namespaced_key(&namespace, &key.into());
         let value = value.into().into_bytes();
-        let target = self.preferred_write_node().ok_or_else(|| {
-            ControlApplyError::InvalidAction("no live node for push_event".to_owned())
-        })?;
+        // The member the client is connected to handles the write, as in the
+        // product; the Raft leader is not on the data path. A client the
+        // cluster has not seen is admitted first (needs a leader).
+        let target = self.admit_client(&client)?;
+        if self.replication.is_routed() {
+            return self.push_routed(client, namespace, key, value, target);
+        }
         let numeric_id = self.ensure_client_actor(&client, &namespace);
         let op = WorkloadOp::Put {
             key: key.clone(),
@@ -606,10 +725,499 @@ impl SimWorld {
         self.record(format!("manual_push:{client}:{target}:{key}:{event_id:?}"));
         self.drain_node_effects();
         let version = value_version(&value);
-        self.enqueue_subscriber_events(&namespace, key, version, commit_index);
+        self.enqueue_subscriber_events(&namespace, key, version, commit_index, None);
         self.deliver_subscriber_events();
         self.refresh_invariant_report();
         Ok(())
+    }
+
+    /// A manual write under a routed model. The coordinator is the client's
+    /// member. `LocalFirst` writes there and invalidates every other member;
+    /// `Replicated` refuses the write when the product level cannot be met by
+    /// the live owners, otherwise forwards it to the primary, which replicates
+    /// to its backups. Acknowledgements come back as product `Ack` messages.
+    fn push_routed(
+        &mut self,
+        client: String,
+        namespace: String,
+        key: String,
+        value: Vec<u8>,
+        coordinator: ClusterNodeId,
+    ) -> Result<(), ControlApplyError> {
+        let (replicas, level, required_acks) = match self.replication {
+            SimReplicationModel::FullBroadcast => unreachable!("routed writes only"),
+            SimReplicationModel::LocalFirst => {
+                (Replicas::new(coordinator.clone(), Vec::new()), None, 1)
+            }
+            SimReplicationModel::Replicated {
+                replication_factor,
+                write_level,
+            } => {
+                let members = self.member_ids();
+                let replicas = hydracache::rank_replicas(
+                    &key,
+                    members.iter(),
+                    usize::try_from(replication_factor).unwrap_or(usize::MAX),
+                )
+                .ok_or_else(|| {
+                    ControlApplyError::InvalidAction("no member can own the key".to_owned())
+                })?;
+                // A down primary is replaced by the first live owner in rank
+                // order (backup promotion, without its phases), so a level
+                // the live owners can meet is not stuck behind a dead primary.
+                let live = self.live_node_ids();
+                let replicas = match replicas
+                    .all_nodes()
+                    .into_iter()
+                    .position(|node| live.contains(&node))
+                {
+                    Some(index) if index > 0 => {
+                        let mut ranked = replicas.all_nodes();
+                        let acting = ranked.remove(index);
+                        Replicas::new(acting, ranked)
+                    }
+                    _ => replicas,
+                };
+                let requirement =
+                    self.validate_level(write_level, &replicas)
+                        .map_err(|reason| {
+                            ControlApplyError::InvalidAction(format!(
+                                "write refused at {}: {reason}",
+                                level_name(write_level)
+                            ))
+                        })?;
+                (
+                    replicas,
+                    Some(write_level),
+                    requirement.required_total as u64,
+                )
+            }
+        };
+        let numeric_id = self.ensure_client_actor(&client, &namespace);
+        let op = WorkloadOp::Put {
+            key: key.clone(),
+            value: value.clone(),
+        };
+        let id = self.next_grid_write;
+        self.next_grid_write = self.next_grid_write.saturating_add(1);
+        let write = GridWrite {
+            id,
+            client: client.clone(),
+            key: key.clone(),
+            value: value.clone(),
+            coordinator: coordinator.clone(),
+            replicas: replicas.clone(),
+            level,
+            required_acks,
+            acks: 0,
+            backups_applied: BTreeSet::new(),
+            hinted: BTreeSet::new(),
+            status: GridWriteStatus::Pending,
+            started_at_step: self.steps,
+            acknowledged_at_step: None,
+        };
+        let sequence = write.sequence();
+        self.grid_writes.insert(id, write);
+        self.trim_grid_writes();
+
+        let event_id = self
+            .history
+            .record_invocation(numeric_id, op, self.clock.now());
+        self.accepted_ops = self.accepted_ops.saturating_add(1);
+        self.history.record_response(
+            event_id,
+            self.clock.now(),
+            WorkloadResult::Accepted { sequence },
+        );
+        let commit_index = self.history.completed().count() as u64;
+        if let Some(actor) = self.clients.get_mut(&client) {
+            actor.namespace = namespace.clone();
+            actor.last_op = Some(format!("push {key}"));
+            actor.in_flight = 0;
+        }
+        self.record(format!(
+            "manual_push:{client}:{coordinator}:{key}:{}:write={id}:primary={}",
+            self.replication.as_str(),
+            replicas.primary
+        ));
+
+        let put = ClusterNodeMessage::ReplicatePut {
+            key: key.clone(),
+            value: value.clone(),
+            sequence,
+        };
+        if replicas.primary == coordinator {
+            self.apply_at_primary(id, &coordinator);
+        } else {
+            // The coordinator is not an owner: forward to the primary.
+            self.send_one(coordinator.clone(), replicas.primary.clone(), put);
+        }
+        if self.replication == SimReplicationModel::LocalFirst {
+            for member in self.member_ids() {
+                if member != coordinator {
+                    self.send_one(
+                        coordinator.clone(),
+                        member,
+                        ClusterNodeMessage::ReplicateInvalidate {
+                            key: key.clone(),
+                            sequence,
+                        },
+                    );
+                }
+            }
+        }
+        self.drain_node_effects();
+        let version = value_version(&value);
+        self.enqueue_subscriber_events(&namespace, key, version, commit_index, Some(id));
+        self.deliver_subscriber_events();
+        self.refresh_invariant_report();
+        Ok(())
+    }
+
+    /// The primary applies a routed write it received (or took locally as the
+    /// coordinator) and sends a copy to each backup.
+    fn apply_at_primary(&mut self, id: u64, primary: &ClusterNodeId) {
+        let Some(write) = self.grid_writes.get(&id) else {
+            return;
+        };
+        let coordinator = write.coordinator.clone();
+        let backups = write.replicas.backups.clone();
+        let put = ClusterNodeMessage::ReplicatePut {
+            key: write.key.clone(),
+            value: write.value.clone(),
+            sequence: write.sequence(),
+        };
+        if *primary == coordinator {
+            // Local apply: the product node acknowledges to the sender, here
+            // itself; `send_outbound` counts that acknowledgement directly.
+            self.applied_write
+                .insert((primary.clone(), write.key.clone()), (id, false));
+            if let Some(node) = self.nodes.get_mut(primary) {
+                node.node.handle_message(coordinator.clone(), put.clone());
+            }
+        }
+        for backup in backups {
+            if self.reachable(primary, &backup) {
+                self.send_one(primary.clone(), backup, put.clone());
+            } else {
+                self.store_hint(id, primary, backup);
+            }
+        }
+    }
+
+    /// Whether `from` can send to `to` now: both live and the link up. This
+    /// is the primary's failure detector; the simulator's is perfect.
+    fn reachable(&self, from: &ClusterNodeId, to: &ClusterNodeId) -> bool {
+        let live = self.live_node_ids();
+        live.contains(from) && live.contains(to) && self.network.can_deliver(from, to)
+    }
+
+    /// Keep a hint for a backup the primary cannot reach, in the holder's
+    /// product `InMemoryHintStore`. The write was validated against the live
+    /// owners, so this backup's acknowledgement is not required by the level
+    /// (the product's `RequiredReplicaMiss` refusal happened before the write).
+    fn store_hint(&mut self, id: u64, holder: &ClusterNodeId, target: ClusterNodeId) {
+        let Some(write) = self.grid_writes.get(&id) else {
+            return;
+        };
+        let now = self.clock.now().as_millis();
+        let key = write.key.clone();
+        let hint = Hint::new(
+            target.clone(),
+            key.clone(),
+            partition_for_key(&key, 1),
+            id,
+            ClusterEpoch::new(0),
+            write.value.clone(),
+            now,
+        );
+        let store = self.hint_stores.entry(holder.clone()).or_insert_with(|| {
+            InMemoryHintStore::new(HintBudget::new(
+                MAX_HINTS,
+                MAX_HINT_BYTES,
+                std::time::Duration::from_millis(MAX_HINT_AGE_MILLIS),
+            ))
+        });
+        match store.store(hint, false, now) {
+            Ok(HintOutcome::Stored) => {
+                if let Some(write) = self.grid_writes.get_mut(&id) {
+                    write.hinted.insert(target.clone());
+                }
+                self.hints.push(SimHint {
+                    write: id,
+                    key,
+                    holder: holder.clone(),
+                    target: target.clone(),
+                    created_at_step: self.steps,
+                });
+                self.repair_stats.hints_stored = self.repair_stats.hints_stored.saturating_add(1);
+                self.record(format!("hint_stored:{id}:{holder}->{target}"));
+            }
+            outcome => {
+                self.repair_stats.hints_dropped = self.repair_stats.hints_dropped.saturating_add(1);
+                self.record(format!("hint_dropped:{id}:{target}:{outcome:?}"));
+            }
+        }
+    }
+
+    /// The product versioned record `node` holds for `key`, from the newest
+    /// routed write it applied.
+    fn record_at(&self, node: &ClusterNodeId, key: &str) -> Option<ReplicatedValueRecord> {
+        self.applied_write
+            .get(&(node.clone(), key.to_owned()))
+            .map(|(id, tombstone)| versioned_record(key, *id, *tombstone))
+    }
+
+    /// Replay the hints of each holder whose target is reachable again, with
+    /// the product `drain_for` and `apply_hint`: a hint never overwrites a
+    /// newer value the target holds. A holder that is down loses its store
+    /// (the product hint store is in memory).
+    fn replay_hints(&mut self) {
+        let holders = self.hint_stores.keys().cloned().collect::<Vec<_>>();
+        for holder in holders {
+            if self.crashed_nodes.contains(&holder) || self.disabled_nodes.contains(&holder) {
+                let lost = self
+                    .hint_stores
+                    .remove(&holder)
+                    .map_or(0, |store| store.len());
+                if lost > 0 {
+                    self.repair_stats.hints_dropped =
+                        self.repair_stats.hints_dropped.saturating_add(lost as u64);
+                    self.record(format!("hints_lost:{holder}:{lost}"));
+                }
+                for hint in self.hints.iter().filter(|hint| hint.holder == holder) {
+                    if let Some(write) = self.grid_writes.get_mut(&hint.write) {
+                        write.hinted.remove(&hint.target);
+                    }
+                }
+                self.hints.retain(|hint| hint.holder != holder);
+                continue;
+            }
+            let targets = self
+                .hints
+                .iter()
+                .filter(|hint| hint.holder == holder)
+                .map(|hint| hint.target.clone())
+                .collect::<BTreeSet<_>>();
+            for target in targets {
+                if !self.reachable(&holder, &target) {
+                    continue;
+                }
+                let drained = self
+                    .hint_stores
+                    .get_mut(&holder)
+                    .map(|store| store.drain_for(&target).unwrap_or_default())
+                    .unwrap_or_default();
+                self.hints
+                    .retain(|hint| !(hint.holder == holder && hint.target == target));
+                for hint in drained {
+                    let id = hint.version;
+                    if let Some(write) = self.grid_writes.get_mut(&id) {
+                        write.hinted.remove(&target);
+                    }
+                    let current = self.record_at(&target, &hint.key);
+                    match apply_hint(current.as_ref(), &hint) {
+                        Ok(HintReplayDecision::Replayed { .. }) => {
+                            self.repair_stats.hints_replayed =
+                                self.repair_stats.hints_replayed.saturating_add(1);
+                            self.record(format!("hint_replayed:{id}:{holder}->{target}"));
+                            self.hints_in_flight.insert((id, target.clone()));
+                            self.send_one(
+                                holder.clone(),
+                                target.clone(),
+                                ClusterNodeMessage::ReplicatePut {
+                                    key: hint.key,
+                                    value: hint.sealed,
+                                    sequence: GRID_SEQUENCE_BASE + id,
+                                },
+                            );
+                        }
+                        _ => {
+                            self.repair_stats.hints_suppressed =
+                                self.repair_stats.hints_suppressed.saturating_add(1);
+                            self.record(format!("hint_suppressed:{id}:{target}"));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Anti-entropy, every `REPAIR_INTERVAL_STEPS`, with the product
+    /// `MerkleTree`: for each acting primary and backup pair, the trees of
+    /// their versioned records over the keys they share are diffed, and each
+    /// mismatching key where the primary holds the newest finished write is
+    /// copied to the backup (unless a hint for it is pending).
+    fn repair_pass(&mut self) {
+        if !matches!(self.replication, SimReplicationModel::Replicated { .. })
+            || self.steps == 0
+            || !self.steps.is_multiple_of(REPAIR_INTERVAL_STEPS)
+        {
+            return;
+        }
+        let mut latest = BTreeMap::<String, u64>::new();
+        for write in self.grid_writes.values() {
+            if write.status != GridWriteStatus::Pending {
+                latest.insert(write.key.clone(), write.id);
+            }
+        }
+        let mut pairs = BTreeMap::<(ClusterNodeId, ClusterNodeId), Vec<u64>>::new();
+        for id in latest.into_values() {
+            let write = &self.grid_writes[&id];
+            for backup in &write.replicas.backups {
+                pairs
+                    .entry((write.replicas.primary.clone(), backup.clone()))
+                    .or_default()
+                    .push(id);
+            }
+        }
+        let partition = partition_for_key("", 1);
+        let mut copies = Vec::new();
+        for ((source, target), ids) in pairs {
+            if !self.reachable(&source, &target) {
+                continue;
+            }
+            let records = |node: &ClusterNodeId| {
+                ids.iter()
+                    .filter_map(|id| {
+                        let key = &self.grid_writes[id].key;
+                        self.record_at(node, key)
+                            .map(|record| (key.clone(), record))
+                    })
+                    .collect::<BTreeMap<_, _>>()
+            };
+            let (left, right) = (records(&source), records(&target));
+            let diff = MerkleTree::from_records(partition, &left)
+                .diff(&MerkleTree::from_records(partition, &right));
+            for range in diff {
+                let Some(&id) = ids
+                    .iter()
+                    .find(|id| self.grid_writes[*id].key == range.start)
+                else {
+                    continue;
+                };
+                let primary_has_latest = left
+                    .get(&range.start)
+                    .is_some_and(|record| record.version == id && !record.is_tombstone());
+                let hinted = self
+                    .hints
+                    .iter()
+                    .any(|hint| hint.write == id && hint.target == target);
+                if primary_has_latest && !hinted {
+                    let write = &self.grid_writes[&id];
+                    copies.push((
+                        source.clone(),
+                        target.clone(),
+                        ClusterNodeMessage::ReplicatePut {
+                            key: write.key.clone(),
+                            value: write.value.clone(),
+                            sequence: write.sequence(),
+                        },
+                    ));
+                }
+            }
+        }
+        self.repair_stats.last_repair_step = Some(self.steps);
+        for (from, to, message) in copies {
+            self.repair_stats.repair_copies = self.repair_stats.repair_copies.saturating_add(1);
+            self.record(format!("repair_copy:{from}->{to}"));
+            self.send_one(from, to, message);
+        }
+    }
+
+    /// A product `Ack` for a routed write arrived at `at` from `from`.
+    fn on_grid_ack(&mut self, at: &ClusterNodeId, from: &ClusterNodeId, id: u64) {
+        let step = self.steps;
+        let Some(write) = self.grid_writes.get_mut(&id) else {
+            return;
+        };
+        let primary = write.replicas.primary.clone();
+        let coordinator = write.coordinator.clone();
+        if *at == primary && write.replicas.backups.contains(from) {
+            write.backups_applied.insert(from.clone());
+            if primary == coordinator {
+                write.acknowledge(step);
+            } else {
+                // The primary passes the backup's acknowledgement on.
+                let sequence = write.sequence();
+                self.send_one(primary, coordinator, ClusterNodeMessage::Ack { sequence });
+            }
+        } else if *at == coordinator && *from == primary {
+            // The primary's own apply, or a backup acknowledgement it relayed.
+            write.acknowledge(step);
+        }
+    }
+
+    /// A pending routed write whose level the live owners can no longer meet
+    /// fails loud with the product's reason.
+    fn fail_unreachable_writes(&mut self) {
+        let pending = self
+            .grid_writes
+            .values()
+            .filter(|write| write.status == GridWriteStatus::Pending)
+            .filter_map(|write| {
+                write
+                    .level
+                    .map(|level| (write.id, level, write.replicas.clone()))
+            })
+            .collect::<Vec<_>>();
+        for (id, level, replicas) in pending {
+            if let Err(reason) = self.validate_level(level, &replicas) {
+                if let Some(write) = self.grid_writes.get_mut(&id) {
+                    write.status = GridWriteStatus::Failed(reason);
+                }
+                self.record(format!("write_failed:{id}"));
+            }
+        }
+    }
+
+    /// Product acknowledgement rule for `replicas` against the live nodes,
+    /// all in one region.
+    fn validate_level(
+        &self,
+        level: ConsistencyLevel,
+        replicas: &Replicas,
+    ) -> Result<hydracache::AckRequirement, String> {
+        let map = EffectiveReplicationMap::new(replicas.clone());
+        let region = RegionId::new(SIM_REGION);
+        let topology = replicas
+            .all_nodes()
+            .into_iter()
+            .map(|node| (node, region.clone()))
+            .collect::<BTreeMap<_, _>>();
+        level
+            .validate(&map, &topology, &region, &self.live_node_ids())
+            .map_err(|error| error.reason)
+    }
+
+    /// Cluster members that can own keys: every node not disabled. A crashed
+    /// or isolated member still owns its keys; that is what acknowledgements
+    /// and failures are about.
+    fn member_ids(&self) -> Vec<ClusterNodeId> {
+        self.nodes
+            .keys()
+            .filter(|node| !self.disabled_nodes.contains(*node))
+            .cloned()
+            .collect()
+    }
+
+    fn trim_grid_writes(&mut self) {
+        let finished = self
+            .grid_writes
+            .values()
+            .filter(|write| write.status != GridWriteStatus::Pending)
+            .map(|write| write.id)
+            .collect::<Vec<_>>();
+        let excess = finished
+            .len()
+            .saturating_sub(crate::replication::MAX_WRITES_RENDERED * 4);
+        for id in finished.into_iter().take(excess) {
+            self.grid_writes.remove(&id);
+        }
+    }
+
+    fn send_one(&mut self, from: ClusterNodeId, to: ClusterNodeId, message: ClusterNodeMessage) {
+        self.send_outbound(vec![OutboundClusterMessage { from, to, message }]);
     }
 
     /// Crash a node if it exists.
@@ -906,7 +1514,7 @@ impl SimWorld {
             links,
             in_flight,
             over_budget,
-            keys: crate::snapshot::key_views_from_storage(key_observations),
+            keys: self.with_owners(crate::snapshot::key_views_from_storage(key_observations)),
             clients: self
                 .clients
                 .iter()
@@ -915,7 +1523,7 @@ impl SimWorld {
                     namespace: actor.namespace.clone(),
                     last_op: actor.last_op.clone(),
                     in_flight: actor.in_flight,
-                    connected_node: self.connected_node_for(id),
+                    connected_node: self.session_node(id),
                 })
                 .collect(),
             subscribers: self
@@ -928,7 +1536,46 @@ impl SimWorld {
                     last_event: subscriber.last_event.clone(),
                     lag: subscriber.pending.len() as u64,
                     dropped: subscriber.dropped,
-                    connected_node: self.connected_node_for(&subscriber.id),
+                    connected_node: self.session_node(&subscriber.client_id),
+                })
+                .collect(),
+            replication: self.replication_view(),
+            hints: self.hints.iter().map(SimHint::view).collect(),
+            repair: crate::snapshot::RepairView {
+                interval_steps: REPAIR_INTERVAL_STEPS,
+                last_run_step: self.repair_stats.last_repair_step,
+                hints_stored: self.repair_stats.hints_stored,
+                hints_replayed: self.repair_stats.hints_replayed,
+                hints_suppressed: self.repair_stats.hints_suppressed,
+                hints_dropped: self.repair_stats.hints_dropped,
+                repair_copies: self.repair_stats.repair_copies,
+                disclosure: "product hint store (InMemoryHintStore, apply_hint), versioned records and MerkleTree diff, driven by the simulator: a perfect failure detector, one partition, a pass every few steps".to_owned(),
+            },
+            writes: {
+                let mut writes = self
+                    .grid_writes
+                    .values()
+                    .rev()
+                    .take(crate::replication::MAX_WRITES_RENDERED)
+                    .map(GridWrite::view)
+                    .collect::<Vec<_>>();
+                writes.reverse();
+                writes
+            },
+            admitted_clients: self
+                .sessions
+                .iter()
+                .filter_map(|(id, session)| {
+                    session.admitted_at_step.map(|admitted_at_step| {
+                        crate::snapshot::AdmittedClientView {
+                            id: id.clone(),
+                            admitted_at_step,
+                            connected_node: session
+                                .attached
+                                .as_ref()
+                                .map(|node| node.as_str().to_owned()),
+                        }
+                    })
                 })
                 .collect(),
             sync_progress,
@@ -940,6 +1587,7 @@ impl SimWorld {
             checked_invariants: Self::checked_invariants(),
             first_violation_step: self.first_violation_step,
             consistency: self.consistency_views(),
+            consistency_scope: self.consistency_replicas().1,
             verdict: crate::snapshot::VerdictView::from_report(&self.invariant_report),
             progress: crate::snapshot::progress_from_report(
                 committed_entries,
@@ -948,18 +1596,77 @@ impl SimWorld {
         }
     }
 
-    /// Per-level satisfiability on this world's topology: every node is a
-    /// replica in one region, and only live (not crashed, disabled, or
-    /// isolated) nodes can acknowledge. Partitioned individual links are not
-    /// considered. See `crate::consistency` for the product-parity contract.
+    /// Per-level satisfiability on this world's topology, computed by the
+    /// product rules (`hydracache::ConsistencyLevel`, built for every target
+    /// since TD-0014): every node is a replica in one region, and only live
+    /// (not crashed, disabled, or isolated) nodes can acknowledge. Partitioned
+    /// individual links are not considered.
     fn consistency_views(&self) -> Vec<crate::snapshot::ConsistencyLevelView> {
-        let total = self.nodes.len();
+        let replicas = self.consistency_replicas().0;
+        let map = EffectiveReplicationMap::new(replicas);
+        let region = RegionId::new(SIM_REGION);
+        let topology = self
+            .nodes
+            .keys()
+            .map(|node| (node.clone(), region.clone()))
+            .collect::<BTreeMap<_, _>>();
         let live = self
             .live_node_ids()
-            .iter()
-            .filter(|node_id| self.nodes.contains_key(*node_id))
-            .count();
-        crate::consistency::consistency_level_views(total, live)
+            .into_iter()
+            .filter(|node_id| self.nodes.contains_key(node_id))
+            .collect::<BTreeSet<_>>();
+        crate::replication::ALL_LEVELS
+            .into_iter()
+            .map(|level| {
+                let requirement = level.required_acks(&map, &topology, &region);
+                let verdict = level.validate(&map, &topology, &region, &live);
+                crate::snapshot::ConsistencyLevelView {
+                    level: level_name(level).to_owned(),
+                    total_replicas: requirement.total_replicas as u64,
+                    required_acks: requirement.required_total as u64,
+                    live_replicas: requirement
+                        .replicas
+                        .iter()
+                        .filter(|node| live.contains(*node))
+                        .count() as u64,
+                    satisfiable: verdict.is_ok(),
+                    reason: verdict.err().map(|error| error.reason),
+                }
+            })
+            .collect()
+    }
+
+    /// The replica set the consistency panel is computed on, and how to say
+    /// it: in `replicated`, the owners of the most recently written key (each
+    /// key has its own owners); otherwise every node.
+    fn consistency_replicas(&self) -> (Replicas, String) {
+        if let SimReplicationModel::Replicated {
+            replication_factor, ..
+        } = self.replication
+        {
+            if let Some(write) = self.grid_writes.values().next_back() {
+                let rf = usize::try_from(replication_factor).unwrap_or(usize::MAX);
+                if let Some(owners) =
+                    hydracache::rank_replicas(&write.key, self.member_ids().iter(), rf)
+                {
+                    let names = owners
+                        .all_nodes()
+                        .iter()
+                        .map(ToString::to_string)
+                        .collect::<Vec<_>>()
+                        .join(", ");
+                    return (owners, format!("owners of {} ({names})", write.key));
+                }
+            }
+        }
+        let mut nodes = self.nodes.keys().cloned();
+        let primary = nodes
+            .next()
+            .expect("a simulated world always has at least one node");
+        (
+            Replicas::new(primary, nodes.collect()),
+            "every node is a replica".to_owned(),
+        )
     }
 
     /// Serialize the canonical UI snapshot as JSON.
@@ -967,28 +1674,166 @@ impl SimWorld {
         self.snapshot().to_json()
     }
 
-    /// Deterministically route a client/subscriber id to a live cluster node
-    /// (smart-client routing), so the demo can draw which node it connects to.
-    /// `None` when no node is currently live. `self.nodes` is a `BTreeMap`, so the
-    /// candidate order is stable and the routing is seed-reproducible.
-    fn connected_node_for(&self, id: &str) -> Option<String> {
-        let live = self
-            .nodes
-            .keys()
-            .filter(|node| {
-                !self.crashed_nodes.contains(*node) && !self.disabled_nodes.contains(*node)
-            })
+    fn replication_view(&self) -> crate::snapshot::ReplicationView {
+        let (replication_factor, write_level, disclosure) = match self.replication {
+            SimReplicationModel::FullBroadcast => (
+                None,
+                None,
+                "simulator model: the client's member broadcasts every write to every member; not the product's write path",
+            ),
+            SimReplicationModel::LocalFirst => (
+                None,
+                None,
+                "product default: the client's member writes locally and the other members drop their copy",
+            ),
+            SimReplicationModel::Replicated {
+                replication_factor,
+                write_level,
+            } => (
+                Some(replication_factor),
+                Some(level_name(write_level).to_owned()),
+                "model of the opt-in replication primitives (rendezvous owners, consistency levels); the product has no runtime replicated write path yet",
+            ),
+        };
+        crate::snapshot::ReplicationView {
+            model: self.replication.as_str().to_owned(),
+            replication_factor,
+            write_level,
+            disclosure: disclosure.to_owned(),
+        }
+    }
+
+    fn with_owners(
+        &self,
+        mut keys: Vec<crate::snapshot::KeyView>,
+    ) -> Vec<crate::snapshot::KeyView> {
+        if let SimReplicationModel::Replicated {
+            replication_factor, ..
+        } = self.replication
+        {
+            let members = self.member_ids();
+            let rf = usize::try_from(replication_factor).unwrap_or(usize::MAX);
+            for key in &mut keys {
+                key.owners =
+                    hydracache::rank_replicas(&key.key, members.iter(), rf).map(|replicas| {
+                        crate::snapshot::KeyOwnersView {
+                            primary: replicas.primary.to_string(),
+                            backups: replicas.backups.iter().map(ToString::to_string).collect(),
+                        }
+                    });
+            }
+        }
+        keys
+    }
+
+    /// Member a client's connection is open to, as the snapshot reports it.
+    fn session_node(&self, client: &str) -> Option<String> {
+        self.sessions
+            .get(client)
+            .and_then(|session| session.attached.as_ref())
             .map(|node| node.as_str().to_owned())
-            .collect::<Vec<_>>();
+    }
+
+    /// Pick a live member for a client connection: a stable hash of the client
+    /// name over the live members, so a seed always reproduces the same
+    /// routing. `self.nodes` is a `BTreeMap`, so the candidate order is stable.
+    fn pick_member(&self, client: &str) -> Option<ClusterNodeId> {
+        let live = self.live_node_ids().into_iter().collect::<Vec<_>>();
         if live.is_empty() {
             return None;
         }
         let mut hash: u64 = 0xcbf2_9ce4_8422_2325;
-        for byte in id.as_bytes() {
+        for byte in client.as_bytes() {
             hash ^= u64::from(*byte);
             hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
         }
         Some(live[(hash % live.len() as u64) as usize].clone())
+    }
+
+    /// The member a client writes through, reconnecting it first when its
+    /// member is down. A workload client is connected on first use.
+    fn attached_node(&mut self, client: &str) -> Option<ClusterNodeId> {
+        let live = self.live_node_ids();
+        if let Some(node) = self
+            .sessions
+            .get(client)
+            .and_then(|session| session.attached.clone())
+            .filter(|node| live.contains(node))
+        {
+            return Some(node);
+        }
+        let node = self.pick_member(client);
+        let session = self
+            .sessions
+            .entry(client.to_owned())
+            .or_insert(ClientSession {
+                attached: None,
+                admitted_at_step: None,
+            });
+        let previous = std::mem::replace(&mut session.attached, node.clone());
+        if previous != node {
+            self.record(format!(
+                "client_connect:{client}:{}->{}",
+                previous.as_ref().map_or("-", |node| node.as_str()),
+                node.as_ref().map_or("-", |node| node.as_str())
+            ));
+        }
+        node
+    }
+
+    /// Reconnect every client whose member went down (crashed, disabled or
+    /// isolated) to a live one. Reconnecting is not a metadata change: the
+    /// client's `ClientUpsert` is already committed.
+    fn reattach_sessions(&mut self) {
+        let live = self.live_node_ids();
+        let stale = self
+            .sessions
+            .iter()
+            .filter(|(_, session)| {
+                session
+                    .attached
+                    .as_ref()
+                    .is_none_or(|node| !live.contains(node))
+            })
+            .map(|(client, _)| client.clone())
+            .collect::<Vec<_>>();
+        for client in stale {
+            self.attached_node(&client);
+        }
+    }
+
+    /// Admit a client through the simulated Raft metadata path and connect it,
+    /// returning the member that coordinates its writes. A client already
+    /// admitted only reconnects if its member is down. A new client needs a
+    /// live leader to commit its `ClientUpsert`; without one this fails loud
+    /// with the product's no-leader error instead of falling back.
+    fn admit_client(&mut self, client: &str) -> Result<ClusterNodeId, ControlApplyError> {
+        if !self.sessions.contains_key(client) {
+            let live = self.live_node_ids();
+            let leader = self
+                .election_snapshot()
+                .leader
+                .filter(|leader| live.contains(leader))
+                .ok_or_else(|| {
+                    ControlApplyError::InvalidAction(format!(
+                        "cannot admit client '{client}': {NO_LEADER_PROPOSAL}"
+                    ))
+                })?;
+            let step = self.steps;
+            self.sessions.insert(
+                client.to_owned(),
+                ClientSession {
+                    attached: None,
+                    admitted_at_step: Some(step),
+                },
+            );
+            self.record(format!(
+                "client_upsert:{client}:leader={leader}:step={step}"
+            ));
+        }
+        self.attached_node(client).ok_or_else(|| {
+            ControlApplyError::InvalidAction(format!("no live member for client '{client}'"))
+        })
     }
 
     /// Serialize the canonical invariant verdict as JSON.
@@ -1010,9 +1855,80 @@ impl SimWorld {
                 self.network.record_target_down(&from, &to);
                 continue;
             }
-            if let Some(target) = self.nodes.get_mut(&to) {
-                target.node.handle_message(from, message);
+            if self.drop_stale_copy(&from, &to, &message) {
+                continue;
             }
+            let routed = self.routed_delivery(&from, &to, &message);
+            if let Some(target) = self.nodes.get_mut(&to) {
+                target.node.handle_message(from.clone(), message);
+            }
+            match routed {
+                Some(RoutedDelivery::Forward(id)) => self.apply_at_primary(id, &to),
+                Some(RoutedDelivery::Ack(id)) => self.on_grid_ack(&to, &from, id),
+                None => {}
+            }
+        }
+    }
+
+    /// Versioned apply for routed copies and invalidations, with the product
+    /// `ReplicatedValueRecord::merge` (higher version wins, a tombstone wins a
+    /// tie): a copy that loses to what `to` holds is acknowledged but not
+    /// applied. A suppressed hint replay is counted, as `apply_hint` does.
+    fn drop_stale_copy(
+        &mut self,
+        from: &ClusterNodeId,
+        to: &ClusterNodeId,
+        message: &ClusterNodeMessage,
+    ) -> bool {
+        let (key, sequence, tombstone) = match message {
+            ClusterNodeMessage::ReplicatePut { key, sequence, .. } => (key, *sequence, false),
+            ClusterNodeMessage::ReplicateInvalidate { key, sequence } => (key, *sequence, true),
+            _ => return false,
+        };
+        let Some(id) = grid_write_id(sequence) else {
+            return false;
+        };
+        let was_hint = self.hints_in_flight.remove(&(id, to.clone()));
+        let candidate = versioned_record(key, id, tombstone);
+        if let Some(current) = self.record_at(to, key) {
+            if current.merge(candidate.clone()) != candidate {
+                if was_hint {
+                    self.repair_stats.hints_suppressed =
+                        self.repair_stats.hints_suppressed.saturating_add(1);
+                }
+                self.record(format!("stale_copy_skipped:{id}:{to}"));
+                self.send_one(
+                    to.clone(),
+                    from.clone(),
+                    ClusterNodeMessage::Ack { sequence },
+                );
+                return true;
+            }
+        }
+        self.applied_write
+            .insert((to.clone(), key.clone()), (id, tombstone));
+        false
+    }
+
+    /// Whether a delivered message is a step of a routed write: the forward to
+    /// the primary, or an acknowledgement.
+    fn routed_delivery(
+        &self,
+        from: &ClusterNodeId,
+        to: &ClusterNodeId,
+        message: &ClusterNodeMessage,
+    ) -> Option<RoutedDelivery> {
+        match message {
+            ClusterNodeMessage::ReplicatePut { sequence, .. } => {
+                let id = grid_write_id(*sequence)?;
+                let write = self.grid_writes.get(&id)?;
+                (*from == write.coordinator && *to == write.replicas.primary)
+                    .then_some(RoutedDelivery::Forward(id))
+            }
+            ClusterNodeMessage::Ack { sequence } => {
+                grid_write_id(*sequence).map(RoutedDelivery::Ack)
+            }
+            _ => None,
         }
     }
 
@@ -1141,14 +2057,13 @@ impl SimWorld {
         if !self.workload_enabled {
             return;
         }
-        let live_nodes = self.live_node_ids().into_iter().collect::<Vec<_>>();
-        let node_count = live_nodes.len();
-        if node_count == 0 {
+        if self.live_node_ids().is_empty() {
             return;
         }
-        let node_index = self.rng.next_index(node_count);
-        let node_id = live_nodes[node_index].clone();
         let (client, op) = self.workload.next_invocation();
+        let Some(node_id) = self.attached_node(&workload_session_id(client)) else {
+            return;
+        };
         if let Some(sim_node) = self.nodes.get_mut(&node_id) {
             let event_id = self
                 .history
@@ -1198,6 +2113,15 @@ impl SimWorld {
 
     fn send_outbound(&mut self, outbound: Vec<OutboundClusterMessage>) {
         for outbound in outbound {
+            if outbound.from == outbound.to {
+                // A node acknowledging its own local apply of a routed write.
+                if let ClusterNodeMessage::Ack { sequence } = &outbound.message {
+                    if let Some(id) = grid_write_id(*sequence) {
+                        self.on_grid_ack(&outbound.to, &outbound.from, id);
+                    }
+                }
+                continue;
+            }
             self.record(format!(
                 "send:{}->{}:{:?}",
                 outbound.from, outbound.to, outbound.message
@@ -1211,7 +2135,10 @@ impl SimWorld {
         }
     }
 
-    fn preferred_write_node(&self) -> Option<ClusterNodeId> {
+    /// Source for copying state to a restarted or rejoining node: the live
+    /// leader, else the first live node. This models state transfer only; it
+    /// is not the write path (writes go through the client's member).
+    fn catch_up_source(&self) -> Option<ClusterNodeId> {
         let live = self.live_node_ids();
         self.election_snapshot()
             .leader
@@ -1223,8 +2150,21 @@ impl SimWorld {
         if self.crashed_nodes.contains(node_id) || self.disabled_nodes.contains(node_id) {
             return;
         }
+        if self.replication.is_routed() {
+            // A product member keeps its cache in memory: it restarts cold.
+            // In `replicated`, hints and repair refill the keys it owns; it
+            // never receives keys it does not own.
+            if let Some(node) = self.nodes.get_mut(node_id) {
+                node.storage
+                    .replace_visible_default_zone_from(&SimStorage::new());
+                node.applied_at.clear();
+            }
+            self.applied_write.retain(|(node, _), _| node != node_id);
+            self.record(format!("cold_restart:{node_id}"));
+            return;
+        }
         let Some(source_id) = self
-            .preferred_write_node()
+            .catch_up_source()
             .filter(|source| source != node_id)
             .or_else(|| self.nodes.keys().find(|source| *source != node_id).cloned())
         else {
@@ -1283,6 +2223,7 @@ impl SimWorld {
         key: String,
         version: u64,
         commit_index: u64,
+        write: Option<u64>,
     ) {
         for subscriber in self
             .subscribers
@@ -1298,42 +2239,82 @@ impl SimWorld {
                 key: key.clone(),
                 version,
                 commit_index,
+                write,
+                pushed_at_step: self.steps,
             });
         }
     }
 
+    /// A subscriber hears from the member its client is connected to, as a
+    /// product cache event stream does: the event is delivered once that
+    /// member applied the write (`upserted`) or, in `local_first`, the
+    /// invalidation (`invalidated`). A newer write of the key covers an older
+    /// event. In `replicated`, a member that does not own the key never stores
+    /// it, so its subscribers get no event for it (the event is dropped from
+    /// their queue and traced).
     fn deliver_subscriber_events(&mut self) {
-        let live_count = self.live_node_ids().len();
-        let completed = self.history.completed().count() as u64;
-        let storage_versions = self
-            .nodes
-            .iter()
-            .filter(|(node_id, _)| {
-                !self.crashed_nodes.contains(*node_id)
-                    && !self.disabled_nodes.contains(*node_id)
-                    && !self.isolated_nodes.contains(*node_id)
-            })
-            .map(|(node_id, sim_node)| (node_id.clone(), sim_node.storage.visible_checksums()))
-            .collect::<Vec<_>>();
-        for subscriber in self.subscribers.values_mut() {
-            let Some(event) = subscriber.pending.front() else {
-                continue;
-            };
-            if completed < event.commit_index {
-                continue;
-            }
-            let matching = storage_versions
-                .iter()
-                .filter(|(_, values)| values.get(&event.key).copied() == Some(event.version))
-                .count();
-            if live_count > 0 && matching == live_count {
+        let step = self.steps;
+        let ids = self.subscribers.keys().cloned().collect::<Vec<_>>();
+        for id in ids {
+            loop {
+                let Some(subscriber) = self.subscribers.get(&id) else {
+                    break;
+                };
+                let Some(event) = subscriber.pending.front() else {
+                    break;
+                };
+                let Some(member) = self
+                    .sessions
+                    .get(&subscriber.client_id)
+                    .and_then(|session| session.attached.clone())
+                else {
+                    break;
+                };
+                let outcome = match event.write {
+                    Some(write_id) => match self
+                        .applied_write
+                        .get(&(member.clone(), event.key.clone()))
+                    {
+                        Some((applied, tombstone)) if *applied >= write_id => Some(if *tombstone {
+                            BUS_EVENT_INVALIDATED
+                        } else {
+                            BUS_EVENT_UPSERTED
+                        }),
+                        _ => {
+                            let owns = self.grid_writes.get(&write_id).is_none_or(|write| {
+                                self.replication == SimReplicationModel::LocalFirst
+                                    || write.replicas.all_nodes().contains(&member)
+                            });
+                            if owns {
+                                None
+                            } else {
+                                Some("")
+                            }
+                        }
+                    },
+                    None => self
+                        .nodes
+                        .get(&member)
+                        .and_then(|node| node.applied_at.get(&event.key))
+                        .filter(|applied| **applied >= event.pushed_at_step)
+                        .map(|_| BUS_EVENT_UPSERTED),
+                };
+                let Some(kind) = outcome else {
+                    break;
+                };
+                let subscriber = self.subscribers.get_mut(&id).expect("subscriber exists");
                 let event = subscriber.pending.pop_front().expect("front event exists");
+                if kind.is_empty() {
+                    self.trace
+                        .push(format!("event_not_on_member:{id}:{}:{member}", event.key));
+                    continue;
+                }
                 subscriber.last_event = Some(SubscriberEventView {
-                    kind: event.kind,
+                    kind: kind.to_owned(),
                     key: event.key,
                     version: event.version,
                     commit_index: event.commit_index,
-                    delivered_at_step: self.steps,
+                    delivered_at_step: step,
                 });
             }
         }
@@ -1387,6 +2368,29 @@ fn workload_result(ack: ClientAck) -> WorkloadResult {
 
 fn namespaced_key(namespace: &str, key: &str) -> String {
     format!("{namespace}:{key}")
+}
+
+/// The product versioned record for routed write `id` of `key`.
+fn versioned_record(key: &str, id: u64, tombstone: bool) -> ReplicatedValueRecord {
+    let partition = partition_for_key(key, 1);
+    if tombstone {
+        ReplicatedValueRecord::tombstone(partition, id, ClusterEpoch::new(0), None)
+    } else {
+        ReplicatedValueRecord::value(partition, id, ClusterEpoch::new(0), Vec::new())
+    }
+}
+
+/// A delivered message that moves a routed write on.
+enum RoutedDelivery {
+    /// The coordinator's forward reached the primary.
+    Forward(u64),
+    /// An acknowledgement for the write arrived.
+    Ack(u64),
+}
+
+/// Session name of a built-in workload client.
+fn workload_session_id(client: u64) -> String {
+    format!("workload:{client}")
 }
 
 fn subscriber_id(client: &str, namespace: &str) -> String {

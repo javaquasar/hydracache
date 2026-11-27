@@ -39,6 +39,10 @@ export class WasmSimSession {
     this.handle.add_client(client, namespace);
   }
 
+  async set_replication(model, replicationFactor, writeLevel) {
+    this.handle.set_replication(model, BigInt(replicationFactor), writeLevel);
+  }
+
   async unsubscribe(client, namespace) {
     this.handle.unsubscribe(client, namespace);
   }
@@ -132,6 +136,14 @@ export class ServerSimSession {
 
   async add_client(client, ns) {
     this.snapshot = await this.post("/sim/inject", { action: "add_client", client, ns });
+  }
+
+  async set_replication(model, replicationFactor, writeLevel) {
+    const tagged =
+      model === "replicated"
+        ? { kind: model, replication_factor: Number(replicationFactor), write_level: writeLevel }
+        : { kind: model };
+    this.snapshot = await this.post("/sim/inject", { action: "set_replication", model: tagged });
   }
 
   async unsubscribe(client, ns) {
