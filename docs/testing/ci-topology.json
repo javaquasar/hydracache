@@ -482,6 +482,24 @@
         "manual-protected": [],
         "publish": ["publish"]
       }
+    },
+    {
+      "path": ".github/workflows/fork-upstream-advisories.yml",
+      "purpose": "Weekly RustSec scan of the upstream package versions behind the hydra-* forks; findings are triage inputs",
+      "triggers": ["schedule", "workflow_dispatch"],
+      "concurrency_markers": ["fork-upstream-advisories"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": ["audit-upstream"],
+        "manual-protected": [],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 16777216
+      }
     }
   ]
 }
