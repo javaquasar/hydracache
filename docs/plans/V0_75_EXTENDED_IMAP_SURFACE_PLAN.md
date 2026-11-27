@@ -2383,6 +2383,59 @@ checks are in `development/w10i-managed-clock-5cb8fe032b1dbe823ef27ec211ccba5123
 AX42. The verified `w10i-managed-clock.sha256` manifest has SHA-256
 `4903be5729adb6fa09204bd1518a29a0641643cc1e121078fd2d61536407df3e`.
 
+#### Packaged SDK diagnostic profiles for 6 and 24 hours
+
+`--sdk-profile` selects the full cross-SDK scenario in the W10i controller. Both packaged
+clients share one three-member cluster and keep submitting mixed batches through the owner
+kill, interrupted snapshot transfer, drain and rejoin. The controller schedules the owner
+kill after one third of the traffic interval and the drain at or after halfway. It attaches
+the subscribers close to the faults, then checks gap recovery, a repair read and a new
+watermark on each reconnect.
+
+The profile JSON lists `java`, `classpath`, `rust_consumer` and `rust_package`. Use the Java
+launcher, the ordered regular files for the classpath, the external Rust consumer executable
+and the separate Rust SDK `.crate`. The Java classpath includes a JAR with the cohort and load
+probes, the two SDK JARs and their runtime dependencies. Paths resolve relative to the
+profile file. The controller hashes the launcher, classpath, Rust executable and package before
+launch and before publication.
+
+```text
+cargo xtask imap-distributed-qualification --release 0.75 --duration 60s --diagnostic --sdk-profile sdk.json --output <new-smoke-directory>
+cargo xtask imap-distributed-qualification --release 0.75 --duration 6h --diagnostic --sdk-profile sdk.json --output <new-six-hour-directory>
+cargo xtask imap-distributed-confirmation --release 0.75 --duration 24h --diagnostic --sdk-profile sdk.json --qualification <six-hour-directory> --output <new-24-hour-directory>
+```
+
+Both SDKs pace batches by at least 200 ms. The immutable plans reserve 108,050 and 432,050
+rounds per SDK for the two long profiles, including shutdown allowance. Each SDK aligns to
+the shared origin at startup and records elapsed times using a monotonic clock. The probes
+and the verifier stream the plans and journals. Final readback uses bounded batches, and the
+controller replays the sealed journals to verify the timeline and counts. Separate replica
+digests prove the owner-kill and interrupted-copy checkpoints. The controller publishes
+`report.json` after the ledgers, cut evidence and SDK bytes agree.
+
+The 24-hour command rechecks a completed six-hour packaged parent's evidence before it
+starts. It requires the same source, daemon, worker binaries and SDK input hashes. The
+60-second smoke uses this same launch and publication path. OD-2 and OD-3 acceptance and
+the production-duration release gate remain open.
+
+On AX42, candidate `6da656f93cf65907a8eadf242bb6e2b9a088f2a5` completed the 60-second
+release diagnostic through the W10i controller on Java 17. The traffic interval lasted
+60.181 seconds. Rust finished 163 batches and Java finished 164. The verifier reconciled
+all 654 submitted keys, including the outcomes of interrupted requests. Rust and Java
+finished six and five complete batches inside the blocked-copy window, respectively.
+Both subscribers advanced from watermark 1 through watermark 4.
+
+The confirmation command rejected both the 60-second report and a copy whose summary
+duration had been relabeled as six hours. Neither attempt created a confirmation output.
+The 6-hour and 24-hour profile selection and plan bounds passed their unit tests. Full
+elapsed runs at those durations remain pending.
+
+Five packaged ledger tests, 12 distributed controller tests, five isolated Rust consumer
+tests and Clippy passed. The reports, plans and journals are under
+`development/w10i-packaged-long-6da656f93cf65907a8eadf242bb6e2b9a088f2a5` on AX42. The verified
+`w10i-packaged-long.sha256` manifest has SHA-256
+`bb6d46c53617b662ab3489de19bae47f68cf1a224a6448295129231c53c454c8`.
+
 #### Under-load failover and rebalance qualification
 
 KiviDB's cluster soak pairs continuous mixed load with planned failovers, process kills, slot

@@ -1306,6 +1306,18 @@ On AX42, the Java 17 and 21 runs reconciled 596 and 658 keys respectively. The j
 87 unknown item outcomes across both runs, and both subscribers reached watermark 4 in each run.
 [Continuous W10i package traffic](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#continuous-packaged-sdk-traffic-subscriptions-and-journal-reconciliation)
 
+The long W10i profiles now use the same packaged Rust and Java clients and the same fault
+checks. The controller schedules the kill and the drain within the traffic interval and
+starts subscribers close to each fault. Each client streams its key plan and writes one
+submission and outcome pair at a time. A final reader checks the resulting keys in batches.
+The controller replays the sealed journals and binds their hashes to the report. A 24-hour
+confirmation requires a completed six-hour packaged report with the same source, daemon,
+worker and SDK inputs.
+The controller's 60-second release diagnostic on AX42 reconciled 654 keys after the kill
+and interrupted copy. Both subscribers reached watermark 4. The confirmation command
+also refused that short report after its summary duration was rewritten as six hours.
+[Packaged W10i duration profiles](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#packaged-sdk-diagnostic-profiles-for-6-and-24-hours)
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
