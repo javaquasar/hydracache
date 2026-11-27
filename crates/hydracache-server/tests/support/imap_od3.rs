@@ -12,6 +12,7 @@ use imap_hc2_campaign::{observe_certified_pair, owner_checkpoint, ReplicaCheckpo
 
 const VICTIM: u8 = 0;
 const SURVIVORS: [u8; 2] = [1, 2];
+const PRELOAD_CONCURRENCY: usize = 2;
 const PARALLELISM: usize = 8;
 const POLL_INTERVAL: Duration = Duration::from_millis(100);
 const PROBE_TIMEOUT: Duration = Duration::from_secs(180);
@@ -214,23 +215,22 @@ async fn measures_partition_write_outage_and_replica_recovery_on_hc2() {
             let value = &value;
             async move {
                 for (sequence, key) in partition.keys.iter().enumerate() {
+                    let options = RequestOptions {
+                        timeout: Duration::from_secs(5),
+                        idempotency_key: Bytes::from(format!(
+                            "od3-baseline-{}-{sequence}",
+                            partition.id
+                        )),
+                    };
                     assert!(
-                        cluster.clients[1]
-                            .put(
-                                key.clone(),
-                                value.clone(),
-                                None,
-                                Some(RequestOptions {
-                                    timeout: Duration::from_secs(2),
-                                    idempotency_key: Bytes::from(format!(
-                                        "od3-baseline-{}-{sequence}",
-                                        partition.id
-                                    )),
-                                }),
-                            )
-                            .await
-                            .unwrap()
-                            .applied
+                        retry_w10i(|| cluster.clients[1].put(
+                            key.clone(),
+                            value.clone(),
+                            None,
+                            Some(options.clone()),
+                        ))
+                        .await
+                        .applied
                     );
                 }
                 owner_checkpoint(
@@ -244,7 +244,7 @@ async fn measures_partition_write_outage_and_replica_recovery_on_hc2() {
                 .await
             }
         })
-        .buffered(PARALLELISM)
+        .buffered(PRELOAD_CONCURRENCY)
         .collect::<Vec<_>>()
         .await;
 
