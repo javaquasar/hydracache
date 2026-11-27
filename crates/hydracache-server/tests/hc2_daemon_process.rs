@@ -1467,6 +1467,23 @@ async fn w10i_b74_blocks_certified_log_and_snapshot_and_current_recovers() {
             .applied
     );
     wait_w10i_get(&cluster.clients[victim], keep.clone(), Some(&value)).await;
+    let http = w10h_http();
+    let admin = cluster.spec.addresses[6 + victim];
+    let committed = wait_management_json(
+        &http,
+        cluster.spec.addresses[6],
+        ADMIN_RAFT_COMPACTION_PATH,
+        |body| body["applied_index"].as_u64().is_some(),
+    )
+    .await["applied_index"]
+        .as_u64()
+        .unwrap();
+    wait_management_json(&http, admin, ADMIN_RAFT_COMPACTION_PATH, |body| {
+        body["applied_index"]
+            .as_u64()
+            .is_some_and(|index| index >= committed)
+    })
+    .await;
 
     cluster.daemons[victim].0.kill().unwrap();
     cluster.daemons[victim].0.wait().unwrap();
@@ -1485,8 +1502,6 @@ async fn w10i_b74_blocks_certified_log_and_snapshot_and_current_recovers() {
     cluster.daemons[victim] = cluster.spec.spawn(victim);
     let rejoined = connect_w10i(&cluster.adapters[victim], "w10i").await;
     wait_w10i_get(&rejoined, keep.clone(), Some(&value)).await;
-    let http = w10h_http();
-    let admin = cluster.spec.addresses[6 + victim];
     wait_imap_readiness(&http, admin, "ready").await;
     let reply = w10h_admin(http.post(format!("http://{admin}{ADMIN_RAFT_COMPACTION_PATH}")))
         .send()
@@ -1497,7 +1512,9 @@ async fn w10i_b74_blocks_certified_log_and_snapshot_and_current_recovers() {
         .json::<serde_json::Value>()
         .await
         .unwrap();
-    let index = reply["last_snapshot_index"].as_u64().unwrap();
+    let index = reply["snapshot_index"]
+        .as_u64()
+        .unwrap_or_else(|| panic!("compaction did not report a durable snapshot: {reply}"));
     assert!(index >= log_index);
 
     cluster.daemons[victim].0.kill().unwrap();
