@@ -33,10 +33,12 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::admin_http::{require_management_read as require_admin, SharedServerRuntime};
-use crate::cluster_status::{ClusterStatus, LocalConsensusStatus, Reachability, StatusSource};
+use crate::cluster_status::{
+    ClusterStatus, LocalConsensusStatus, MemberRole, Reachability, StatusSource,
+};
 use crate::management_aggregation::{
-    AggregatedManagementSnapshot, ManagementAggregationIssue, ManagementMemberSnapshot,
-    ManagementSnapshotAggregator,
+    AggregatedManagementSnapshot, ManagementAggregationIssue, ManagementIMapObservation,
+    ManagementMemberSnapshot, ManagementSnapshotAggregator, IMAP_SNAPSHOT_SCHEMA_VERSION,
 };
 use crate::management_history::{
     ManagementHistoryData, ManagementHistoryError, ManagementHistoryRequest,
@@ -57,6 +59,8 @@ pub const MANAGEMENT_CLUSTER_MEMBERS_PATH: &str = "/management/v1/cluster/member
 pub const MANAGEMENT_CLUSTER_FORMATION_PATH: &str = "/management/v1/cluster/formation";
 /// Honest aggregate partition ownership and repair path.
 pub const MANAGEMENT_CLUSTER_PARTITIONS_PATH: &str = "/management/v1/cluster/partitions";
+/// Per-member IMap observations collected from the committed roster.
+pub const MANAGEMENT_CLUSTER_IMAP_PATH: &str = "/management/v1/cluster/imap";
 /// Bounded node-local client lifecycle summary path.
 pub const MANAGEMENT_CLIENTS_PATH: &str = "/management/v1/clients";
 /// Caller-authorized namespace summary path.
@@ -220,6 +224,7 @@ pub(crate) fn routes(
         .route(MANAGEMENT_CLUSTER_FORMATION_PATH, get(formation))
         .route(MANAGEMENT_CLUSTER_MEMBERS_PATH, get(members))
         .route(MANAGEMENT_CLUSTER_PARTITIONS_PATH, get(partitions))
+        .route(MANAGEMENT_CLUSTER_IMAP_PATH, get(cluster_imap))
         .route(MANAGEMENT_CLIENTS_PATH, get(clients))
         .route(MANAGEMENT_NAMESPACES_PATH, get(namespaces))
         .route(MANAGEMENT_HEALTHCHECKS_PATH, get(healthchecks))
@@ -257,6 +262,112 @@ async fn management_read_admission(
         Err(_) => return ManagementHttpError::Busy.into_response(),
     };
     next.run(request).await
+}
+
+#[derive(Serialize)]
+struct ClusterIMapMember {
+    node: OpaqueNodeIdentity,
+    observation: Option<ManagementIMapObservation>,
+    issue: Option<ManagementAggregationIssue>,
+}
+
+async fn cluster_imap(State(state): State<Arc<ManagementHttpState>>) -> Response {
+    let (status, input, evidence) = {
+        let runtime = state.runtime.lock().expect("server runtime mutex");
+        (
+            runtime.cluster_status_snapshot(),
+            runtime.management_snapshot_input(),
+            runtime.imap_evidence(),
+        )
+    };
+    let Some(evidence) = evidence else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+    let epoch = status.epoch;
+    let unavailable = |reason| {
+        (StatusCode::SERVICE_UNAVAILABLE, axum::Json(serde_json::json!({
+        "schema_version": 1, "epoch": epoch, "complete": false, "ready": false, "reason": reason,
+    }))).into_response()
+    };
+    let (Some(aggregator), Some((mut local, targets))) = (&state.aggregator, input) else {
+        return unavailable("source_unavailable");
+    };
+    let roster: BTreeMap<_, _> = status
+        .members
+        .iter()
+        .filter(|member| member.role == MemberRole::Member)
+        .map(|member| (member.node_id.as_str(), member.generation))
+        .collect();
+    if !status.metadata_authoritative
+        || local.authority_epoch != epoch
+        || evidence.readiness.epoch != epoch
+        || roster.get(local.node_id.as_str()) != Some(&local.generation)
+    {
+        return unavailable("authority_unavailable");
+    }
+    if roster.len() > crate::imap_ops::MAX_VALUE_MEMBERS {
+        return unavailable("roster_limit");
+    }
+    if targets.len() + 1 != roster.len()
+        || targets
+            .iter()
+            .any(|target| roster.get(target.node_id.as_str()) != Some(&target.generation))
+    {
+        return unavailable("roster_changed");
+    }
+    local.schema_version = IMAP_SNAPSHOT_SCHEMA_VERSION;
+    local.consensus = None;
+    local.imap = Some(evidence.into());
+    let (aggregate, started) = aggregator.refresh_imap(local, targets).await;
+    let current = state
+        .runtime
+        .lock()
+        .expect("server runtime mutex")
+        .cluster_status_snapshot();
+    if !current.metadata_authoritative
+        || current.epoch != epoch
+        || current.term != status.term
+        || aggregate.authority_epoch != epoch
+    {
+        return unavailable("authority_changed");
+    }
+    let elapsed = started.elapsed();
+    let members: Vec<_> = roster
+        .into_iter()
+        .map(|(node, generation)| {
+            let issue = aggregate
+                .failures
+                .iter()
+                .find(|peer| peer.node_id == node && peer.generation == generation)
+                .map(|peer| peer.issue);
+            let observation = aggregate
+                .members
+                .iter()
+                .find(|peer| peer.node_id == node && peer.generation == generation)
+                .and_then(|peer| peer.imap.clone())
+                .map(|imap| imap.aged(elapsed));
+            ClusterIMapMember {
+                node: opaque_node_identity(node),
+                observation,
+                issue,
+            }
+        })
+        .collect();
+    let complete = aggregate.complete()
+        && members.iter().all(|member| {
+            member
+                .observation
+                .as_ref()
+                .is_some_and(|imap| imap.complete)
+        });
+    let ready = complete
+        && members.iter().all(|member| {
+            member
+                .observation
+                .as_ref()
+                .is_some_and(|imap| imap.readiness.ready)
+        });
+    axum::Json(serde_json::json!({"schema_version": 1, "epoch": epoch, "complete": complete, "ready": ready, "members": members})).into_response()
 }
 
 #[derive(Debug, Serialize)]

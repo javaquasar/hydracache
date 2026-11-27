@@ -23,7 +23,7 @@ use hydracache_client_transport_axum::{
 use hydracache_server::imap_replicated_read::{ReplicaReadScope, D2_PARTITION_COUNT};
 use hydracache_server::{
     ADMIN_CLUSTER_OVERVIEW_PATH, ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH, ADMIN_READYZ_PATH,
-    MANAGEMENT_IMAP_PATH,
+    MANAGEMENT_CLUSTER_IMAP_PATH, MANAGEMENT_CONSENSUS_PROGRESS_PATH, MANAGEMENT_IMAP_PATH,
 };
 use sha2::{Digest, Sha256};
 use tokio::sync::{Mutex, MutexGuard};
@@ -87,7 +87,27 @@ fn daemon_command(
     key: &Path,
     ca: &Path,
 ) -> Command {
-    let mut command = Command::new(env!("CARGO_BIN_EXE_hydracache-server"));
+    daemon_command_for(
+        Path::new(env!("CARGO_BIN_EXE_hydracache-server")),
+        client,
+        admin,
+        hc2,
+        cert,
+        key,
+        ca,
+    )
+}
+
+fn daemon_command_for(
+    binary: &Path,
+    client: SocketAddr,
+    admin: SocketAddr,
+    hc2: SocketAddr,
+    cert: &Path,
+    key: &Path,
+    ca: &Path,
+) -> Command {
+    let mut command = Command::new(binary);
     command
         .env("HYDRACACHE_CLIENT_API_ENABLED", "true")
         .env("HYDRACACHE_LISTEN_ADDR", client.to_string())
@@ -1068,6 +1088,37 @@ async fn w10h_drains_primaries_and_backups_before_member_exit_under_load() {
         .any(|line| line.contains("tenant=")
             || line.contains("node_id=")
             || line.contains("partition_id=")));
+    let summary = wait_cluster_imap(&http, surviving, |body| {
+        body["complete"] == true && body["ready"] == true && cluster_imap_members(body).len() == 3
+    })
+    .await;
+    assert_eq!(
+        http.get(format!("http://{surviving}{MANAGEMENT_CLUSTER_IMAP_PATH}"))
+            .send()
+            .await
+            .unwrap()
+            .status(),
+        401
+    );
+    for row in cluster_imap_members(&summary) {
+        assert!(row["node"].as_str().unwrap().starts_with("node-"));
+        assert_eq!(row["observation"]["readiness"]["epoch"], summary["epoch"]);
+        let counts = row["observation"]["partitions"].as_object().unwrap();
+        assert_eq!(
+            counts
+                .values()
+                .map(|count| count.as_u64().unwrap())
+                .sum::<u64>(),
+            u64::from(D2_PARTITION_COUNT.get())
+        );
+    }
+    let summary = summary.to_string();
+    assert!(cluster
+        .spec
+        .names
+        .iter()
+        .all(|name| !summary.contains(name)));
+    assert!(!summary.contains("certified-before-drain"));
     let writer = cluster.clients[1].clone();
     let writer_key = load_key.clone();
     let load = tokio::spawn(async move {
@@ -1159,6 +1210,14 @@ async fn w10h_failed_drain_keeps_membership_when_a_spare_is_down() {
     cluster.daemons[2].0.kill().unwrap();
     cluster.daemons[2].0.wait().unwrap();
     wait_imap_readiness(&http, surviving, "required_backup_unavailable").await;
+    wait_cluster_imap(&http, surviving, |body| {
+        body["complete"] == false
+            && body["ready"] == false
+            && cluster_imap_members(body)
+                .iter()
+                .any(|row| row["observation"].is_null() && row["issue"].is_string())
+    })
+    .await;
     let failed = w10h_admin(http.post(format!("http://{departing}{ADMIN_DRAIN_PATH}")))
         .send()
         .await
@@ -1239,6 +1298,14 @@ async fn w10h_refuses_mixed_value_generation_before_owner_dispatch() {
     cluster.daemons[2].0.wait().unwrap();
     cluster.daemons[2] = cluster.spec.spawn_with_value_profile(2, false);
     wait_imap_readiness(&http, address, "wire_generation_incompatible").await;
+    wait_cluster_imap(&http, address, |body| {
+        body["ready"] == false
+            && body["complete"] == false
+            && cluster_imap_members(body).iter().any(|row| {
+                row["observation"]["readiness"]["reason"] == "wire_generation_incompatible"
+            })
+    })
+    .await;
     let error = cluster.clients[1]
         .put(
             key.clone(),
@@ -1262,6 +1329,119 @@ async fn w10h_refuses_mixed_value_generation_before_owner_dispatch() {
     wait_w10i_get(&restored, key, Some(&value)).await;
     wait_imap_readiness(&http, address, "ready").await;
     println!("W10h incompatible value generation rejected_before_dispatch=true compatible_generation_restored=true");
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn w10h_published_b74_same_volume_rollback_before_value_activation() {
+    if !w10h_enabled() {
+        return;
+    }
+    let Some(path) = std::env::var_os("HYDRACACHE_W10H_B74_DAEMON") else {
+        eprintln!("SKIP: set HYDRACACHE_W10H_B74_DAEMON to the published Linux binary");
+        return;
+    };
+    let b74 = PathBuf::from(path);
+    let digest = sha256_hex(&std::fs::read(&b74).unwrap());
+    assert_eq!(
+        digest,
+        "60a37932c554e58a54303f1196c347948fbe0dde162d5a3e32cef5e00f0dd10a"
+    );
+    let _guard = async_daemon_process_guard().await;
+    let mut cluster = MemberCluster::start("w10h-published-b74").await;
+    let http = w10h_http();
+    let [current, previous] = [7, 8].map(|index| cluster.spec.addresses[index]);
+    let before = wait_cluster_imap(&http, current, |body| body["ready"] == true).await;
+    assert!(cluster_imap_members(&before)
+        .iter()
+        .all(|row| { row["observation"]["partitions"]["empty"] == D2_PARTITION_COUNT.get() }));
+    cluster.daemons[2].0.kill().unwrap();
+    cluster.daemons[2].0.wait().unwrap();
+    cluster.daemons[2] = cluster.spec.spawn_binary(2, false, &b74);
+    wait_imap_readiness(&http, current, "wire_generation_incompatible").await;
+    wait_cluster_imap(&http, current, |body| {
+        body["ready"] == false
+            && body["complete"] == false
+            && cluster_imap_members(body)
+                .iter()
+                .any(|row| row["observation"].is_null() && row["issue"] == "incompatible")
+    })
+    .await;
+    wait_management_json(
+        &http,
+        previous,
+        MANAGEMENT_CONSENSUS_PROGRESS_PATH,
+        |body| {
+            body["data"]["items"]
+                .as_array()
+                .is_some_and(|items| items.len() == 3)
+        },
+    )
+    .await;
+    let key = cluster.key_for(1, Some(0), "w10h-b74-fence/");
+    let value = Bytes::from_static(b"only-after-compatible-roster");
+    let refusal = cluster.clients[1]
+        .put(key.clone(), value.clone(), None, None)
+        .await
+        .unwrap_err();
+    assert_eq!(refusal.code(), ErrorCode::Unavailable);
+    cluster.daemons[2].0.kill().unwrap();
+    cluster.daemons[2].0.wait().unwrap();
+    cluster.daemons[2] = cluster.spec.spawn(2);
+    let rejoined = connect_w10i(&cluster.adapters[2], "w10i").await;
+    wait_cluster_imap(&http, current, |body| {
+        body["ready"] == true && body["complete"] == true
+    })
+    .await;
+    wait_w10i_get(&rejoined, key.clone(), None).await;
+    assert!(
+        retry_w10i(|| cluster.clients[1].put(key.clone(), value.clone(), None, None))
+            .await
+            .applied
+    );
+    wait_w10i_get(&rejoined, key, Some(&value)).await;
+    println!("W10h published_b74_sha256={digest} same_volume_rollback_before_value_records=true legacy_snapshot_schema_1=true incompatible_before_dispatch=true reupgrade=true");
+}
+
+fn cluster_imap_members(body: &serde_json::Value) -> &[serde_json::Value] {
+    body["members"].as_array().map_or(&[], Vec::as_slice)
+}
+
+async fn wait_cluster_imap(
+    http: &reqwest::Client,
+    address: SocketAddr,
+    predicate: impl Fn(&serde_json::Value) -> bool,
+) -> serde_json::Value {
+    wait_management_json(http, address, MANAGEMENT_CLUSTER_IMAP_PATH, predicate).await
+}
+
+async fn wait_management_json(
+    http: &reqwest::Client,
+    address: SocketAddr,
+    path: &str,
+    predicate: impl Fn(&serde_json::Value) -> bool,
+) -> serde_json::Value {
+    let expires = tokio::time::Instant::now() + Duration::from_secs(20);
+    loop {
+        let response = w10h_admin(http.get(format!("http://{address}{path}")))
+            .timeout(Duration::from_secs(2))
+            .send()
+            .await;
+        let mut last = None;
+        if let Ok(response) = response {
+            let status = response.status();
+            if let Ok(body) = response.json::<serde_json::Value>().await {
+                if status.is_success() && predicate(&body) {
+                    return body;
+                }
+                last = Some((status, body));
+            }
+        }
+        assert!(
+            tokio::time::Instant::now() < expires,
+            "{path} at {address} did not reach the expected state: {last:?}"
+        );
+        tokio::time::sleep(Duration::from_millis(100)).await;
+    }
 }
 
 fn w10h_enabled() -> bool {
@@ -1394,12 +1574,21 @@ impl MemberClusterSpec {
     }
 
     fn spawn_with_value_profile(&self, index: usize, value_profile: bool) -> ChildGuard {
+        self.spawn_binary(
+            index,
+            value_profile,
+            Path::new(env!("CARGO_BIN_EXE_hydracache-server")),
+        )
+    }
+
+    fn spawn_binary(&self, index: usize, value_profile: bool, binary: &Path) -> ChildGuard {
         let log = std::fs::File::options()
             .create(true)
             .append(true)
             .open(self.root.join(format!("member-{index}.log")))
             .unwrap();
-        let mut command = daemon_command(
+        let mut command = daemon_command_for(
+            binary,
             self.addresses[3 + index],
             self.addresses[6 + index],
             self.addresses[9 + index],

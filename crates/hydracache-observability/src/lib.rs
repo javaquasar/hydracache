@@ -59,7 +59,10 @@ pub use consumer::{
     consumer_alert_metric_names, consumer_metric_names, ConsumerNearCacheStatus,
     TenantNamespaceStatus, TenantRateLimitStatus, TenantStatus, TENANT_STATUS_SCHEMA_VERSION,
 };
-pub use exporter::{registered_metric_names, PrometheusExporter};
+pub use exporter::{
+    registered_metric_names, write_imap_metric_header, IMapMetricDescriptor, PrometheusExporter,
+    IMAP_METRIC_DESCRIPTORS,
+};
 pub use management::{
     AdmissionState, BoundedCount, BoundedPage, BoundedPlacementConstraints, CatchUpState,
     ClientProtocolLifecycle, ClusterFormationSnapshot, ConsensusProgressSnapshot, DiscoveryState,

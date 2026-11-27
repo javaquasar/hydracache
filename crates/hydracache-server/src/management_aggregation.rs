@@ -20,6 +20,14 @@ use hydracache_observability::MANAGEMENT_API_SCHEMA_VERSION;
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex as AsyncMutex;
 
+use crate::imap_ops::{
+    IMapEvidence, IMapPartitionCounts, IMapReadiness, IMapReadinessReason, HEALTH_TTL,
+};
+use crate::imap_replicated_read::D2_PARTITION_COUNT;
+
+/// Negotiated management snapshot schema with a bounded IMap observation.
+pub const IMAP_SNAPSHOT_SCHEMA_VERSION: u16 = 2;
+
 /// Protected member-to-member snapshot path on the cluster listener.
 pub const CLUSTER_MANAGEMENT_SNAPSHOT_PATH: &str = "/cluster/management/v1/snapshot";
 /// Protected capability probe used before sending the 0.72 snapshot RPC.
@@ -71,12 +79,55 @@ pub struct ManagementMemberSnapshot {
     pub authority_epoch: u64,
     pub observation_seq: u64,
     pub consensus: Option<ManagementConsensusObservation>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub imap: Option<ManagementIMapObservation>,
+}
+
+/// Evidence for one admitted process; partition counts describe that process's view.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ManagementIMapObservation {
+    pub readiness: IMapReadiness,
+    pub observation_sequence: u64,
+    pub age_ms: u64,
+    pub complete: bool,
+    pub partitions: Option<IMapPartitionCounts>,
+}
+
+impl From<IMapEvidence> for ManagementIMapObservation {
+    fn from(evidence: IMapEvidence) -> Self {
+        Self {
+            readiness: evidence.readiness,
+            observation_sequence: evidence.sequence,
+            age_ms: evidence.age_ms,
+            complete: evidence.complete,
+            partitions: evidence
+                .complete
+                .then(|| IMapPartitionCounts::from_rows(&evidence.observation.rows)),
+        }
+    }
+}
+
+impl ManagementIMapObservation {
+    pub(crate) fn aged(mut self, elapsed: Duration) -> Self {
+        self.age_ms = self.age_ms.saturating_add(elapsed.as_millis() as u64);
+        if self.age_ms > HEALTH_TTL.as_millis() as u64 {
+            self.complete = false;
+            self.partitions = None;
+            self.readiness.ready = false;
+            self.readiness.reason = IMapReadinessReason::EpochStale;
+        }
+        self
+    }
 }
 
 impl ManagementMemberSnapshot {
-    fn validate(&self) -> Result<(), ManagementAggregationIssue> {
-        if self.schema_version != MANAGEMENT_API_SCHEMA_VERSION {
+    fn validate(&self, schema_version: u16) -> Result<(), ManagementAggregationIssue> {
+        if self.schema_version != schema_version || !supports_snapshot_schema(schema_version) {
             return Err(ManagementAggregationIssue::Incompatible);
+        }
+        if self.imap.is_some() && schema_version == MANAGEMENT_API_SCHEMA_VERSION {
+            return Err(ManagementAggregationIssue::Malformed);
         }
         if self.node_id.is_empty() || self.node_id.len() > 256 {
             return Err(ManagementAggregationIssue::Malformed);
@@ -91,13 +142,41 @@ impl ManagementMemberSnapshot {
                 return Err(ManagementAggregationIssue::Malformed);
             }
         }
+        if let Some(imap) = &self.imap {
+            if imap.readiness.epoch != self.authority_epoch {
+                return Err(ManagementAggregationIssue::EpochMismatch);
+            }
+            if imap.readiness.ready != (imap.readiness.reason == IMapReadinessReason::Ready)
+                || imap.readiness.ready && !imap.complete
+                || imap.complete != imap.partitions.is_some()
+                || imap
+                    .partitions
+                    .is_some_and(|counts| counts.total() != u64::from(D2_PARTITION_COUNT.get()))
+            {
+                return Err(ManagementAggregationIssue::Malformed);
+            }
+        }
         Ok(())
     }
+}
+
+fn supports_snapshot_schema(version: u16) -> bool {
+    matches!(
+        version,
+        MANAGEMENT_API_SCHEMA_VERSION | IMAP_SNAPSHOT_SCHEMA_VERSION
+    )
 }
 
 /// Runtime seam used by the protected route. Implementations must only read.
 pub trait LocalManagementSnapshotProvider: fmt::Debug + Send + Sync + 'static {
     fn local_snapshot(&self) -> Option<ManagementMemberSnapshot>;
+
+    fn local_imap_snapshot(&self) -> Option<ManagementMemberSnapshot> {
+        self.local_snapshot().map(|mut snapshot| {
+            snapshot.schema_version = IMAP_SNAPSHOT_SCHEMA_VERSION;
+            snapshot
+        })
+    }
 }
 
 #[derive(Clone)]
@@ -165,7 +244,7 @@ async fn snapshot_capabilities_rpc(
             .into_response();
     }
     Json(ManagementSnapshotCapabilities {
-        snapshot_schema_versions: vec![MANAGEMENT_API_SCHEMA_VERSION],
+        snapshot_schema_versions: vec![MANAGEMENT_API_SCHEMA_VERSION, IMAP_SNAPSHOT_SCHEMA_VERSION],
     })
     .into_response()
 }
@@ -194,16 +273,18 @@ async fn snapshot_rpc(
         )
             .into_response();
     }
-    if request.schema_version != MANAGEMENT_API_SCHEMA_VERSION {
-        return rpc_error(StatusCode::NOT_ACCEPTABLE, "incompatible-schema");
-    }
-    let Some(snapshot) = state.provider.local_snapshot() else {
+    let snapshot = match request.schema_version {
+        MANAGEMENT_API_SCHEMA_VERSION => state.provider.local_snapshot(),
+        IMAP_SNAPSHOT_SCHEMA_VERSION => state.provider.local_imap_snapshot(),
+        _ => return rpc_error(StatusCode::NOT_ACCEPTABLE, "incompatible-schema"),
+    };
+    let Some(snapshot) = snapshot else {
         return rpc_error(StatusCode::SERVICE_UNAVAILABLE, "source-unavailable");
     };
     if snapshot.authority_epoch != request.authority_epoch {
         return rpc_error(StatusCode::CONFLICT, "authority-epoch-mismatch");
     }
-    if snapshot.validate().is_err() {
+    if snapshot.validate(request.schema_version).is_err() {
         return rpc_error(StatusCode::SERVICE_UNAVAILABLE, "invalid-local-snapshot");
     }
     let Ok(body) = serde_json::to_vec(&snapshot) else {
@@ -345,13 +426,8 @@ impl ManagementPeerTransport for HttpManagementPeerTransport {
                 _ => ManagementAggregationIssue::Transport,
             });
         }
-        let capability_bytes = capability_response
-            .bytes()
-            .await
-            .map_err(|_| ManagementAggregationIssue::Transport)?;
-        if capability_bytes.len() > MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES {
-            return Err(ManagementAggregationIssue::Oversize);
-        }
+        let capability_bytes =
+            read_bounded(capability_response, MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES).await?;
         let capabilities: ManagementSnapshotCapabilities =
             serde_json::from_slice(&capability_bytes)
                 .map_err(|_| ManagementAggregationIssue::Malformed)?;
@@ -361,7 +437,7 @@ impl ManagementPeerTransport for HttpManagementPeerTransport {
         {
             return Err(ManagementAggregationIssue::Incompatible);
         }
-        let mut response = self
+        let response = self
             .client
             .post(format!(
                 "{}://{}{}",
@@ -379,32 +455,55 @@ impl ManagementPeerTransport for HttpManagementPeerTransport {
                 _ => ManagementAggregationIssue::Transport,
             });
         }
-        if response
-            .content_length()
-            .is_some_and(|length| length > MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES as u64)
-        {
+        read_bounded(response, MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES).await
+    }
+}
+
+async fn read_bounded(
+    mut response: reqwest::Response,
+    max_bytes: usize,
+) -> Result<Vec<u8>, ManagementAggregationIssue> {
+    if response
+        .content_length()
+        .is_some_and(|length| length > max_bytes as u64)
+    {
+        return Err(ManagementAggregationIssue::Oversize);
+    }
+    let mut bytes = Vec::new();
+    while let Some(chunk) = response
+        .chunk()
+        .await
+        .map_err(|_| ManagementAggregationIssue::Transport)?
+    {
+        if bytes.len().saturating_add(chunk.len()) > max_bytes {
             return Err(ManagementAggregationIssue::Oversize);
         }
-        let mut bytes = Vec::new();
-        while let Some(chunk) = response
-            .chunk()
-            .await
-            .map_err(|_| ManagementAggregationIssue::Transport)?
-        {
-            if bytes.len().saturating_add(chunk.len()) > MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES {
-                return Err(ManagementAggregationIssue::Oversize);
-            }
-            bytes.extend_from_slice(&chunk);
-        }
-        Ok(bytes)
+        bytes.extend_from_slice(&chunk);
     }
+    Ok(bytes)
 }
 
 #[derive(Debug, Clone)]
 struct CachedAggregate {
     inserted: Instant,
+    started: Instant,
     roster_key: ManagementRosterKey,
     value: Arc<AggregatedManagementSnapshot>,
+}
+
+impl CachedAggregate {
+    fn matches_imap(&self, local: &ManagementMemberSnapshot) -> bool {
+        let cached = self
+            .value
+            .members
+            .iter()
+            .find(|member| member.node_id == local.node_id)
+            .and_then(|member| member.imap.as_ref());
+        let identity = |imap: &ManagementIMapObservation| {
+            (imap.readiness, imap.complete, imap.observation_sequence)
+        };
+        cached.map(identity) == local.imap.as_ref().map(identity)
+    }
 }
 
 type ManagementRosterKey = Vec<(String, u64, Option<u16>)>;
@@ -419,6 +518,7 @@ struct AggregatorState {
 pub struct ManagementSnapshotAggregator {
     transport: Arc<dyn ManagementPeerTransport>,
     state: AsyncMutex<AggregatorState>,
+    imap_state: AsyncMutex<AggregatorState>,
     ttl: Duration,
     peer_timeout: Duration,
     refresh_timeout: Duration,
@@ -430,6 +530,7 @@ impl ManagementSnapshotAggregator {
         Self {
             transport,
             state: AsyncMutex::new(AggregatorState::default()),
+            imap_state: AsyncMutex::new(AggregatorState::default()),
             ttl: MANAGEMENT_SNAPSHOT_CACHE_TTL,
             peer_timeout: MANAGEMENT_SNAPSHOT_PEER_TIMEOUT,
             refresh_timeout: MANAGEMENT_SNAPSHOT_REFRESH_TIMEOUT,
@@ -457,15 +558,41 @@ impl ManagementSnapshotAggregator {
         local: ManagementMemberSnapshot,
         committed_targets: Vec<ManagementPeerTarget>,
     ) -> Arc<AggregatedManagementSnapshot> {
-        let mut guard = self.state.lock().await;
+        self.refresh_schema(local, committed_targets, MANAGEMENT_API_SCHEMA_VERSION)
+            .await
+            .0
+    }
+
+    pub(crate) async fn refresh_imap(
+        &self,
+        local: ManagementMemberSnapshot,
+        committed_targets: Vec<ManagementPeerTarget>,
+    ) -> (Arc<AggregatedManagementSnapshot>, Instant) {
+        self.refresh_schema(local, committed_targets, IMAP_SNAPSHOT_SCHEMA_VERSION)
+            .await
+    }
+
+    async fn refresh_schema(
+        &self,
+        local: ManagementMemberSnapshot,
+        committed_targets: Vec<ManagementPeerTarget>,
+        schema_version: u16,
+    ) -> (Arc<AggregatedManagementSnapshot>, Instant) {
+        let started = Instant::now();
+        let mut guard = if schema_version == IMAP_SNAPSHOT_SCHEMA_VERSION {
+            self.imap_state.lock().await
+        } else {
+            self.state.lock().await
+        };
         let (targets, roster_key, roster_truncated) = normalize_roster(&local, committed_targets);
         if let Some(cached) = guard.cache.as_ref().filter(|cached| {
             cached.inserted.elapsed() < self.ttl
                 && cached.value.authority_epoch == local.authority_epoch
                 && cached.value.observation_seq == local.observation_seq
                 && cached.roster_key == roster_key
+                && (schema_version == MANAGEMENT_API_SCHEMA_VERSION || cached.matches_imap(&local))
         }) {
-            return Arc::clone(&cached.value);
+            return (Arc::clone(&cached.value), cached.started);
         }
 
         if guard.cache.as_ref().is_some_and(|cached| {
@@ -473,11 +600,12 @@ impl ManagementSnapshotAggregator {
                 || (cached.value.authority_epoch == local.authority_epoch
                     && cached.value.observation_seq > local.observation_seq)
         }) {
-            return Arc::clone(&guard.cache.as_ref().expect("checked cache").value);
+            let cache = guard.cache.as_ref().expect("checked cache");
+            return (Arc::clone(&cache.value), cache.started);
         }
 
         let previous = guard.cache.as_ref().map(|cached| Arc::clone(&cached.value));
-        let local_validation = local.validate();
+        let local_validation = local.validate(schema_version);
         let cacheable = local_validation.is_ok();
         let value = if let Err(issue) = local_validation {
             Arc::new(AggregatedManagementSnapshot {
@@ -500,11 +628,12 @@ impl ManagementSnapshotAggregator {
         if cacheable {
             guard.cache = Some(CachedAggregate {
                 inserted: Instant::now(),
+                started,
                 roster_key,
                 value: Arc::clone(&value),
             });
         }
-        value
+        (value, started)
     }
 
     async fn collect(
@@ -516,7 +645,7 @@ impl ManagementSnapshotAggregator {
     ) -> AggregatedManagementSnapshot {
         let epoch = local.authority_epoch;
         let request = ManagementSnapshotRequest {
-            schema_version: MANAGEMENT_API_SCHEMA_VERSION,
+            schema_version: local.schema_version,
             authority_epoch: epoch,
         };
         let transport = Arc::clone(&self.transport);
@@ -538,7 +667,7 @@ impl ManagementSnapshotAggregator {
                             .await
                             .map_err(|_| ManagementAggregationIssue::Timeout)
                             .and_then(|result| result)
-                            .and_then(|bytes| decode_peer(&target, epoch, &bytes))
+                            .and_then(|bytes| decode_peer(&target, request, &bytes))
                     };
                 (target, result)
             }
@@ -591,16 +720,24 @@ impl ManagementSnapshotAggregator {
                 .collect::<BTreeMap<_, _>>();
             for snapshot in &mut members {
                 let key = (snapshot.node_id.clone(), snapshot.generation);
-                if let Some(prior) = previous_members
-                    .get(&key)
-                    .filter(|prior| prior.observation_seq > snapshot.observation_seq)
-                {
+                if let Some(prior) = previous_members.get(&key).filter(|prior| {
+                    prior.observation_seq > snapshot.observation_seq
+                        || prior.imap.as_ref().zip(snapshot.imap.as_ref()).is_some_and(
+                            |(prior, current)| {
+                                prior.observation_sequence > current.observation_sequence
+                            },
+                        )
+                }) {
                     failures.push(ManagementPeerFailure {
                         node_id: snapshot.node_id.clone(),
                         generation: snapshot.generation,
                         issue: ManagementAggregationIssue::Stale,
                     });
-                    *snapshot = prior.clone();
+                    if request.schema_version == MANAGEMENT_API_SCHEMA_VERSION {
+                        *snapshot = prior.clone();
+                    } else {
+                        snapshot.imap = None;
+                    }
                 }
             }
         }
@@ -663,7 +800,7 @@ fn normalize_roster(
 
 fn decode_peer(
     target: &ManagementPeerTarget,
-    epoch: u64,
+    request: ManagementSnapshotRequest,
     bytes: &[u8],
 ) -> Result<ManagementMemberSnapshot, ManagementAggregationIssue> {
     if bytes.len() > MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES {
@@ -671,14 +808,14 @@ fn decode_peer(
     }
     let snapshot: ManagementMemberSnapshot =
         serde_json::from_slice(bytes).map_err(|_| ManagementAggregationIssue::Malformed)?;
-    snapshot.validate()?;
+    snapshot.validate(request.schema_version)?;
     if snapshot.node_id != target.node_id {
         return Err(ManagementAggregationIssue::IdentityMismatch);
     }
     if snapshot.generation != target.generation {
         return Err(ManagementAggregationIssue::GenerationMismatch);
     }
-    if snapshot.authority_epoch != epoch {
+    if snapshot.authority_epoch != request.authority_epoch {
         return Err(ManagementAggregationIssue::EpochMismatch);
     }
     Ok(snapshot)
@@ -838,6 +975,7 @@ mod tests {
             generation,
             authority_epoch: epoch,
             observation_seq: seq,
+            imap: None,
             consensus: Some(ManagementConsensusObservation {
                 commit_index: seq,
                 applied_index: seq,
@@ -859,6 +997,111 @@ mod tests {
 
     fn encoded(snapshot: &ManagementMemberSnapshot) -> Vec<u8> {
         serde_json::to_vec(snapshot).unwrap()
+    }
+
+    fn imap_member(node: &str, generation: u64) -> ManagementMemberSnapshot {
+        let mut report = member(node, generation, 7, 5);
+        report.schema_version = IMAP_SNAPSHOT_SCHEMA_VERSION;
+        report.consensus = None;
+        report.imap = Some(ManagementIMapObservation {
+            readiness: IMapReadiness {
+                ready: true,
+                epoch: 7,
+                reason: IMapReadinessReason::Ready,
+            },
+            observation_sequence: 1,
+            age_ms: 200,
+            complete: true,
+            partitions: Some(IMapPartitionCounts {
+                empty: D2_PARTITION_COUNT.get(),
+                ..Default::default()
+            }),
+        });
+        report
+    }
+
+    #[test]
+    fn negotiated_imap_observations_are_checked_and_age_out() {
+        let request = ManagementSnapshotRequest {
+            schema_version: IMAP_SNAPSHOT_SCHEMA_VERSION,
+            authority_epoch: 7,
+        };
+        let expected = target("b", 2, "b:2");
+        let legacy = member("b", 2, 7, 5);
+        assert!(serde_json::to_value(&legacy).unwrap().get("imap").is_none());
+        assert_eq!(
+            decode_peer(&expected, request, &encoded(&legacy)),
+            Err(ManagementAggregationIssue::Incompatible)
+        );
+        let mut report = imap_member("b", 2);
+        assert!(decode_peer(&expected, request, &encoded(&report)).is_ok());
+        let valid = report.imap.clone().unwrap();
+        assert!(valid.clone().aged(Duration::from_millis(2_800)).complete);
+        let stale = valid.aged(Duration::from_millis(2_801));
+        assert_eq!(stale.readiness.reason, IMapReadinessReason::EpochStale);
+        assert!(!stale.readiness.ready && !stale.complete && stale.partitions.is_none());
+        report.imap.as_mut().unwrap().readiness.epoch = 6;
+        assert_eq!(
+            decode_peer(&expected, request, &encoded(&report)),
+            Err(ManagementAggregationIssue::EpochMismatch)
+        );
+        report.imap.as_mut().unwrap().readiness.epoch = 7;
+        report
+            .imap
+            .as_mut()
+            .unwrap()
+            .partitions
+            .as_mut()
+            .unwrap()
+            .empty = u32::MAX;
+        assert_eq!(
+            decode_peer(&expected, request, &encoded(&report)),
+            Err(ManagementAggregationIssue::Malformed)
+        );
+    }
+
+    #[tokio::test]
+    async fn imap_refresh_has_an_independent_cache_and_observation_fence() {
+        let transport = Arc::new(FakeTransport {
+            replies: BTreeMap::from([("b".to_owned(), Ok(encoded(&imap_member("b", 2))))]),
+            calls: AtomicUsize::new(0),
+            delay: Duration::ZERO,
+        });
+        let aggregator = ManagementSnapshotAggregator::new(transport.clone());
+        let targets = vec![target("b", 2, "b:2")];
+        let local = imap_member("a", 1);
+        let (first, started) = aggregator
+            .refresh_imap(local.clone(), targets.clone())
+            .await;
+        assert!(first.complete());
+        assert_eq!(
+            first.members[1].imap.as_ref().unwrap().observation_sequence,
+            1
+        );
+        let legacy = aggregator
+            .refresh(member("a", 1, 7, 5), targets.clone())
+            .await;
+        assert_eq!(
+            legacy.failures[0].issue,
+            ManagementAggregationIssue::Incompatible
+        );
+        let (cached, origin) = aggregator
+            .refresh_imap(local.clone(), targets.clone())
+            .await;
+        assert!(Arc::ptr_eq(&first, &cached));
+        assert_eq!(origin, started);
+        let mut local = local;
+        local.imap.as_mut().unwrap().observation_sequence = 2;
+        let (changed, _) = aggregator.refresh_imap(local, targets).await;
+        assert_eq!(
+            changed.members[0]
+                .imap
+                .as_ref()
+                .unwrap()
+                .observation_sequence,
+            2
+        );
+        assert_eq!(transport.calls.load(Ordering::SeqCst), 3);
     }
 
     #[test]
@@ -923,29 +1166,33 @@ mod tests {
     #[test]
     fn peer_decoder_fences_identity_generation_epoch_schema_and_size() {
         let expected = target("b", 2, "b:2");
-        assert!(decode_peer(&expected, 7, &encoded(&member("b", 2, 7, 1))).is_ok());
+        let request = ManagementSnapshotRequest {
+            schema_version: MANAGEMENT_API_SCHEMA_VERSION,
+            authority_epoch: 7,
+        };
+        assert!(decode_peer(&expected, request, &encoded(&member("b", 2, 7, 1))).is_ok());
         assert_eq!(
-            decode_peer(&expected, 7, &encoded(&member("x", 2, 7, 1))),
+            decode_peer(&expected, request, &encoded(&member("x", 2, 7, 1))),
             Err(ManagementAggregationIssue::IdentityMismatch)
         );
         assert_eq!(
-            decode_peer(&expected, 7, &encoded(&member("b", 3, 7, 1))),
+            decode_peer(&expected, request, &encoded(&member("b", 3, 7, 1))),
             Err(ManagementAggregationIssue::GenerationMismatch)
         );
         assert_eq!(
-            decode_peer(&expected, 7, &encoded(&member("b", 2, 6, 1))),
+            decode_peer(&expected, request, &encoded(&member("b", 2, 6, 1))),
             Err(ManagementAggregationIssue::EpochMismatch)
         );
         let mut incompatible = member("b", 2, 7, 1);
         incompatible.schema_version += 1;
         assert_eq!(
-            decode_peer(&expected, 7, &encoded(&incompatible)),
+            decode_peer(&expected, request, &encoded(&incompatible)),
             Err(ManagementAggregationIssue::Incompatible)
         );
         assert_eq!(
             decode_peer(
                 &expected,
-                7,
+                request,
                 &vec![b'x'; MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES + 1]
             ),
             Err(ManagementAggregationIssue::Oversize)

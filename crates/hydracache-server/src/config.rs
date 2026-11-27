@@ -194,7 +194,8 @@ impl IMapOperationalConfig {
     fn validate(self) -> Result<(), ServerConfigError> {
         if self.replication_factor != 2
             || self.write_quorum != self.replication_factor
-            || !(self.replication_factor..=16).contains(&self.minimum_ready_members)
+            || !(self.replication_factor..=crate::imap_ops::MAX_VALUE_MEMBERS)
+                .contains(&self.minimum_ready_members)
             || !(1..=256).contains(&self.max_inflight)
         {
             return Err(ServerConfigError::InvalidDistributedHc2(

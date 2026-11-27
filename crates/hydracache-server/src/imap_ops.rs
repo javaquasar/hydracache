@@ -17,10 +17,11 @@ use crate::config::IMapOperationalConfig;
 use crate::imap_topology::PartitionMember;
 
 pub(crate) const VALUE_WIRE_GENERATION: u16 = 2;
-const HEALTH_TTL: Duration = Duration::from_secs(3);
+pub(crate) const MAX_VALUE_MEMBERS: usize = 16;
+pub(crate) const HEALTH_TTL: Duration = Duration::from_secs(3);
 const ACK_BUCKETS_US: [u64; 7] = [100, 500, 1_000, 5_000, 20_000, 100_000, 500_000];
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum IMapReadinessReason {
     Ready,
@@ -35,7 +36,8 @@ pub enum IMapReadinessReason {
     WireGenerationIncompatible,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct IMapReadiness {
     pub ready: bool,
     pub epoch: u64,
@@ -103,6 +105,46 @@ pub(crate) struct IMapEvidence {
     pub age_ms: u64,
     pub complete: bool,
     pub policy: IMapOperationalConfig,
+}
+
+/// Aggregate counts from one member's health observation.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, serde::Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct IMapPartitionCounts {
+    pub empty: u32,
+    pub healthy: u32,
+    pub catching_up: u32,
+    pub under_replicated: u32,
+    pub moving: u32,
+}
+
+impl IMapPartitionCounts {
+    pub(crate) fn from_rows(rows: &[PartitionHealth]) -> Self {
+        let mut counts = Self::default();
+        for row in rows {
+            match row.state {
+                PartitionState::Empty => counts.empty += 1,
+                PartitionState::Healthy => counts.healthy += 1,
+                PartitionState::CatchingUp => counts.catching_up += 1,
+                PartitionState::UnderReplicated => counts.under_replicated += 1,
+                PartitionState::Moving => counts.moving += 1,
+            }
+        }
+        counts
+    }
+
+    pub(crate) fn total(self) -> u64 {
+        [
+            self.empty,
+            self.healthy,
+            self.catching_up,
+            self.under_replicated,
+            self.moving,
+        ]
+        .into_iter()
+        .map(u64::from)
+        .sum()
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -349,41 +391,38 @@ impl IMapOps {
     }
 
     pub fn prometheus(&self, evidence: &IMapEvidence) -> String {
-        let mut out = String::from("hydracache_imap_routing_mode{mode=\"distributed\"} 1\n");
-        let ready = evidence.readiness;
-        let _ = writeln!(out, "hydracache_imap_ready {}", u8::from(ready.ready));
-        let _ = writeln!(out, "hydracache_imap_epoch {}", ready.epoch);
-        let _ = writeln!(out, "hydracache_imap_inflight {}", self.inflight());
-        let _ = writeln!(
-            out,
-            "hydracache_imap_drain_evacuated {}",
-            u8::from(self.ownership_evacuated.load(Ordering::Acquire))
-        );
-        let _ = writeln!(
-            out,
-            "hydracache_imap_drain_membership_left {}",
-            u8::from(self.membership_left.load(Ordering::Acquire))
-        );
-        let _ = writeln!(
-            out,
-            "hydracache_imap_observation_complete {}",
-            u8::from(evidence.complete)
-        );
-        let _ = writeln!(
-            out,
-            "hydracache_imap_retained_decisions {}",
-            evidence.observation.retained_decisions
-        );
-        let _ = writeln!(
-            out,
-            "hydracache_imap_repairs_committed {}",
-            evidence.observation.repairs
-        );
-        let _ = writeln!(
-            out,
-            "hydracache_imap_promotions_committed {}",
-            evidence.observation.promotions
-        );
+        use hydracache_observability::write_imap_metric_header;
+
+        let mut out = String::new();
+        write_imap_metric_header(&mut out, "hydracache_imap_routing_mode");
+        out.push_str("hydracache_imap_routing_mode{mode=\"distributed\"} 1\n");
+        for (metric, value) in [
+            ("ready", u64::from(evidence.readiness.ready)),
+            ("epoch", evidence.readiness.epoch),
+            ("inflight", self.inflight() as u64),
+            (
+                "drain_evacuated",
+                u64::from(self.ownership_evacuated.load(Ordering::Acquire)),
+            ),
+            (
+                "drain_membership_left",
+                u64::from(self.membership_left.load(Ordering::Acquire)),
+            ),
+            ("observation_complete", u64::from(evidence.complete)),
+            (
+                "retained_decisions",
+                evidence.observation.retained_decisions as u64,
+            ),
+            ("repairs_committed", evidence.observation.repairs as u64),
+            (
+                "promotions_committed",
+                evidence.observation.promotions as u64,
+            ),
+        ] {
+            let name = format!("hydracache_imap_{metric}");
+            write_imap_metric_header(&mut out, &name);
+            let _ = writeln!(out, "{name} {value}");
+        }
         let counters = &self.counters;
         for (metric, value) in [
             ("direct_total", &counters.direct),
@@ -399,26 +438,22 @@ impl IMapOps {
             ("dedup_replays_total", &counters.dedup_replays),
             ("replica_ack_failed_total", &counters.ack_failed),
         ] {
-            let _ = writeln!(out, "# TYPE hydracache_imap_{metric} counter");
+            write_imap_metric_header(&mut out, &format!("hydracache_imap_{metric}"));
             let _ = writeln!(
                 out,
                 "hydracache_imap_{metric} {}",
                 value.load(Ordering::Relaxed)
             );
         }
-        for (state, label) in [
-            (PartitionState::Empty, "empty"),
-            (PartitionState::Healthy, "healthy"),
-            (PartitionState::CatchingUp, "catching_up"),
-            (PartitionState::UnderReplicated, "under_replicated"),
-            (PartitionState::Moving, "moving"),
+        let partitions = IMapPartitionCounts::from_rows(&evidence.observation.rows);
+        write_imap_metric_header(&mut out, "hydracache_imap_partitions");
+        for (label, count) in [
+            ("empty", partitions.empty),
+            ("healthy", partitions.healthy),
+            ("catching_up", partitions.catching_up),
+            ("under_replicated", partitions.under_replicated),
+            ("moving", partitions.moving),
         ] {
-            let count = evidence
-                .observation
-                .rows
-                .iter()
-                .filter(|row| row.state == state)
-                .count();
             let _ = writeln!(
                 out,
                 "hydracache_imap_partitions{{state=\"{label}\"}} {count}"
@@ -426,7 +461,7 @@ impl IMapOps {
         }
         let count = counters.ack_count.load(Ordering::Relaxed);
         let sum = counters.ack_sum_us.load(Ordering::Relaxed);
-        out.push_str("# TYPE hydracache_imap_replica_ack_seconds histogram\n");
+        write_imap_metric_header(&mut out, "hydracache_imap_replica_ack_seconds");
         let mut previous_bucket = 0;
         for (bound, bucket) in ACK_BUCKETS_US.iter().zip(&counters.ack_buckets) {
             let count = bucket
@@ -607,6 +642,35 @@ mod tests {
         ops.record_ack(Duration::from_millis(2), false);
         drop(ops.replica_ack());
         let metrics = ops.prometheus(&evidence);
+        let descriptors = hydracache_observability::IMAP_METRIC_DESCRIPTORS;
+        assert_eq!(
+            metrics
+                .lines()
+                .filter(|line| line.starts_with("# TYPE "))
+                .count(),
+            descriptors.len()
+        );
+        assert_eq!(
+            metrics
+                .lines()
+                .filter(|line| line.starts_with("# HELP "))
+                .count(),
+            descriptors.len()
+        );
+        for metric in descriptors {
+            assert_eq!(
+                metrics
+                    .matches(&format!("# TYPE {} {}\n", metric.name, metric.metric_type))
+                    .count(),
+                1
+            );
+            assert_eq!(
+                metrics
+                    .matches(&format!("# HELP {} {}\n", metric.name, metric.help))
+                    .count(),
+                1
+            );
+        }
         assert!(metrics.contains("hydracache_imap_partitions{state=\"healthy\"} 1\n"));
         assert!(metrics.contains("hydracache_imap_replica_ack_seconds_bucket{le=\"0.000100\"} 1\n"));
         assert!(metrics.contains("hydracache_imap_replica_ack_seconds_bucket{le=\"0.000500\"} 2\n"));

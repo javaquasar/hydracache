@@ -494,6 +494,7 @@ struct RaftLocalManagementSnapshotProvider {
     generation: ClusterGeneration,
     raft_node_id: u64,
     raft: Arc<NetworkedRaftRuntime>,
+    owner_service: OwnerService,
 }
 
 impl LocalManagementSnapshotProvider for RaftLocalManagementSnapshotProvider {
@@ -511,6 +512,7 @@ impl LocalManagementSnapshotProvider for RaftLocalManagementSnapshotProvider {
             generation: self.generation.value(),
             authority_epoch: metadata.epoch.value(),
             observation_seq: metadata.commit_index,
+            imap: None,
             consensus: Some(ManagementConsensusObservation {
                 commit_index: progress.commit_index,
                 applied_index: progress.applied_index,
@@ -522,6 +524,27 @@ impl LocalManagementSnapshotProvider for RaftLocalManagementSnapshotProvider {
                     .is_ok_and(|voters| voters.contains(&self.raft_node_id)),
             }),
         })
+    }
+
+    fn local_imap_snapshot(&self) -> Option<ManagementMemberSnapshot> {
+        let mut report = self.local_snapshot()?;
+        report.schema_version = crate::management_aggregation::IMAP_SNAPSHOT_SCHEMA_VERSION;
+        report.consensus = None;
+        if let Some(ops) = self
+            .owner_service
+            .get()
+            .and_then(|service| service.operations())
+        {
+            let cut = self.raft.partition_snapshot()?;
+            if cut.epoch.value() != report.authority_epoch {
+                return None;
+            }
+            report.imap = Some(
+                ops.evidence(Some((cut.epoch, cut.applied_index == cut.commit_index)))
+                    .into(),
+            );
+        }
+        Some(report)
     }
 }
 
@@ -552,6 +575,7 @@ async fn spawn_cluster_transport(
             generation,
             raft_node_id: raft_node_id(&node_id),
             raft: Arc::clone(&handles.raft),
+            owner_service: handles.owner_service.clone(),
         });
     let routes = AxumClusterMessageService::new(
         node_id.clone(),
@@ -3387,6 +3411,7 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
             generation: consensus.generation,
             authority_epoch: metadata.epoch.value(),
             observation_seq: metadata.commit_index,
+            imap: None,
             consensus: Some(ManagementConsensusObservation {
                 commit_index: consensus.commit_index,
                 applied_index: consensus.applied_index,
@@ -3693,6 +3718,7 @@ impl GridControlPlaneHandle for InProcessGridHandle {
             generation: consensus.generation,
             authority_epoch: snapshot.epoch.value(),
             observation_seq: snapshot.commit_index,
+            imap: None,
             consensus: Some(ManagementConsensusObservation {
                 commit_index: consensus.commit_index,
                 applied_index: consensus.applied_index,

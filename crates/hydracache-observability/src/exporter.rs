@@ -221,6 +221,150 @@ fn write_topology_metrics(
     );
 }
 
+/// One metric family emitted when the server enables the distributed IMap profile.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct IMapMetricDescriptor {
+    pub name: &'static str,
+    pub metric_type: &'static str,
+    pub help: &'static str,
+}
+
+macro_rules! imap_metric {
+    ($suffix:literal, $kind:literal, $help:literal) => {
+        IMapMetricDescriptor {
+            name: concat!("hydracache_imap_", $suffix),
+            metric_type: $kind,
+            help: $help,
+        }
+    };
+}
+
+/// Bounded metric families for the distributed IMap server profile.
+pub const IMAP_METRIC_DESCRIPTORS: &[IMapMetricDescriptor] = &[
+    imap_metric!("routing_mode", "gauge", "Active IMap routing mode."),
+    imap_metric!("ready", "gauge", "Whether this IMap member is ready."),
+    imap_metric!("epoch", "gauge", "IMap topology epoch of this member."),
+    imap_metric!(
+        "inflight",
+        "gauge",
+        "IMap ingress and owner permits in use."
+    ),
+    imap_metric!(
+        "drain_evacuated",
+        "gauge",
+        "Whether this member has evacuated its IMap data."
+    ),
+    imap_metric!(
+        "drain_membership_left",
+        "gauge",
+        "Whether this member has left committed membership during drain."
+    ),
+    imap_metric!(
+        "observation_complete",
+        "gauge",
+        "Whether local IMap partition evidence is complete and fresh."
+    ),
+    imap_metric!(
+        "retained_decisions",
+        "gauge",
+        "Retained IMap decisions visible in the local observation."
+    ),
+    imap_metric!(
+        "repairs_committed",
+        "gauge",
+        "Active replica repair records in the observed topology."
+    ),
+    imap_metric!(
+        "promotions_committed",
+        "gauge",
+        "Active primary promotion records in the observed topology."
+    ),
+    imap_metric!(
+        "partitions",
+        "gauge",
+        "Partitions by state in the local IMap observation."
+    ),
+    imap_metric!(
+        "direct_total",
+        "counter",
+        "IMap operations routed to the local owner."
+    ),
+    imap_metric!(
+        "proxy_total",
+        "counter",
+        "IMap operations forwarded to a remote owner."
+    ),
+    imap_metric!(
+        "stale_owner_total",
+        "counter",
+        "IMap operations encountering a stale owner route."
+    ),
+    imap_metric!(
+        "backpressure_total",
+        "counter",
+        "IMap operations rejected by a capacity limit."
+    ),
+    imap_metric!(
+        "drain_rejected_total",
+        "counter",
+        "IMap operations rejected during drain."
+    ),
+    imap_metric!(
+        "incompatible_total",
+        "counter",
+        "IMap requests rejected due to an incompatible member."
+    ),
+    imap_metric!(
+        "topology_rejected_total",
+        "counter",
+        "IMap requests rejected without an applied topology."
+    ),
+    imap_metric!(
+        "listener_gaps_total",
+        "counter",
+        "IMap listener gaps reported to clients."
+    ),
+    imap_metric!(
+        "repair_total",
+        "counter",
+        "Replica repairs completed by this IMap member."
+    ),
+    imap_metric!(
+        "handoff_total",
+        "counter",
+        "Primary handoffs completed by this IMap member."
+    ),
+    imap_metric!(
+        "dedup_replays_total",
+        "counter",
+        "IMap mutation receipts replayed by this member."
+    ),
+    imap_metric!(
+        "replica_ack_failed_total",
+        "counter",
+        "Failed or cancelled IMap replica acknowledgement waits."
+    ),
+    imap_metric!(
+        "replica_ack_seconds",
+        "histogram",
+        "Time spent waiting for successful IMap replica acknowledgements."
+    ),
+];
+
+/// Emit the canonical help and type metadata for an IMap metric family.
+pub fn write_imap_metric_header(out: &mut String, name: &str) {
+    let descriptor = IMAP_METRIC_DESCRIPTORS
+        .iter()
+        .find(|metric| metric.name == name)
+        .expect("registered IMap metric");
+    write_header(
+        out,
+        descriptor.name,
+        descriptor.metric_type,
+        descriptor.help,
+    );
+}
+
 /// Return metric names exported or reserved by the production operator surface.
 pub fn registered_metric_names() -> BTreeSet<&'static str> {
     let mut names = BTreeSet::from([
@@ -243,6 +387,7 @@ pub fn registered_metric_names() -> BTreeSet<&'static str> {
             .iter()
             .map(|descriptor| descriptor.name),
     );
+    names.extend(IMAP_METRIC_DESCRIPTORS.iter().map(|metric| metric.name));
     names
 }
 

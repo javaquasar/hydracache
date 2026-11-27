@@ -229,7 +229,7 @@ impl ValueReplica {
 
     pub(crate) fn roster_compatible(&self, snapshot: &RaftPartitionSnapshot) -> bool {
         self.operations.as_ref().is_none_or(|operations| {
-            snapshot.members.len() <= 16
+            snapshot.members.len() <= crate::imap_ops::MAX_VALUE_MEMBERS
                 && operations.compatible_members(snapshot, &self.local).len()
                     == snapshot.members.len()
         })
@@ -258,7 +258,9 @@ impl ValueReplica {
         let reachable = compatible
             .intersection(reachable)
             .collect::<std::collections::BTreeSet<_>>();
-        if compatible.len() != snapshot.members.len() || compatible.len() > 16 {
+        if compatible.len() != snapshot.members.len()
+            || compatible.len() > crate::imap_ops::MAX_VALUE_MEMBERS
+        {
             let mut view = fallback(Reason::WireGenerationIncompatible);
             view.compatible_members = compatible.len();
             view.reachable_members = reachable.len();
@@ -966,7 +968,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
             return None;
         }
         let mut reachable = std::collections::BTreeSet::from([self.replica.local.node.clone()]);
-        if snapshot.members.len() <= 16 {
+        if snapshot.members.len() <= crate::imap_ops::MAX_VALUE_MEMBERS {
             let peers: Vec<_> = snapshot
                 .members
                 .iter()

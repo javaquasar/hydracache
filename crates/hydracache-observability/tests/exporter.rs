@@ -4,7 +4,7 @@ use hydracache::{
 };
 use hydracache_observability::{
     registered_metric_names, ClusterTopologyOverview, HydraCacheOverview, HydraCacheRegistry,
-    PrometheusExporter, TopologyReshardPhase, TopologyStatusSource,
+    PrometheusExporter, TopologyReshardPhase, TopologyStatusSource, IMAP_METRIC_DESCRIPTORS,
 };
 
 mod exporter {
@@ -37,7 +37,17 @@ mod exporter {
     fn every_registered_metric_name_is_emitted() {
         let text = PrometheusExporter::render_overview(&HydraCacheOverview::default());
 
-        for name in registered_metric_names() {
+        let optional: std::collections::BTreeSet<_> = IMAP_METRIC_DESCRIPTORS
+            .iter()
+            .map(|metric| metric.name)
+            .collect();
+        let registered = registered_metric_names();
+        assert_eq!(optional.len(), IMAP_METRIC_DESCRIPTORS.len());
+        assert!(optional.is_subset(&registered));
+        for name in &optional {
+            assert!(!text.contains(name));
+        }
+        for name in registered.difference(&optional) {
             assert_eq!(
                 text.matches(&format!("# HELP {name} ")).count(),
                 1,

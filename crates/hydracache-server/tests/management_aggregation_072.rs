@@ -70,6 +70,7 @@ impl ManagementPeerTransport for AggregateTransport {
                 generation: target.generation,
                 authority_epoch: request.authority_epoch,
                 observation_seq: 18,
+                imap: None,
                 consensus: Some(ManagementConsensusObservation {
                     commit_index: 19,
                     applied_index: 18,
@@ -118,6 +119,7 @@ fn member() -> ManagementMemberSnapshot {
         generation: 4,
         authority_epoch: 9,
         observation_seq: 12,
+        imap: None,
         consensus: Some(ManagementConsensusObservation {
             commit_index: 12,
             applied_index: 11,
@@ -450,6 +452,7 @@ fn member_for_aggregate(
         generation,
         authority_epoch: epoch,
         observation_seq: seq,
+        imap: None,
         consensus: Some(ManagementConsensusObservation {
             commit_index: seq,
             applied_index: applied,
