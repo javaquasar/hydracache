@@ -101,6 +101,8 @@ pub(crate) struct ReplicaReady {
     pub epoch: ClusterEpoch,
     pub scope: [u8; 32],
     pub sync_backups: usize,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub wire_generation: Option<u16>,
 }
 
 pub(crate) fn admits_repair(

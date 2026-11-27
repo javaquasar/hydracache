@@ -206,10 +206,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
     }
     let hc2_accounting = hc2_observer.map(|service| service.accounting());
-    shared_runtime
-        .lock()
-        .expect("server runtime mutex")
-        .graceful_shutdown();
+    let value_drain_failed = {
+        let mut runtime = shared_runtime.lock().expect("server runtime mutex");
+        let distributed = runtime.config().distributed_hc2.is_some();
+        runtime.graceful_shutdown().timed_out && distributed
+    };
+    if value_drain_failed {
+        return Err("distributed IMap drain could not prove safe departure".into());
+    }
     if listener_drain_timed_out {
         return Err("client listener drain exceeded configured deadline".into());
     }

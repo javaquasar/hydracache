@@ -276,6 +276,7 @@ async fn management_imap(
         "observation_sequence": evidence.sequence,
         "age_ms": evidence.age_ms,
         "complete": evidence.complete,
+        "policy": evidence.policy,
         "compatible_members": observation.compatible_members,
         "reachable_members": observation.reachable_members,
         "retained_decisions": observation.retained_decisions,

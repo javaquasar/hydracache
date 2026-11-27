@@ -220,7 +220,7 @@ impl Hc2ClientPlaneService {
     fn admit_public(
         &self,
     ) -> Result<Option<tokio::sync::SemaphorePermit<'_>>, (StableErrorCode, &'static str)> {
-        use crate::imap_ops::{compatible_roster, Denial};
+        use crate::imap_ops::Denial;
         let Some(ops) = self.operations() else {
             return Ok(None);
         };
@@ -239,12 +239,15 @@ impl Hc2ClientPlaneService {
             .as_ref()
             .expect("value control belongs to a member");
         let Some(snapshot) = member.grid.partition_snapshot() else {
+            ops.counters
+                .topology_rejected
+                .fetch_add(1, Ordering::Relaxed);
             return Err((
                 StableErrorCode::StableErrorUnavailable,
                 "IMap topology unavailable",
             ));
         };
-        if !compatible_roster(&snapshot) {
+        if !member.plane.roster_compatible(&snapshot) {
             ops.counters.incompatible.fetch_add(1, Ordering::Relaxed);
             return Err((
                 StableErrorCode::StableErrorUnavailable,
@@ -258,6 +261,9 @@ impl Hc2ClientPlaneService {
                     && record.generation == member.plane.local_member().generation
             })
         {
+            ops.counters
+                .topology_rejected
+                .fetch_add(1, Ordering::Relaxed);
             return Err((
                 StableErrorCode::StableErrorUnavailable,
                 "IMap topology is not applied",

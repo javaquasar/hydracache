@@ -104,6 +104,13 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
         self.owner.replica.operations.as_deref()
     }
 
+    pub(crate) fn roster_compatible(
+        &self,
+        snapshot: &hydracache_cluster_raft::RaftPartitionSnapshot,
+    ) -> bool {
+        self.owner.replica.roster_compatible(snapshot)
+    }
+
     pub(crate) async fn evacuate_value_ownership(&self, timeout: Duration) -> bool {
         self.owner.evacuate(timeout).await
     }

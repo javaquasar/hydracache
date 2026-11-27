@@ -409,7 +409,6 @@ where
     node_id: Option<ClusterNodeId>,
     generation: ClusterGeneration,
     endpoints: ClusterEndpoints,
-    metadata: std::collections::BTreeMap<String, String>,
 }
 
 impl HydraCacheMemberBuilder<PostcardCodec> {
@@ -423,7 +422,6 @@ impl HydraCacheMemberBuilder<PostcardCodec> {
             node_id: None,
             generation: ClusterGeneration::default(),
             endpoints: ClusterEndpoints::default(),
-            metadata: std::collections::BTreeMap::new(),
         }
     }
 }
@@ -432,12 +430,6 @@ impl<C> HydraCacheMemberBuilder<C>
 where
     C: CacheCodec,
 {
-    /// Attach capability metadata to this incarnation's admission record.
-    pub fn metadata(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
-        self.metadata.insert(key.into(), value.into());
-        self
-    }
-
     /// Set the logical cluster name.
     pub fn cluster(mut self, name: impl Into<String>) -> Self {
         self.cluster_name = name.into();
@@ -642,7 +634,6 @@ where
             node_id: self.node_id,
             generation: self.generation,
             endpoints: self.endpoints,
-            metadata: self.metadata,
         }
     }
 
@@ -654,10 +645,9 @@ where
             .unwrap_or_else(|| default_control_plane(self.cluster_name.clone()));
         let node_id = self.node_id.unwrap_or_else(next_member_id);
         let discovery = self.discovery.clone();
-        let mut candidate = ClusterCandidate::member(node_id.clone())
+        let candidate = ClusterCandidate::member(node_id.clone())
             .generation(self.generation)
             .endpoints(self.endpoints);
-        candidate.metadata = self.metadata;
         if let Some(discovery) = &discovery {
             discovery.announce(candidate.clone()).await?;
         }

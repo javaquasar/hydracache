@@ -1,20 +1,20 @@
 //! Bounded evidence and admission for the distributed value plane.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::RwLock;
 use std::time::{Duration, Instant};
 
-use hydracache::{ClusterEpoch, ClusterNodeId};
+use hydracache::{ClusterEpoch, ClusterGeneration, ClusterNodeId};
 use hydracache_cluster_raft::RaftPartitionSnapshot;
 use serde::Serialize;
 use tokio::sync::{watch, Semaphore, SemaphorePermit, TryAcquireError};
 
 use crate::config::IMapOperationalConfig;
+use crate::imap_topology::PartitionMember;
 
-pub(crate) const VALUE_WIRE_KEY: &str = "hydracache.imap.value_wire";
-pub(crate) const VALUE_WIRE_GENERATION: &str = "2";
+pub(crate) const VALUE_WIRE_GENERATION: u16 = 2;
 const HEALTH_TTL: Duration = Duration::from_secs(3);
 const ACK_BUCKETS_US: [u64; 7] = [100, 500, 1_000, 5_000, 20_000, 100_000, 500_000];
 
@@ -100,6 +100,7 @@ pub(crate) struct IMapEvidence {
     pub sequence: u64,
     pub age_ms: u64,
     pub complete: bool,
+    pub policy: IMapOperationalConfig,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -116,6 +117,7 @@ pub(crate) struct IMapCounters {
     pub backpressure: AtomicU64,
     pub drain_rejected: AtomicU64,
     pub incompatible: AtomicU64,
+    pub topology_rejected: AtomicU64,
     pub listener_gaps: AtomicU64,
     pub repairs: AtomicU64,
     pub handoffs: AtomicU64,
@@ -135,6 +137,7 @@ pub(crate) struct IMapOps {
     pub ownership_evacuated: AtomicBool,
     pub membership_left: AtomicBool,
     sample: RwLock<Option<Sample>>,
+    compatible: RwLock<BTreeMap<ClusterNodeId, ClusterGeneration>>,
     pub counters: IMapCounters,
 }
 
@@ -148,6 +151,7 @@ impl IMapOps {
             ownership_evacuated: AtomicBool::new(false),
             membership_left: AtomicBool::new(false),
             sample: RwLock::new(None),
+            compatible: RwLock::new(BTreeMap::new()),
             counters: IMapCounters::default(),
         }
     }
@@ -174,6 +178,51 @@ impl IMapOps {
 
     pub fn is_draining(&self) -> bool {
         self.owners.is_closed()
+    }
+
+    pub fn proves_member(&self, member: &PartitionMember) -> bool {
+        self.compatible
+            .read()
+            .expect("IMap capability lock")
+            .get(&member.node)
+            == Some(&member.generation)
+    }
+
+    pub fn record_compatible(&self, snapshot: &RaftPartitionSnapshot, peers: Vec<PartitionMember>) {
+        let mut compatible = self.compatible.write().expect("IMap capability lock");
+        compatible.retain(|node, generation| {
+            snapshot
+                .members
+                .iter()
+                .any(|member| member.node_id == *node && member.generation == *generation)
+        });
+        for peer in peers {
+            if snapshot
+                .members
+                .iter()
+                .any(|member| member.node_id == peer.node && member.generation == peer.generation)
+            {
+                compatible.insert(peer.node, peer.generation);
+            }
+        }
+    }
+
+    pub fn compatible_members(
+        &self,
+        snapshot: &RaftPartitionSnapshot,
+        local: &PartitionMember,
+    ) -> BTreeSet<ClusterNodeId> {
+        let compatible = self.compatible.read().expect("IMap capability lock");
+        snapshot
+            .members
+            .iter()
+            .filter(|member| {
+                let is_local =
+                    member.node_id == local.node && member.generation == local.generation;
+                is_local || compatible.get(&member.node_id) == Some(&member.generation)
+            })
+            .map(|member| member.node_id.clone())
+            .collect()
     }
 
     pub fn drain_signal(&self) -> watch::Receiver<bool> {
@@ -204,6 +253,14 @@ impl IMapOps {
             if elapsed <= *bound {
                 counter.fetch_add(1, Ordering::Relaxed);
             }
+        }
+    }
+
+    pub fn replica_ack(&self) -> AckObservation<'_> {
+        AckObservation {
+            ops: self,
+            start: Instant::now(),
+            success: false,
         }
     }
 
@@ -259,6 +316,7 @@ impl IMapOps {
             observation,
             sequence,
             age_ms,
+            policy: self.config,
         }
     }
 
@@ -306,12 +364,14 @@ impl IMapOps {
             ("backpressure_total", &counters.backpressure),
             ("drain_rejected_total", &counters.drain_rejected),
             ("incompatible_total", &counters.incompatible),
+            ("topology_rejected_total", &counters.topology_rejected),
             ("listener_gaps_total", &counters.listener_gaps),
             ("repair_total", &counters.repairs),
             ("handoff_total", &counters.handoffs),
             ("dedup_replays_total", &counters.dedup_replays),
             ("replica_ack_failed_total", &counters.ack_failed),
         ] {
+            let _ = writeln!(out, "# TYPE hydracache_imap_{metric} counter");
             let _ = writeln!(
                 out,
                 "hydracache_imap_{metric} {}",
@@ -366,28 +426,22 @@ impl IMapOps {
     }
 }
 
-pub(crate) fn compatible_members(snapshot: &RaftPartitionSnapshot) -> BTreeSet<ClusterNodeId> {
-    snapshot
-        .members
-        .iter()
-        .filter(|member| {
-            member
-                .metadata
-                .get(VALUE_WIRE_KEY)
-                .is_some_and(|value| value == VALUE_WIRE_GENERATION)
-        })
-        .map(|member| member.node_id.clone())
-        .collect()
+pub(crate) struct AckObservation<'a> {
+    ops: &'a IMapOps,
+    start: Instant,
+    success: bool,
 }
 
-pub(crate) fn compatible_roster(snapshot: &RaftPartitionSnapshot) -> bool {
-    snapshot.members.len() <= 16
-        && snapshot.members.iter().all(|member| {
-            member
-                .metadata
-                .get(VALUE_WIRE_KEY)
-                .is_some_and(|value| value == VALUE_WIRE_GENERATION)
-        })
+impl AckObservation<'_> {
+    pub fn confirmed(mut self, success: bool) {
+        self.success = success;
+    }
+}
+
+impl Drop for AckObservation<'_> {
+    fn drop(&mut self) {
+        self.ops.record_ack(self.start.elapsed(), self.success);
+    }
 }
 
 #[cfg(test)]
@@ -455,12 +509,13 @@ mod tests {
         ops.record_ack(Duration::from_micros(50), true);
         ops.record_ack(Duration::from_micros(190), true);
         ops.record_ack(Duration::from_millis(2), false);
+        drop(ops.replica_ack());
         let metrics = ops.prometheus(&evidence);
         assert!(metrics.contains("hydracache_imap_partitions{state=\"healthy\"} 1\n"));
         assert!(metrics.contains("hydracache_imap_replica_ack_seconds_bucket{le=\"0.000100\"} 1\n"));
         assert!(metrics.contains("hydracache_imap_replica_ack_seconds_bucket{le=\"0.000500\"} 2\n"));
         assert!(metrics.contains("hydracache_imap_replica_ack_seconds_count 2\n"));
-        assert!(metrics.contains("hydracache_imap_replica_ack_failed_total 1\n"));
+        assert!(metrics.contains("hydracache_imap_replica_ack_failed_total 2\n"));
         assert!(!metrics.contains("partition_id="));
         ops.begin_drain();
         assert_eq!(

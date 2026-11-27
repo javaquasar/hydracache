@@ -400,12 +400,6 @@ async fn networked_member_cache(
             .generation(generation)
             .bind(config.cluster_addr.to_string())
             .diagnostics_endpoint(format!("http://{}", config.admin_api.listen_addr));
-        if config.distributed_hc2.is_some() {
-            builder = builder.metadata(
-                crate::imap_ops::VALUE_WIRE_KEY,
-                crate::imap_ops::VALUE_WIRE_GENERATION,
-            );
-        }
         for seed in &config.seeds {
             builder = builder.bootstrap(seed.clone());
         }
@@ -718,15 +712,9 @@ async fn announce_join_candidate(
     generation: ClusterGeneration,
     config: &ServerConfig,
 ) -> CacheResult<()> {
-    let mut candidate = ClusterCandidate::member(node_id)
+    let candidate = ClusterCandidate::member(node_id)
         .generation(generation)
         .endpoints(ClusterEndpoints::new().control(config.cluster_advertise_endpoint()));
-    if config.distributed_hc2.is_some() {
-        candidate = candidate.metadata(
-            crate::imap_ops::VALUE_WIRE_KEY,
-            crate::imap_ops::VALUE_WIRE_GENERATION,
-        );
-    }
     discovery.announce(candidate).await
 }
 
@@ -2697,9 +2685,7 @@ impl MemberReadHost {
                         continue;
                     };
                     let epoch = snapshot.epoch.value();
-                    if snapshot.applied_index != snapshot.commit_index
-                        || !backend.replica.roster_compatible(&snapshot)
-                    {
+                    if snapshot.applied_index != snapshot.commit_index {
                         operations.publish(
                             backend
                                 .replica

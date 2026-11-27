@@ -153,6 +153,7 @@ impl ValueReplica {
             epoch,
             scope: self.repair_scope(),
             sync_backups: self.replication.sync_backups,
+            wire_generation: None,
         }
     }
 
@@ -163,11 +164,16 @@ impl ValueReplica {
         epoch: u64,
         request: ReplicaReady,
     ) -> CacheResult<ReplicaReady> {
-        if self
-            .operations
-            .as_ref()
-            .is_some_and(|ops| ops.is_draining())
-            || !self.roster_compatible(snapshot)
+        let eligible = match request.wire_generation {
+            Some(version) => {
+                self.operations.is_some() && version == crate::imap_ops::VALUE_WIRE_GENERATION
+            }
+            None => self
+                .operations
+                .as_ref()
+                .is_none_or(|ops| !ops.is_draining()),
+        };
+        if !eligible
             || snapshot.applied_index != snapshot.commit_index
             || request.epoch != snapshot.epoch
             || epoch != request.epoch.value()
@@ -539,6 +545,7 @@ mod tests {
             epoch: snapshot.epoch,
             scope: replica.repair_scope(),
             sync_backups: profile.sync_backups,
+            wire_generation: None,
         };
         let epoch = snapshot.epoch.value();
         assert_eq!(

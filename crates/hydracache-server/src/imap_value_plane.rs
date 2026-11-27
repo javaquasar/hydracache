@@ -28,7 +28,7 @@ use crate::grid_host::send_raft_messages_with_diagnostics;
 use crate::imap_hc2_route::{
     transport_unavailable, OwnerBatchCall, OwnerBatchReply, OwnerCall, OwnerReply,
 };
-use crate::imap_ops::{compatible_roster, IMapOps};
+use crate::imap_ops::IMapOps;
 use crate::imap_owner_read::{
     request_read_index, unavailable, OwnerReadLane, OwnerReadProgress, OwnerReadRoute,
     OwnerReadValues, RaftOwnerReadBackend,
@@ -228,7 +228,11 @@ impl ValueReplica {
     }
 
     pub(crate) fn roster_compatible(&self, snapshot: &RaftPartitionSnapshot) -> bool {
-        self.operations.is_none() || compatible_roster(snapshot)
+        self.operations.as_ref().is_none_or(|operations| {
+            snapshot.members.len() <= 16
+                && operations.compatible_members(snapshot, &self.local).len()
+                    == snapshot.members.len()
+        })
     }
 
     pub(crate) fn operational_observation(
@@ -237,8 +241,7 @@ impl ValueReplica {
         reachable: &std::collections::BTreeSet<hydracache::ClusterNodeId>,
     ) -> crate::imap_ops::HealthObservation {
         use crate::imap_ops::{
-            compatible_members, HealthObservation, IMapReadinessReason as Reason, PartitionHealth,
-            PartitionState,
+            HealthObservation, IMapReadinessReason as Reason, PartitionHealth, PartitionState,
         };
 
         let epoch = snapshot.epoch.value();
@@ -246,7 +249,12 @@ impl ValueReplica {
         if snapshot.applied_index != snapshot.commit_index {
             return fallback(Reason::EpochStale);
         }
-        let compatible = compatible_members(&snapshot);
+        let compatible = self
+            .operations
+            .as_ref()
+            .map_or_else(Default::default, |ops| {
+                ops.compatible_members(&snapshot, &self.local)
+            });
         let reachable = compatible
             .intersection(reachable)
             .collect::<std::collections::BTreeSet<_>>();
@@ -944,48 +952,54 @@ impl<S: RaftLogStore> ValueBackend<S> {
         RaftPartitionSnapshot,
         std::collections::BTreeSet<hydracache::ClusterNodeId>,
     )> {
-        use futures_util::{stream, StreamExt};
-
-        let transport = self.value_transport.as_ref()?.clone();
+        let control = self.replica.operations.as_ref()?;
+        let transport = self.value_transport.as_ref()?;
         let deadline = deadline.min(Instant::now() + Duration::from_millis(650));
         let proof = request_read_index(&self.raft, &self.raft_transport, deadline)
             .await
             .ok()?;
         let snapshot = proof.with_snapshot(|snapshot, _| snapshot).ok()?;
-        if !self.replica.roster_compatible(&snapshot) || !admitted(&snapshot, &self.replica.local) {
+        if !admitted(&snapshot, &self.replica.local) {
             return None;
         }
-        let peers: Vec<_> = snapshot
-            .members
-            .iter()
-            .filter(|member| member.node_id != self.replica.local.node)
-            .map(|member| {
-                self.replica.candidate_probe(
-                    PartitionMember {
-                        node: member.node_id.clone(),
-                        generation: member.generation,
-                    },
-                    snapshot.epoch,
-                )
-            })
-            .collect();
-        let mut results = stream::iter(peers)
-            .map(move |probe| {
-                let transport = transport.clone();
-                async move {
-                    let limit = deadline.min(Instant::now() + Duration::from_millis(250));
-                    timeout_at(limit, transport.check_candidate(probe.clone()))
-                        .await
-                        .is_ok_and(|reply| reply.is_ok_and(|reply| reply == probe))
-                        .then_some(probe.candidate.node)
-                }
-            })
-            .buffer_unordered(4);
         let mut reachable = std::collections::BTreeSet::from([self.replica.local.node.clone()]);
-        while let Some(node) = results.next().await {
-            reachable.extend(node);
+        if snapshot.members.len() <= 16 {
+            let peers: Vec<_> = snapshot
+                .members
+                .iter()
+                .filter(|member| member.node_id != self.replica.local.node)
+                .map(|member| {
+                    self.replica.candidate_probe(
+                        PartitionMember {
+                            node: member.node_id.clone(),
+                            generation: member.generation,
+                        },
+                        snapshot.epoch,
+                    )
+                })
+                .collect();
+            let to_prove: Vec<_> = peers
+                .iter()
+                .filter(|probe| !control.proves_member(&probe.candidate))
+                .cloned()
+                .map(|mut probe| {
+                    probe.wire_generation = Some(crate::imap_ops::VALUE_WIRE_GENERATION);
+                    probe
+                })
+                .collect();
+            control.record_compatible(
+                &snapshot,
+                probe_operational_members(transport, to_prove, deadline).await,
+            );
+            if self.replica.roster_compatible(&snapshot) {
+                reachable.extend(
+                    probe_operational_members(transport, peers, deadline)
+                        .await
+                        .into_iter()
+                        .map(|member| member.node),
+                );
+            }
         }
-        drop(results);
         self.raft
             .with_applied_partition_snapshot(|current| {
                 (current.epoch == snapshot.epoch && current.term == snapshot.term)
@@ -1019,9 +1033,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
                     if let Some((snapshot, reachable)) =
                         self.authenticated_replica_view(deadline).await
                     {
-                        if reachable.len().saturating_sub(1)
-                            >= self.replica.replication.replication_factor
-                        {
+                        if reachable.len().saturating_sub(1) >= ops.config.minimum_ready_members {
                             let health = RebalanceHealth {
                                 failed: snapshot
                                     .members
@@ -1257,7 +1269,11 @@ impl<S: RaftLogStore> ValueBackend<S> {
         timeout_at(deadline, async {
             for target in &mutation.backups {
                 let transport = self.value_transport.as_ref().ok_or_else(ambiguous)?;
-                let started = Instant::now();
+                let observation = self
+                    .replica
+                    .operations
+                    .as_ref()
+                    .map(|ops| ops.replica_ack());
                 let ack = transport
                     .apply(ReplicaApply {
                         version: wire_version,
@@ -1271,8 +1287,8 @@ impl<S: RaftLogStore> ValueBackend<S> {
                     prefix,
                 };
                 let confirmed = ack.is_ok_and(|ack| ack == expected);
-                if let Some(ops) = &self.replica.operations {
-                    ops.record_ack(started.elapsed(), confirmed);
+                if let Some(observation) = observation {
+                    observation.confirmed(confirmed);
                 }
                 if !confirmed {
                     return Err(ambiguous());
@@ -1562,6 +1578,29 @@ impl ValueReplica {
         }
         (owned, clear)
     }
+}
+
+async fn probe_operational_members(
+    transport: &Arc<dyn ReplicaTransport>,
+    probes: Vec<ReplicaReady>,
+    deadline: Instant,
+) -> Vec<PartitionMember> {
+    use futures_util::{stream, StreamExt};
+    stream::iter(probes)
+        .map(|probe| {
+            let transport = transport.clone();
+            async move {
+                let limit = deadline.min(Instant::now() + Duration::from_millis(250));
+                timeout_at(limit, transport.check_candidate(probe.clone()))
+                    .await
+                    .is_ok_and(|reply| reply.is_ok_and(|reply| reply == probe))
+                    .then_some(probe.candidate)
+            }
+        })
+        .buffer_unordered(4)
+        .filter_map(std::future::ready)
+        .collect()
+        .await
 }
 
 fn identity_conflict() -> ClientErrorEnvelope {

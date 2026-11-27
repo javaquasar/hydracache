@@ -230,6 +230,9 @@ impl ValueReplica {
                 return Err(repair_error("recipient did not confirm a durable image"));
             }
             let plan = transfer.finish(installed.applied, deadline).await?;
+            if let Some(operations) = &self.operations {
+                operations.counters.repairs.fetch_add(1, Ordering::Relaxed);
+            }
             // Once the new epoch is applied, old-epoch owner applies are
             // fenced and new writes cannot append to this capture.
             self.journal.finish_capture(&manifest)?;
