@@ -901,7 +901,8 @@ mod tests {
             progress.unwrap(),
             DrainProgress {
                 verified_during_drain: 3,
-                verified_after_return: 3
+                verified_after_return: 3,
+                verified_while_copy_interrupted: None,
             }
         );
         ledger[2]["verified_at_ms"] = json!(34_001);
