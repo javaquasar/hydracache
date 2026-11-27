@@ -267,6 +267,11 @@ impl ClusterStatusProvider for ModeledClusterStatus {
 
 /// Minimal read-only handle over a live grid/control-plane.
 pub trait GridControlPlaneHandle: fmt::Debug + Send + Sync {
+    /// Transfer or fence certified value ownership before leaving the voting roster.
+    fn wait_for_value_drain(&self, _timeout: Duration) -> bool {
+        true
+    }
+
     /// Notify the live grid that graceful drain started.
     fn begin_drain(&self);
 

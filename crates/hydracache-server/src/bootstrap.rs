@@ -64,6 +64,9 @@ pub struct ServerReadiness {
     pub client_surface_ready: bool,
     /// Whether the optional Redis RESP surface is accepting work.
     pub redis_surface_ready: bool,
+    /// Readiness of the distributed value plane, when attached.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub imap: Option<crate::IMapReadiness>,
 }
 
 /// Admin status consumed by the Kubernetes operator.
@@ -288,6 +291,7 @@ pub struct ServerRuntime {
     last_client_surface_drain: Option<ClientSurfaceDrain>,
     last_redis_surface_drain: Option<RedisSurfaceDrain>,
     last_drain: Option<DrainOutcome>,
+    imap_drain_running: bool,
     started_at: Instant,
 }
 
@@ -312,6 +316,56 @@ pub(crate) struct ClientLifecycleDiagnostics {
     pub(crate) resp_accepted: Option<u64>,
     pub(crate) resp_closed: Option<u64>,
     pub(crate) resp_rejected: Option<u64>,
+}
+
+pub(crate) enum IMapDrainStart {
+    Run(String, IMapDrainWork),
+    Finished(DrainOutcome),
+    Busy,
+}
+
+pub(crate) struct IMapDrainWork {
+    timeout: std::time::Duration,
+    cache: HydraCache,
+    cluster: Arc<dyn ClusterStatusProvider>,
+    grid: Arc<dyn GridControlPlaneHandle>,
+    service: crate::Hc2ClientPlaneService,
+}
+
+impl IMapDrainWork {
+    pub fn run(self) -> (bool, std::time::Duration) {
+        use std::sync::atomic::Ordering;
+        let started = Instant::now();
+        let remaining = || self.timeout.saturating_sub(started.elapsed());
+        let leave_only = || (false, remaining());
+        let ops = self
+            .service
+            .operations()
+            .expect("distributed IMap controls");
+        if !ops.ownership_evacuated.load(Ordering::Acquire) {
+            if !self.grid.wait_for_value_drain(remaining()) {
+                return leave_only();
+            }
+            ops.ownership_evacuated.store(true, Ordering::Release);
+        }
+        while !self.service.accounting().live_resources_zero() {
+            if remaining().is_zero() {
+                return leave_only();
+            }
+            std::thread::sleep(remaining().min(std::time::Duration::from_millis(10)));
+        }
+        if !ops.membership_left.load(Ordering::Acquire) {
+            if remaining().is_zero()
+                || block_on_cluster_leave_bounded(&self.cache, Some(remaining())).is_err()
+            {
+                return leave_only();
+            }
+            ops.membership_left.store(true, Ordering::Release);
+        }
+        self.cluster.begin_drain();
+        let completed = self.cluster.wait_for_drain_ready(remaining());
+        (completed, remaining())
+    }
 }
 
 impl ServerRuntime {
@@ -395,6 +449,7 @@ impl ServerRuntime {
             last_client_surface_drain: None,
             last_redis_surface_drain: None,
             last_drain: None,
+            imap_drain_running: false,
             started_at: Instant::now(),
         })
     }
@@ -458,13 +513,15 @@ impl ServerRuntime {
 
     /// Return readiness.
     pub fn ready(&self) -> ServerReadiness {
+        let imap = self.imap_evidence().map(|evidence| evidence.readiness);
         ServerReadiness {
-            ready: self.can_serve(),
+            ready: self.can_serve() && imap.is_none_or(|readiness| readiness.ready),
             storage_open: self.storage_open,
             cluster_ready: self.cluster_ready,
             accepting: self.accepting,
             client_surface_ready: self.client_surface_ready(),
             redis_surface_ready: self.redis_surface_ready(),
+            imap,
         }
     }
 
@@ -474,6 +531,17 @@ impl ServerRuntime {
             && self.storage_open
             && self.cluster_ready
             && self.accepting
+    }
+
+    /// The process may exit after a completed operator drain.
+    pub fn shutdown_requested(&self) -> bool {
+        self.is_draining()
+            && (self.distributed_hc2_service.is_none()
+                || self.last_drain.is_some_and(|drain| !drain.timed_out))
+    }
+
+    pub(crate) fn imap_evidence(&self) -> Option<crate::imap_ops::IMapEvidence> {
+        self.distributed_hc2_service.as_ref()?.imap_evidence()
     }
 
     /// Return whether the runtime is currently draining.
@@ -658,11 +726,27 @@ impl ServerRuntime {
     /// Stop accepting new work and enter the draining state.
     pub fn begin_drain(&mut self) {
         self.begin_local_drain();
-        self.cluster_status.begin_drain();
+        if self.distributed_hc2_service.is_none() {
+            self.cluster_status.begin_drain();
+        }
     }
 
     /// Accept an operator/admin drain request without stopping the daemon process.
     pub fn request_admin_drain(&mut self) -> DrainOutcome {
+        if self.distributed_hc2_service.is_some() {
+            return match self.start_imap_admin_drain() {
+                IMapDrainStart::Run(operation, work) => {
+                    let completed = work.run();
+                    self.finish_imap_admin_drain(&operation, completed)
+                }
+                IMapDrainStart::Finished(outcome) => outcome,
+                IMapDrainStart::Busy => DrainOutcome {
+                    started_with: 0,
+                    remaining: 0,
+                    timed_out: true,
+                },
+            };
+        }
         let operation_id = self
             .management_operations
             .request(ManagementOperationKind::Drain, "node");
@@ -718,6 +802,9 @@ impl ServerRuntime {
         }
         self.accepting = false;
         self.state = ServerState::Draining;
+        if let Some(service) = &self.distributed_hc2_service {
+            service.begin_member_drain();
+        }
         if let Some(surface) = self.client_surface.as_mut() {
             if self
                 .last_client_surface_drain
@@ -773,6 +860,9 @@ impl ServerRuntime {
     }
 
     fn prepare_cluster_drain(&self, timeout: std::time::Duration) -> bool {
+        if let Some(work) = self.imap_drain_work(timeout) {
+            return self.last_drain.is_some_and(|result| !result.timed_out) || work.run().0;
+        }
         // NodeLeft must commit while this process is still a voter. Only then
         // may the voter-removal transition start. Waiting for that removal to
         // apply keeps a two-voter cluster live until its survivor owns a
@@ -781,6 +871,70 @@ impl ServerRuntime {
         self.leave_cluster_for_shutdown();
         self.cluster_status.begin_drain();
         self.cluster_status.wait_for_drain_ready(timeout)
+    }
+
+    pub(crate) fn has_distributed_imap(&self) -> bool {
+        self.distributed_hc2_service.is_some()
+    }
+
+    fn imap_drain_work(&self, timeout: std::time::Duration) -> Option<IMapDrainWork> {
+        Some(IMapDrainWork {
+            timeout,
+            cache: self.cache.clone(),
+            cluster: self.cluster_status.clone(),
+            grid: self.grid_control.as_ref()?.clone(),
+            service: self.distributed_hc2_service.as_ref()?.clone(),
+        })
+    }
+
+    pub(crate) fn start_imap_admin_drain(&mut self) -> IMapDrainStart {
+        if self.imap_drain_running {
+            return IMapDrainStart::Busy;
+        }
+        if let Some(outcome) = self.last_drain.filter(|outcome| !outcome.timed_out) {
+            return IMapDrainStart::Finished(outcome);
+        }
+        let operation = self
+            .management_operations
+            .request(ManagementOperationKind::Drain, "node");
+        for state in [
+            ManagementOperationState::Accepted,
+            ManagementOperationState::Running,
+        ] {
+            let _ = self
+                .management_operations
+                .transition(&operation, state, None, None);
+        }
+        self.imap_drain_running = true;
+        self.begin_local_drain();
+        IMapDrainStart::Run(
+            operation,
+            self.imap_drain_work(self.config.drain_timeout())
+                .expect("distributed IMap grid"),
+        )
+    }
+
+    pub(crate) fn finish_imap_admin_drain(
+        &mut self,
+        operation: &str,
+        (complete, remaining): (bool, std::time::Duration),
+    ) -> DrainOutcome {
+        self.imap_drain_running = false;
+        let mut outcome = GracefulShutdown::new(remaining).drain(&mut self.services);
+        outcome.timed_out |= !complete;
+        self.last_drain = Some(outcome);
+        let state = if outcome.timed_out {
+            ManagementOperationState::Failed
+        } else {
+            ManagementOperationState::Completed
+        };
+        let _ = self.management_operations.transition(
+            operation,
+            state,
+            outcome.timed_out.then_some("imap_drain_incomplete"),
+            outcome.timed_out.then_some("inspect_imap_health_and_retry"),
+        );
+        outcome
     }
 
     /// Return admin/operator status derived from the runtime model.
@@ -1225,19 +1379,29 @@ fn topology_status_source(source: StatusSource) -> TopologyStatusSource {
 }
 
 fn block_on_cluster_leave(cache: &HydraCache) -> hydracache::CacheResult<()> {
+    block_on_cluster_leave_bounded(cache, None)
+}
+
+fn block_on_cluster_leave_bounded(
+    cache: &HydraCache,
+    timeout: Option<std::time::Duration>,
+) -> hydracache::CacheResult<()> {
     let cache = cache.clone();
     if tokio::runtime::Handle::try_current().is_ok() {
-        return std::thread::spawn(move || block_on_cluster_leave_without_current(cache))
+        return std::thread::spawn(move || block_on_cluster_leave_without_current(cache, timeout))
             .join()
             .map_err(|_| {
                 hydracache::CacheError::Backend("cluster leave helper thread panicked".to_owned())
             })?;
     }
 
-    block_on_cluster_leave_without_current(cache)
+    block_on_cluster_leave_without_current(cache, timeout)
 }
 
-fn block_on_cluster_leave_without_current(cache: HydraCache) -> hydracache::CacheResult<()> {
+fn block_on_cluster_leave_without_current(
+    cache: HydraCache,
+    timeout: Option<std::time::Duration>,
+) -> hydracache::CacheResult<()> {
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
@@ -1246,7 +1410,19 @@ fn block_on_cluster_leave_without_current(cache: HydraCache) -> hydracache::Cach
                 "failed to build cluster leave runtime: {error}"
             ))
         })?;
-    let left = runtime.block_on(cache.leave_cluster())?;
+    let left = runtime.block_on(async {
+        if let Some(timeout) = timeout {
+            tokio::time::timeout(timeout, cache.leave_cluster())
+                .await
+                .map_err(|_| {
+                    hydracache::CacheError::Backend(
+                        "IMap membership leave deadline expired".to_owned(),
+                    )
+                })?
+        } else {
+            cache.leave_cluster().await
+        }
+    })?;
     let _ = left;
     Ok(())
 }

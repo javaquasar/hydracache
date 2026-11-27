@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use axum::extract::{Path as AxumPath, State};
+use axum::extract::{Path as AxumPath, Query, State};
 use axum::http::header::CONTENT_TYPE;
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
@@ -11,7 +11,7 @@ use hydracache_client_transport_axum::{
     ClientSurfaceDiagnosticReset, HYDRACACHE_ADMIN_HEADER, HYDRACACHE_CLIENT_ID_HEADER,
     HYDRACACHE_TENANT_HEADER,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::bootstrap::{ServerAdminActionError, ServerRuntime};
@@ -27,6 +27,8 @@ pub const ADMIN_HEALTHZ_PATH: &str = "/healthz";
 pub const ADMIN_READYZ_PATH: &str = "/readyz";
 /// Prometheus metrics path on the internal admin surface.
 pub const ADMIN_METRICS_PATH: &str = "/metrics";
+/// Authenticated distributed IMap health and bounded partition evidence.
+pub const MANAGEMENT_IMAP_PATH: &str = "/management/v1/imap";
 /// Read-only Management Center console path on the internal admin surface.
 pub const ADMIN_CONSOLE_PATH: &str = "/console";
 /// Read-only cluster overview path on the internal admin surface.
@@ -161,6 +163,12 @@ impl AdminHttpSurface {
                 .route("/console/", get(console_index))
                 .route("/console/index.html", get(console_index))
                 .route("/console/{*asset}", get(console_dist_asset))
+                .merge(
+                    Router::new()
+                        .route(MANAGEMENT_IMAP_PATH, get(management_imap))
+                        .layer(Extension(self.management_read_limiter.clone()))
+                        .with_state(Arc::clone(&self.runtime)),
+                )
                 .merge(crate::management_http::routes(
                     Arc::clone(&self.runtime),
                     Arc::clone(&self.management_cursors),
@@ -197,15 +205,86 @@ async fn metrics(
     State(runtime): State<SharedServerRuntime>,
     hc2: Option<Extension<Hc2ClientPlaneService>>,
 ) -> Response {
-    let registry = runtime
-        .lock()
-        .expect("server runtime mutex")
-        .metrics_registry();
+    let (registry, imap) = {
+        let runtime = runtime.lock().expect("server runtime mutex");
+        let imap = runtime
+            .has_distributed_imap()
+            .then(|| runtime.hc2_client_service())
+            .flatten();
+        (runtime.metrics_registry(), imap)
+    };
     let mut text = PrometheusExporter::new(registry).render().await;
     if let Some(Extension(service)) = hc2 {
         text.push_str(&service.prometheus_metrics());
     }
+    if let Some(service) = imap {
+        text.push_str(&service.imap_metrics());
+    }
     ([(CONTENT_TYPE, "text/plain; version=0.0.4")], text).into_response()
+}
+
+#[derive(Deserialize)]
+struct IMapPageQuery {
+    after: Option<u32>,
+    sequence: Option<u64>,
+    limit: Option<usize>,
+}
+
+async fn management_imap(
+    State(runtime): State<SharedServerRuntime>,
+    Extension(limiter): Extension<ManagementReadLimiter>,
+    Query(query): Query<IMapPageQuery>,
+    headers: HeaderMap,
+) -> Response {
+    if let Err(error) = require_management_read(&headers) {
+        return error.into_response();
+    }
+    let Ok(_permit) = limiter.try_acquire() else {
+        return StatusCode::TOO_MANY_REQUESTS.into_response();
+    };
+    let Some(evidence) = runtime
+        .lock()
+        .expect("server runtime mutex")
+        .imap_evidence()
+    else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+    let limit = query.limit.unwrap_or(32);
+    if !(1..=64).contains(&limit) || (query.after.is_some() && query.sequence.is_none()) {
+        return StatusCode::BAD_REQUEST.into_response();
+    }
+    if query
+        .sequence
+        .is_some_and(|sequence| sequence != evidence.sequence)
+    {
+        return StatusCode::CONFLICT.into_response();
+    }
+    let observation = evidence.observation;
+    let mut rows = if evidence.complete {
+        observation.rows
+    } else {
+        Vec::new()
+    }
+    .into_iter()
+    .filter(|row| query.after.is_none_or(|after| row.id > after));
+    let page: Vec<_> = rows.by_ref().take(limit).collect();
+    let next_after = rows.next().and_then(|_| page.last().map(|row| row.id));
+    Json(serde_json::json!({
+        "schema_version": 1,
+        "readiness": evidence.readiness,
+        "observation_epoch": observation.epoch,
+        "observation_sequence": evidence.sequence,
+        "age_ms": evidence.age_ms,
+        "complete": evidence.complete,
+        "compatible_members": observation.compatible_members,
+        "reachable_members": observation.reachable_members,
+        "retained_decisions": observation.retained_decisions,
+        "repairs_committed": observation.repairs,
+        "promotions_committed": observation.promotions,
+        "partitions": page,
+        "next_after": next_after,
+    }))
+    .into_response()
 }
 
 async fn console_index() -> Response {
@@ -335,15 +414,55 @@ async fn admin_drain(State(runtime): State<SharedServerRuntime>, headers: Header
     if let Err(error) = require_admin(&headers) {
         return error.into_response();
     }
-    let drain = runtime
-        .lock()
-        .expect("server runtime mutex")
-        .request_admin_drain();
+    let drain = {
+        use crate::bootstrap::IMapDrainStart;
+        let start = {
+            let mut guard = runtime.lock().expect("server runtime mutex");
+            if guard.has_distributed_imap() {
+                guard.start_imap_admin_drain()
+            } else {
+                return (
+                    StatusCode::OK,
+                    Json(AdminDrainReply {
+                        action: "drain",
+                        outcome: "accepted",
+                        drain: guard.request_admin_drain(),
+                    }),
+                )
+                    .into_response();
+            }
+        };
+        match start {
+            IMapDrainStart::Run(operation, work) => {
+                let worker = tokio::task::spawn_blocking(move || {
+                    let result = work.run();
+                    runtime
+                        .lock()
+                        .expect("server runtime mutex")
+                        .finish_imap_admin_drain(&operation, result)
+                });
+                match worker.await {
+                    Ok(result) => result,
+                    Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+                }
+            }
+            IMapDrainStart::Finished(outcome) => outcome,
+            IMapDrainStart::Busy => return StatusCode::CONFLICT.into_response(),
+        }
+    };
     (
-        StatusCode::OK,
+        if drain.timed_out {
+            StatusCode::GATEWAY_TIMEOUT
+        } else {
+            StatusCode::OK
+        },
         Json(AdminDrainReply {
             action: "drain",
-            outcome: "accepted",
+            outcome: if drain.timed_out {
+                "incomplete"
+            } else {
+                "completed"
+            },
             drain,
         }),
     )

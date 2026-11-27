@@ -144,13 +144,65 @@ pub struct Hc2ClientPlaneConfig {
 }
 
 /// One explicitly admitted HC/2 IMap scope and its certificate principal.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct DistributedHc2Config {
     /// The only tenant served by this IMap attachment.
     pub tenant: String,
     /// Lowercase SHA-256 of the admitted client leaf certificate in DER form.
     pub client_cert_sha256: String,
+    /// Bounded controls for the distributed IMap profile.
+    #[serde(default)]
+    pub value_plane: IMapOperationalConfig,
+}
+
+impl std::fmt::Debug for DistributedHc2Config {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("DistributedHc2Config")
+            .field("value_plane", &self.value_plane)
+            .finish_non_exhaustive()
+    }
+}
+
+/// Admission, durability and readiness settings for the current RF2 value plane.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct IMapOperationalConfig {
+    /// Exact replica count, including the primary.
+    pub replication_factor: usize,
+    /// Synchronous replicas required for a confirmed write, including the primary.
+    pub write_quorum: usize,
+    /// Minimum reachable members for the whole-node readiness check.
+    pub minimum_ready_members: usize,
+    /// Independent per-member bounds on public invocations and owner executions.
+    pub max_inflight: usize,
+}
+
+impl Default for IMapOperationalConfig {
+    fn default() -> Self {
+        Self {
+            replication_factor: 2,
+            write_quorum: 2,
+            minimum_ready_members: 2,
+            max_inflight: 64,
+        }
+    }
+}
+
+impl IMapOperationalConfig {
+    fn validate(self) -> Result<(), ServerConfigError> {
+        if self.replication_factor != 2
+            || self.write_quorum != self.replication_factor
+            || !(self.replication_factor..=16).contains(&self.minimum_ready_members)
+            || !(1..=256).contains(&self.max_inflight)
+        {
+            return Err(ServerConfigError::InvalidDistributedHc2(
+                "value_plane requires RF2, write quorum 2, 2 to 16 ready members and 1 to 256 in-flight operations",
+            ));
+        }
+        Ok(())
+    }
 }
 
 impl DistributedHc2Config {
@@ -404,6 +456,11 @@ impl ServerConfig {
                 .parse()
                 .map_err(|_| ServerConfigError::InvalidJoinTimeoutMs(join_timeout))?;
         }
+        if let Ok(drain_timeout) = env::var("HYDRACACHE_DRAIN_TIMEOUT_MS") {
+            config.drain_timeout_ms = drain_timeout
+                .parse()
+                .map_err(|_| ServerConfigError::InvalidDrainTimeoutMs(drain_timeout))?;
+        }
         if env::var("HYDRACACHE_TLS_ACK_INSECURE").as_deref() == Ok("true") {
             config.tls.acknowledge_insecure = true;
         }
@@ -480,6 +537,20 @@ impl ServerConfig {
                 .map_err(|source| ServerConfigError::ConfigRead { path, source })?;
             config.distributed_hc2 =
                 Some(toml::from_str(&text).map_err(ServerConfigError::ConfigParse)?);
+        }
+        if let Some(profile) = &mut config.distributed_hc2 {
+            if let Ok(value) = env::var("HYDRACACHE_IMAP_MAX_INFLIGHT") {
+                profile.value_plane.max_inflight = value.parse().map_err(|_| {
+                    ServerConfigError::InvalidDistributedHc2("invalid HYDRACACHE_IMAP_MAX_INFLIGHT")
+                })?;
+            }
+            if let Ok(value) = env::var("HYDRACACHE_IMAP_MINIMUM_READY_MEMBERS") {
+                profile.value_plane.minimum_ready_members = value.parse().map_err(|_| {
+                    ServerConfigError::InvalidDistributedHc2(
+                        "invalid HYDRACACHE_IMAP_MINIMUM_READY_MEMBERS",
+                    )
+                })?;
+            }
         }
         if let Ok(enabled) = env::var("HYDRACACHE_ADMIN_API_ENABLED") {
             config.admin_api.enabled = enabled != "false";
@@ -600,6 +671,7 @@ impl ServerConfig {
             ));
         }
         if let Some(profile) = &self.distributed_hc2 {
+            profile.value_plane.validate()?;
             if self.role != ServerRole::Member
                 || !self.hc2_client_plane.enabled
                 || !self.tls.enabled
@@ -848,6 +920,8 @@ pub enum ServerConfigError {
     /// Drain timeout cannot be zero.
     #[error("drain_timeout_ms must be greater than zero")]
     DrainTimeoutZero,
+    #[error("invalid drain_timeout_ms: {0}")]
+    InvalidDrainTimeoutMs(String),
     /// Join timeout cannot be zero.
     #[error("join_timeout_ms must be greater than zero")]
     JoinTimeoutZero,

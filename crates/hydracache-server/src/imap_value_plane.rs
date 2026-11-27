@@ -28,6 +28,7 @@ use crate::grid_host::send_raft_messages_with_diagnostics;
 use crate::imap_hc2_route::{
     transport_unavailable, OwnerBatchCall, OwnerBatchReply, OwnerCall, OwnerReply,
 };
+use crate::imap_ops::{compatible_roster, IMapOps};
 use crate::imap_owner_read::{
     request_read_index, unavailable, OwnerReadLane, OwnerReadProgress, OwnerReadRoute,
     OwnerReadValues, RaftOwnerReadBackend,
@@ -160,6 +161,7 @@ pub struct ValueReplica {
     applies: AtomicU64,
     owner_applies: AtomicU64,
     clock: Option<ReplicaClock>,
+    pub(crate) operations: Option<Arc<IMapOps>>,
 }
 
 impl ValueReplica {
@@ -211,12 +213,154 @@ impl ValueReplica {
             applies: AtomicU64::new(0),
             owner_applies: AtomicU64::new(0),
             clock: None,
+            operations: None,
         })
     }
 
     pub(crate) fn with_clock(mut self, clock: Option<ReplicaClock>) -> Self {
         self.clock = clock;
         self
+    }
+
+    pub(crate) fn with_operations(mut self, operations: Option<Arc<IMapOps>>) -> Self {
+        self.operations = operations;
+        self
+    }
+
+    pub(crate) fn roster_compatible(&self, snapshot: &RaftPartitionSnapshot) -> bool {
+        self.operations.is_none() || compatible_roster(snapshot)
+    }
+
+    pub(crate) fn operational_observation(
+        &self,
+        snapshot: RaftPartitionSnapshot,
+        reachable: &std::collections::BTreeSet<hydracache::ClusterNodeId>,
+    ) -> crate::imap_ops::HealthObservation {
+        use crate::imap_ops::{
+            compatible_members, HealthObservation, IMapReadinessReason as Reason, PartitionHealth,
+            PartitionState,
+        };
+
+        let epoch = snapshot.epoch.value();
+        let fallback = |reason| HealthObservation::unavailable(reason, epoch);
+        if snapshot.applied_index != snapshot.commit_index {
+            return fallback(Reason::EpochStale);
+        }
+        let compatible = compatible_members(&snapshot);
+        let reachable = compatible
+            .intersection(reachable)
+            .collect::<std::collections::BTreeSet<_>>();
+        if compatible.len() != snapshot.members.len() || compatible.len() > 16 {
+            let mut view = fallback(Reason::WireGenerationIncompatible);
+            view.compatible_members = compatible.len();
+            view.reachable_members = reachable.len();
+            return view;
+        }
+        if !admitted(&snapshot, &self.local) {
+            return fallback(Reason::TopologyUnavailable);
+        }
+        let Ok(topology) =
+            PartitionTopology::from_snapshot(snapshot, D2_PARTITION_COUNT, self.replication)
+        else {
+            return fallback(Reason::TopologyUnavailable);
+        };
+        let snapshot = topology.snapshot();
+        let moving: std::collections::BTreeSet<_> = snapshot
+            .primary_rebalance
+            .as_ref()
+            .filter(|wave| wave.head().is_some())
+            .into_iter()
+            .flat_map(|wave| {
+                wave.tasks
+                    .iter()
+                    .skip(wave.completed)
+                    .map(|task| task.partition)
+            })
+            .collect();
+        let mut observation = HealthObservation {
+            epoch,
+            reason: Reason::Ready,
+            rows: Vec::with_capacity(D2_PARTITION_COUNT.get() as usize),
+            compatible_members: compatible.len(),
+            reachable_members: reachable.len(),
+            retained_decisions: 0,
+            repairs: snapshot.value_repairs.len(),
+            promotions: snapshot.value_promotions.len(),
+        };
+        let mut catching_up = false;
+        let mut under_replicated = false;
+        let mut store_error = false;
+        for index in 0..D2_PARTITION_COUNT.get() {
+            let partition = PartitionId::new(index);
+            let prefix = snapshot.value_prefixes.get(&partition).copied();
+            let placement = topology.placement(partition).ok();
+            let local_primary = placement
+                .as_ref()
+                .is_some_and(|place| place.primary == self.local);
+            let local_backup = placement
+                .as_ref()
+                .is_some_and(|place| place.backups.contains(&self.local));
+            let mut behind = false;
+            if prefix.is_some() && (local_primary || local_backup) {
+                match self.journal.load(partition) {
+                    Ok(journal) => {
+                        behind = !journal.covers(prefix);
+                        observation.retained_decisions += journal.retained_count(prefix);
+                    }
+                    Err(_) => store_error = true,
+                }
+            }
+            let healthy_replicas = placement.as_ref().is_some_and(|place| {
+                std::iter::once(&place.primary)
+                    .chain(&place.backups)
+                    .all(|replica| admitted(snapshot, replica) && reachable.contains(&replica.node))
+            });
+            let state = if prefix.is_none() {
+                PartitionState::Empty
+            } else if behind {
+                catching_up = true;
+                PartitionState::CatchingUp
+            } else if !healthy_replicas {
+                under_replicated = true;
+                PartitionState::UnderReplicated
+            } else if moving.contains(&partition) {
+                PartitionState::Moving
+            } else {
+                PartitionState::Healthy
+            };
+            observation.rows.push(PartitionHealth {
+                id: index,
+                state,
+                local_primary,
+                local_backup,
+                certified_version: prefix.map_or(0, |prefix| prefix.version),
+            });
+        }
+        let floor = self
+            .operations
+            .as_ref()
+            .map_or(self.replication.replication_factor, |ops| {
+                ops.config.minimum_ready_members
+            });
+        observation.reason = if store_error {
+            Reason::StoreRecoveryIncomplete
+        } else if observation.reachable_members < floor || under_replicated {
+            Reason::RequiredBackupUnavailable
+        } else if catching_up {
+            Reason::PartitionCatchingUp
+        } else if !moving.is_empty()
+            || self
+                .journal
+                .captured_transfer()
+                .is_ok_and(|transfer| transfer.is_some())
+        {
+            Reason::TransferIncomplete
+        } else if self.clock.is_some() && self.time().is_none() {
+            Reason::ClockUncertaintyExceeded
+        } else {
+            Reason::Ready
+        };
+        observation
     }
 
     fn time(&self) -> Option<Bounds> {
@@ -332,6 +476,15 @@ impl ValueReplica {
         epoch: u64,
         request: ReplicaApply,
     ) -> CacheResult<ReplicaApplyAck> {
+        let _admission = self
+            .operations
+            .as_ref()
+            .map(|ops| ops.enter(true))
+            .transpose()
+            .map_err(|_| replica_rejected())?;
+        if !self.roster_compatible(snapshot) {
+            return Err(replica_rejected());
+        }
         let mutation = request.mutation;
         let record = &mutation.record;
         let required = snapshot.value_prefixes.get(&record.partition).copied();
@@ -578,6 +731,9 @@ impl OwnerReadLane for JournalReadLane<'_> {
         &mut self,
         snapshot: &RaftPartitionSnapshot,
     ) -> Result<OwnerReadProgress, ClientErrorEnvelope> {
+        if !self.replica.roster_compatible(snapshot) {
+            return Err(unavailable());
+        }
         let required = snapshot
             .value_prefixes
             .get(&self.invocation.partition)
@@ -781,6 +937,125 @@ fn new_identity(identity: Option<&str>, epoch: ClusterEpoch, promotion_started: 
 }
 
 impl<S: RaftLogStore> ValueBackend<S> {
+    async fn authenticated_replica_view(
+        &self,
+        deadline: Instant,
+    ) -> Option<(
+        RaftPartitionSnapshot,
+        std::collections::BTreeSet<hydracache::ClusterNodeId>,
+    )> {
+        use futures_util::{stream, StreamExt};
+
+        let transport = self.value_transport.as_deref()?;
+        let deadline = deadline.min(Instant::now() + Duration::from_millis(650));
+        let proof = request_read_index(&self.raft, &self.raft_transport, deadline)
+            .await
+            .ok()?;
+        let snapshot = proof.with_snapshot(|snapshot, _| snapshot).ok()?;
+        if !self.replica.roster_compatible(&snapshot) || !admitted(&snapshot, &self.replica.local) {
+            return None;
+        }
+        let peers = snapshot
+            .members
+            .iter()
+            .filter(|member| member.node_id != self.replica.local.node)
+            .map(|member| {
+                self.replica.candidate_probe(
+                    PartitionMember {
+                        node: member.node_id.clone(),
+                        generation: member.generation,
+                    },
+                    snapshot.epoch,
+                )
+            });
+        let mut results = stream::iter(peers)
+            .map(|probe| async move {
+                let limit = deadline.min(Instant::now() + Duration::from_millis(250));
+                timeout_at(limit, transport.check_candidate(probe.clone()))
+                    .await
+                    .is_ok_and(|reply| reply.is_ok_and(|reply| reply == probe))
+                    .then_some(probe.candidate.node)
+            })
+            .buffer_unordered(4);
+        let mut reachable = std::collections::BTreeSet::from([self.replica.local.node.clone()]);
+        while let Some(node) = results.next().await {
+            reachable.extend(node);
+        }
+        drop(results);
+        self.raft
+            .with_applied_partition_snapshot(|current| {
+                (current.epoch == snapshot.epoch && current.term == snapshot.term)
+                    .then_some((current, reachable))
+            })
+            .flatten()
+    }
+
+    pub(crate) async fn observe_operational_health(
+        &self,
+    ) -> Option<crate::imap_ops::HealthObservation> {
+        let (snapshot, reachable) = self
+            .authenticated_replica_view(Instant::now() + Duration::from_millis(650))
+            .await?;
+        Some(self.replica.operational_observation(snapshot, &reachable))
+    }
+
+    pub(crate) async fn evacuate(&self, timeout: Duration) -> bool {
+        let Some(ops) = &self.replica.operations else {
+            return true;
+        };
+        let Some(transport) = self.value_transport.as_deref() else {
+            return false;
+        };
+        let deadline = Instant::now() + timeout;
+        let local = &self.replica.local;
+        let drained = std::collections::BTreeSet::from([local.node.clone()]);
+        timeout_at(deadline, async {
+            loop {
+                if ops.inflight() == 0 {
+                    if let Some((snapshot, reachable)) =
+                        self.authenticated_replica_view(deadline).await
+                    {
+                        if reachable.len().saturating_sub(1)
+                            >= self.replica.replication.replication_factor
+                        {
+                            let health = RebalanceHealth {
+                                failed: snapshot
+                                    .members
+                                    .iter()
+                                    .filter(|member| !reachable.contains(&member.node))
+                                    .map(|member| member.node_id.clone())
+                                    .collect(),
+                                suspect: Default::default(),
+                            };
+                            let (owned, clear) =
+                                self.replica.departure_progress(&snapshot, &reachable);
+                            if clear {
+                                return true;
+                            }
+                            if !owned.is_empty() {
+                                let _ = self
+                                    .replica
+                                    .plan_primary_drain(
+                                        &self.raft,
+                                        &self.raft_transport,
+                                        transport,
+                                        RebalanceRequest {
+                                            partitions: &owned,
+                                            drained: &drained,
+                                            health: &health,
+                                        },
+                                    )
+                                    .await;
+                            }
+                        }
+                    }
+                }
+                sleep(Duration::from_millis(100)).await;
+            }
+        })
+        .await
+        .unwrap_or(false)
+    }
     pub(crate) fn event_scope(&self) -> [u8; 32] {
         self.replica.repair_scope()
     }
@@ -978,21 +1253,24 @@ impl<S: RaftLogStore> ValueBackend<S> {
         timeout_at(deadline, async {
             for target in &mutation.backups {
                 let transport = self.value_transport.as_ref().ok_or_else(ambiguous)?;
+                let started = Instant::now();
                 let ack = transport
                     .apply(ReplicaApply {
                         version: wire_version,
                         target: target.clone(),
                         mutation: mutation.clone(),
                     })
-                    .await
-                    .map_err(|_| ambiguous())?;
-                if ack
-                    != (ReplicaApplyAck {
-                        version: wire_version,
-                        replica: target.clone(),
-                        prefix,
-                    })
-                {
+                    .await;
+                let expected = ReplicaApplyAck {
+                    version: wire_version,
+                    replica: target.clone(),
+                    prefix,
+                };
+                let confirmed = ack.is_ok_and(|ack| ack == expected);
+                if let Some(ops) = &self.replica.operations {
+                    ops.record_ack(started.elapsed(), confirmed);
+                }
+                if !confirmed {
                     return Err(ambiguous());
                 }
             }
@@ -1067,6 +1345,9 @@ impl<S: RaftLogStore> ValueBackend<S> {
         snapshot: &RaftPartitionSnapshot,
         ready: Option<PromotionWriteCut>,
     ) -> Result<(Option<Mutation>, AppliedOutcome), ClientErrorEnvelope> {
+        if !self.replica.roster_compatible(snapshot) {
+            return Err(before_apply());
+        }
         if input
             .routed_epoch
             .is_some_and(|epoch| epoch != snapshot.epoch)
@@ -1092,6 +1373,9 @@ impl<S: RaftLogStore> ValueBackend<S> {
             .and_then(|id| meta.retained_proven(prior, id))
         {
             return if retained.request == input.fingerprint {
+                if let Some(ops) = &self.replica.operations {
+                    ops.counters.dedup_replays.fetch_add(1, Ordering::Relaxed);
+                }
                 Ok((None, (retained.response.clone(), prefix.map(Into::into))))
             } else {
                 Err(identity_conflict())
@@ -1233,6 +1517,46 @@ impl<S: RaftLogStore> ValueBackend<S> {
                 )
                 .await;
         }
+    }
+}
+
+impl ValueReplica {
+    fn departure_progress(
+        &self,
+        snapshot: &RaftPartitionSnapshot,
+        reachable: &std::collections::BTreeSet<hydracache::ClusterNodeId>,
+    ) -> (Vec<PartitionId>, bool) {
+        let Ok(topology) = PartitionTopology::from_snapshot(
+            snapshot.clone(),
+            D2_PARTITION_COUNT,
+            self.replication,
+        ) else {
+            return (Vec::new(), false);
+        };
+        let mut owned = Vec::new();
+        let mut clear = !snapshot.primary_rebalance.as_ref().is_some_and(|wave| {
+            wave.head().is_some()
+                && wave.tasks.iter().skip(wave.completed).any(|task| {
+                    task.source.node == self.local.node || task.target.node == self.local.node
+                })
+        });
+        for &partition in snapshot.value_prefixes.keys() {
+            let Ok(placement) = topology.placement(partition) else {
+                clear = false;
+                continue;
+            };
+            if placement.primary == self.local {
+                owned.push(partition);
+            }
+            clear &= std::iter::once(&placement.primary)
+                .chain(&placement.backups)
+                .all(|member| {
+                    member.node != self.local.node
+                        && admitted(snapshot, member)
+                        && reachable.contains(&member.node)
+                });
+        }
+        (owned, clear)
     }
 }
 

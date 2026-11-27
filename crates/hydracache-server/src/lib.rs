@@ -13,6 +13,8 @@ mod generated_console_assets;
 mod grid_host;
 pub mod hc2;
 mod imap_hc2_route;
+mod imap_ops;
+pub use imap_ops::{IMapReadiness, IMapReadinessReason};
 #[doc(hidden)]
 pub mod imap_owner_read;
 #[doc(hidden)]
@@ -48,7 +50,7 @@ pub use admin_http::{
     ADMIN_BACKUP_PATH, ADMIN_CLUSTER_OVERVIEW_PATH, ADMIN_CONSOLE_PATH,
     ADMIN_DIAGNOSTIC_RESET_PATH, ADMIN_DRAIN_PATH, ADMIN_HEALTHZ_PATH, ADMIN_MEMORY_FOOTPRINT_PATH,
     ADMIN_METRICS_PATH, ADMIN_RAFT_COMPACTION_PATH, ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH,
-    ADMIN_STATUS_PATH, HYDRACACHE_MANAGEMENT_READ_HEADER,
+    ADMIN_STATUS_PATH, HYDRACACHE_MANAGEMENT_READ_HEADER, MANAGEMENT_IMAP_PATH,
 };
 pub use bootstrap::{
     RedisSurfaceDrain, ServerAdminAction, ServerAdminActionError, ServerAdminStatus, ServerHealth,
@@ -61,8 +63,8 @@ pub use cluster_status::{
 };
 pub use config::{
     AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ClusterStartMode,
-    DistributedHc2Config, Hc2ClientPlaneConfig, ManagementHistoryConfig, RedisApiConfig,
-    ServerConfig, ServerConfigError, ServerRole, TlsConfig,
+    DistributedHc2Config, Hc2ClientPlaneConfig, IMapOperationalConfig, ManagementHistoryConfig,
+    RedisApiConfig, ServerConfig, ServerConfigError, ServerRole, TlsConfig,
 };
 #[doc(hidden)]
 pub use grid_host::MemberReadHost;

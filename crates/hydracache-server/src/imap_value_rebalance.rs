@@ -163,7 +163,12 @@ impl ValueReplica {
         epoch: u64,
         request: ReplicaReady,
     ) -> CacheResult<ReplicaReady> {
-        if snapshot.applied_index != snapshot.commit_index
+        if self
+            .operations
+            .as_ref()
+            .is_some_and(|ops| ops.is_draining())
+            || !self.roster_compatible(snapshot)
+            || snapshot.applied_index != snapshot.commit_index
             || request.epoch != snapshot.epoch
             || epoch != request.epoch.value()
             || request.candidate != self.local

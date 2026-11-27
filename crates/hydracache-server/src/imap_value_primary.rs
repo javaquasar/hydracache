@@ -59,6 +59,9 @@ impl ValueReplica {
             .map_err(|_| repair_error("no authority to start the primary wave"))?;
         let operation = proof
             .with_snapshot(|snapshot, _| {
+                if !self.roster_compatible(&snapshot) {
+                    return Err(repair_error("primary wave value generation mismatch"));
+                }
                 if request.epoch.is_some_and(|epoch| epoch != snapshot.epoch) {
                     return Err(repair_error("primary selection epoch changed"));
                 }
@@ -235,7 +238,11 @@ impl ValueReplica {
             .await?;
         }
         self.handoff_primary(raft, sink, transport, wave.id, task)
-            .await
+            .await?;
+        if let Some(operations) = &self.operations {
+            operations.counters.handoffs.fetch_add(1, Ordering::Relaxed);
+        }
+        Ok(())
     }
 
     pub(super) fn primary_placement(

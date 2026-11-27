@@ -400,6 +400,12 @@ async fn networked_member_cache(
             .generation(generation)
             .bind(config.cluster_addr.to_string())
             .diagnostics_endpoint(format!("http://{}", config.admin_api.listen_addr));
+        if config.distributed_hc2.is_some() {
+            builder = builder.metadata(
+                crate::imap_ops::VALUE_WIRE_KEY,
+                crate::imap_ops::VALUE_WIRE_GENERATION,
+            );
+        }
         for seed in &config.seeds {
             builder = builder.bootstrap(seed.clone());
         }
@@ -712,13 +718,16 @@ async fn announce_join_candidate(
     generation: ClusterGeneration,
     config: &ServerConfig,
 ) -> CacheResult<()> {
-    discovery
-        .announce(
-            ClusterCandidate::member(node_id)
-                .generation(generation)
-                .endpoints(ClusterEndpoints::new().control(config.cluster_advertise_endpoint())),
-        )
-        .await
+    let mut candidate = ClusterCandidate::member(node_id)
+        .generation(generation)
+        .endpoints(ClusterEndpoints::new().control(config.cluster_advertise_endpoint()));
+    if config.distributed_hc2.is_some() {
+        candidate = candidate.metadata(
+            crate::imap_ops::VALUE_WIRE_KEY,
+            crate::imap_ops::VALUE_WIRE_GENERATION,
+        );
+    }
+    discovery.announce(candidate).await
 }
 
 #[derive(Clone)]
@@ -2625,16 +2634,22 @@ impl MemberReadHost {
             decode_key,
         );
         let replication = hydracache::ReplicationConfig {
-            replication_factor: 2,
-            sync_backups: 1,
+            replication_factor: profile.value_plane.replication_factor,
+            sync_backups: profile.value_plane.write_quorum - 1,
             ..hydracache::ReplicationConfig::local_first()
         };
-        let backend =
-            self.attach_value_backend(&storage.join("imap-hc2"), replication, scope, None)?;
+        let operations = Arc::new(crate::imap_ops::IMapOps::new(profile.value_plane));
+        let backend = self.attach_value_backend(
+            &storage.join("imap-hc2"),
+            replication,
+            scope,
+            None,
+            Some(operations.clone()),
+        )?;
         let limits = config.client_api.limits;
         let principal = profile.principal();
         let routed = Arc::new(RoutedValueBackend::new(
-            backend,
+            backend.clone(),
             profile,
             limits.max_value_bytes,
         ));
@@ -2645,6 +2660,7 @@ impl MemberReadHost {
             .set(routed.clone())
             .map_err(|_| transport_unavailable())?;
         self.start_automatic_primary_failover()?;
+        self.start_value_health_sampler(backend, operations);
         Ok(crate::Hc2ClientPlaneService::distributed(
             Arc::new(dispatcher),
             &config.hc2_client_plane.cluster_id,
@@ -2652,6 +2668,55 @@ impl MemberReadHost {
             principal,
             routed,
         ))
+    }
+
+    fn start_value_health_sampler(
+        &self,
+        backend: Arc<ValueBackend<SledRaftLogStore>>,
+        operations: Arc<crate::imap_ops::IMapOps>,
+    ) {
+        use crate::imap_ops::{HealthObservation, IMapReadinessReason as Reason};
+        let mut shutdown = self.0.shutdown.subscribe();
+        self.0
+            ._runtime
+            .as_ref()
+            .expect("member owns a runtime")
+            .spawn(async move {
+                let mut ticks = tokio::time::interval(Duration::from_millis(750));
+                ticks.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+                while !*shutdown.borrow() {
+                    tokio::select! {
+                        _ = shutdown.changed() => return,
+                        _ = ticks.tick() => {}
+                    }
+                    let Some(snapshot) = backend.raft.partition_snapshot() else {
+                        operations.publish(HealthObservation::unavailable(
+                            Reason::TopologyUnavailable,
+                            0,
+                        ));
+                        continue;
+                    };
+                    let epoch = snapshot.epoch.value();
+                    if snapshot.applied_index != snapshot.commit_index
+                        || !backend.replica.roster_compatible(&snapshot)
+                    {
+                        operations.publish(
+                            backend
+                                .replica
+                                .operational_observation(snapshot, &BTreeSet::new()),
+                        );
+                        continue;
+                    }
+                    let Some(observation) = backend.observe_operational_health().await else {
+                        operations.publish(HealthObservation::unavailable(
+                            Reason::TopologyUnavailable,
+                            epoch,
+                        ));
+                        continue;
+                    };
+                    operations.publish(observation);
+                }
+            });
     }
 
     /// Queue generation-bound primary transfers in the supplied order.
@@ -2931,7 +2996,7 @@ impl MemberReadHost {
         Arc<hydracache_client_transport_axum::ClientSurfaceDispatcher>,
         Arc<ValueReplica>,
     )> {
-        let backend = self.attach_value_backend(journal, replication, scope, clock)?;
+        let backend = self.attach_value_backend(journal, replication, scope, clock, None)?;
         let replica = backend.replica.clone();
         let dispatcher = ClientSurfaceDispatcher::from_backend(limits, backend)
             .map_err(|error| CacheError::Backend(error.to_string()))?;
@@ -2944,6 +3009,7 @@ impl MemberReadHost {
         replication: hydracache::ReplicationConfig,
         scope: crate::imap_replicated_read::ReplicaReadScope,
         clock: Option<crate::imap_value_plane::ReplicaClock>,
+        operations: Option<Arc<crate::imap_ops::IMapOps>>,
     ) -> CacheResult<Arc<ValueBackend<SledRaftLogStore>>> {
         use crate::imap_owner_read::RaftOwnerReadBackend;
         use crate::imap_replicated_read::D2_PARTITION_COUNT;
@@ -2955,7 +3021,9 @@ impl MemberReadHost {
         };
         let schedules_expiry = clock.is_some();
         let replica = Arc::new(
-            ValueReplica::open(journal, local.clone(), scope, replication)?.with_clock(clock),
+            ValueReplica::open(journal, local.clone(), scope, replication)?
+                .with_clock(clock)
+                .with_operations(operations),
         );
         let read = RaftOwnerReadBackend::new(
             self.0.raft.clone(),
@@ -3163,6 +3231,16 @@ impl fmt::Debug for NetworkedGridHandle {
 }
 
 impl GridControlPlaneHandle for NetworkedGridHandle {
+    fn wait_for_value_drain(&self, timeout: Duration) -> bool {
+        let Some(service) = self.owner_service.get() else {
+            return true;
+        };
+        let Some(runtime) = &self._runtime else {
+            return false;
+        };
+        runtime.block_on_from_any_thread(service.evacuate_value_ownership(timeout))
+    }
+
     fn begin_drain(&self) {
         self.draining.store(true, Ordering::SeqCst);
         self.try_remove_local_voter_for_drain();

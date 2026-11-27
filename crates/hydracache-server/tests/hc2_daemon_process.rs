@@ -172,6 +172,7 @@ fn member_hc2_has_no_node_local_fallback() {
     config.distributed_hc2 = Some(DistributedHc2Config {
         tenant: "tenant-a".into(),
         client_cert_sha256: "a".repeat(64),
+        value_plane: Default::default(),
     });
     config.validate().unwrap();
     config.redis_api.enabled = true;

@@ -1,6 +1,6 @@
 //! Owner execution for the mTLS HC/2 member profile.
 
-use std::sync::Arc;
+use std::sync::{atomic::Ordering, Arc};
 use std::time::Duration;
 
 use hydracache::{CacheError, CacheResult, ClusterEpoch, PartitionId};
@@ -17,6 +17,7 @@ use tokio::time::{timeout_at, Instant};
 
 use crate::config::DistributedHc2Config;
 use crate::hc2::unix_time_ms;
+use crate::imap_ops::{Denial, IMapOps};
 use crate::imap_owner_read::unavailable;
 use crate::imap_topology::{PartitionMember, PartitionPlacement};
 use crate::imap_value_journal::hash;
@@ -99,6 +100,51 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
         Ok(())
     }
 
+    pub(crate) fn operations(&self) -> Option<&IMapOps> {
+        self.owner.replica.operations.as_deref()
+    }
+
+    pub(crate) async fn evacuate_value_ownership(&self, timeout: Duration) -> bool {
+        self.owner.evacuate(timeout).await
+    }
+
+    pub(crate) fn admit_owner(
+        &self,
+    ) -> Result<Option<tokio::sync::SemaphorePermit<'_>>, ClientErrorEnvelope> {
+        self.operations()
+            .map(|ops| ops.enter(true))
+            .transpose()
+            .map_err(|denial| match denial {
+                Denial::Draining => ClientErrorEnvelope::new(
+                    ClientErrorCode::BackendUnavailable,
+                    true,
+                    "IMap owner is draining",
+                ),
+                Denial::Saturated => ClientErrorEnvelope::new(
+                    ClientErrorCode::RateLimited,
+                    true,
+                    "IMap owner admission exhausted",
+                ),
+            })
+    }
+
+    pub(crate) fn observe_route(&self, remote: bool) {
+        if let Some(ops) = self.operations() {
+            let counter = if remote {
+                &ops.counters.proxy
+            } else {
+                &ops.counters.direct
+            };
+            counter.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
+    pub(crate) fn observe_stale_route(&self) {
+        if let Some(ops) = self.operations() {
+            ops.counters.stale.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
     pub(crate) fn listener_view(&self) -> Option<ListenerView> {
         self.owner.listener_view()
     }
@@ -151,6 +197,9 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
             .raft
             .partition_snapshot()
             .ok_or_else(unavailable)?;
+        if !self.owner.replica.roster_compatible(&view) {
+            return Err(unavailable());
+        }
         self.owner
             .replica
             .placement(&view, partition)
@@ -158,6 +207,7 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
     }
 
     async fn execute_at_owner(&self, call: &OwnerCall, deadline: Instant) -> ClientBackendOutcome {
+        let _admission = self.admit_owner()?;
         self.execute_proven(&call.tenant, &call.envelope, deadline, call.epoch)
             .await
             .map(|(response, _)| response)
@@ -239,6 +289,7 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
                     placement.epoch == call.epoch && placement.primary == call.target
                 })
         {
+            self.observe_stale_route();
             return Err(unavailable());
         }
         let remaining = call.expires_at_ms.saturating_sub(unix_time_ms());
@@ -279,6 +330,7 @@ impl<S: RaftLogStore + 'static> ClientDataBackend for RoutedValueBackend<S> {
                 expires_at_ms: unix_time_ms().saturating_add(remaining),
                 envelope: request.into_envelope(),
             };
+            self.observe_route(call.target != call.source);
             if call.target == call.source {
                 return self.execute_at_owner(&call, deadline).await;
             }

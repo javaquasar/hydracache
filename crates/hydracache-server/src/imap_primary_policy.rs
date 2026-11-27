@@ -104,7 +104,14 @@ impl ValueReplica {
         let Some(snapshot) = raft.partition_snapshot() else {
             return Ok(());
         };
-        if !self.supports_primary_failover() || active_wave(&snapshot) {
+        if !self.supports_primary_failover()
+            || active_wave(&snapshot)
+            || !self.roster_compatible(&snapshot)
+            || self
+                .operations
+                .as_ref()
+                .is_some_and(|ops| ops.is_draining())
+        {
             *samples = BackupObservations::default();
             return Ok(());
         }

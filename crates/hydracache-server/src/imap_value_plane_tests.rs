@@ -125,6 +125,7 @@ async fn forwarded_hc2_write_requires_exact_epoch_generation_principal_and_parti
     let profile = DistributedHc2Config {
         tenant: "tenant".into(),
         client_cert_sha256: "a".repeat(64),
+        value_plane: Default::default(),
     };
     let principal = profile.principal();
     let backend = RoutedValueBackend::new(fixture.backend.clone(), profile, 1024);

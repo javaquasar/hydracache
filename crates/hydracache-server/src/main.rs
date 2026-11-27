@@ -172,10 +172,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let drain_runtime = Arc::clone(&shared_runtime);
     let drain_requested = async move {
         loop {
-            if !drain_runtime
+            if drain_runtime
                 .lock()
                 .expect("server runtime mutex")
-                .can_serve()
+                .shutdown_requested()
             {
                 break;
             }

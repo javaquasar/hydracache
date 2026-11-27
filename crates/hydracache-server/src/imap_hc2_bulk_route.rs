@@ -89,6 +89,9 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
             .raft
             .partition_snapshot()
             .ok_or_else(unavailable)?;
+        if !self.owner.replica.roster_compatible(&snapshot) {
+            return Err(unavailable());
+        }
         let mut placements = BTreeMap::new();
         let mut groups = BTreeMap::new();
         let mut unassigned = Vec::new();
@@ -148,6 +151,7 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
         let Some(deadline) = batch_deadline(call.expires_at_ms) else {
             return refused(deadline_error());
         };
+        self.observe_route(call.source != call.target);
         if call.source == call.target {
             return match self
                 .run_batch(call.source.node.as_str(), call.epoch.value(), call)
@@ -197,6 +201,7 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
         call: &OwnerBatchCall,
     ) -> Result<Vec<BatchExecution>, ClientErrorEnvelope> {
         self.authorize(&call.principal, &call.tenant)?;
+        let _admission = self.admit_owner()?;
         if call.batch_schema != BATCH_SCHEMA
             || call.items.is_empty()
             || call.items.len() > MAX_ITEMS
@@ -204,6 +209,9 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
             return Err(batch_too_large());
         }
         let _permit = self.owner_batches.try_acquire().map_err(|_| {
+            if let Some(operations) = self.operations() {
+                operations.backpressure();
+            }
             ClientErrorEnvelope::new(
                 ClientErrorCode::RateLimited,
                 true,
@@ -217,12 +225,14 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
             .ok_or_else(unavailable)?;
         if outer_epoch != call.epoch.value()
             || snapshot.epoch != call.epoch
+            || !self.owner.replica.roster_compatible(&snapshot)
             || call.source.node.as_str() != peer
             || &call.target != self.local_member()
             || !snapshot.members.iter().any(|member| {
                 member.node_id == call.source.node && member.generation == call.source.generation
             })
         {
+            self.observe_stale_route();
             return Err(unavailable());
         }
         let mut previous = None;

@@ -186,6 +186,86 @@ impl Hc2ClientPlaneService {
         })
     }
 
+    pub(crate) fn operations(&self) -> Option<&crate::imap_ops::IMapOps> {
+        self.member.as_ref()?.plane.operations()
+    }
+
+    pub(crate) fn begin_member_drain(&self) {
+        if let Some(ops) = self.operations() {
+            ops.begin_drain();
+        }
+    }
+
+    pub(crate) fn imap_evidence(&self) -> Option<crate::imap_ops::IMapEvidence> {
+        let current = self
+            .member
+            .as_ref()?
+            .grid
+            .partition_snapshot()
+            .map(|snapshot| {
+                (
+                    snapshot.epoch,
+                    snapshot.applied_index == snapshot.commit_index,
+                )
+            });
+        Some(self.operations()?.evidence(current))
+    }
+
+    pub(crate) fn imap_metrics(&self) -> String {
+        self.operations()
+            .zip(self.imap_evidence())
+            .map_or_else(String::new, |(ops, evidence)| ops.prometheus(&evidence))
+    }
+
+    fn admit_public(
+        &self,
+    ) -> Result<Option<tokio::sync::SemaphorePermit<'_>>, (StableErrorCode, &'static str)> {
+        use crate::imap_ops::{compatible_roster, Denial};
+        let Some(ops) = self.operations() else {
+            return Ok(None);
+        };
+        let permit = ops.enter(false).map_err(|denial| match denial {
+            Denial::Draining => (
+                StableErrorCode::StableErrorUnavailable,
+                "IMap member is draining",
+            ),
+            Denial::Saturated => (
+                StableErrorCode::StableErrorQuotaExceeded,
+                "IMap member admission exhausted",
+            ),
+        })?;
+        let member = self
+            .member
+            .as_ref()
+            .expect("value control belongs to a member");
+        let Some(snapshot) = member.grid.partition_snapshot() else {
+            return Err((
+                StableErrorCode::StableErrorUnavailable,
+                "IMap topology unavailable",
+            ));
+        };
+        if !compatible_roster(&snapshot) {
+            ops.counters.incompatible.fetch_add(1, Ordering::Relaxed);
+            return Err((
+                StableErrorCode::StableErrorUnavailable,
+                "IMap value wire generation is incompatible",
+            ));
+        }
+        if snapshot.applied_index != snapshot.commit_index
+            || snapshot.members.len() < ops.config.replication_factor
+            || !snapshot.members.iter().any(|record| {
+                record.node_id == member.plane.local_member().node
+                    && record.generation == member.plane.local_member().generation
+            })
+        {
+            return Err((
+                StableErrorCode::StableErrorUnavailable,
+                "IMap topology is not applied",
+            ));
+        }
+        Ok(Some(permit))
+    }
+
     /// Return bounded, secret-free listener accounting.
     pub fn accounting(&self) -> Hc2AccountingSnapshot {
         Hc2AccountingSnapshot {
@@ -302,6 +382,9 @@ impl ClientPlaneAlpha for Hc2ClientPlaneService {
                 "HC/2 client certificate is outside the member profile",
             ));
         }
+        if self.operations().is_some_and(|ops| ops.is_draining()) {
+            return Err(Status::unavailable("IMap member is draining"));
+        }
         let mut inbound = request.into_inner();
         let (outbound, receiver) =
             OutboundQueue::new(self.state.limits().max_streams_per_connection);
@@ -412,10 +495,12 @@ async fn serve_connection(
     inbound: &mut Streaming<ClientEnvelope>,
     outbound: &OutboundQueue,
 ) -> Result<(), Status> {
-    let first = inbound
-        .message()
-        .await?
-        .ok_or_else(|| Status::unauthenticated("HC/2 handshake is required"))?;
+    let mut draining = service.operations().map(|ops| ops.drain_signal());
+    let first = tokio::select! {
+        biased;
+        _ = wait_for_member_drain(&mut draining) => return Ok(()),
+        first = inbound.message() => first?.ok_or_else(|| Status::unauthenticated("HC/2 handshake is required"))?,
+    };
     let Some(client_envelope::Message::Handshake(handshake)) = first.message else {
         reject(&service.accounting);
         return Err(Status::failed_precondition("HC/2 handshake must be first"));
@@ -465,7 +550,14 @@ async fn serve_connection(
     let mut clustered = BTreeMap::<u64, ClusterSubscriptionTask>::new();
     let mut sessions = BTreeMap::<Bytes, u64>::new();
     let mut resources = StreamResourceGuard::new(Arc::clone(&service.accounting));
-    while let Some(envelope) = inbound.message().await? {
+    loop {
+        let Some(envelope) = (tokio::select! {
+            biased;
+            _ = wait_for_member_drain(&mut draining) => return Ok(()),
+            next = inbound.message() => next?,
+        }) else {
+            return Ok(());
+        };
         if envelope.generation != identity.protocol_generation
             || envelope.connection_generation != identity.connection_generation
             || envelope.correlation_id == 0
@@ -521,6 +613,13 @@ async fn serve_connection(
             }
             Some(client_envelope::Message::Subscribe(subscribe)) => {
                 if let Some(member) = &service.member {
+                    let _admission = service.admit_public().map_err(|(code, detail)| {
+                        if code == StableErrorCode::StableErrorQuotaExceeded {
+                            Status::resource_exhausted(detail)
+                        } else {
+                            Status::unavailable(detail)
+                        }
+                    })?;
                     clustered.retain(|_, task| !task.0.is_finished());
                     if clustered.contains_key(&subscribe.subscription_id)
                         || clustered.len() >= service.state.limits().max_streams_per_connection
@@ -627,7 +726,15 @@ async fn serve_connection(
             }
         }
     }
-    Ok(())
+}
+
+async fn wait_for_member_drain(signal: &mut Option<tokio::sync::watch::Receiver<bool>>) {
+    match signal {
+        Some(signal) => {
+            let _ = signal.wait_for(|draining| *draining).await;
+        }
+        None => std::future::pending().await,
+    }
 }
 
 struct ClusterSubscriptionTask(tokio::task::JoinHandle<()>);
@@ -682,11 +789,19 @@ async fn start_cluster_subscription(
         )))
         .await?;
     let outbound = outbound.clone();
+    let plane = member.plane.clone();
     Ok(ClusterSubscriptionTask(tokio::spawn(async move {
         let _permit = permit;
         let mut resource = StreamResourceGuard::new(accounting);
         resource.add_subscription();
+        let mut draining = plane.operations().map(|ops| ops.drain_signal());
         let gap = |after_watermark, details| {
+            if let Some(operations) = plane.operations() {
+                operations
+                    .counters
+                    .listener_gaps
+                    .fetch_add(1, Ordering::Relaxed);
+            }
             server_envelope(
                 identity,
                 0,
@@ -734,6 +849,7 @@ async fn start_cluster_subscription(
             }
         });
         tokio::select! {
+            _ = wait_for_member_drain(&mut draining) => {}
             _ = outbound.sender.closed() => {}
             _ = forward => {}
         }
@@ -776,6 +892,10 @@ async fn dispatch_invocation_async(
     invocation: InvocationRequest,
 ) -> InvocationResponse {
     let _pending = PendingInvocationGuard::new(&service.accounting.pending_invocations);
+    let _admission = match service.admit_public() {
+        Ok(permit) => permit,
+        Err((code, detail)) => return wire_error(code, detail),
+    };
     let (meta, identity, operation) = match prepare_invocation(peer_id, invocation) {
         Ok(prepared) => prepared,
         Err(response) => return response,

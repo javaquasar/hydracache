@@ -199,6 +199,13 @@ pub(crate) struct PartitionJournal {
 }
 
 impl PartitionJournal {
+    pub fn retained_count(&self, prefix: Option<PartitionValuePrefix>) -> usize {
+        self.outcomes.len()
+            + usize::from(
+                self.matching_pending(prefix)
+                    .is_some_and(|record| record.identity.is_some()),
+            )
+    }
     fn matching_pending(&self, required: Option<PartitionValuePrefix>) -> Option<&Mutation> {
         self.pending
             .as_ref()

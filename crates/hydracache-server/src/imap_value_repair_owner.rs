@@ -135,6 +135,9 @@ impl ValueReplica {
             .map_err(|_| repair_error("owner Raft authority unavailable"))?;
         let (plan, previously_applied) = proof
             .with_snapshot(|snapshot, _| {
+                if !self.roster_compatible(&snapshot) {
+                    return Err(repair_error("replica repair value generation mismatch"));
+                }
                 if let Some(prior) = snapshot.value_repairs.get(&partition).filter(|prior| {
                     prior.owner == self.local
                         && prior.replaced == replaced
