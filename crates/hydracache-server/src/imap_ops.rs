@@ -339,8 +339,13 @@ impl IMapOps {
         let count = counters.ack_count.load(Ordering::Relaxed);
         let sum = counters.ack_sum_us.load(Ordering::Relaxed);
         out.push_str("# TYPE hydracache_imap_replica_ack_seconds histogram\n");
+        let mut previous_bucket = 0;
         for (bound, bucket) in ACK_BUCKETS_US.iter().zip(&counters.ack_buckets) {
-            let count = bucket.load(Ordering::Relaxed).min(count);
+            let count = bucket
+                .load(Ordering::Relaxed)
+                .max(previous_bucket)
+                .min(count);
+            previous_bucket = count;
             let _ = writeln!(
                 out,
                 "hydracache_imap_replica_ack_seconds_bucket{{le=\"{:.6}\"}} {count}",
@@ -383,4 +388,84 @@ pub(crate) fn compatible_roster(snapshot: &RaftPartitionSnapshot) -> bool {
                 .get(VALUE_WIRE_KEY)
                 .is_some_and(|value| value == VALUE_WIRE_GENERATION)
         })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn admission_seals_both_paths_without_discarding_inflight_work() {
+        let ops = IMapOps::new(IMapOperationalConfig {
+            max_inflight: 1,
+            ..Default::default()
+        });
+        let ingress = ops.enter(false).unwrap();
+        let owner = ops.enter(true).unwrap();
+        assert_eq!(ops.inflight(), 2);
+        assert_eq!(ops.enter(false).unwrap_err(), Denial::Saturated);
+        assert_eq!(ops.enter(true).unwrap_err(), Denial::Saturated);
+        let signal = ops.drain_signal();
+        ops.begin_drain();
+        assert!(*signal.borrow());
+        assert_eq!(ops.enter(false).unwrap_err(), Denial::Draining);
+        assert_eq!(ops.enter(true).unwrap_err(), Denial::Draining);
+        assert_eq!(ops.inflight(), 2);
+        drop((ingress, owner));
+        assert_eq!(ops.inflight(), 0);
+        assert_eq!(ops.counters.backpressure.load(Ordering::Relaxed), 2);
+        assert_eq!(ops.counters.drain_rejected.load(Ordering::Relaxed), 2);
+    }
+
+    #[test]
+    fn readiness_fences_old_evidence_and_histogram_has_fixed_buckets() {
+        let ops = IMapOps::new(IMapOperationalConfig::default());
+        let epoch = ClusterEpoch::new(4);
+        assert_eq!(
+            ops.evidence(None).readiness.reason,
+            IMapReadinessReason::TopologyUnavailable
+        );
+        assert_eq!(
+            ops.evidence(Some((epoch, true))).readiness.reason,
+            IMapReadinessReason::EpochStale
+        );
+        let mut observation = HealthObservation::unavailable(IMapReadinessReason::Ready, 4);
+        observation.rows.push(PartitionHealth {
+            id: 0,
+            state: PartitionState::Healthy,
+            local_primary: true,
+            local_backup: false,
+            certified_version: 1,
+        });
+        ops.publish(observation.clone());
+        ops.publish(observation);
+        let evidence = ops.evidence(Some((epoch, true)));
+        assert!(evidence.readiness.ready && evidence.complete);
+        assert_eq!(evidence.sequence, 1);
+        assert_eq!(
+            ops.evidence(Some((epoch, false))).readiness.reason,
+            IMapReadinessReason::EpochStale
+        );
+        assert_eq!(
+            ops.evidence(Some((ClusterEpoch::new(5), true)))
+                .readiness
+                .reason,
+            IMapReadinessReason::EpochStale
+        );
+        ops.record_ack(Duration::from_micros(50), true);
+        ops.record_ack(Duration::from_micros(190), true);
+        ops.record_ack(Duration::from_millis(2), false);
+        let metrics = ops.prometheus(&evidence);
+        assert!(metrics.contains("hydracache_imap_partitions{state=\"healthy\"} 1\n"));
+        assert!(metrics.contains("hydracache_imap_replica_ack_seconds_bucket{le=\"0.000100\"} 1\n"));
+        assert!(metrics.contains("hydracache_imap_replica_ack_seconds_bucket{le=\"0.000500\"} 2\n"));
+        assert!(metrics.contains("hydracache_imap_replica_ack_seconds_count 2\n"));
+        assert!(metrics.contains("hydracache_imap_replica_ack_failed_total 1\n"));
+        assert!(!metrics.contains("partition_id="));
+        ops.begin_drain();
+        assert_eq!(
+            ops.evidence(Some((epoch, true))).readiness.reason,
+            IMapReadinessReason::Draining
+        );
+    }
 }

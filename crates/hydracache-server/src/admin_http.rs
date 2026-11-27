@@ -461,7 +461,7 @@ async fn admin_drain(State(runtime): State<SharedServerRuntime>, headers: Header
             outcome: if drain.timed_out {
                 "incomplete"
             } else {
-                "completed"
+                "accepted"
             },
             drain,
         }),

@@ -946,7 +946,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
     )> {
         use futures_util::{stream, StreamExt};
 
-        let transport = self.value_transport.as_deref()?;
+        let transport = self.value_transport.as_ref()?.clone();
         let deadline = deadline.min(Instant::now() + Duration::from_millis(650));
         let proof = request_read_index(&self.raft, &self.raft_transport, deadline)
             .await
@@ -955,7 +955,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
         if !self.replica.roster_compatible(&snapshot) || !admitted(&snapshot, &self.replica.local) {
             return None;
         }
-        let peers = snapshot
+        let peers: Vec<_> = snapshot
             .members
             .iter()
             .filter(|member| member.node_id != self.replica.local.node)
@@ -967,14 +967,18 @@ impl<S: RaftLogStore> ValueBackend<S> {
                     },
                     snapshot.epoch,
                 )
-            });
+            })
+            .collect();
         let mut results = stream::iter(peers)
-            .map(|probe| async move {
-                let limit = deadline.min(Instant::now() + Duration::from_millis(250));
-                timeout_at(limit, transport.check_candidate(probe.clone()))
-                    .await
-                    .is_ok_and(|reply| reply.is_ok_and(|reply| reply == probe))
-                    .then_some(probe.candidate.node)
+            .map(move |probe| {
+                let transport = transport.clone();
+                async move {
+                    let limit = deadline.min(Instant::now() + Duration::from_millis(250));
+                    timeout_at(limit, transport.check_candidate(probe.clone()))
+                        .await
+                        .is_ok_and(|reply| reply.is_ok_and(|reply| reply == probe))
+                        .then_some(probe.candidate.node)
+                }
             })
             .buffer_unordered(4);
         let mut reachable = std::collections::BTreeSet::from([self.replica.local.node.clone()]);
@@ -1022,7 +1026,7 @@ impl<S: RaftLogStore> ValueBackend<S> {
                                 failed: snapshot
                                     .members
                                     .iter()
-                                    .filter(|member| !reachable.contains(&member.node))
+                                    .filter(|member| !reachable.contains(&member.node_id))
                                     .map(|member| member.node_id.clone())
                                     .collect(),
                                 suspect: Default::default(),

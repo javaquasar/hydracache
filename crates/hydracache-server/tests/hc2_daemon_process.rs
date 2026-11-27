@@ -21,7 +21,10 @@ use hydracache_client_transport_axum::{
     HYDRACACHE_TENANT_HEADER,
 };
 use hydracache_server::imap_replicated_read::ReplicaReadScope;
-use hydracache_server::{ADMIN_CLUSTER_OVERVIEW_PATH, ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH};
+use hydracache_server::{
+    ADMIN_CLUSTER_OVERVIEW_PATH, ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH, ADMIN_READYZ_PATH,
+    MANAGEMENT_IMAP_PATH,
+};
 use sha2::{Digest, Sha256};
 use tokio::sync::{Mutex, MutexGuard};
 
@@ -175,6 +178,26 @@ fn member_hc2_has_no_node_local_fallback() {
         value_plane: Default::default(),
     });
     config.validate().unwrap();
+    let profile = config.distributed_hc2.clone().unwrap();
+    let round_trip: DistributedHc2Config =
+        toml::from_str(&toml::to_string(&profile).unwrap()).unwrap();
+    assert_eq!(round_trip, profile);
+    assert!(!format!("{profile:?}").contains(&profile.client_cert_sha256));
+    let mut hostile = profile.clone();
+    hostile.value_plane.write_quorum = 1;
+    config.distributed_hc2 = Some(hostile);
+    assert!(matches!(
+        config.validate(),
+        Err(ServerConfigError::InvalidDistributedHc2(_))
+    ));
+    let mut hostile = profile.clone();
+    hostile.value_plane.max_inflight = 0;
+    config.distributed_hc2 = Some(hostile);
+    assert!(matches!(
+        config.validate(),
+        Err(ServerConfigError::InvalidDistributedHc2(_))
+    ));
+    config.distributed_hc2 = Some(profile);
     config.redis_api.enabled = true;
     assert!(matches!(
         config.validate(),
@@ -746,7 +769,15 @@ async fn w10g_reports_the_partition_whose_history_was_overwritten() {
         return;
     }
     let _guard = async_daemon_process_guard().await;
-    let cluster = MemberCluster::start_fixture("w10g-history-gap", &pki(), true).await;
+    let cluster = MemberCluster::start_fixture(
+        "w10g-history-gap",
+        &pki(),
+        MemberOptions {
+            event_fault: true,
+            ..Default::default()
+        },
+    )
+    .await;
     let prefix = Bytes::from_static(b"w10g-history/");
     let key = cluster.key_for(1, Some(2), "w10g-history/");
     let owner = &cluster.clients[1];
@@ -816,7 +847,9 @@ async fn w10g_packaged_java_facade_uses_three_public_endpoints() {
     };
     let _guard = async_daemon_process_guard().await;
     let credentials = pki();
-    let mut cluster = MemberCluster::start_fixture("w10g-java-facade", &credentials, false).await;
+    let mut cluster =
+        MemberCluster::start_fixture("w10g-java-facade", &credentials, MemberOptions::default())
+            .await;
     let root = &cluster.spec.root;
     std::fs::write(root.join("java-client.pem"), credentials.client_cert).unwrap();
     std::fs::write(root.join("java-client.key"), credentials.client_key).unwrap();
@@ -925,6 +958,347 @@ async fn wait_for_zero_hc2_subscriptions(addresses: &[SocketAddr]) {
     }
 }
 
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn w10h_drains_primaries_and_backups_before_member_exit_under_load() {
+    use hydracache_client_hc2::BatchOperation;
+    if !w10h_enabled() {
+        return;
+    }
+    let _guard = async_daemon_process_guard().await;
+    let mut cluster = MemberCluster::start("w10h-managed-drain").await;
+    let http = w10h_http();
+    let [departing, surviving, other] = [6, 7, 8].map(|index| cluster.spec.addresses[index]);
+    for address in [departing, surviving, other] {
+        wait_imap_readiness(&http, address, "ready").await;
+    }
+    let hot = cluster.key_for(0, Some(1), "w10h-primary/");
+    let backup = cluster.key_for(1, Some(0), "w10h-backup/");
+    let load_key = cluster.key_for(1, Some(2), "w10h-load/");
+    let options = RequestOptions {
+        timeout: Duration::from_secs(4),
+        idempotency_key: Bytes::from_static(b"w10h-drain-receipt"),
+    };
+    let seeded = Bytes::from_static(b"certified-before-drain");
+    let put = BatchOperation::Put {
+        key: hot.clone(),
+        value: seeded.clone(),
+        ttl: None,
+    };
+    let original = retry_w10i(|| async {
+        let result = cluster.clients[1]
+            .batch_outcomes(vec![put.clone()], Some(options.clone()))
+            .await?;
+        assert!(
+            result[0]
+                .result
+                .as_ref()
+                .map_err(Clone::clone)?
+                .mutation
+                .unwrap()
+                .applied
+        );
+        Ok(result[0].receipt.unwrap())
+    })
+    .await;
+    assert!(
+        retry_w10i(|| cluster.clients[1].put(backup.clone(), seeded.clone(), None, None))
+            .await
+            .applied
+    );
+    assert!(
+        retry_w10i(|| cluster.clients[1].put(load_key.clone(), seeded.clone(), None, None))
+            .await
+            .applied
+    );
+    let mut subscription = cluster.clients[0]
+        .subscribe(Bytes::from_static(b"w10h-"), 0)
+        .await
+        .unwrap();
+    wait_imap_readiness(&http, surviving, "ready").await;
+    assert_eq!(
+        http.get(format!("http://{surviving}{MANAGEMENT_IMAP_PATH}"))
+            .send()
+            .await
+            .unwrap()
+            .status(),
+        401
+    );
+    let evidence =
+        w10h_admin(http.get(format!("http://{surviving}{MANAGEMENT_IMAP_PATH}?limit=2")))
+            .send()
+            .await
+            .unwrap()
+            .error_for_status()
+            .unwrap()
+            .json::<serde_json::Value>()
+            .await
+            .unwrap();
+    assert_eq!(evidence["complete"], true);
+    assert_eq!(evidence["partitions"].as_array().unwrap().len(), 2);
+    assert_eq!(evidence["next_after"], 1);
+    let page = w10h_admin(http.get(format!(
+        "http://{surviving}{MANAGEMENT_IMAP_PATH}?limit=2&after=1&sequence={}",
+        evidence["observation_sequence"]
+    )))
+    .send()
+    .await
+    .unwrap()
+    .error_for_status()
+    .unwrap()
+    .json::<serde_json::Value>()
+    .await
+    .unwrap();
+    assert_eq!(page["partitions"][0]["id"], 2);
+    let proxy_metrics = imap_metrics(&http, surviving).await;
+    assert!(imap_metric(&proxy_metrics, "hydracache_imap_proxy_total") >= 1);
+    assert!(imap_metric(&proxy_metrics, "hydracache_imap_direct_total") >= 1);
+    assert!(imap_metric(&proxy_metrics, "hydracache_imap_replica_ack_seconds_count") >= 1);
+    assert!(!proxy_metrics
+        .lines()
+        .filter(|line| line.starts_with("hydracache_imap_"))
+        .any(|line| line.contains("tenant=")
+            || line.contains("node_id=")
+            || line.contains("partition_id=")));
+    let writer = cluster.clients[1].clone();
+    let writer_key = load_key.clone();
+    let load = tokio::spawn(async move {
+        let stop = tokio::time::Instant::now() + Duration::from_secs(12);
+        let mut accepted = 0;
+        let mut last = None;
+        while tokio::time::Instant::now() < stop {
+            let value = Bytes::from(format!("w10h-load-{accepted}"));
+            if writer
+                .put(writer_key.clone(), value.clone(), None, None)
+                .await
+                .is_ok_and(|outcome| outcome.applied)
+            {
+                accepted += 1;
+                last = Some(value);
+            }
+            tokio::time::sleep(Duration::from_millis(8)).await;
+        }
+        (accepted, last)
+    });
+    let drain =
+        tokio::spawn(w10h_admin(http.post(format!("http://{departing}{ADMIN_DRAIN_PATH}"))).send());
+    wait_imap_readiness(&http, departing, "draining").await;
+    let closed = tokio::time::timeout(Duration::from_secs(4), subscription.next())
+        .await
+        .unwrap();
+    assert!(
+        closed.is_none()
+            || matches!(
+                closed,
+                Some(hydracache_client_hc2::SubscriptionEvent::Closed(_))
+            )
+    );
+    assert!(cluster.clients[0].get(hot.clone(), None).await.is_err());
+    let response = drain.await.unwrap().unwrap().error_for_status().unwrap();
+    let body = response.json::<serde_json::Value>().await.unwrap();
+    assert_eq!(body["drain"]["timed_out"], false);
+    wait_success(&mut cluster.daemons[0].0, Duration::from_secs(8));
+    let (confirmed, last) = load.await.unwrap();
+    assert!(
+        confirmed >= 20,
+        "surviving writers were not making progress: {confirmed}"
+    );
+    wait_imap_readiness(&http, other, "ready").await;
+    wait_w10i_get(&cluster.clients[2], hot.clone(), Some(&seeded)).await;
+    wait_w10i_get(&cluster.clients[2], backup, Some(&seeded)).await;
+    wait_w10i_get(&cluster.clients[2], load_key, last.as_ref()).await;
+    let replay = retry_w10i(|| async {
+        let result = cluster.clients[2]
+            .batch_outcomes(vec![put.clone()], Some(options.clone()))
+            .await?;
+        result[0].result.as_ref().map_err(Clone::clone)?;
+        Ok(result[0].receipt.unwrap())
+    })
+    .await;
+    assert_eq!(original, replay);
+    wait_for_zero_hc2_subscriptions(&[surviving, other]).await;
+    println!("W10h managed drain confirmed_under_load={confirmed} primary_and_backup_preserved=true original_receipt_preserved=true retained_subscriptions=0");
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn w10h_failed_drain_keeps_membership_when_a_spare_is_down() {
+    if !w10h_enabled() {
+        return;
+    }
+    let _guard = async_daemon_process_guard().await;
+    let mut cluster = MemberCluster::start_fixture(
+        "w10h-failed-drain",
+        &pki(),
+        MemberOptions {
+            drain_timeout_ms: Some(2_000),
+            ..Default::default()
+        },
+    )
+    .await;
+    let http = w10h_http();
+    let [departing, surviving] = [6, 7].map(|index| cluster.spec.addresses[index]);
+    let affected = cluster.key_for(1, Some(2), "w10h-lost-backup/");
+    let retained = cluster.key_for(0, Some(1), "w10h-retained/");
+    let value = Bytes::from_static(b"preserve");
+    for key in [&affected, &retained] {
+        assert!(
+            retry_w10i(|| cluster.clients[0].put(key.clone(), value.clone(), None, None))
+                .await
+                .applied
+        );
+    }
+    wait_imap_readiness(&http, surviving, "ready").await;
+    cluster.daemons[2].0.kill().unwrap();
+    cluster.daemons[2].0.wait().unwrap();
+    wait_imap_readiness(&http, surviving, "required_backup_unavailable").await;
+    let failed = w10h_admin(http.post(format!("http://{departing}{ADMIN_DRAIN_PATH}")))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(failed.status(), 504);
+    assert_eq!(
+        failed.json::<serde_json::Value>().await.unwrap()["drain"]["timed_out"],
+        true
+    );
+    wait_imap_readiness(&http, departing, "draining").await;
+    assert!(cluster.daemons[0].0.try_wait().unwrap().is_none());
+    let metrics = imap_metrics(&http, departing).await;
+    assert_eq!(imap_metric(&metrics, "hydracache_imap_drain_evacuated"), 0);
+    assert_eq!(
+        imap_metric(&metrics, "hydracache_imap_drain_membership_left"),
+        0
+    );
+    let roster = http
+        .get(format!("http://{surviving}{ADMIN_CLUSTER_OVERVIEW_PATH}"))
+        .send()
+        .await
+        .unwrap()
+        .error_for_status()
+        .unwrap()
+        .json::<serde_json::Value>()
+        .await
+        .unwrap();
+    assert!(roster["members"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|member| member["node_id"] == cluster.spec.names[0]));
+    println!("W10h incomplete drain readiness=draining replica_floor_enforced=true membership_retained=true");
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn w10h_refuses_mixed_value_generation_before_owner_dispatch() {
+    if !w10h_enabled() {
+        return;
+    }
+    let _guard = async_daemon_process_guard().await;
+    let mut cluster = MemberCluster::start("w10h-mixed-value-generation").await;
+    let http = w10h_http();
+    let address = cluster.spec.addresses[7];
+    let key = cluster.key_for(1, Some(0), "w10h-mixed/");
+    let value = Bytes::from_static(b"unchanged-through-mixed-mode");
+    assert!(
+        retry_w10i(|| cluster.clients[1].put(key.clone(), value.clone(), None, None))
+            .await
+            .applied
+    );
+    wait_imap_readiness(&http, address, "ready").await;
+    cluster.daemons[2].0.kill().unwrap();
+    cluster.daemons[2].0.wait().unwrap();
+    cluster.daemons[2] = cluster.spec.spawn_with_value_profile(2, false);
+    wait_imap_readiness(&http, address, "wire_generation_incompatible").await;
+    let error = cluster.clients[1]
+        .put(
+            key.clone(),
+            Bytes::from_static(b"must-not-apply"),
+            None,
+            None,
+        )
+        .await
+        .unwrap_err();
+    assert_eq!(error.code(), ErrorCode::Unavailable);
+    assert!(
+        imap_metric(
+            &imap_metrics(&http, address).await,
+            "hydracache_imap_incompatible_total"
+        ) >= 1
+    );
+    cluster.daemons[2].0.kill().unwrap();
+    cluster.daemons[2].0.wait().unwrap();
+    cluster.daemons[2] = cluster.spec.spawn(2);
+    let restored = connect_w10i(&cluster.adapters[2], "w10i").await;
+    wait_w10i_get(&restored, key, Some(&value)).await;
+    wait_imap_readiness(&http, address, "ready").await;
+    println!("W10h incompatible value generation rejected_before_dispatch=true compatible_generation_restored=true");
+}
+
+fn w10h_enabled() -> bool {
+    std::env::var("HYDRACACHE_RUN_DAEMON_PROCESS_E2E").as_deref() == Ok("1")
+}
+
+fn w10h_http() -> reqwest::Client {
+    reqwest::Client::builder()
+        .timeout(Duration::from_secs(40))
+        .build()
+        .unwrap()
+}
+
+fn w10h_admin(request: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
+    request
+        .header(HYDRACACHE_CLIENT_ID_HEADER, "w10h-probe")
+        .header(HYDRACACHE_TENANT_HEADER, "system")
+        .header(HYDRACACHE_ADMIN_HEADER, "true")
+}
+
+async fn wait_imap_readiness(http: &reqwest::Client, address: SocketAddr, expected: &str) {
+    let start = tokio::time::Instant::now();
+    loop {
+        let mut observed = None;
+        if let Ok(response) = http
+            .get(format!("http://{address}{ADMIN_READYZ_PATH}"))
+            .timeout(Duration::from_secs(1))
+            .send()
+            .await
+        {
+            let status = response.status();
+            if let Ok(body) = response.json::<serde_json::Value>().await {
+                if body["imap"]["reason"] == expected
+                    && status.as_u16() == if expected == "ready" { 200 } else { 503 }
+                {
+                    return;
+                }
+                observed = Some((status, body));
+            }
+        }
+        assert!(
+            start.elapsed() < Duration::from_secs(20),
+            "readiness {address} never became {expected}: {observed:?}"
+        );
+        tokio::time::sleep(Duration::from_millis(40)).await;
+    }
+}
+
+async fn imap_metrics(http: &reqwest::Client, address: SocketAddr) -> String {
+    http.get(format!("http://{address}{ADMIN_METRICS_PATH}"))
+        .send()
+        .await
+        .unwrap()
+        .error_for_status()
+        .unwrap()
+        .text()
+        .await
+        .unwrap()
+}
+
+fn imap_metric(metrics: &str, name: &str) -> u64 {
+    let prefix = format!("{name} ");
+    metrics
+        .lines()
+        .find_map(|line| line.strip_prefix(&prefix))
+        .unwrap()
+        .parse()
+        .unwrap()
+}
+
 async fn wait_w10g_mutation(
     subscription: &mut hydracache_client_hc2::Subscription,
     key: &Bytes,
@@ -950,6 +1324,13 @@ struct MemberClusterSpec {
     server_key: PathBuf,
     ca: PathBuf,
     event_fault: Option<PathBuf>,
+    drain_timeout_ms: Option<u64>,
+}
+
+#[derive(Default)]
+struct MemberOptions {
+    event_fault: bool,
+    drain_timeout_ms: Option<u64>,
 }
 
 impl MemberClusterSpec {
@@ -976,6 +1357,10 @@ impl MemberClusterSpec {
     }
 
     fn spawn(&self, index: usize) -> ChildGuard {
+        self.spawn_with_value_profile(index, true)
+    }
+
+    fn spawn_with_value_profile(&self, index: usize, value_profile: bool) -> ChildGuard {
         let log = std::fs::File::options()
             .create(true)
             .append(true)
@@ -991,6 +1376,19 @@ impl MemberClusterSpec {
         );
         if let Some(fault) = self.event_fault.as_ref().filter(|_| index == 2) {
             command.env("HYDRACACHE_TEST_RAFT_OUTBOUND_FAULT_FILE", fault);
+        }
+        if let Some(timeout) = self.drain_timeout_ms {
+            command.env("HYDRACACHE_DRAIN_TIMEOUT_MS", timeout.to_string());
+        }
+        if value_profile {
+            command.env(
+                "HYDRACACHE_DISTRIBUTED_HC2_CONFIG",
+                self.root.join("imap.toml"),
+            );
+        } else {
+            command
+                .env("HYDRACACHE_HC2_ENABLED", "false")
+                .env_remove("HYDRACACHE_DISTRIBUTED_HC2_CONFIG");
         }
         ChildGuard(
             command
@@ -1008,10 +1406,6 @@ impl MemberClusterSpec {
                 .env(
                     "HYDRACACHE_CLUSTER_AUTH_TOKEN_FILE",
                     self.root.join("cluster-token"),
-                )
-                .env(
-                    "HYDRACACHE_DISTRIBUTED_HC2_CONFIG",
-                    self.root.join("imap.toml"),
                 )
                 .env("HYDRACACHE_CLIENT_BATCH_PROFILE", "w11-256")
                 .stdout(Stdio::from(log.try_clone().unwrap()))
@@ -1031,10 +1425,10 @@ struct MemberCluster {
 
 impl MemberCluster {
     async fn start(label: &str) -> Self {
-        Self::start_fixture(label, &pki(), false).await
+        Self::start_fixture(label, &pki(), MemberOptions::default()).await
     }
 
-    async fn start_fixture(label: &str, pki: &TestPki, event_fault: bool) -> Self {
+    async fn start_fixture(label: &str, pki: &TestPki, options: MemberOptions) -> Self {
         let root = test_root(label);
         let (server_cert, server_key, ca) = write_pki(&root, pki);
         let mut pem = std::io::BufReader::new(pki.client_cert.as_bytes());
@@ -1064,7 +1458,10 @@ impl MemberCluster {
             .collect::<Vec<_>>()
             .join(",");
         let spec = MemberClusterSpec {
-            event_fault: event_fault.then(|| root.join(&names[2]).join("event-fault.json")),
+            event_fault: options
+                .event_fault
+                .then(|| root.join(&names[2]).join("event-fault.json")),
+            drain_timeout_ms: options.drain_timeout_ms,
             root,
             addresses,
             names,
@@ -1073,7 +1470,7 @@ impl MemberCluster {
             server_key,
             ca,
         };
-        if event_fault {
+        if options.event_fault {
             spec.set_value_fault(1, false);
         }
         drop(reservations);
