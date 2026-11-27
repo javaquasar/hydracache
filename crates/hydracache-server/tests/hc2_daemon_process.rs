@@ -212,6 +212,24 @@ fn member_hc2_has_no_node_local_fallback() {
         toml::from_str(&toml::to_string(&profile).unwrap()).unwrap();
     assert_eq!(round_trip, profile);
     assert!(!format!("{profile:?}").contains(&profile.client_cert_sha256));
+    let mut invalid_clock = profile.clone();
+    invalid_clock.chrony = Some(hydracache_server::IMapChronyConfig {
+        chronyc: "relative-chronyc".into(),
+        references: vec!["192.0.2.1".parse().unwrap()],
+        sample_interval_ms: 1_000,
+        policy: hydracache_server::imap_chrony::ChronyPolicy {
+            maximum_uncertainty_ms: 10,
+            maximum_snapshot_age_ms: 3_000,
+            maximum_reference_age_ms: 30_000,
+            maximum_acquisition_ms: 100,
+            maximum_drift_ppm: 500,
+        },
+    });
+    config.distributed_hc2 = Some(invalid_clock);
+    assert!(matches!(
+        config.validate(),
+        Err(ServerConfigError::InvalidDistributedHc2(_))
+    ));
     let mut hostile = profile.clone();
     hostile.value_plane.write_quorum = 1;
     config.distributed_hc2 = Some(hostile);

@@ -184,7 +184,7 @@ pub struct IMapChronyConfig {
 }
 
 impl IMapChronyConfig {
-    fn validate(&self) -> Result<(), ServerConfigError> {
+    pub(crate) fn validate(&self) -> Result<(), ServerConfigError> {
         let policy = self.policy;
         if !cfg!(target_os = "linux")
             || !self.chronyc.is_absolute()

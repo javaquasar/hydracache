@@ -296,7 +296,8 @@ async fn measures_partition_write_outage_and_replica_recovery_on_hc2() {
                         )
                         .await;
                     }
-                    assert_eq!(recovered.digests[0].rows, keys_per_partition);
+                    assert_eq!(baseline.rows(), keys_per_partition);
+                    assert_eq!(recovered.rows(), keys_per_partition);
                     PartitionEvidence {
                         partition: partition.id,
                         original: partition.original,

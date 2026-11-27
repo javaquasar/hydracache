@@ -261,6 +261,12 @@ async fn read_tracking(command: &mut Command, timeout: Duration) -> Option<Strin
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs::File;
+    use std::io::{BufWriter, Write};
+
+    use serde::Serialize;
+
+    use super::super::NS_PER_MS;
 
     #[test]
     fn polls_real_kernel_clock_and_fences_timer_and_suspend_signals() {
@@ -300,5 +306,92 @@ mod tests {
         assert!(read_tracking(&mut sleep, Duration::from_millis(30))
             .await
             .is_none());
+    }
+
+    #[derive(Serialize)]
+    struct QualificationSample {
+        elapsed_ms: u128,
+        realtime_ms: Option<u64>,
+        generation: Option<u64>,
+        uncertainty_ms: Option<u64>,
+        snapshot_age_ms: Option<u64>,
+        reference_age_upper_ms: Option<u64>,
+    }
+
+    fn qualification_sample(
+        clock: &ChronyClock,
+        started: tokio::time::Instant,
+    ) -> QualificationSample {
+        let mut state = clock.state.lock().unwrap();
+        let now = state.read();
+        let snapshot = state.sample.as_ref();
+        let observation = now
+            .zip(snapshot)
+            .and_then(|(now, sample)| sample.observe(now).ok());
+        QualificationSample {
+            elapsed_ms: started.elapsed().as_millis(),
+            realtime_ms: now.map(|now| now.realtime_ns / NS_PER_MS),
+            generation: state.generation,
+            uncertainty_ms: observation.map(|obs| obs.uncertainty_ms),
+            snapshot_age_ms: now.zip(snapshot).and_then(|(now, sample)| {
+                Some(
+                    now.boottime_ns
+                        .checked_sub(sample.acquired.boottime_ns)?
+                        .div_ceil(NS_PER_MS),
+                )
+            }),
+            reference_age_upper_ms: observation.zip(snapshot).and_then(|(obs, sample)| {
+                obs.now_ms
+                    .checked_add(obs.uncertainty_ms)?
+                    .checked_sub(sample.reference_ns / NS_PER_MS)
+            }),
+        }
+    }
+
+    #[tokio::test]
+    async fn records_od2_clock_evidence_on_the_current_host() {
+        let Some(profile) = std::env::var_os("HYDRACACHE_OD2_CHRONY_PROFILE") else {
+            return;
+        };
+        let config: IMapChronyConfig =
+            toml::from_str(&std::fs::read_to_string(profile).unwrap()).unwrap();
+        config.validate().unwrap();
+        let output = std::env::var_os("HYDRACACHE_OD2_CLOCK_REPORT").expect("set OD-2 report path");
+        let seconds: u64 = std::env::var("HYDRACACHE_OD2_SAMPLE_SECONDS")
+            .as_deref()
+            .unwrap_or("60")
+            .parse()
+            .unwrap();
+        assert!((1..=3_600).contains(&seconds));
+        let mut log = BufWriter::new(File::create_new(output).unwrap());
+        let clock = Arc::new(ChronyClock::new());
+        let (stop, shutdown) = watch::channel(false);
+        let collector = tokio::spawn(clock.clone().run(config.clone(), shutdown));
+        let started = tokio::time::Instant::now();
+        let end = started + Duration::from_secs(seconds);
+        let mut interval = tokio::time::interval(Duration::from_millis(config.sample_interval_ms));
+        interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+        let mut admitted = 0;
+        let mut refused = 0;
+        while tokio::time::timeout_at(end, interval.tick()).await.is_ok() {
+            let sample = qualification_sample(&clock, started);
+            if sample.uncertainty_ms.is_some() {
+                admitted += 1;
+            } else {
+                refused += 1;
+            }
+            serde_json::to_writer(&mut log, &sample).unwrap();
+            log.write_all(b"\n").unwrap();
+            log.flush().unwrap();
+        }
+        stop.send(true).unwrap();
+        collector.await.unwrap();
+        log.get_ref().sync_all().unwrap();
+        assert!(clock.observe().is_none());
+        println!("OD-2 host evidence admitted={admitted} refused={refused}");
+        assert!(
+            admitted > 0,
+            "no admissible chrony observations on this host"
+        );
     }
 }

@@ -76,6 +76,10 @@ impl ReplicaCheckpoint {
         &self.digests[0].member
     }
 
+    pub fn rows(&self) -> usize {
+        self.digests[0].rows
+    }
+
     pub fn assert_same_image(&self, other: &Self) {
         assert_same_image(&self.digests[0], &other.digests[0]);
     }
