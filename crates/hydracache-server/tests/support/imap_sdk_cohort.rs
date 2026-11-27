@@ -158,7 +158,17 @@ async fn run_cohort(scenario: Scenario) {
         |p| p != control_partition,
     );
     let mut package_load = if interrupt_copy {
-        Some(PackagedWorkload::start(&commands, &cluster, control_partition, started).await)
+        let mut reserved = vec![
+            control_partition,
+            hot_partition,
+            scope.locate(witness.to_vec()).unwrap().0,
+        ];
+        reserved.extend(
+            keys.iter()
+                .flatten()
+                .map(|key| scope.locate(key.to_vec()).unwrap().0),
+        );
+        Some(PackagedWorkload::start(&commands, &cluster, &reserved, started).await)
     } else {
         None
     };

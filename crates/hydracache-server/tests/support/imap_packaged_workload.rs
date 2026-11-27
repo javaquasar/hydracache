@@ -157,7 +157,7 @@ impl<'a> PackagedWorkload<'a> {
     pub(super) async fn start(
         commands: &'a PackageCommands<'a>,
         cluster: &MemberCluster,
-        control: hydracache::PartitionId,
+        reserved: &[hydracache::PartitionId],
         started: tokio::time::Instant,
     ) -> Self {
         use std::fmt::Write as _;
@@ -173,7 +173,7 @@ impl<'a> PackagedWorkload<'a> {
                         1,
                         Some(2),
                         |n| format!("w10i-load/{sdk}/{round}/{side}/{n}").into_bytes(),
-                        |p| p != control,
+                        |p| !reserved.contains(&p),
                     )
                 });
                 writeln!(
