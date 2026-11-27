@@ -90,7 +90,7 @@ replica count is reduced.
 Upgrade:
 
 ```powershell
-kubectl patch hydracachecluster demo --type merge -p '{"spec":{"image":"ghcr.io/javaquasar/hydracache-server:0.56.0","version":"0.56.0"}}'
+kubectl patch hydracachecluster demo --type merge -p '{"spec":{"image":"ghcr.io/javaquasar/hydracache-server:0.74.1","version":"0.74.1"}}'
 ```
 
 The StatefulSet uses `OnDelete`; the operator deletes one drained pod at a time.

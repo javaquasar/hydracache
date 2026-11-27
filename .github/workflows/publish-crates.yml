@@ -429,10 +429,25 @@ jobs:
     permissions:
       contents: read
 
-  github-release:
-    name: Create GitHub Release after publication
+  publish-image:
+    name: Publish server container image to GHCR
     needs: [resolve, publish, consumer-verification]
     if: needs.resolve.outputs.eligible == 'true' && needs.publish.result == 'success' && needs.consumer-verification.result == 'success'
+    uses: ./.github/workflows/server-image.yml
+    with:
+      version: ${{ needs.resolve.outputs.version }}
+      source_sha: ${{ needs.resolve.outputs.source_sha }}
+      publish_mode: release
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+
+  github-release:
+    name: Create GitHub Release after publication
+    needs: [resolve, publish, consumer-verification, publish-image]
+    if: needs.resolve.outputs.eligible == 'true' && needs.publish.result == 'success' && needs.consumer-verification.result == 'success' && needs.publish-image.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -458,9 +473,23 @@ jobs:
           RELEASE_VERSION: ${{ needs.resolve.outputs.version }}
           RELEASE_TAG: ${{ needs.resolve.outputs.tag }}
           RELEASE_NOTES: target/release-publish/release-notes.md
+          IMAGE: ${{ needs.publish-image.outputs.image }}
+          IMAGE_DIGEST: ${{ needs.publish-image.outputs.digest }}
         shell: bash
         run: |
           set -euo pipefail
+          test -n "$IMAGE" && test -n "$IMAGE_DIGEST"
+          {
+            echo
+            echo "## Container image"
+            echo
+            echo '```'
+            echo "$IMAGE:$RELEASE_VERSION"
+            echo "$IMAGE@$IMAGE_DIGEST"
+            echo '```'
+            echo
+            echo "Verify provenance with \`gh attestation verify oci://$IMAGE@$IMAGE_DIGEST --owner ${GITHUB_REPOSITORY_OWNER}\`."
+          } >> "$RELEASE_NOTES"
           title="HydraCache $RELEASE_VERSION"
           prerelease_flag=()
           if [[ "$RELEASE_VERSION" == *-* ]]; then
