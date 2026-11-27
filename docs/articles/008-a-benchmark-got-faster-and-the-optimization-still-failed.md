@@ -1140,6 +1140,18 @@ active writer. Each repetition preserved the transferred values and the original
 receipt, and left zero live subscriptions on the survivors. In a separate failure scenario,
 killing the spare made the drain time out while the departing member stayed in the roster. The
 retry completed after the spare returned, and both seeded values were still readable.
+
+The cluster management view preserves the source of each observation. Every member reports its
+own view of the same 271 partitions. Adding the counts would count many partitions twice. The
+collector displays an opaque member identifier, shows missing peers explicitly, and includes time
+spent collecting or caching an observation in its reported age. An expired observation loses its
+partition counts and readiness claim.
+
+The published 0.74.0 daemon could still collect the original Raft management snapshot after
+replacing one member on the same volume before the first certified IMap write. In that mixed
+cluster, the new management view reported an incompatible peer and HC/2 refused writes. The
+test restored the 0.75 binary and verified a new write through a different endpoint. All three
+optimized repetitions passed this sequence.
 [W10h release plan](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#w10h-add-distributed-observability-admission-readiness-and-operational-controls)
 
 ## The practical rule

@@ -1752,9 +1752,19 @@ an operator can inspect or retry the operation once capacity returns.
 
 The profile refuses mixed value generations. A member proves support with an authenticated
 internal echo scoped to the admitted process generation. A restart requires a fresh proof. Value
-traffic can resume when all members in the authenticated roster have proved support. The
-federated management projection and shared metric descriptor catalogue remain follow-up work.
-Rolling upgrade and rollback with literal 0.74 artifacts remain W10i evidence gates.
+traffic can resume when all members in the authenticated roster have proved support.
+
+`/management/v1/cluster/imap` uses the existing authenticated member fan-out to collect bounded
+counts and readiness from the committed roster of up to 16 members. The endpoint reports a view
+per member using an opaque identity. It checks authority again after fan-out and includes elapsed
+collection and cache time in the observation age. Missing, incompatible or expired observations
+keep the view incomplete. Partition counts describe each member's view of the same partition set.
+
+Peers negotiate internal snapshot schema 2 for IMap; requests for schema 1 retain the consensus
+response shape used by 0.74. The two schemas have independent refresh caches. The shared
+observability catalogue defines help text and Prometheus types for the 24 IMap metric families.
+The distributed profile exports them on `/metrics`, with unchanged series names and labels.
+W10i retains the compatibility gates for rollback of volumes that already contain v2 value records.
 
 **AX42 qualification (2026-11-27).** Source `8fe9642a3a7927cfbad2dbe469eb4183a192f3c7`,
 Rust 1.94.0, three independent daemons on one Linux host. The server regression passed all 174
@@ -1779,6 +1789,29 @@ AX42. The verified `w10h.sha256` manifest has SHA-256
 `739ac6c5b756fd333fd797dc658d2bc45c6290717727f341378213efb84865c3`.
 The short fault runs qualify the W10h controls for the tested RF=2 profile.
 [AX42 qualification workspace](../testing/imap/0.75/remote-linux-qualification.md)
+
+**Management federation and compatibility.** The AX42 fixture checked all 271 partitions per
+healthy member, protected access to the cluster view and missing peer evidence after a process
+kill. The same-volume compatibility scenario stopped one 0.75 member before the first certified
+value and restarted it with the published 0.74.0 ELF. That member collected the legacy Raft
+management observations from all three processes. The new view reported the older peer as
+incompatible, and public HC/2 refused a write. The restarted 0.75 member then read the value
+written after the compatible roster was restored.
+
+The compatibility evidence binds source `02e3a07cd5371d194329178753f64405a2394608` and the
+published ELF SHA-256 `60a37932c554e58a54303f1196c347948fbe0dde162d5a3e32cef5e00f0dd10a`.
+The updated server regression passed 182 tests, the observability suite passed 77 tests with one
+existing ignored test, and Clippy passed for the server and both process and management tests.
+All four daemon scenarios passed in each of three optimized repetitions. The surviving writer
+confirmed 839, 672 and 858 writes during the 12-second workload. Logs and all three executables
+are retained on AX42 under `development/w10h-ops-02e3a07cd5371d194329178753f64405a2394608`.
+The verified `w10h-ops.sha256` manifest has SHA-256
+`91fc9b7003f903df19997685bc789e9d8cfd33c764218ac76c0b4b26d4af07d1`.
+
+The scenario qualifies same-volume rollback before the first certified IMap value. Recovery
+of volumes with certified v2 records requires a compatible binary until W10i qualifies a
+downgrade procedure.
+[B74 artifact identity](../testing/imap/0.75/d1-b74-intake.md#verified-input)
 
 ### W10i. Build the correctness and compatibility safety net
 
