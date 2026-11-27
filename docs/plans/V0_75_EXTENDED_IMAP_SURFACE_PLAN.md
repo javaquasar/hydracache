@@ -2209,6 +2209,39 @@ were verified against `development/w10i-sdk-drain-5f2e2aa60c70357c222110cb334e55
 on AX42. The manifest SHA-256 is
 `0a4623886547cf56eb10fa288f4a5b9524b3e6c143d47e81b7e5513c0804a5bb`.
 
+#### Mixed batches and tombstone readback from packaged SDKs
+
+The W10i cohort now seeds values from both packaged SDKs and has each SDK mutate the other
+SDK's keys through an ordered HC/2 batch. Each batch checks a stale CAS, a successful CAS,
+readback of the updated value, deletion of a different key, and a confirmed miss for that key.
+The probes require an applied-version receipt for every item, including the rejected condition
+and the miss. The Java facade reads the resulting cohort, and the Rust consumer independently
+checks every value and miss through HC/2.
+
+Across the three owner-kill checkpoints, the two packaged SDKs check 30 mixed batch items.
+The final cohort contains six updated values, six tombstones and the original key on the
+faulted partition. The interrupted-copy profile checks all these outcomes while the transfer
+is paused and again after rejoin, when it also verifies the complete 96 KiB moved value.
+The readback manifest distinguishes a confirmed miss from a present zero-length value.
+
+AX42 ran the owner-kill and interrupted-copy profiles and both wrong-value tests on Java 17
+and 21 at `4d73ddc48f17f0234d599bf9fc9509b90eb2ab28`. In each combined run, the 30 mixed
+items produced six updated values and six tombstones that both SDKs reconciled during the
+pause and after rejoin. The first combined launch needed the loopback process-test flag.
+The qualifying retry used the same binaries and packages.
+
+| JVM | Moved partition | Verified control mutations | Verified while copy was blocked | Verified after rejoin |
+| --- | ---: | ---: | ---: | ---: |
+| Java 17 | 197 | 702 | 24 | 246 |
+| Java 21 | 188 | 758 | 27 | 294 |
+
+Both four-test process suites, five isolated Rust consumer tests, 48 Maven tests and both
+Clippy checks passed. The package artifacts, readback manifests, per-SDK receipts, ledgers
+and fault markers were checked against
+`development/w10i-sdk-mixed-4d73ddc48f17f0234d599bf9fc9509b90eb2ab28/w10i-sdk-mixed.sha256`
+on AX42. The manifest SHA-256 is
+`429be9cc7858fa298a64ca1d85b1e3d010bfb02720146260b015813406c7748b`.
+
 #### Under-load failover and rebalance qualification
 
 KiviDB's cluster soak pairs continuous mixed load with planned failovers, process kills, slot

@@ -1253,6 +1253,16 @@ whose write and readback both completed during the interruption and after rejoin
 On AX42, each of the Java 17 and 21 runs verified 24 control mutations during its copy pause.
 [Packaged SDK readback during drain](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#packaged-sdk-readback-through-interrupted-drain)
 
+## Checking updated values and deletions across SDKs
+
+Each packaged SDK now mutates keys seeded by the other. A single batch checks that a stale
+CAS leaves the key alone, a matching CAS updates it, and deletion produces a confirmed miss.
+The clients verify six updated values and six deleted keys during the paused transfer and
+again after rejoin. The manifest represents absence and an empty value separately.
+Both AX42 runs verified the mixed batches. The control stream confirmed 24 mutations
+during the blocked copy on Java 17 and 27 on Java 21.
+[W10i mixed batch diagnostic](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#mixed-batches-and-tombstone-readback-from-packaged-sdks)
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
