@@ -19,6 +19,16 @@ struct ImageRow {
     value: JournalRecord,
 }
 
+impl PartitionImage {
+    fn encode(&self) -> CacheResult<Vec<u8>> {
+        let bytes = serde_json::to_vec(self).map_err(storage_error)?;
+        if bytes.len() > MAX_IMAGE_BYTES {
+            return Err(repair_error("encoded partition exceeds the snapshot limit"));
+        }
+        Ok(bytes)
+    }
+}
+
 impl ValueJournal {
     /// Capture under the source partition lane while its writer permit is held.
     pub(crate) fn export_image(
@@ -26,6 +36,38 @@ impl ValueJournal {
         partition: PartitionId,
         required: Option<PartitionValuePrefix>,
     ) -> CacheResult<Vec<u8>> {
+        self.partition_image(partition, required)?.encode()
+    }
+
+    /// Validate and hash the same certified journal image used by snapshot transfer.
+    pub(crate) fn audit_image(
+        &self,
+        required: PartitionValuePrefix,
+        admits_key: impl Fn(&str) -> bool,
+    ) -> CacheResult<([u8; 32], usize, usize)> {
+        let image = self.partition_image(required.partition, Some(required))?;
+        let outcomes = image.meta.outcomes.len();
+        if outcomes > RETAINED_IDENTITIES {
+            return Err(repair_error(
+                "partition exceeds the retained decision limit",
+            ));
+        }
+        let digest = bytes_digest(&image.encode()?);
+        let rows = image.rows.len();
+        for ImageRow { key, value } in image.rows {
+            if !admits_key(&key) {
+                return Err(repair_error("invalid audit key scope"));
+            }
+            value.into_entry(required.partition, Some(required))?;
+        }
+        Ok((digest, rows, outcomes))
+    }
+
+    fn partition_image(
+        &self,
+        partition: PartitionId,
+        required: Option<PartitionValuePrefix>,
+    ) -> CacheResult<PartitionImage> {
         let stored = self.0.get(meta_key(partition)).map_err(storage_error)?;
         if stored
             .as_ref()
@@ -77,11 +119,7 @@ impl ValueJournal {
                 },
             );
         }
-        let bytes = serde_json::to_vec(&PartitionImage { meta, rows }).map_err(storage_error)?;
-        if bytes.len() > MAX_IMAGE_BYTES {
-            return Err(repair_error("encoded partition exceeds the snapshot limit"));
-        }
-        Ok(bytes)
+        Ok(PartitionImage { meta, rows })
     }
 
     /// Receive under the staging and partition locks. The caller validates
@@ -346,6 +384,31 @@ mod tests {
     use hydracache::{ClusterGeneration, ClusterNodeId, PartitionReplicaRepair};
     use std::time::SystemTime;
 
+    #[test]
+    fn replica_audit_rejects_corruption_in_an_older_row() {
+        let journal = ValueJournal::temporary();
+        let first = write(
+            &journal,
+            None,
+            "first",
+            Some(b"original".to_vec()),
+            Some(90),
+        );
+        let current = write(&journal, Some(first), "current", None, None);
+        assert!(journal.audit_image(current, |_| true).is_ok());
+        let key = record_key(current.partition, "first");
+        let row = journal.0.get(&key).unwrap().unwrap();
+        let JournalRecord::V2(mut record) = serde_json::from_slice(&row).unwrap() else {
+            panic!("expected checksummed row");
+        };
+        record.expires_not_before_ms = Some(91);
+        journal
+            .0
+            .insert(key, serde_json::to_vec(&JournalRecord::V2(record)).unwrap())
+            .unwrap();
+        assert!(journal.audit_image(current, |_| true).is_err());
+    }
+
     fn journal_directory() -> std::path::PathBuf {
         let directory = std::env::temp_dir().join(format!(
             "hc-w10f-{}-{}",
@@ -447,6 +510,11 @@ mod tests {
         );
         let image_with_certified_pending =
             source.export_image(prefix.partition, Some(prefix)).unwrap();
+        let pending_audit = source.audit_image(prefix, |_| true).unwrap();
+        assert_eq!(
+            pending_audit,
+            (bytes_digest(&image_with_certified_pending), 3, 3)
+        );
         let _uncertified = write(
             &source,
             Some(prefix),
@@ -461,6 +529,8 @@ mod tests {
         assert!(manifest.chunks() > 1);
         assert_eq!(image, source.export_image(partition, Some(prefix)).unwrap());
         assert!(source.export_image(partition, Some(second)).is_err());
+        assert!(source.audit_image(second, |_| true).is_err());
+        assert_eq!(source.audit_image(prefix, |_| true).unwrap(), pending_audit);
 
         let directory = journal_directory();
         let accept = |key: &str| matches!(key, "ttl" | "removed" | "latest");
@@ -536,6 +606,8 @@ mod tests {
             );
         }
         assert!(target.0.scan_prefix(b"x").next().is_none());
+        assert_eq!(target.audit_image(prefix, accept).unwrap(), pending_audit);
+        assert!(target.audit_image(prefix, |key| key != "removed").is_err());
         let meta = target.load(partition).unwrap();
         assert!(meta.covers(Some(prefix)));
         assert!(meta.pending.is_none());

@@ -190,6 +190,13 @@ impl Hc2ClientPlaneService {
         self.member.as_ref()?.plane.operations()
     }
 
+    pub(crate) async fn replica_digest(
+        &self,
+        query: crate::imap_value_plane::audit::IMapReplicaDigestQuery,
+    ) -> Option<crate::IMapReplicaDigest> {
+        self.member.as_ref()?.plane.replica_digest(query).await.ok()
+    }
+
     pub(crate) fn begin_member_drain(&self) {
         if let Some(ops) = self.operations() {
             ops.begin_drain();

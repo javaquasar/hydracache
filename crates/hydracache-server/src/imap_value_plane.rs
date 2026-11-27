@@ -47,6 +47,8 @@ use crate::value_plane_subscription::{
     MAX_EVENT_PAGE, MAX_PREFIX_BYTES,
 };
 
+#[path = "imap_value_audit.rs"]
+pub(crate) mod audit;
 #[path = "imap_value_primary.rs"]
 mod primary;
 #[path = "imap_primary_policy.rs"]
@@ -151,6 +153,7 @@ pub struct ValueReplica {
     replication: ReplicationConfig,
     journal: ValueJournal,
     lanes: Vec<Lane>,
+    audit: Arc<Semaphore>,
     writes: Semaphore,
     repair_sender: Semaphore,
     repair_receiver: Mutex<()>,
@@ -203,6 +206,7 @@ impl ValueReplica {
                     writer: Semaphore::new(1),
                 })
                 .collect(),
+            audit: Arc::new(Semaphore::new(1)),
             writes: Semaphore::new(MAX_WRITES),
             repair_sender: Semaphore::new(1),
             repair_receiver: Mutex::new(()),

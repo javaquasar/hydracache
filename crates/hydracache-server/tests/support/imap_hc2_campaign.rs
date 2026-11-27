@@ -1,6 +1,9 @@
 use std::fs::{File, OpenOptions};
 use std::io::{self, BufWriter, Read, Write};
 
+use hydracache_server::{
+    IMapReplicaDigest, HYDRACACHE_MANAGEMENT_READ_HEADER, MANAGEMENT_IMAP_REPLICA_DIGEST_PATH,
+};
 use serde::Serialize;
 
 use super::*;
@@ -62,8 +65,15 @@ pub(super) struct Drain {
     value_sha256: String,
     before: [CopyObservation; 2],
     after: [CopyObservation; 2],
+    replica_digests: ReplicaReconciliation,
     #[serde(skip_serializing_if = "Option::is_none")]
     interrupted_copy: Option<InterruptedCopy>,
+}
+
+#[derive(Debug, Serialize)]
+struct ReplicaReconciliation {
+    before: [IMapReplicaDigest; 2],
+    after: [IMapReplicaDigest; 2],
 }
 
 #[derive(Debug, Serialize)]
@@ -159,7 +169,7 @@ impl Profile {
             drain.as_ref().is_some_and(|d| d.interrupted_copy.is_some())
         );
         let mut receipt = serde_json::json!({
-            "schema_version": 1 + u16::from(self.live_drain) + u16::from(self.interrupt_copy),
+            "schema_version": if self.live_drain { 4 + u16::from(self.interrupt_copy) } else { 1 },
             "production_admitted": false,
             "source_sha": std::env::var("HYDRACACHE_W10I_SOURCE_SHA").unwrap(),
             "seconds": self.duration.as_secs(),
@@ -323,6 +333,8 @@ pub(super) async fn exercise_live_drain(
             |pair| pair[0].primary && pair[1].backup,
         )
         .await;
+        let before_digests = reconcile_copies(&http, &cluster.spec, partition, &before).await;
+        check_digest_refusals(&http, admins, partition, &before).await;
 
         tokio::time::sleep_until(started + duration / 2).await;
         let departed_pid = cluster.daemons[0].0.id();
@@ -372,6 +384,8 @@ pub(super) async fn exercise_live_drain(
         for client in &cluster.clients[1..] {
             wait_w10i_get(client, key.clone(), Some(&value)).await;
         }
+        let after_digests = reconcile_copies(&http, &cluster.spec, partition, &after).await;
+        assert_same_image(&before_digests[0], &after_digests[0]);
         let audited_at_ms = started.elapsed().as_millis() as u64;
         println!("W10i live drain placement audited epoch={} at_ms={audited_at_ms}", after[0].epoch);
         cluster.daemons[0] = cluster.spec.spawn_after_drain(0);
@@ -396,11 +410,167 @@ pub(super) async fn exercise_live_drain(
             value_sha256: sha256_hex(&value),
             before,
             after,
+            replica_digests: ReplicaReconciliation { before: before_digests, after: after_digests },
             interrupted_copy,
         }
     })
     .await
     .expect("W10i live drain and rejoin exceeded the campaign window")
+}
+
+fn digest_request(
+    http: &reqwest::Client,
+    admin: SocketAddr,
+    partition: u32,
+    epoch: u64,
+    version: u64,
+) -> reqwest::RequestBuilder {
+    http.get(format!("http://{admin}{MANAGEMENT_IMAP_REPLICA_DIGEST_PATH}?partition={partition}&epoch={epoch}&version={version}"))
+        .timeout(Duration::from_secs(3))
+}
+
+fn digest_reader(request: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
+    request
+        .header(HYDRACACHE_CLIENT_ID_HEADER, "w10i-digest")
+        .header(HYDRACACHE_TENANT_HEADER, "system")
+        .header(HYDRACACHE_MANAGEMENT_READ_HEADER, "true")
+}
+
+async fn reconcile_copies(
+    http: &reqwest::Client,
+    spec: &MemberClusterSpec,
+    partition: u32,
+    placement: &[CopyObservation; 2],
+) -> [IMapReplicaDigest; 2] {
+    let capture = |copy: &CopyObservation| {
+        let slot = usize::from(copy.member_slot);
+        let (epoch, version, primary) = (copy.epoch, copy.certified_version, copy.primary);
+        async move {
+            loop {
+                let response = digest_reader(digest_request(
+                    http,
+                    spec.addresses[6 + slot],
+                    partition,
+                    epoch,
+                    version,
+                ))
+                .send()
+                .await
+                .unwrap();
+                if matches!(
+                    response.status(),
+                    reqwest::StatusCode::SERVICE_UNAVAILABLE
+                        | reqwest::StatusCode::TOO_MANY_REQUESTS
+                ) {
+                    tokio::time::sleep(Duration::from_millis(50)).await;
+                    continue;
+                }
+                let digest: IMapReplicaDigest =
+                    response.error_for_status().unwrap().json().await.unwrap();
+                assert_eq!(digest.schema_version, 1);
+                assert_eq!(digest.member.node.as_str(), spec.names[slot]);
+                assert_eq!((digest.topology_epoch, digest.primary), (epoch, primary));
+                assert_eq!(
+                    (digest.prefix.partition.value(), digest.prefix.version),
+                    (partition, version)
+                );
+                assert!(digest.rows > 0 && digest.retained_outcomes > 0);
+                return digest;
+            }
+        }
+    };
+    let (first, second) = tokio::join!(capture(&placement[0]), capture(&placement[1]));
+    assert_same_image(&first, &second);
+    [first, second]
+}
+
+fn assert_same_image(first: &IMapReplicaDigest, second: &IMapReplicaDigest) {
+    assert_eq!(
+        first.prefix, second.prefix,
+        "certified prefix differs across replicas"
+    );
+    assert_eq!(
+        first.image_sha256, second.image_sha256,
+        "certified journal image differs across replicas"
+    );
+    assert_eq!(
+        (first.rows, first.retained_outcomes),
+        (second.rows, second.retained_outcomes)
+    );
+}
+
+async fn check_digest_refusals(
+    http: &reqwest::Client,
+    admins: &[SocketAddr],
+    partition: u32,
+    placement: &[CopyObservation; 2],
+) {
+    use reqwest::StatusCode;
+
+    let [owner, backup] = placement;
+    let request = || {
+        digest_request(
+            http,
+            admins[0],
+            partition,
+            owner.epoch,
+            owner.certified_version,
+        )
+    };
+    assert_eq!(
+        request().send().await.unwrap().status(),
+        StatusCode::UNAUTHORIZED
+    );
+    assert_eq!(
+        request()
+            .header(HYDRACACHE_CLIENT_ID_HEADER, "w10i-no-role")
+            .header(HYDRACACHE_TENANT_HEADER, "system")
+            .send()
+            .await
+            .unwrap()
+            .status(),
+        StatusCode::FORBIDDEN
+    );
+    for (slot, part, epoch, version, expected) in [
+        (
+            0,
+            D2_PARTITION_COUNT.get(),
+            owner.epoch,
+            owner.certified_version,
+            StatusCode::BAD_REQUEST,
+        ),
+        (
+            0,
+            partition,
+            owner.epoch - 1,
+            owner.certified_version,
+            StatusCode::SERVICE_UNAVAILABLE,
+        ),
+        (
+            0,
+            partition,
+            owner.epoch,
+            owner.certified_version + 1,
+            StatusCode::SERVICE_UNAVAILABLE,
+        ),
+        (
+            3 - usize::from(backup.member_slot),
+            partition,
+            owner.epoch,
+            owner.certified_version,
+            StatusCode::SERVICE_UNAVAILABLE,
+        ),
+    ] {
+        let response = digest_reader(digest_request(http, admins[slot], part, epoch, version))
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(
+            response.status(),
+            expected,
+            "slot={slot} partition={part} epoch={epoch} version={version}"
+        );
+    }
 }
 
 fn set_copy_fault(spec: &MemberClusterSpec, generation: u64, index: u32) {

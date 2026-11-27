@@ -104,6 +104,13 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
         self.owner.replica.operations.as_deref()
     }
 
+    pub(crate) async fn replica_digest(
+        &self,
+        query: crate::imap_value_plane::audit::IMapReplicaDigestQuery,
+    ) -> hydracache::CacheResult<crate::IMapReplicaDigest> {
+        self.owner.replica_digest(query).await
+    }
+
     pub(crate) fn roster_compatible(
         &self,
         snapshot: &hydracache_cluster_raft::RaftPartitionSnapshot,

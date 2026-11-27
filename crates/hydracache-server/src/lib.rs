@@ -31,6 +31,7 @@ mod imap_value_repair;
 mod value_plane_subscription;
 #[doc(hidden)]
 pub use imap_value_plane::ReplicaRebalanceReport;
+pub use imap_value_plane::audit::IMapReplicaDigest;
 #[doc(hidden)]
 pub use imap_value_repair::ReplicaRepairOutcome;
 #[doc(hidden)]
@@ -53,6 +54,7 @@ pub use admin_http::{
     ADMIN_DIAGNOSTIC_RESET_PATH, ADMIN_DRAIN_PATH, ADMIN_HEALTHZ_PATH, ADMIN_MEMORY_FOOTPRINT_PATH,
     ADMIN_METRICS_PATH, ADMIN_RAFT_COMPACTION_PATH, ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH,
     ADMIN_STATUS_PATH, HYDRACACHE_MANAGEMENT_READ_HEADER, MANAGEMENT_IMAP_PATH,
+    MANAGEMENT_IMAP_REPLICA_DIGEST_PATH,
 };
 pub use bootstrap::{
     RedisSurfaceDrain, ServerAdminAction, ServerAdminActionError, ServerAdminStatus, ServerHealth,

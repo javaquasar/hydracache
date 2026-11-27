@@ -17,6 +17,7 @@ use thiserror::Error;
 use crate::bootstrap::{ServerAdminActionError, ServerRuntime};
 use crate::cluster_status::RaftCompactionError;
 use crate::hc2::Hc2ClientPlaneService;
+use crate::imap_value_plane::audit::IMapReplicaDigestQuery;
 use crate::management_security::ManagementReadLimiter;
 use crate::services::DrainOutcome;
 use hydracache_observability::PrometheusExporter;
@@ -29,6 +30,8 @@ pub const ADMIN_READYZ_PATH: &str = "/readyz";
 pub const ADMIN_METRICS_PATH: &str = "/metrics";
 /// Authenticated distributed IMap health and bounded partition evidence.
 pub const MANAGEMENT_IMAP_PATH: &str = "/management/v1/imap";
+/// Authenticated local journal digest at an exact distributed IMap prefix.
+pub const MANAGEMENT_IMAP_REPLICA_DIGEST_PATH: &str = "/management/v1/imap/replica-digest";
 /// Read-only Management Center console path on the internal admin surface.
 pub const ADMIN_CONSOLE_PATH: &str = "/console";
 /// Read-only cluster overview path on the internal admin surface.
@@ -166,6 +169,10 @@ impl AdminHttpSurface {
                 .merge(
                     Router::new()
                         .route(MANAGEMENT_IMAP_PATH, get(management_imap))
+                        .route(
+                            MANAGEMENT_IMAP_REPLICA_DIGEST_PATH,
+                            get(management_imap_replica_digest),
+                        )
                         .layer(Extension(self.management_read_limiter.clone()))
                         .with_state(Arc::clone(&self.runtime)),
                 )
@@ -228,6 +235,37 @@ struct IMapPageQuery {
     after: Option<u32>,
     sequence: Option<u64>,
     limit: Option<usize>,
+}
+
+async fn management_imap_replica_digest(
+    State(runtime): State<SharedServerRuntime>,
+    Extension(limiter): Extension<ManagementReadLimiter>,
+    Query(query): Query<IMapReplicaDigestQuery>,
+    headers: HeaderMap,
+) -> Response {
+    if let Err(error) = require_management_read(&headers) {
+        return error.into_response();
+    }
+    if !query.is_valid() {
+        return StatusCode::BAD_REQUEST.into_response();
+    }
+    let Ok(_permit) = limiter.try_acquire() else {
+        return StatusCode::TOO_MANY_REQUESTS.into_response();
+    };
+    let service = {
+        let guard = runtime.lock().expect("server runtime mutex");
+        if !guard.has_distributed_imap() {
+            return StatusCode::NOT_FOUND.into_response();
+        }
+        guard.hc2_client_service()
+    };
+    let Some(service) = service else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+    match service.replica_digest(query).await {
+        Some(digest) => Json(digest).into_response(),
+        None => StatusCode::SERVICE_UNAVAILABLE.into_response(),
+    }
 }
 
 async fn management_imap(

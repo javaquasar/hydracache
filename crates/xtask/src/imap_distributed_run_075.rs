@@ -6,6 +6,7 @@ use std::io::{self, BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
+use hydracache::{PartitionReplicaIdentity, PartitionValuePrefix};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
@@ -166,7 +167,29 @@ struct Drain {
     before: [CopyObservation; 2],
     after: [CopyObservation; 2],
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    replica_digests: Option<ReplicaReconciliation>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     interrupted_copy: Option<InterruptedCopy>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct ReplicaReconciliation {
+    before: [ReplicaDigest; 2],
+    after: [ReplicaDigest; 2],
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct ReplicaDigest {
+    schema_version: u16,
+    member: PartitionReplicaIdentity,
+    topology_epoch: u64,
+    primary: bool,
+    prefix: PartitionValuePrefix,
+    image_sha256: [u8; 32],
+    rows: usize,
+    retained_outcomes: usize,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -370,7 +393,12 @@ fn verify(
 ) -> RunResult<Option<DrainProgress>> {
     let expected_ms = seconds * 1_000;
     let fault = &receipt.fault;
-    if receipt.schema_version != 1 + u16::from(live_drain) + u16::from(interrupt_copy)
+    let schema = if live_drain {
+        4 + u16::from(interrupt_copy)
+    } else {
+        1
+    };
+    if receipt.schema_version != schema
         || receipt.drain.is_some() != live_drain
         || receipt
             .drain
@@ -395,6 +423,7 @@ fn verify(
     }
     if let Some(drain) = &receipt.drain {
         verify_drain(drain, fault, expected_ms)?;
+        verify_replica_reconciliation(drain)?;
     }
     let path = directory.join("ledger.jsonl");
     if receipt.ledger_sha256 != digest_file(&path, MAX_LEDGER_BYTES)? {
@@ -453,6 +482,54 @@ fn verify_drain(drain: &Drain, fault: &Fault, expected_ms: u64) -> RunResult<()>
     }
     if let Some(copy) = &drain.interrupted_copy {
         verify_interrupted_copy(copy, drain)?;
+    }
+    Ok(())
+}
+
+fn verify_replica_reconciliation(drain: &Drain) -> RunResult<()> {
+    let audit = drain
+        .replica_digests
+        .as_ref()
+        .ok_or("missing W10i replica reconciliation")?;
+    let expected = &audit.before[0];
+    let mut by_slot: [Option<&PartitionReplicaIdentity>; 3] = [None; 3];
+    for (digest, placement) in audit
+        .before
+        .iter()
+        .chain(&audit.after)
+        .zip(drain.before.iter().chain(&drain.after))
+    {
+        let slot = usize::from(placement.member_slot);
+        if digest.schema_version != 1
+            || digest.member.node.as_str().is_empty()
+            || digest.member.generation.value() == 0
+            || digest.topology_epoch != placement.epoch
+            || digest.primary != placement.primary
+            || digest.prefix.partition.value() != drain.partition
+            || digest.prefix.version != drain.certified_version
+            || !(1..=digest.topology_epoch).contains(&digest.prefix.epoch.value())
+            || digest.prefix != expected.prefix
+            || digest.image_sha256 != expected.image_sha256
+            || digest.image_sha256 == [0; 32]
+            || !(1..=4096).contains(&digest.rows)
+            || !(1..=128).contains(&digest.retained_outcomes)
+            || (digest.rows, digest.retained_outcomes)
+                != (expected.rows, expected.retained_outcomes)
+            || by_slot.iter().enumerate().any(|(index, member)| {
+                member.is_some_and(|member| {
+                    if index == slot {
+                        member != &digest.member
+                    } else {
+                        member.node == digest.member.node
+                    }
+                })
+            })
+        {
+            return Err("W10i replica digests disagree with certified data or placement".into());
+        }
+        *by_slot
+            .get_mut(slot)
+            .ok_or("invalid W10i replica member slot")? = Some(&digest.member);
     }
     Ok(())
 }
@@ -866,6 +943,7 @@ mod tests {
             value_sha256: crate::imap_qualification_075::digest(DRAIN_PROBE_VALUE),
             before: [copy(0, 7, true), copy(2, 7, false)],
             after: [copy(1, 8, true), copy(2, 8, false)],
+            replica_digests: None,
             interrupted_copy: None,
         };
         let fault = Fault {
@@ -876,6 +954,50 @@ mod tests {
             rejoined_at_ms: 25_000,
         };
         verify_drain(&drain, &fault, 60_000).unwrap();
+        assert!(verify_replica_reconciliation(&drain).is_err());
+        let partition = drain.partition;
+        let digest = |copy: &CopyObservation| ReplicaDigest {
+            schema_version: 1,
+            member: PartitionReplicaIdentity {
+                node: hydracache::ClusterNodeId::new(format!("member-{}", copy.member_slot)),
+                generation: hydracache::ClusterGeneration::new(2),
+            },
+            topology_epoch: copy.epoch,
+            primary: copy.primary,
+            prefix: PartitionValuePrefix {
+                partition: hydracache::PartitionId::new(partition),
+                epoch: hydracache::ClusterEpoch::new(7),
+                version: copy.certified_version,
+                previous: [2; 32],
+                digest: [3; 32],
+            },
+            image_sha256: [4; 32],
+            rows: 1,
+            retained_outcomes: 1,
+        };
+        let reconciliation = || ReplicaReconciliation {
+            before: [&drain.before[0], &drain.before[1]].map(digest),
+            after: [&drain.after[0], &drain.after[1]].map(digest),
+        };
+        let mut reconciled = reconciliation();
+        drain.replica_digests = Some(reconciliation());
+        verify_replica_reconciliation(&drain).unwrap();
+        let original = serde_json::to_value(&reconciled).unwrap();
+        let tamper: [fn(&mut ReplicaDigest); 7] = [
+            |proof| proof.image_sha256[0] ^= 1,
+            |proof| proof.prefix.previous[0] ^= 1,
+            |proof| proof.topology_epoch -= 1,
+            |proof| proof.primary = !proof.primary,
+            |proof| proof.rows += 1,
+            |proof| proof.member.generation = hydracache::ClusterGeneration::new(3),
+            |proof| proof.member.node = hydracache::ClusterNodeId::new("member-1"),
+        ];
+        for change in tamper {
+            change(&mut reconciled.after[1]);
+            drain.replica_digests = Some(reconciled);
+            assert!(verify_replica_reconciliation(&drain).is_err());
+            reconciled = serde_json::from_value(original.clone()).unwrap();
+        }
         drain.after[1].certified_version -= 1;
         assert!(verify_drain(&drain, &fault, 60_000).is_err());
         drain.after[1].certified_version += 1;
@@ -936,6 +1058,7 @@ mod tests {
             value_sha256: crate::imap_qualification_075::digest(&INTERRUPTED_COPY_VALUE),
             before: [copy(0, 7, true, false), copy(1, 7, false, true)],
             after: [copy(1, 11, false, true), copy(2, 11, true, false)],
+            replica_digests: None,
             interrupted_copy: Some(InterruptedCopy {
                 hit_at_ms: 30_100,
                 observed_at_ms: 32_000,
