@@ -536,6 +536,7 @@ mod multitenancy;
 mod refresh;
 #[cfg(not(target_arch = "wasm32"))]
 mod removal_observer;
+mod replication_model;
 #[cfg(not(target_arch = "wasm32"))]
 mod security;
 #[cfg(not(target_arch = "wasm32"))]
@@ -564,31 +565,31 @@ pub use builder::HydraCacheBuilder;
 pub use cache::HydraCache;
 #[cfg(not(target_arch = "wasm32"))]
 pub use cluster::{
-    partition_for_key, validate_replica_config, ChitchatStyleDiscovery, ClientAck, ClientOp,
-    ClusterAdmissionBridge, ClusterAdmissionBridgeConfig, ClusterAdmissionBridgeDiagnostics,
-    ClusterAdmissionBridgeEvent, ClusterAdmissionBridgeHandle, ClusterAdmissionIgnoreReason,
-    ClusterAdmissionRejectReason, ClusterCacheCounters, ClusterCandidate, ClusterClock,
-    ClusterComponent, ClusterComponentError, ClusterControlPlane, ClusterDiagnostics,
-    ClusterDiscovery, ClusterDiscoveryDiagnostics, ClusterDiscoveryEvent, ClusterDiscoveryLiveness,
-    ClusterEndpoints, ClusterEpoch, ClusterFillCounters, ClusterGeneration, ClusterHealthReason,
-    ClusterHealthState, ClusterLifecycleComponent, ClusterLifecycleDiagnostics,
-    ClusterLifecycleStatus, ClusterLoadReport, ClusterMember, ClusterMembershipEvent,
-    ClusterMembershipRecvError, ClusterMembershipSubscriber, ClusterNode, ClusterNodeConfig,
-    ClusterNodeId, ClusterNodeMessage, ClusterOwnershipDecision, ClusterOwnershipDiagnostics,
-    ClusterOwnershipResolver, ClusterPeerFetch, ClusterPeerFetchDiagnostics,
-    ClusterPeerFetchGenerationMismatch, ClusterPeerFetchRequest, ClusterPeerFetchResponse,
-    ClusterPilotReadiness, ClusterPilotReport, ClusterReplicaConfigError, ClusterRole,
-    ClusterStagingCounters, ClusterStagingHealth, ClusterStorage, HydraCacheClientBuilder,
-    HydraCacheMemberBuilder, InMemoryCluster, InMemoryClusterDiscovery, InMemoryClusterStorage,
-    InMemoryPeerFetch, LogicalDuration, LogicalTime, ManualClusterClock, MetaDataContainer,
-    NearCacheRepairAction, OutboundClusterMessage, PartitionId, RaftMetadataCommand,
-    RaftMetadataSnapshot, RaftStyleMetadataControlPlane, RendezvousClusterOwnership, RoutingMode,
-    StorageOp, StorageOpKind, StorageResult, TopologyFence, TransportPosture,
+    validate_replica_config, ChitchatStyleDiscovery, ClientAck, ClientOp, ClusterAdmissionBridge,
+    ClusterAdmissionBridgeConfig, ClusterAdmissionBridgeDiagnostics, ClusterAdmissionBridgeEvent,
+    ClusterAdmissionBridgeHandle, ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason,
+    ClusterCacheCounters, ClusterCandidate, ClusterClock, ClusterComponent, ClusterComponentError,
+    ClusterControlPlane, ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryDiagnostics,
+    ClusterDiscoveryEvent, ClusterDiscoveryLiveness, ClusterEndpoints, ClusterEpoch,
+    ClusterFillCounters, ClusterGeneration, ClusterHealthReason, ClusterHealthState,
+    ClusterLifecycleComponent, ClusterLifecycleDiagnostics, ClusterLifecycleStatus,
+    ClusterLoadReport, ClusterMember, ClusterMembershipEvent, ClusterMembershipRecvError,
+    ClusterMembershipSubscriber, ClusterNode, ClusterNodeConfig, ClusterNodeId, ClusterNodeMessage,
+    ClusterOwnershipDecision, ClusterOwnershipDiagnostics, ClusterOwnershipResolver,
+    ClusterPeerFetch, ClusterPeerFetchDiagnostics, ClusterPeerFetchGenerationMismatch,
+    ClusterPeerFetchRequest, ClusterPeerFetchResponse, ClusterPilotReadiness, ClusterPilotReport,
+    ClusterReplicaConfigError, ClusterRole, ClusterStagingCounters, ClusterStagingHealth,
+    ClusterStorage, HydraCacheClientBuilder, HydraCacheMemberBuilder, InMemoryCluster,
+    InMemoryClusterDiscovery, InMemoryClusterStorage, InMemoryPeerFetch, LogicalDuration,
+    LogicalTime, ManualClusterClock, MetaDataContainer, NearCacheRepairAction,
+    OutboundClusterMessage, RaftMetadataCommand, RaftMetadataSnapshot,
+    RaftStyleMetadataControlPlane, RendezvousClusterOwnership, RoutingMode, StorageOp,
+    StorageOpKind, StorageResult, TopologyFence, TransportPosture,
     CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
 };
 #[cfg(target_arch = "wasm32")]
 pub use cluster::{
-    ClientAck, ClientOp, ClusterClock, ClusterNode, ClusterNodeConfig, ClusterNodeId,
+    ClientAck, ClientOp, ClusterClock, ClusterEpoch, ClusterNode, ClusterNodeConfig, ClusterNodeId,
     ClusterNodeMessage, ClusterStorage, InMemoryClusterStorage, LogicalDuration, LogicalTime,
     ManualClusterClock, OutboundClusterMessage, StorageOp, StorageOpKind, StorageResult,
 };
@@ -628,11 +629,6 @@ pub use grid::conditional::{
     TombstoneGcError, TombstoneGcWatermark,
 };
 #[cfg(not(target_arch = "wasm32"))]
-pub use grid::consistency_level::{
-    AckRequirement, ConsistencyLevel, ConsistencyReadiness, ConsistencyUnsatisfiable, ReadOptions,
-    WriteOptions,
-};
-#[cfg(not(target_arch = "wasm32"))]
 pub use grid::convergence_staleness::{
     converge_replicated_values, resolve_session_read_mode, within_staleness_bound,
     BoundedStalenessMetrics, SessionReadMode, StalenessBound, StalenessDecision,
@@ -667,13 +663,13 @@ pub use grid::elasticity::{
     topology_from_member_metadata, validate_move_preserves_zone_quorum, AtomicInvalidationError,
     AutoRepairDecision, AutoRepairPolicy, BatchInvalidationState, CompatVersion,
     ControlPlaneSnapshot, HedgePolicy, HedgedReadPlan, InMemorySnapshotSink, InvalidateBatch,
-    InvalidationSaga, InvalidationTarget, MovePhase, NodeTopology, PartitionMove, RegionId,
-    RepairAction, RepairMode, ReplicaObservation, ReplicaScorer, ReplicaSelection,
-    RescaleCheckpointPhase, RescaleWithCheckpointPlan, ReshardPlan, ReshardPlanError,
-    SnapshotError, SnapshotSink, TieredValueStore, TopologyAuthority, UpgradeGuard,
-    UpgradeGuardError, UpgradeStep, ZoneAwareReplicaSet, ZoneAwareReplicationStrategy, ZoneId,
-    ZonePlacementReadiness, CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION,
-    NODE_TOPOLOGY_REGION_METADATA_KEY, NODE_TOPOLOGY_ZONE_METADATA_KEY,
+    InvalidationSaga, InvalidationTarget, MovePhase, NodeTopology, PartitionMove, RepairAction,
+    RepairMode, ReplicaObservation, ReplicaScorer, ReplicaSelection, RescaleCheckpointPhase,
+    RescaleWithCheckpointPlan, ReshardPlan, ReshardPlanError, SnapshotError, SnapshotSink,
+    TieredValueStore, TopologyAuthority, UpgradeGuard, UpgradeGuardError, UpgradeStep,
+    ZoneAwareReplicaSet, ZoneAwareReplicationStrategy, ZoneId, ZonePlacementReadiness,
+    CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION, NODE_TOPOLOGY_REGION_METADATA_KEY,
+    NODE_TOPOLOGY_ZONE_METADATA_KEY,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::failure_detector::{
@@ -687,15 +683,9 @@ pub use grid::hardening::{
     ClusterMergeOutcome, DiscardLoser, HigherVersionWins, InMemoryReplicatedValueStore,
     LiveReadYourWritesDecision, LiveReplicationPeer, LiveReplicationSend, LiveSplitBrainResolution,
     MergePolicy, PromotionFreezeWindow, PutIfAbsent, QuorumPosture, QuorumReadDecision,
-    ReadConsistency, ReplicatedValueRecord, ReplicatedValueStore, ScrubError, ScrubErrorKind,
-    ScrubReport, Scrubber, SealedBytes, SplitBrainReport, ValueStoreError, ValueVersion,
-    WriteWatermark, REPLICATED_VALUE_RECORD_CHECKSUM_FORMAT_VERSION,
-    REPLICATED_VALUE_RECORD_FORMAT_VERSION,
-};
-#[cfg(not(target_arch = "wasm32"))]
-pub use grid::hinted_handoff::{
-    apply_hint, replay_hints, Hint, HintBudget, HintError, HintMetrics, HintOutcome,
-    HintReplayDecision, HintStore, InMemoryHintStore,
+    ReadConsistency, ReplicatedValueStore, ScrubError, ScrubErrorKind, ScrubReport, Scrubber,
+    SplitBrainReport, ValueStoreError, WriteWatermark,
+    REPLICATED_VALUE_RECORD_CHECKSUM_FORMAT_VERSION,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::invalidation_ring::{
@@ -704,11 +694,6 @@ pub use grid::invalidation_ring::{
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::lock_session::SessionHeartbeats;
-#[cfg(not(target_arch = "wasm32"))]
-pub use grid::merkle_repair::{
-    foreground_read_repair, ForegroundReadRepairOutcome, KeyRange, MerkleTree, RepairKind,
-    RepairReport, RepairSession, RepairToken,
-};
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::persistence_config::{
     NamespaceMetricLabels, PersistenceConfig, PersistenceConfigError, PersistenceConfigErrorKind,
@@ -775,12 +760,11 @@ pub use grid::{
     cluster_grid_metric_descriptors, diff_effective_maps, prepare_replicated_payload,
     replicated_slot_version, select_backup_promotion, AntiEntropyTask, BackupPromotion,
     ClusterGridCounters, ClusterGridDiagnostics, ClusterMetricDescriptor,
-    ClusterReplicationStrategy, EffectiveReplicationMap, HotCacheDirectory,
-    PartitionReplicaVersions, PromotionPhase, RebalancePlan, RebalanceTask, RebalanceTaskAck,
-    RedactReplicatedValue, RepairingTask, Replicas, ReplicatedSlot, ReplicatedValueSecurityPosture,
-    Replication, ReplicationConfig, ReplicationConfigError, ReplicationCryptoError,
-    ReplicationKeyProvider, ReplicationPayload, SharedReplicationKeyProvider, TombstoneAdmission,
-    TombstoneBudget, TombstoneTracker,
+    ClusterReplicationStrategy, HotCacheDirectory, PartitionReplicaVersions, PromotionPhase,
+    RebalancePlan, RebalanceTask, RebalanceTaskAck, RedactReplicatedValue, RepairingTask,
+    ReplicatedValueSecurityPosture, Replication, ReplicationCryptoError, ReplicationKeyProvider,
+    ReplicationPayload, SharedReplicationKeyProvider, TombstoneAdmission, TombstoneBudget,
+    TombstoneTracker,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use hydracache_core::{
@@ -818,6 +802,25 @@ pub use multitenancy::{
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use refresh::RefreshOptions;
+pub use replication_model::consistency_level::{
+    AckRequirement, ConsistencyLevel, ConsistencyReadiness, ConsistencyUnsatisfiable, ReadOptions,
+    WriteOptions,
+};
+pub use replication_model::hinted_handoff::{
+    apply_hint, replay_hints, Hint, HintBudget, HintError, HintMetrics, HintOutcome,
+    HintReplayDecision, HintStore, InMemoryHintStore,
+};
+pub use replication_model::merkle_repair::{
+    foreground_read_repair, ForegroundReadRepairOutcome, KeyRange, MerkleTree, RepairKind,
+    RepairReport, RepairSession, RepairToken,
+};
+pub use replication_model::value_record::{
+    ReplicatedValueRecord, SealedBytes, ValueVersion, REPLICATED_VALUE_RECORD_FORMAT_VERSION,
+};
+pub use replication_model::{
+    partition_for_key, rank_replicas, EffectiveReplicationMap, PartitionId, RegionId, Replicas,
+    ReplicatedSlot, ReplicationConfig, ReplicationConfigError,
+};
 #[cfg(not(target_arch = "wasm32"))]
 pub use security::{
     AtRestKeyProvider, AtRestSealer, CertificateBundle, CertificateRotationWindow, KeyMaterial,

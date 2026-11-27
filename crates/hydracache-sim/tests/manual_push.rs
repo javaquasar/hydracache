@@ -23,16 +23,22 @@ fn pushed_event_replicates_and_converges() {
 #[test]
 fn subscriber_receives_event_after_push() {
     let mut world = manual_world();
-    world.subscribe("client-a", NS);
+    world
+        .subscribe("client-a", NS)
+        .expect("subscribe admits the client");
 
+    // The subscriber's client is the writer, so its member is the one that
+    // applies the write: it hears about it at the push step (TD-0016 step 4).
+    let push_step = world.outcome().steps;
     world
         .push_event("client-a", NS, KEY, "fresh")
         .expect("manual push applies");
-    assert!(world
-        .snapshot()
-        .subscribers
-        .iter()
-        .all(|subscriber| subscriber.last_event.is_none()));
+    let at_push = world.snapshot();
+    let event = at_push.subscribers[0]
+        .last_event
+        .as_ref()
+        .expect("delivered at once");
+    assert_eq!(event.delivered_at_step, push_step);
 
     world.run(2);
     let snapshot = world.snapshot();
@@ -69,7 +75,9 @@ fn divergence_then_convergence_is_observable_in_keys() {
 #[test]
 fn subscriber_only_sees_bus_carried_event_kinds() {
     let mut world = manual_world();
-    world.subscribe("client-a", NS);
+    world
+        .subscribe("client-a", NS)
+        .expect("subscribe admits the client");
     world
         .push_event("client-a", NS, KEY, "fresh")
         .expect("manual push applies");
@@ -89,7 +97,30 @@ fn subscriber_only_sees_bus_carried_event_kinds() {
 #[test]
 fn slow_subscriber_drops_with_counter() {
     let mut world = manual_world();
-    world.subscribe("client-a", NS);
+    world.add_client("client-a", NS).expect("writer admitted");
+    let member = |world: &SimWorld, client: &str| {
+        world
+            .snapshot()
+            .admitted_clients
+            .iter()
+            .find(|entry| entry.id == client)
+            .and_then(|entry| entry.connected_node.clone())
+    };
+    let writer_member = member(&world, "client-a");
+    // A reader on another member hears only when that member applies the
+    // write, so pushes without steps pile up in its bounded buffer.
+    let reader = (0..64)
+        .map(|index| format!("reader-{index}"))
+        .find(|name| {
+            world.subscribe(name, NS).expect("reader admitted");
+            if member(&world, name) == writer_member {
+                world.unsubscribe(name, NS).expect("unsubscribe");
+                false
+            } else {
+                true
+            }
+        })
+        .expect("a reader on another member");
 
     for index in 0..(MAX_SUBSCRIBER_BUFFER + 3) {
         world
@@ -101,7 +132,7 @@ fn slow_subscriber_drops_with_counter() {
     let subscriber = snapshot
         .subscribers
         .iter()
-        .find(|subscriber| subscriber.id == "client-a@profiles")
+        .find(|subscriber| subscriber.client_id == reader)
         .expect("subscriber is visible");
     assert_eq!(subscriber.lag, MAX_SUBSCRIBER_BUFFER as u64);
     assert_eq!(subscriber.dropped, 3);
@@ -162,7 +193,9 @@ fn versions_for(snapshot: &hydracache_sim::SimSnapshot, key: &str) -> Vec<u64> {
 #[test]
 fn subscribe_creates_only_a_subscriber() {
     let mut world = manual_world();
-    world.subscribe("reader-1", NS);
+    world
+        .subscribe("reader-1", NS)
+        .expect("subscribe admits the client");
     let snapshot = world.snapshot();
     assert!(snapshot.clients.is_empty(), "no writer twin");
     assert_eq!(snapshot.subscribers.len(), 1);
@@ -200,7 +233,9 @@ fn add_client_registers_a_writer_without_writing() {
 #[test]
 fn unsubscribed_reader_stops_receiving_and_fails_loud_twice() {
     let mut world = manual_world();
-    world.subscribe("reader-1", NS);
+    world
+        .subscribe("reader-1", NS)
+        .expect("subscribe admits the client");
     world
         .unsubscribe("reader-1", NS)
         .expect("a subscriber can leave");
@@ -222,17 +257,18 @@ fn writer_and_subscriber_actions_replay_identically() {
             at_step: 0,
             enabled: false,
         },
+        // Clients join through the Raft metadata path: form the cluster first.
+        ControlActionV1::Step { at_step: 0, n: 8 },
         ControlActionV1::AddClient {
-            at_step: 0,
+            at_step: 8,
             client: "client-b".to_owned(),
             ns: NS.to_owned(),
         },
         ControlActionV1::Subscribe {
-            at_step: 0,
+            at_step: 8,
             client: "reader-1".to_owned(),
             ns: NS.to_owned(),
         },
-        ControlActionV1::Step { at_step: 0, n: 8 },
         ControlActionV1::PushEvent {
             at_step: 8,
             client: "client-b".to_owned(),

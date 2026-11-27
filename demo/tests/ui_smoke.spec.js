@@ -42,7 +42,7 @@ test("loading_scenario_uses_curated_engine_preset", async ({ page }) => {
 });
 
 test("manual_push_shows_diverge_converge_and_listener_receipt", async ({ page }) => {
-  await openReady(page);
+  await openFormed(page);
   await page.getByTestId("tab-clients").click();
   await page.getByTestId("subscribe-button").click();
   await page.getByTestId("push-event-button").click();
@@ -153,7 +153,7 @@ test("consistency_panel_shows_product_level_availability", async ({ page }) => {
   await openReady(page);
   await page.getByTestId("tab-data").click();
   const panel = page.getByTestId("consistency-panel");
-  await expect(panel).toContainText("does not run per-level reads or writes");
+  await expect(panel).toContainText("Reads are not run per level");
   await expect(panel).toContainText("live replicas agree on sampled keys");
   for (const level of ["one", "local_quorum", "quorum", "each_quorum", "all"]) {
     await expect(panel.locator(`[data-level='${level}']`)).toHaveClass(/ok/);
@@ -257,7 +257,7 @@ test("playing_throttles_share_url_writes", async ({ page }) => {
 });
 
 test("cancelled_pointer_on_client_does_not_push", async ({ page }) => {
-  await openReady(page);
+  await openFormed(page);
   await page.getByTestId("tab-clients").click();
   await page.getByTestId("add-client-button").click();
   await expect(page.getByTestId("intervention-status")).toContainText("1 replay action");
@@ -356,7 +356,7 @@ test("keyboard_selects_and_partitions_a_link", async ({ page }) => {
 });
 
 test("keyboard_pushes_from_a_client_vertex", async ({ page }) => {
-  await openReady(page);
+  await openFormed(page);
   await page.getByTestId("tab-clients").click();
   await page.getByTestId("add-client-button").click();
   await expect(page.getByTestId("intervention-status")).toContainText("1 replay action");
@@ -464,6 +464,14 @@ function alphaOf(color) {
 async function openReady(page) {
   await page.goto(demoUrl);
   await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
+}
+
+// Clients join through the Raft leader (TD-0016 step 2), so tests that add
+// writers or subscribers start from a formed cluster.
+async function openFormed(page) {
+  await page.goto(`${demoUrl}?steps=12`);
+  await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
+  await expect(page.locator(".vertex.node.role-leader")).toHaveCount(1);
 }
 
 test("visual_controls_theme_zoom_and_timeline_marks", async ({ page }) => {
@@ -1201,7 +1209,7 @@ test("guide_deep_link_play_and_honest_failure", async ({ page }) => {
 // subscriber is only a reader, each row has its own action, and the graph
 // links writers to the subscribers of their namespace.
 test("writers_and_subscribers_are_managed_separately", async ({ page }) => {
-  await openReady(page);
+  await openFormed(page);
   await page.getByTestId("tab-clients").click();
   const writers = page.getByTestId("clients-panel");
   const readers = page.getByTestId("subscribers-panel");
@@ -1255,7 +1263,7 @@ test("writers_and_subscribers_are_managed_separately", async ({ page }) => {
 // A push lights each vertex up when its message gets there: the entry node
 // when the request arrives, the replicas after it, the subscriber last.
 test("push_flashes_vertices_as_the_message_reaches_them", async ({ page }) => {
-  await openReady(page);
+  await openFormed(page);
   await page.getByTestId("tab-clients").click();
   await page.getByTestId("add-client-button").click();
   await page.getByTestId("subscribe-button").click();
@@ -1282,11 +1290,9 @@ test("push_flashes_vertices_as_the_message_reaches_them", async ({ page }) => {
     .poll(() => page.evaluate(() => Object.keys(window.__flashes).length), { timeout: 5000 })
     .toBeGreaterThanOrEqual(4);
   const flashes = await page.evaluate(() => window.__flashes);
-  // The engine writes through its preferred write node (the leader), which
+  // The engine writes through the member the writer is connected to, which
   // applies the value at the push step; the other replicas get it after.
-  const entry = await page.evaluate(() =>
-    document.querySelector(".vertex.node.role-leader").getAttribute("aria-label").split(",")[0],
-  );
+  const entry = (await page.locator("[data-client='client-a'] .entity-meta").textContent()).split("via ")[1].trim();
   const replicas = Object.entries(flashes).filter(([name]) => name.startsWith("node-") && name !== entry);
   // The request travels before the entry node flashes; replicas follow it,
   // and the subscriber hears about it last.
@@ -1507,7 +1513,7 @@ test("cut_links_count_refused_traffic", async ({ page }) => {
 // A push replays what the engine did: a crashed replica never gets the copy,
 // so it does not flash; its copy fades with a loss marker instead.
 test("push_to_a_crashed_replica_shows_a_lost_copy", async ({ page }) => {
-  await openReady(page);
+  await openFormed(page);
   await page.getByTestId("tab-clients").click();
   await page.getByTestId("add-client-button").click();
   await page.getByTestId("tab-cluster").click();
@@ -1537,26 +1543,117 @@ test("push_to_a_crashed_replica_shows_a_lost_copy", async ({ page }) => {
   expect(flashed.some((name) => name.startsWith("node-"))).toBe(true);
 });
 
-// The push request travels along drawn links: the writer's link to the node
-// it is attached to, then forwarded over a cluster link to the engine's write
-// node (the leader) when that is another node; never across empty space.
+// TD-0016 step 3: the write path is a choice. Replicated writes reach only the
+// key's rendezvous owners and are acknowledged per the product level;
+// local-first writes on the writer's member and drops the other copies. The
+// built-in workload runs only in the full-broadcast model, so it goes off first.
+test("write_path_models_show_owners_and_acknowledgements", async ({ page }) => {
+  await openFormed(page);
+  await page.getByTestId("tab-clients").click();
+  await page.getByTestId("replication-model").selectOption("replicated");
+  await page.getByTestId("apply-replication").click();
+  await expect(page.getByRole("alert").filter({ hasText: "turn the built-in workload off first" })).toBeVisible();
+
+  await page.getByTestId("workload-toggle").uncheck();
+  await page.getByTestId("tab-clients").click();
+  await page.getByTestId("replication-model").selectOption("replicated");
+  await page.getByTestId("replication-factor").fill("2");
+  await page.getByTestId("write-level").selectOption("all");
+  await page.getByTestId("apply-replication").click();
+  await expect(page.getByTestId("replication-disclosure")).toContainText("opt-in replication primitives");
+  await page.getByTestId("add-client-button").click();
+  // Admission is a Raft metadata commit: it is drawn on the metadata lane,
+  // to the leader and back, unless the writer's member is the leader.
+  const writerMember = (await page.locator("[data-client='client-a'] .entity-meta").textContent()).split("via ")[1].trim();
+  const leader = (await page.locator(".vertex.node.role-leader").getAttribute("aria-label")).split(",")[0];
+  if (writerMember !== leader) {
+    await expect(page.locator(`.pulse-layer .pulse.meta[data-to="${leader}"]`)).toHaveCount(1);
+  }
+  await page.getByTestId("push-client-a").click();
+  // Acknowledgements travel back; the leader is nowhere on the data path.
+  await expect(page.locator(".pulse-layer .pulse.ack").first()).toBeAttached();
+  await expect(page.locator(".write-row").first()).toContainText("acks 2/2 at ALL · acknowledged");
+
+  await expect(page.getByTestId("repair-counters")).toContainText("Hints held 0");
+  await page.getByTestId("tab-data").click();
+  const row = page.locator(".key-grid tr", { hasText: "profiles:profile-42" });
+  await expect(row.locator(".replica.not-owner")).toHaveCount(1);
+  await expect(row.locator(".replica.primary-owner")).toHaveCount(1);
+  await expect(row.locator(".key-state")).toHaveText("agree");
+  await expect(page.getByTestId("consistency-scope")).toContainText("owners of profiles:profile-42");
+
+  await page.getByTestId("tab-clients").click();
+  await page.getByTestId("replication-model").selectOption("local_first");
+  await page.getByTestId("apply-replication").click();
+  await expect(page.getByTestId("replication-disclosure")).toContainText("product default");
+  await page.getByTestId("push-client-a").click();
+  await expect(page.locator(".write-row").first()).toContainText("acks 1/1 · acknowledged");
+});
+
+// TD-0016 step 3b: with RF 3 on three nodes every node owns every key, so a
+// crashed node always misses the copy: its primary keeps a hint, and replays
+// it when the node restarts.
+test("a_crashed_owner_gets_a_hint_replayed_on_restart", async ({ page }) => {
+  await openFormed(page);
+  await page.getByTestId("workload-toggle").uncheck();
+  await page.getByTestId("tab-clients").click();
+  await page.getByTestId("replication-model").selectOption("replicated");
+  await page.getByTestId("replication-factor").fill("3");
+  await page.getByTestId("write-level").selectOption("one");
+  await page.getByTestId("apply-replication").click();
+  await page.getByTestId("add-client-button").click();
+  const member = (await page.locator("[data-client='client-a'] .entity-meta").textContent()).split("via ")[1].trim();
+  const down = ["node-0", "node-1", "node-2"].find((node) => node !== member);
+  await page.getByTestId("tab-cluster").click();
+  await page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" }).nth(Number(down.split("-")[1])).click();
+  await expect(page.locator(`.vertex.node[aria-label^="${down},"]`)).toHaveClass(/role-crashed/);
+  await page.getByTestId("tab-clients").click();
+  await page.getByTestId("push-client-a").click();
+  await expect(page.locator(".write-row").first()).toContainText(`hint held for ${down}`);
+  await expect(page.getByTestId("repair-counters")).toContainText("Hints held 1");
+
+  await page.getByTestId("tab-cluster").click();
+  await page.getByTestId("nodes-panel").getByRole("button", { name: "Restart" }).click();
+  for (let index = 0; index < 4; index += 1) await page.getByTestId("step").click();
+  await page.getByTestId("tab-clients").click();
+  await expect(page.getByTestId("repair-counters")).toContainText("Hints held 0 · replayed 1");
+});
+
+// A new client is a Raft metadata commit: with no leader the engine refuses it
+// loud, and the page says why before and after the refusal.
+test("new_clients_wait_for_a_leader", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=80&steps=0&scenario=default`);
+  await page.getByTestId("tab-clients").click();
+  await expect(page.getByTestId("admission-hint")).toContainText("No Raft leader yet");
+  await page.getByTestId("add-client-button").click();
+  await expect(page.getByRole("alert").filter({ hasText: "no raft leader" })).toBeVisible();
+  await expect(page.getByTestId("clients-panel")).not.toContainText("client-a");
+
+  await page.goto(`${demoUrl}?seed=80&steps=12&scenario=default`);
+  await expect(page.locator(".vertex.node.role-leader")).toHaveCount(1);
+  await page.getByTestId("tab-clients").click();
+  await expect(page.getByTestId("admission-hint")).toHaveCount(0);
+  await page.getByTestId("add-client-button").click();
+  await expect(page.getByTestId("clients-panel")).toContainText("client-a");
+});
+
+// The push request travels along the writer's drawn link to the member it is
+// connected to, and that member is where the engine applied the write: the
+// Raft leader is not on the write path (TD-0016 step 2).
 test("push_request_follows_drawn_links", async ({ page }) => {
   await page.goto(`${demoUrl}?seed=80&steps=12&scenario=default`);
   await expect(page.locator(".vertex.node.role-leader")).toHaveCount(1);
   await page.getByTestId("tab-clients").click();
   await page.getByTestId("add-client-button").click();
   const attached = (await page.locator("[data-client='client-a'] .entity-meta").textContent()).split("via ")[1].trim();
-  const leader = (await page.locator(".vertex.node.role-leader").getAttribute("aria-label")).split(",")[0];
   await page.getByTestId("push-client-a").click();
   const request = page.locator('.pulse-layer .pulse[data-from="client:client-a"]');
   await expect(request).toHaveCount(1);
   await expect(request).toHaveAttribute("data-to", attached);
-  const forward = page.locator(".pulse-layer .pulse.forward");
-  if (attached === leader) {
-    await expect(forward).toHaveCount(0);
-  } else {
-    await expect(forward).toHaveCount(1);
-    await expect(forward).toHaveAttribute("data-from", attached);
-    await expect(forward).toHaveAttribute("data-to", leader);
-  }
+  // Replication starts at that member (the engine's entry node): every data
+  // pulse comes from the writer or from it, none from the leader elsewhere.
+  const sources = await page
+    .locator(".pulse-layer .pulse.data")
+    .evaluateAll((dots) => [...new Set(dots.map((dot) => dot.dataset.from))].sort());
+  expect(sources).toEqual(["client:client-a", attached].sort());
 });

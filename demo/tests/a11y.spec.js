@@ -40,7 +40,13 @@ async function openReady(page) {
 
 for (const tab of ["cluster", "clients", "data", "verdict"]) {
   test(`a11y_${tab}_tab_has_no_axe_violations`, async ({ page }) => {
-    await openReady(page);
+    if (tab === "clients") {
+      // Clients join through the Raft leader, so start from a formed cluster.
+      await page.goto(`${demoUrl}?steps=12`);
+      await expect(page.locator(".vertex.node.role-leader")).toHaveCount(1);
+    } else {
+      await openReady(page);
+    }
     await page.getByTestId("step").click();
     await page.getByTestId(`tab-${tab}`).click();
     await expect(page.getByTestId(`tab-${tab}`)).toHaveAttribute("aria-selected", "true");

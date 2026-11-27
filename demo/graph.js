@@ -1238,9 +1238,14 @@ function updatePulses(now) {
       }
       const along = Math.min(progress, 1) * mover.end;
       const fade = mover.lost ? 1 - 0.8 * Math.min(progress, 1) : mover.hold && progress >= 1 ? 0.45 : 1;
+      // A lane offset moves the dot sideways off the link (the metadata lane).
+      const length = Math.hypot(pb.x - pa.x, pb.y - pa.y) || 1;
+      const lane = mover.lane ?? 0;
+      const nx = (-(pb.y - pa.y) / length) * lane;
+      const ny = ((pb.x - pa.x) / length) * lane;
       mover.dot.setAttribute("opacity", String(fade));
-      mover.dot.setAttribute("cx", pa.x + (pb.x - pa.x) * along);
-      mover.dot.setAttribute("cy", pa.y + (pb.y - pa.y) * along);
+      mover.dot.setAttribute("cx", pa.x + (pb.x - pa.x) * along + nx);
+      mover.dot.setAttribute("cy", pa.y + (pb.y - pa.y) * along + ny);
     }
     if (alive) {
       remaining.push(pulse);
@@ -1261,8 +1266,22 @@ export function pushPlan(after, final, clientId, namespace, key) {
   const replicasAt = (snapshot) =>
     new Map(((snapshot?.keys || []).find((view) => view.key === fullKey)?.replicas || []).map((replica) => [replica.node_id, replica]));
   const pushStep = after.step;
+  // A routed write (schema 11) carries its own record of the path it took.
+  const routed = (final.writes || []).findLast(
+    (write) => write.key === fullKey && write.client === clientId && write.started_at_step === pushStep,
+  );
+  if (routed) return routedPushPlan(final, routed, clientId, namespace, fullKey, replicasAt(final));
   const atPush = replicasAt(after);
-  const entry = [...atPush.values()].find((replica) => replica.applied_at_step === pushStep)?.node_id ?? null;
+  // Since schema 10 a write enters on the member the writer is connected to.
+  // Prefer it: when the same value is pushed again, an earlier push's copy can
+  // land on another node at this very step and must not be taken for the entry.
+  const member =
+    (after.clients || []).find((client) => client.id === clientId)?.connected_node ??
+    (after.admitted_clients || []).find((entry) => entry.id === clientId)?.connected_node;
+  const entry =
+    member && atPush.get(member)?.applied_at_step === pushStep
+      ? member
+      : ([...atPush.values()].find((replica) => replica.applied_at_step === pushStep)?.node_id ?? null);
   if (!entry) return null;
   const version = atPush.get(entry).version;
   const finalReplicas = replicasAt(final);
@@ -1294,15 +1313,81 @@ export function pushPlan(after, final, clientId, namespace, key) {
       node: subscriber.connected_node,
       steps: Math.max(0, subscriber.last_event.delivered_at_step - pushStep),
     }));
-  // The node the writer is drawn attached to; the request is shown going
-  // there first and being forwarded to the entry node, along drawn links.
-  const via = (after.clients || []).find((client) => client.id === clientId)?.connected_node ?? null;
-  return { clientId, via, entry, pushStep, replicas, subscribers };
+  // Since schema 10 the entry node is the member the writer is connected to
+  // (its coordinator): the request goes there directly, never via the leader.
+  return { clientId, entry, pushStep, replicas, subscribers };
+}
+
+// The plan for a routed write: client -> coordinator, a forward to the primary
+// when the coordinator is not it, the primary's copies to its backups, and in
+// local_first the invalidations to every other member. Each hop is timed by
+// the step the engine applied it (applied_at_step) or shown waiting or lost.
+function routedPushPlan(final, write, clientId, namespace, fullKey, finalReplicas) {
+  const pushStep = write.started_at_step;
+  const nodesById = new Map((final.nodes || []).map((node) => [node.id, node]));
+  const cut = new Set((final.links || []).filter((link) => link.state === "partitioned").map((link) => `${link.from}>${link.to}`));
+  const appliedAfter = (node) => {
+    const replica = finalReplicas.get(node);
+    return replica && Number.isFinite(replica.applied_at_step) && replica.applied_at_step >= pushStep && replica.version
+      ? replica.applied_at_step - pushStep
+      : null;
+  };
+  const hop = (from, node, after) => {
+    const steps = appliedAfter(node);
+    if (steps !== null) return { from, node, status: "applied", steps: Math.max(1, steps - after), after };
+    const target = nodesById.get(node);
+    const waiting =
+      target &&
+      !target.crashed &&
+      !target.disabled &&
+      (final.in_flight || []).some(
+        (message) => message.to === node && message.key === fullKey && String(message.kind).startsWith("replicate_") && !cut.has(`${message.from}>${message.to}`),
+      );
+    return { from, node, status: waiting ? "pending" : "lost", steps: null, after };
+  };
+  const entry = write.coordinator;
+  const replicas = [];
+  let primaryAt = 0;
+  if (write.primary !== entry) {
+    const forward = { ...hop(entry, write.primary, 0), kind: "data forward" };
+    replicas.push(forward);
+    primaryAt = forward.status === "applied" ? forward.steps : 0;
+  }
+  for (const backup of write.backups) replicas.push(hop(write.primary, backup, primaryAt));
+  if (final.replication?.model === "local_first") {
+    for (const node of final.nodes || []) {
+      if (node.id === entry || node.disabled) continue;
+      const down = node.crashed || cut.has(`${entry}>${node.id}`);
+      replicas.push({ from: entry, node: node.id, status: down ? "lost" : "applied", steps: 1, after: 0, kind: "event" });
+    }
+  }
+  const subscribers = (final.subscribers || [])
+    .filter((subscriber) => subscriber.namespace === namespace && subscriber.last_event?.key === fullKey)
+    .map((subscriber) => ({
+      id: subscriber.id,
+      node: subscriber.connected_node,
+      steps: Math.max(0, subscriber.last_event.delivered_at_step - pushStep),
+    }));
+  // Acknowledgements travel back: each backup acknowledges to the primary one
+  // step after it applied the copy, the primary relays to the coordinator, and
+  // the coordinator answers the client at the step the level was met.
+  const acks = [];
+  if (final.replication?.model === "replicated") {
+    const forward = replicas.find((hop) => hop.kind === "data forward");
+    if (forward?.status === "applied") acks.push({ from: write.primary, to: entry, at: forward.steps });
+    for (const hop of replicas) {
+      if (hop.from !== write.primary || hop.status !== "applied" || hop.kind) continue;
+      const appliedAt = hop.after + hop.steps;
+      acks.push({ from: hop.node, to: write.primary, at: appliedAt });
+      if (write.primary !== entry) acks.push({ from: write.primary, to: entry, at: appliedAt + 1 });
+    }
+  }
+  const reply = Number.isFinite(write.acknowledged_at_step) ? { at: Math.max(0, write.acknowledged_at_step - pushStep) } : null;
+  return { clientId, entry, pushStep, replicas, subscribers, write, acks, reply };
 }
 
 const PULSE_STEP_MS = 420;
 const PULSE_REQUEST_MS = 460;
-const PULSE_FORWARD_MS = 400;
 
 // Play a push as the engine ran it (pushPlan): the request reaches the entry
 // node, each replica's copy travels as many steps as the engine took to
@@ -1321,7 +1406,7 @@ export function playDataFlowPulse(plan) {
     if (!graphSim.pos.has(fromId) || !graphSim.pos.has(toId)) {
       return;
     }
-    const dot = svg("circle", { class: `pulse ${kind}`, r: 6, opacity: 0, cx: 0, cy: 0 });
+    const dot = svg("circle", { class: `pulse ${kind}`, r: extra.r ?? 6, opacity: 0, cx: 0, cy: 0 });
     dot.dataset.from = fromId;
     dot.dataset.to = toId;
     graphSim.dom.pulseLayer.append(dot);
@@ -1329,29 +1414,39 @@ export function playDataFlowPulse(plan) {
   };
 
   const clientVertex = `client:${plan.clientId}`;
-  // 1) the request into the cluster, along drawn links: along the writer's
-  //    link to the node it is attached to, then forwarded over the cluster
-  //    link to the entry node (the engine's write node) when that is another
-  //    node. A brand-new writer has no vertex yet, so it starts at its node.
-  const toAttached = graphSim.pos.has(clientVertex) ? PULSE_REQUEST_MS : 0;
-  const via = plan.via && graphSim.pos.has(plan.via) ? plan.via : null;
-  const forwarded = via && via !== plan.entry;
-  if (toAttached) add(clientVertex, via ?? plan.entry, 0, toAttached, "data");
-  if (forwarded) add(via, plan.entry, toAttached, PULSE_FORWARD_MS, "data forward");
-  const requestMs = toAttached + (forwarded ? PULSE_FORWARD_MS : 0);
+  // 1) the request into the cluster, along the writer's link to the member
+  //    it is connected to, which is the engine's entry node for the write.
+  //    A brand-new writer has no vertex yet, so it starts at its node.
+  const requestMs = graphSim.pos.has(clientVertex) ? PULSE_REQUEST_MS : 0;
+  if (requestMs) add(clientVertex, plan.entry, 0, requestMs, "data");
   // 2) replication, timed by the steps the engine took
   const replicationStart = Math.max(0, requestMs - 100);
   for (const replica of plan.replicas) {
+    // Routed writes hop from the primary, and start once it has the value.
+    const from = replica.from ?? plan.entry;
+    const start = replicationStart + PULSE_STEP_MS * Math.min(replica.after ?? 0, 6);
+    const kind = replica.kind ?? "data";
     if (replica.status === "applied") {
       const steps = Math.min(replica.steps, 6);
-      add(plan.entry, replica.node, replicationStart, PULSE_STEP_MS * steps, "data");
+      add(from, replica.node, start, PULSE_STEP_MS * steps, kind);
     } else if (replica.status === "pending") {
-      add(plan.entry, replica.node, replicationStart, PULSE_STEP_MS * 2, "data pending", { end: 0.55, hold: true });
+      add(from, replica.node, start, PULSE_STEP_MS * 2, `${kind} pending`, { end: 0.55, hold: true });
     } else {
-      add(plan.entry, replica.node, replicationStart, PULSE_STEP_MS, "data doomed", { end: 0.8, lost: true });
+      add(from, replica.node, start, PULSE_STEP_MS, `${kind} doomed`, { end: 0.8, lost: true });
     }
   }
-  // 3) delivery to each subscriber, from its node, when the engine delivered
+  // 3) acknowledgements back to the coordinator, and its answer to the client
+  //    once the level was met (routed writes only). They light nothing up.
+  for (const ack of plan.acks || []) {
+    add(ack.from, ack.to, replicationStart + PULSE_STEP_MS * Math.min(ack.at, 8), PULSE_STEP_MS, "ack", { r: 4, noFlash: true });
+  }
+  if (plan.reply && graphSim.pos.has(clientVertex)) {
+    add(plan.entry, clientVertex, replicationStart + PULSE_STEP_MS * Math.min(plan.reply.at + 1, 9), PULSE_REQUEST_MS, "ack reply", {
+      r: 4,
+      noFlash: true,
+    });
+  }
+  // 4) delivery to each subscriber, from its node, when the engine delivered
   for (const subscriber of plan.subscribers) {
     const start = replicationStart + PULSE_STEP_MS * Math.max(1, Math.min(subscriber.steps, 6));
     add(subscriber.node, `sub:${subscriber.id}`, start, 520, "event");
@@ -1367,12 +1462,10 @@ export function playDataFlowPulse(plan) {
   } else {
     graphSim.pulseArrivals.delete(plan.entry);
   }
-  // The attached node only passes the request on; it flashes when its own
-  // replica arrives (set below), not as the request goes through.
   // Each vertex lights up when its message arrives; pending and lost
   // copies never arrive, so their nodes do not flash.
   for (const mover of movers) {
-    if (mover.end < 1 || mover.fromId === clientVertex || mover.kind.includes("forward")) continue;
+    if (mover.end < 1 || mover.fromId === clientVertex || mover.noFlash) continue;
     const at = t0 + mover.startMs + mover.durMs;
     graphSim.pulseArrivals.set(mover.toId, Math.max(graphSim.pulseArrivals.get(mover.toId) ?? 0, at));
     if (mover.toId.startsWith("sub:")) {
@@ -1386,6 +1479,34 @@ export function playDataFlowPulse(plan) {
       graphSim.pulseArrivals.set(mover.toId, Number.POSITIVE_INFINITY);
     }
   }
+  startGraphSim();
+}
+
+// Raft metadata lane: a client admission is a ClientUpsert proposal that the
+// client's member forwards to the leader, which commits it and replicates the
+// commit back. Drawn off the data path, on its own lane, and only for
+// metadata: the leader takes no part in cache writes.
+export function playMetadataPulse(member, leader) {
+  if (!graphSim.dom || document.documentElement.dataset.reducedMotion === "true") return;
+  if (!graphSim.pos.has(member) || !graphSim.pos.has(leader)) return;
+  const movers = [];
+  const add = (fromId, toId, startMs, durMs) => {
+    const dot = svg("circle", { class: "pulse meta", r: 5, opacity: 0, cx: 0, cy: 0 });
+    dot.dataset.from = fromId;
+    dot.dataset.to = toId;
+    graphSim.dom.pulseLayer.append(dot);
+    movers.push({ fromId, toId, startMs, durMs, kind: "meta", dot, end: 1, lane: 9 });
+  };
+  if (member === leader) {
+    // The member is the leader: the proposal commits locally.
+    const group = graphSim.dom.vertices.get(leader)?.group;
+    if (group) graphSim.pendingFlashes.set(leader, { at: performance.now(), group, name: "changed" });
+    startGraphSim();
+    return;
+  }
+  add(member, leader, 0, PULSE_STEP_MS * 1.5);
+  add(leader, member, PULSE_STEP_MS * 1.7, PULSE_STEP_MS * 1.5);
+  graphSim.pulses.push({ t0: performance.now(), movers });
   startGraphSim();
 }
 

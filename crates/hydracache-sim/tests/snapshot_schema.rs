@@ -18,7 +18,7 @@ fn snapshot_roundtrips_and_is_versioned() {
     assert_eq!(decoded.step, 12);
     assert_eq!(decoded.nodes.len(), 3);
     assert_eq!(decoded.links.len(), 6);
-    assert_eq!(decoded.schema_version, 9);
+    assert_eq!(decoded.schema_version, 13);
     assert_eq!(decoded.formation_phase, "formed");
     assert_eq!(decoded.election_source, "sim-model");
     assert!(decoded.over_budget.in_flight_summarized <= decoded.in_flight.len() as u64);
@@ -71,7 +71,7 @@ fn schema_version_matches_contract_for_each_field_set() {
     let mut world = SimWorld::new(0x53_04, SimConfig::default());
     world.set_workload_enabled(false);
     let before = world.snapshot();
-    assert_eq!(before.schema_version, 9);
+    assert_eq!(before.schema_version, 13);
     assert_eq!(before.formation_phase, "unformed");
     assert_eq!(before.election_source, "sim-model");
     assert!(before.in_flight.is_empty());
@@ -95,7 +95,7 @@ fn schema_version_matches_contract_for_each_field_set() {
 
     world.run(8);
     let formed = world.snapshot();
-    assert_eq!(formed.schema_version, 9);
+    assert_eq!(formed.schema_version, 13);
     assert_eq!(formed.formation_phase, "formed");
     assert!(formed.nodes.iter().any(|node| {
         node.vote_state == "leader" && node.voted_for.as_deref() == Some(node.id.as_str())
@@ -108,7 +108,9 @@ fn schema_version_matches_contract_for_each_field_set() {
 fn manual_client_and_subscriber_expose_connected_node() {
     let mut world = SimWorld::new(0x53_06, SimConfig::default());
     world.run(8);
-    world.subscribe("client-a", "profiles");
+    world
+        .subscribe("client-a", "profiles")
+        .expect("subscribe admits the client");
     world
         .push_event("client-a", "profiles", "profile-1", "fresh")
         .expect("manual push applies");
@@ -145,7 +147,7 @@ fn snapshot_exposes_typed_in_flight_messages() {
     world.step();
     let snapshot = world.snapshot();
 
-    assert_eq!(snapshot.schema_version, 9);
+    assert_eq!(snapshot.schema_version, 13);
     assert!(snapshot.in_flight.iter().any(|message| {
         message.kind == "heartbeat"
             && message.from == "node-0"
@@ -271,7 +273,7 @@ fn snapshot_v7_exposes_workload_and_checked_invariants() {
     let mut world = SimWorld::new(0x53_07, SimConfig::default());
     world.run(4);
     let running = world.snapshot();
-    assert_eq!(running.schema_version, 9);
+    assert_eq!(running.schema_version, 13);
     assert!(running.workload_enabled);
     assert_eq!(running.first_violation_step, None);
     assert_eq!(running.checked_invariants, SimWorld::checked_invariants());
@@ -318,6 +320,7 @@ fn listed_invariant_names_match_the_checker_source() {
 
 // v8: per-level satisfiability comes from the product's ConsistencyLevel rules
 // on the simulator topology (every node a replica, live nodes acknowledge).
+// Since TD-0014 the simulator calls those rules directly in both builds.
 #[test]
 fn snapshot_v8_reports_product_consistency_levels() {
     fn level<'a>(
@@ -334,7 +337,7 @@ fn snapshot_v8_reports_product_consistency_levels() {
     let mut world = SimWorld::new(0x53_08, SimConfig::default());
     world.run(8);
     let healthy = world.snapshot();
-    assert_eq!(healthy.schema_version, 9);
+    assert_eq!(healthy.schema_version, 13);
     assert_eq!(
         healthy
             .consistency
@@ -363,7 +366,11 @@ fn snapshot_v8_reports_product_consistency_levels() {
     assert!(level(&one_down, "quorum").satisfiable);
     assert!(!level(&one_down, "all").satisfiable);
     assert_eq!(level(&one_down, "all").live_replicas, 2);
-    assert!(level(&one_down, "all").reason.is_some());
+    // The reason is the product's own text (ConsistencyUnsatisfiable).
+    assert_eq!(
+        level(&one_down, "all").reason.as_deref(),
+        Some("requires 3 live acknowledgements from 3 replicas, only 2 are live")
+    );
 
     assert!(world.crash_node("node-1"));
     let two_down = world.snapshot();
@@ -376,4 +383,8 @@ fn snapshot_v8_reports_product_consistency_levels() {
             "{name}"
         );
     }
+    assert_eq!(
+        level(&two_down, "local_quorum").reason.as_deref(),
+        Some("regional quorum unsatisfied: local needs 2, has 1")
+    );
 }
