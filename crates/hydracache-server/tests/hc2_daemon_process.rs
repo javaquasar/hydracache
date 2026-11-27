@@ -34,6 +34,8 @@ mod hc2_pki;
 use hc2_pki::{pki, write_pki, TestPki};
 #[path = "support/imap_hc2_campaign.rs"]
 mod imap_hc2_campaign;
+#[path = "support/imap_sdk_cohort.rs"]
+mod imap_sdk_cohort;
 
 // These tests release reserved ports before a child process binds them. Keep
 // the hand-off and the post-exit availability assertions isolated from the

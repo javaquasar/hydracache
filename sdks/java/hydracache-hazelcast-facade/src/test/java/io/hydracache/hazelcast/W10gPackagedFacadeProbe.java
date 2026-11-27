@@ -103,7 +103,7 @@ public final class W10gPackagedFacadeProbe {
     throw new AssertionError("certified mutation was unavailable");
   }
 
-  private static List<MapBatchItem<String, String>> awaitBatch(
+  static List<MapBatchItem<String, String>> awaitBatch(
       HydraMap<String, String> map, List<String> keys,
       Predicate<List<MapBatchItem<String, String>>> ready) throws InterruptedException {
     long stop = System.nanoTime() + DEADLINE.toNanos();
@@ -126,7 +126,7 @@ public final class W10gPackagedFacadeProbe {
     }
   }
 
-  private static HydraCacheClient connect(Path root, String endpoint) {
+  static HydraCacheClient connect(Path root, String endpoint) {
     return HydraCacheClient.connect(HydraCacheClientConfig.builder()
         .endpoint(URI.create("https://" + endpoint)).serverName("localhost")
         .trustCertificate(root.resolve("clients.pem"))
@@ -140,7 +140,7 @@ public final class W10gPackagedFacadeProbe {
     return new HydraCacheInstance(client, DEADLINE).getMap("w10g-map", HydraCodec.utf8(), HydraCodec.utf8());
   }
 
-  private static void requireJar(Class<?> api) {
+  static void requireJar(Class<?> api) {
     require(api.getProtectionDomain().getCodeSource().getLocation().getPath().endsWith(".jar"),
         api.getName() + " did not come from a packaged JAR");
   }
