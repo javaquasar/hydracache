@@ -150,6 +150,28 @@ struct Fault {
     recovered_at_ms: u64,
     rejoined_pid: u32,
     rejoined_at_ms: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    audit: Option<OwnerKillAudit>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct OwnerKillAudit {
+    partition: u32,
+    before: ReplicaCheckpoint,
+    promoted: ReplicaCheckpoint,
+    recovered: ReplicaCheckpoint,
+    rejoined: ReplicaCheckpoint,
+    tombstoned: ReplicaCheckpoint,
+    returned_member: PartitionReplicaIdentity,
+    returned_epoch: u64,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct ReplicaCheckpoint {
+    placement: [CopyObservation; 2],
+    digests: [ReplicaDigest; 2],
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -393,11 +415,7 @@ fn verify(
 ) -> RunResult<Option<DrainProgress>> {
     let expected_ms = seconds * 1_000;
     let fault = &receipt.fault;
-    let schema = if live_drain {
-        4 + u16::from(interrupt_copy)
-    } else {
-        1
-    };
+    let schema = 6 + u16::from(live_drain) + u16::from(interrupt_copy);
     if receipt.schema_version != schema
         || receipt.drain.is_some() != live_drain
         || receipt
@@ -421,6 +439,11 @@ fn verify(
     {
         return Err("invalid W10i worker identity, duration or fault sequence".into());
     }
+    let audit = fault
+        .audit
+        .as_ref()
+        .ok_or("missing W10i owner-kill replica audit")?;
+    verify_owner_kill_audit(audit)?;
     if let Some(drain) = &receipt.drain {
         verify_drain(drain, fault, expected_ms)?;
         verify_replica_reconciliation(drain)?;
@@ -438,6 +461,95 @@ fn verify(
         return Err("W10i ledger counts do not match the worker receipt".into());
     }
     Ok(progress)
+}
+
+fn verify_owner_kill_audit(audit: &OwnerKillAudit) -> RunResult<()> {
+    for (checkpoint, slots, version) in [
+        (&audit.before, [0, 1], 2),
+        (&audit.promoted, [1, 2], 2),
+        (&audit.recovered, [1, 2], 3),
+        (&audit.rejoined, [1, 2], 3),
+        (&audit.tombstoned, [1, 2], 4),
+    ] {
+        let [primary, backup] = &checkpoint.digests;
+        if audit.partition >= 271
+            || primary.member.node == backup.member.node
+            || primary.topology_epoch != backup.topology_epoch
+            || !same_replica_image(primary, backup)
+            || checkpoint
+                .placement
+                .iter()
+                .zip(&checkpoint.digests)
+                .zip(slots)
+                .enumerate()
+                .any(|(index, ((copy, digest), slot))| {
+                    copy.member_slot != slot
+                        || copy.certified_version != version
+                        || copy.primary != (index == 0)
+                        || copy.backup == copy.primary
+                        || !valid_replica_digest(digest, copy, audit.partition)
+                        || (digest.rows, digest.retained_outcomes) != (1, 1)
+                })
+        {
+            return Err("invalid W10i owner-kill replica checkpoint".into());
+        }
+    }
+    let [old, old_backup] = &audit.before.digests;
+    let [promoted, new_backup] = &audit.promoted.digests;
+    let recovered = &audit.recovered.digests[0];
+    let rejoined = &audit.rejoined.digests[0];
+    let tombstoned = &audit.tombstoned.digests[0];
+    if old_backup.member != promoted.member
+        || old.member.node == new_backup.member.node
+        || old.topology_epoch >= promoted.topology_epoch
+        || !same_replica_image(old, promoted)
+        || audit.returned_member.node != old.member.node
+        || audit.returned_member.generation <= old.member.generation
+        || promoted.topology_epoch > recovered.topology_epoch
+        || recovered.topology_epoch >= audit.returned_epoch
+        || audit.returned_epoch > rejoined.topology_epoch
+        || rejoined.topology_epoch > tombstoned.topology_epoch
+        || !same_replica_image(recovered, rejoined)
+        || !advances_certified_image(promoted, recovered)
+        || !advances_certified_image(rejoined, tombstoned)
+        || [&audit.recovered, &audit.rejoined, &audit.tombstoned]
+            .iter()
+            .any(|cut| {
+                cut.digests[0].member != promoted.member
+                    || cut.digests[1].member != new_backup.member
+            })
+    {
+        return Err(
+            "W10i owner-kill replica audits do not prove preservation, lineage and rejoin".into(),
+        );
+    }
+    Ok(())
+}
+
+fn advances_certified_image(previous: &ReplicaDigest, next: &ReplicaDigest) -> bool {
+    next.prefix.previous == previous.prefix.digest
+        && next.prefix.epoch.value() >= previous.topology_epoch
+        && next.image_sha256 != previous.image_sha256
+}
+
+fn valid_replica_digest(digest: &ReplicaDigest, copy: &CopyObservation, partition: u32) -> bool {
+    digest.schema_version == 1
+        && !digest.member.node.as_str().is_empty()
+        && digest.member.generation.value() != 0
+        && digest.topology_epoch != 0
+        && digest.topology_epoch == copy.epoch
+        && digest.primary == copy.primary
+        && digest.prefix.partition.value() == partition
+        && digest.prefix.version == copy.certified_version
+        && (1..=digest.topology_epoch).contains(&digest.prefix.epoch.value())
+        && digest.image_sha256 != [0; 32]
+        && (1..=4096).contains(&digest.rows)
+        && (1..=128).contains(&digest.retained_outcomes)
+}
+
+fn same_replica_image(a: &ReplicaDigest, b: &ReplicaDigest) -> bool {
+    (a.prefix, a.image_sha256, a.rows, a.retained_outcomes)
+        == (b.prefix, b.image_sha256, b.rows, b.retained_outcomes)
 }
 
 fn verify_drain(drain: &Drain, fault: &Fault, expected_ms: u64) -> RunResult<()> {
@@ -500,21 +612,8 @@ fn verify_replica_reconciliation(drain: &Drain) -> RunResult<()> {
         .zip(drain.before.iter().chain(&drain.after))
     {
         let slot = usize::from(placement.member_slot);
-        if digest.schema_version != 1
-            || digest.member.node.as_str().is_empty()
-            || digest.member.generation.value() == 0
-            || digest.topology_epoch != placement.epoch
-            || digest.primary != placement.primary
-            || digest.prefix.partition.value() != drain.partition
-            || digest.prefix.version != drain.certified_version
-            || !(1..=digest.topology_epoch).contains(&digest.prefix.epoch.value())
-            || digest.prefix != expected.prefix
-            || digest.image_sha256 != expected.image_sha256
-            || digest.image_sha256 == [0; 32]
-            || !(1..=4096).contains(&digest.rows)
-            || !(1..=128).contains(&digest.retained_outcomes)
-            || (digest.rows, digest.retained_outcomes)
-                != (expected.rows, expected.retained_outcomes)
+        if !valid_replica_digest(digest, placement, drain.partition)
+            || !same_replica_image(digest, expected)
             || by_slot.iter().enumerate().any(|(index, member)| {
                 member.is_some_and(|member| {
                     if index == slot {
@@ -879,7 +978,7 @@ mod tests {
         let path = dir.path().join("ledger.jsonl");
         fs::write(&path, rows(&[row(0, 0), row(1, 9_900)])).unwrap();
         let mut worker = Receipt {
-            schema_version: 1,
+            schema_version: 6,
             production_admitted: false,
             source_sha: "a".repeat(40),
             seconds: 10,
@@ -893,6 +992,7 @@ mod tests {
                 recovered_at_ms: 4_000,
                 rejoined_pid: 43,
                 rejoined_at_ms: 5_000,
+                audit: Some(owner_kill_fixture()),
             },
             drain: None,
             counts: Counts {
@@ -904,6 +1004,9 @@ mod tests {
         };
         let previous = serde_json::from_value(serde_json::to_value(&worker).unwrap()).unwrap();
         verify(&worker, dir.path(), &worker.source_sha, 10, false, false).unwrap();
+        let audit = worker.fault.audit.take();
+        assert!(verify(&worker, dir.path(), &worker.source_sha, 10, false, false).is_err());
+        worker.fault.audit = audit;
         match_candidate(&previous, &worker).unwrap();
         worker.runner_sha256 = "d".repeat(64);
         assert!(match_candidate(&previous, &worker).is_err());
@@ -920,6 +1023,95 @@ mod tests {
         worker.production_admitted = false;
         fs::write(&path, rows(&[row(0, 0), row(1, 9_950)])).unwrap();
         assert!(verify(&worker, dir.path(), &worker.source_sha, 10, false, false).is_err());
+    }
+
+    fn owner_kill_fixture() -> OwnerKillAudit {
+        let member = |slot: u8, generation| PartitionReplicaIdentity {
+            node: hydracache::ClusterNodeId::new(format!("member-{slot}")),
+            generation: hydracache::ClusterGeneration::new(generation),
+        };
+        let partition = 11;
+        let cut = |slots: [u8; 2], epoch: u64, version: u8, cert_epoch| ReplicaCheckpoint {
+            placement: std::array::from_fn(|index| CopyObservation {
+                member_slot: slots[index],
+                epoch,
+                certified_version: u64::from(version),
+                primary: index == 0,
+                backup: index == 1,
+            }),
+            digests: std::array::from_fn(|index| ReplicaDigest {
+                schema_version: 1,
+                member: member(slots[index], 1),
+                topology_epoch: epoch,
+                primary: index == 0,
+                prefix: PartitionValuePrefix {
+                    partition: hydracache::PartitionId::new(partition),
+                    epoch: hydracache::ClusterEpoch::new(cert_epoch),
+                    version: u64::from(version),
+                    previous: [version - 1; 32],
+                    digest: [version; 32],
+                },
+                image_sha256: [version + 10; 32],
+                rows: 1,
+                retained_outcomes: 1,
+            }),
+        };
+        OwnerKillAudit {
+            partition,
+            before: cut([0, 1], 4, 2, 4),
+            promoted: cut([1, 2], 6, 2, 4),
+            recovered: cut([1, 2], 6, 3, 6),
+            rejoined: cut([1, 2], 7, 3, 6),
+            tombstoned: cut([1, 2], 7, 4, 7),
+            returned_member: member(0, 2),
+            returned_epoch: 7,
+        }
+    }
+
+    #[test]
+    fn owner_kill_rejects_matching_pairs_with_broken_lineage_or_process_identity() {
+        verify_owner_kill_audit(&owner_kill_fixture()).unwrap();
+        let changes: [fn(&mut OwnerKillAudit); 8] = [
+            |audit| audit.promoted.digests[1].image_sha256[0] ^= 1,
+            |audit| {
+                audit
+                    .promoted
+                    .digests
+                    .iter_mut()
+                    .for_each(|proof| proof.image_sha256[0] ^= 1)
+            },
+            |audit| {
+                audit
+                    .recovered
+                    .digests
+                    .iter_mut()
+                    .for_each(|proof| proof.prefix.previous[0] ^= 1)
+            },
+            |audit| {
+                audit
+                    .tombstoned
+                    .digests
+                    .iter_mut()
+                    .for_each(|proof| proof.prefix.previous[0] ^= 1)
+            },
+            |audit| {
+                audit
+                    .rejoined
+                    .digests
+                    .iter_mut()
+                    .for_each(|proof| proof.retained_outcomes = 0)
+            },
+            |audit| audit.returned_member.generation = audit.before.digests[0].member.generation,
+            |audit| audit.returned_epoch = audit.recovered.digests[0].topology_epoch,
+            |audit| {
+                audit.promoted.digests[0].member.generation = hydracache::ClusterGeneration::new(2)
+            },
+        ];
+        for change in changes {
+            let mut audit = owner_kill_fixture();
+            change(&mut audit);
+            assert!(verify_owner_kill_audit(&audit).is_err());
+        }
     }
 
     #[test]
@@ -952,6 +1144,7 @@ mod tests {
             recovered_at_ms: 24_000,
             rejoined_pid: 43,
             rejoined_at_ms: 25_000,
+            audit: None,
         };
         verify_drain(&drain, &fault, 60_000).unwrap();
         assert!(verify_replica_reconciliation(&drain).is_err());
@@ -1078,6 +1271,7 @@ mod tests {
             recovered_at_ms: 24_000,
             rejoined_pid: 43,
             rejoined_at_ms: 25_000,
+            audit: None,
         };
         verify_drain(&drain, &fault, 60_000).unwrap();
         drain.interrupted_copy.as_mut().unwrap().held_placement[2].primary = true;

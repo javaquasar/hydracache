@@ -236,6 +236,8 @@ fn member_hc2_has_no_node_local_fallback() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() {
+    use imap_hc2_campaign::{owner_checkpoint, OwnerKillAudit};
+
     if std::env::var("HYDRACACHE_RUN_DAEMON_PROCESS_E2E").as_deref() != Ok("1") {
         return;
     }
@@ -252,7 +254,9 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
     .await;
     let hot = cluster.key_for(0, Some(1), "w10i-\0-");
     let hot_partition = fixture_imap_scope().locate(hot.to_vec()).unwrap().0;
+    let partition = hot_partition.value();
     let control = cluster.key_for(1, Some(2), "w10i-\0-");
+    let http = w10h_http();
     let clients = &mut cluster.clients;
     let initial = Bytes::from_static(b"initial");
     let winner = Bytes::from_static(b"confirmed-before-kill");
@@ -322,6 +326,8 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
             .applied
     );
 
+    // Only the put and the winning CAS advance this partition before the kill.
+    let before = owner_checkpoint(&http, &cluster.spec, [0, 1], partition, 2, 1).await;
     let started = tokio::time::Instant::now();
     let load = tokio::spawn(imap_hc2_campaign::exercise_control(
         clients[2].clone(),
@@ -349,6 +355,16 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
     })
     .await;
     assert!(replay.applied);
+    let promoted = owner_checkpoint(
+        &http,
+        &cluster.spec,
+        [1, 2],
+        partition,
+        2,
+        before.epoch() + 1,
+    )
+    .await;
+    before.assert_same_image(&promoted);
     let ready = tokio::time::Instant::now() + Duration::from_secs(18);
     loop {
         match clients[2]
@@ -383,12 +399,69 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
         }
     }
     let recovered_at_ms = started.elapsed().as_millis() as u64;
+    wait_w10i_get(&clients[1], hot.clone(), Some(&recovered)).await;
+    let recovered_cut =
+        owner_checkpoint(&http, &cluster.spec, [1, 2], partition, 3, promoted.epoch()).await;
     cluster.daemons[0] = cluster.spec.spawn(0);
     clients[0] = connect_w10i(&cluster.adapters[0], "w10i").await;
     wait_w10i_get(&clients[0], hot.clone(), Some(&recovered)).await;
+    let returned = wait_management_json(
+        &http,
+        cluster.spec.addresses[7],
+        ADMIN_CLUSTER_OVERVIEW_PATH,
+        |body| {
+            body["source"] == "live"
+                && body["members"].as_array().is_some_and(|members| {
+                    members.iter().any(|member| {
+                        member["node_id"] == cluster.spec.names[0]
+                            && member["reachable"] == true
+                            && member["generation"].as_u64().is_some_and(|generation| {
+                                generation > before.primary().generation.value()
+                            })
+                    })
+                })
+        },
+    )
+    .await;
+    let generation = returned["members"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|member| member["node_id"] == cluster.spec.names[0])
+        .unwrap()["generation"]
+        .as_u64()
+        .unwrap();
+    let returned_member = hydracache::PartitionReplicaIdentity {
+        node: before.primary().node.clone(),
+        generation: ClusterGeneration::new(generation),
+    };
+    let returned_epoch = wait_cluster_imap(&http, cluster.spec.addresses[7], |body| {
+        body["complete"] == true
+            && cluster_imap_members(body).len() == 3
+            && body["epoch"]
+                .as_u64()
+                .is_some_and(|epoch| epoch > recovered_cut.epoch())
+    })
+    .await["epoch"]
+        .as_u64()
+        .unwrap();
+    let rejoined_cut =
+        owner_checkpoint(&http, &cluster.spec, [1, 2], partition, 3, returned_epoch).await;
+    recovered_cut.assert_same_image(&rejoined_cut);
     let _removed =
         retry_w10i(|| clients[2].remove_if_value(hot.clone(), recovered.clone(), None)).await;
     wait_w10i_get(&clients[0], hot, None).await;
+    let tombstoned = owner_checkpoint(
+        &http,
+        &cluster.spec,
+        [1, 2],
+        partition,
+        4,
+        rejoined_cut.epoch(),
+    )
+    .await;
+    println!("W10i owner kill audited partition={partition} epochs={:?} returned_generation={generation}",
+        [before.epoch(), promoted.epoch(), recovered_cut.epoch(), rejoined_cut.epoch(), tombstoned.epoch()]);
     let rejoined = cluster.daemons[0].0.id();
     let rejoined_at_ms = started.elapsed().as_millis() as u64;
     let drain = if profile.live_drain {
@@ -411,6 +484,16 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
                 recovered_at_ms,
                 rejoined_pid: rejoined,
                 rejoined_at_ms,
+                audit: OwnerKillAudit {
+                    partition,
+                    before,
+                    promoted,
+                    recovered: recovered_cut,
+                    rejoined: rejoined_cut,
+                    tombstoned,
+                    returned_member,
+                    returned_epoch,
+                },
             },
             drain,
         )

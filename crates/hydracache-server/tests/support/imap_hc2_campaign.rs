@@ -46,6 +46,39 @@ pub(super) struct Fault {
     pub recovered_at_ms: u64,
     pub rejoined_pid: u32,
     pub rejoined_at_ms: u64,
+    pub audit: OwnerKillAudit,
+}
+
+#[derive(Serialize)]
+pub(super) struct OwnerKillAudit {
+    pub partition: u32,
+    pub before: ReplicaCheckpoint,
+    pub promoted: ReplicaCheckpoint,
+    pub recovered: ReplicaCheckpoint,
+    pub rejoined: ReplicaCheckpoint,
+    pub tombstoned: ReplicaCheckpoint,
+    pub returned_member: hydracache::PartitionReplicaIdentity,
+    pub returned_epoch: u64,
+}
+
+#[derive(Serialize)]
+pub(super) struct ReplicaCheckpoint {
+    placement: [CopyObservation; 2],
+    digests: [IMapReplicaDigest; 2],
+}
+
+impl ReplicaCheckpoint {
+    pub fn epoch(&self) -> u64 {
+        self.placement[0].epoch
+    }
+
+    pub fn primary(&self) -> &hydracache::PartitionReplicaIdentity {
+        &self.digests[0].member
+    }
+
+    pub fn assert_same_image(&self, other: &Self) {
+        assert_same_image(&self.digests[0], &other.digests[0]);
+    }
 }
 
 const DRAIN_PROBE_VALUE: &[u8] = b"w10i-live-drain-probe";
@@ -169,7 +202,7 @@ impl Profile {
             drain.as_ref().is_some_and(|d| d.interrupted_copy.is_some())
         );
         let mut receipt = serde_json::json!({
-            "schema_version": if self.live_drain { 4 + u16::from(self.interrupt_copy) } else { 1 },
+            "schema_version": 6 + u16::from(self.live_drain) + u16::from(self.interrupt_copy),
             "production_admitted": false,
             "source_sha": std::env::var("HYDRACACHE_W10I_SOURCE_SHA").unwrap(),
             "seconds": self.duration.as_secs(),
@@ -324,16 +357,15 @@ pub(super) async fn exercise_live_drain(
         let partition = receipt.partition_id;
         let certified_version = receipt.applied.unwrap().version;
         println!("W10i live drain seed partition={partition} epoch={seed_epoch} version={certified_version}");
-        let before = observe_copies(
+        let ReplicaCheckpoint { placement: before, digests: before_digests } = capture_cut(
             &http,
-            admins,
+            &cluster.spec,
             [0, backup_slot as u8],
             partition,
             certified_version,
             |pair| pair[0].primary && pair[1].backup,
         )
         .await;
-        let before_digests = reconcile_copies(&http, &cluster.spec, partition, &before).await;
         check_digest_refusals(&http, admins, partition, &before).await;
 
         tokio::time::sleep_until(started + duration / 2).await;
@@ -371,9 +403,9 @@ pub(super) async fn exercise_live_drain(
             })
         })
         .await;
-        let after = observe_copies(
+        let ReplicaCheckpoint { placement: after, digests: after_digests } = capture_cut(
             &http,
-            admins,
+            &cluster.spec,
             [1, 2],
             partition,
             certified_version,
@@ -384,7 +416,6 @@ pub(super) async fn exercise_live_drain(
         for client in &cluster.clients[1..] {
             wait_w10i_get(client, key.clone(), Some(&value)).await;
         }
-        let after_digests = reconcile_copies(&http, &cluster.spec, partition, &after).await;
         assert_same_image(&before_digests[0], &after_digests[0]);
         let audited_at_ms = started.elapsed().as_millis() as u64;
         println!("W10i live drain placement audited epoch={} at_ms={audited_at_ms}", after[0].epoch);
@@ -436,52 +467,90 @@ fn digest_reader(request: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
         .header(HYDRACACHE_MANAGEMENT_READ_HEADER, "true")
 }
 
+pub(super) async fn owner_checkpoint(
+    http: &reqwest::Client,
+    spec: &MemberClusterSpec,
+    slots: [u8; 2],
+    partition: u32,
+    version: u64,
+    min_epoch: u64,
+) -> ReplicaCheckpoint {
+    tokio::time::timeout(Duration::from_secs(12), capture_cut(http, spec, slots, partition, version, |pair| {
+        pair[0].primary && pair[1].backup && pair[0].epoch >= min_epoch
+    }))
+    .await
+    .unwrap_or_else(|_| panic!("no matching IMap replicas: slots={slots:?} partition={partition} version={version} min_epoch={min_epoch}"))
+}
+
+async fn capture_cut(
+    http: &reqwest::Client,
+    spec: &MemberClusterSpec,
+    slots: [u8; 2],
+    partition: u32,
+    version: u64,
+    matches: impl Fn(&[CopyObservation; 2]) -> bool,
+) -> ReplicaCheckpoint {
+    loop {
+        let placement = observe_copies(
+            http,
+            &spec.addresses[6..9],
+            slots,
+            partition,
+            version,
+            &matches,
+        )
+        .await;
+        if let Some(digests) = reconcile_copies(http, spec, partition, &placement).await {
+            return ReplicaCheckpoint { placement, digests };
+        }
+        // A concurrent Raft change can stale this epoch without changing the partition version.
+        tokio::time::sleep(Duration::from_millis(50)).await;
+    }
+}
+
 async fn reconcile_copies(
     http: &reqwest::Client,
     spec: &MemberClusterSpec,
     partition: u32,
     placement: &[CopyObservation; 2],
-) -> [IMapReplicaDigest; 2] {
+) -> Option<[IMapReplicaDigest; 2]> {
     let capture = |copy: &CopyObservation| {
         let slot = usize::from(copy.member_slot);
         let (epoch, version, primary) = (copy.epoch, copy.certified_version, copy.primary);
         async move {
-            loop {
-                let response = digest_reader(digest_request(
-                    http,
-                    spec.addresses[6 + slot],
-                    partition,
-                    epoch,
-                    version,
-                ))
-                .send()
-                .await
-                .unwrap();
-                if matches!(
-                    response.status(),
-                    reqwest::StatusCode::SERVICE_UNAVAILABLE
-                        | reqwest::StatusCode::TOO_MANY_REQUESTS
-                ) {
-                    tokio::time::sleep(Duration::from_millis(50)).await;
-                    continue;
-                }
-                let digest: IMapReplicaDigest =
-                    response.error_for_status().unwrap().json().await.unwrap();
-                assert_eq!(digest.schema_version, 1);
-                assert_eq!(digest.member.node.as_str(), spec.names[slot]);
-                assert_eq!((digest.topology_epoch, digest.primary), (epoch, primary));
-                assert_eq!(
-                    (digest.prefix.partition.value(), digest.prefix.version),
-                    (partition, version)
-                );
-                assert!(digest.rows > 0 && digest.retained_outcomes > 0);
-                return digest;
+            let response = digest_reader(digest_request(
+                http,
+                spec.addresses[6 + slot],
+                partition,
+                epoch,
+                version,
+            ))
+            .send()
+            .await
+            .unwrap();
+            if matches!(
+                response.status(),
+                reqwest::StatusCode::SERVICE_UNAVAILABLE | reqwest::StatusCode::TOO_MANY_REQUESTS
+            ) {
+                return None;
             }
+            let digest: IMapReplicaDigest =
+                response.error_for_status().unwrap().json().await.unwrap();
+            assert_eq!(digest.schema_version, 1);
+            assert_eq!(digest.member.node.as_str(), spec.names[slot]);
+            assert_eq!((digest.topology_epoch, digest.primary), (epoch, primary));
+            assert_eq!(
+                (digest.prefix.partition.value(), digest.prefix.version),
+                (partition, version)
+            );
+            assert!(digest.rows > 0 && digest.retained_outcomes > 0);
+            Some(digest)
         }
     };
     let (first, second) = tokio::join!(capture(&placement[0]), capture(&placement[1]));
+    let [first, second] = [first?, second?];
     assert_same_image(&first, &second);
-    [first, second]
+    Some([first, second])
 }
 
 fn assert_same_image(first: &IMapReplicaDigest, second: &IMapReplicaDigest) {
