@@ -1316,6 +1316,23 @@ worker and SDK inputs.
 The controller's 60-second release diagnostic on AX42 reconciled 654 keys after the kill
 and interrupted copy. Both subscribers reached watermark 4. The confirmation command
 also refused that short report after its summary duration was rewritten as six hours.
+
+At the three-hour mark of the first full-window attempt, both clients read the retained
+cohort while the transfer was held. The drain then timed out while foreground receipts
+still reported the held wave's epoch. The run archived its logs and the controller
+withheld the report. The fixture then began retaining each member's placement proof across
+polls. All three proofs still had to agree on the held epoch and the owner and backup
+roles. With the same 30-second budget, the next 60-second diagnostic completed the drain
+in 6.6 seconds and reconciled both SDK journals.
+
+The six-hour retry ran both SDKs against the same three-member cluster. The clients
+recovered from the owner kill, read during the blocked copy, and resumed their subscriptions
+through watermark 4 after the drain. The drain took 8.0 seconds. After the traffic window,
+the controller reconciled 46,706 batch rounds and read back 93,412 keys against the two
+sealed journals. The archive passed the parent check for the pending 24-hour run. The
+working databases were on tmpfs, so the evidence covers process failures and leaves disk
+durability open.
+
 [Packaged W10i duration profiles](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#packaged-sdk-diagnostic-profiles-for-6-and-24-hours)
 
 ## The practical rule

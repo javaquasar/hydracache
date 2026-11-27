@@ -2427,14 +2427,57 @@ Both subscribers advanced from watermark 1 through watermark 4.
 
 The confirmation command rejected both the 60-second report and a copy whose summary
 duration had been relabeled as six hours. Neither attempt created a confirmation output.
-The 6-hour and 24-hour profile selection and plan bounds passed their unit tests. Full
-elapsed runs at those durations remain pending.
+The 6-hour and 24-hour profile selection and plan bounds passed their unit tests.
 
 Five packaged ledger tests, 12 distributed controller tests, five isolated Rust consumer
 tests and Clippy passed. The reports, plans and journals are under
 `development/w10i-packaged-long-6da656f93cf65907a8eadf242bb6e2b9a088f2a5` on AX42. The verified
 `w10i-packaged-long.sha256` manifest has SHA-256
 `bb6d46c53617b662ab3489de19bae47f68cf1a224a6448295129231c53c454c8`.
+
+The first six-hour diagnostic at `6da656f93cf65907a8eadf242bb6e2b9a088f2a5` on AX42 passed the
+scheduled owner kill and rejoin. Both SDKs resumed their subscriptions at watermark 1 and
+received watermark 2. At the drain boundary they read the retained cohort during the copy
+pause. The drain returned HTTP 504, and the surviving SDK writes still reported the held
+wave at epoch 8 near the timeout. The controller exited with failure before publication.
+Working databases were in tmpfs because the persistent disk had 1.7 GiB free. The preserved
+failure logs and ledgers are under the candidate's `diagnostic-6h-20261127T115300Z` directory.
+The verified `evidence.sha256` manifest has SHA-256
+`b2e76e7aa88fbdbc3728c8dbd8bb994784bb326b543cbfea7ec3ea4183d5cf4d`.
+
+The campaign fixture now retains complete, expected-version placement proofs across polling
+rounds. All three proofs must agree on the held wave's epoch and on the old primary and
+backup roles. It rejects a newer wave or conflicting placement before reopening the copy
+stream. The drain timeout remains 30 seconds. The new regression test and Clippy passed, and
+the 60-second release diagnostic on AX42 at `ee2dd174b751e379bf81234a4bf25421dfd9858f`
+completed the drain in 6.617 seconds. Rust reconciled 152 rounds over 304 keys and Java
+reconciled 151 rounds over 302 keys. Both subscriptions advanced to watermark 4.
+The verified `w10i-held-copy.sha256` manifest has SHA-256
+`a1e729315e26b45c3e152ca956018b3220adbf241731dd9bec3e70596da651a0`.
+
+The six-hour retry on AX42 at `ee2dd174b751e379bf81234a4bf25421dfd9858f` passed.
+The controller observed 21,600.424 seconds of traffic from both SDKs in the same three-member
+cluster. Partition 122 moved to the surviving owner from epoch 3 to 6, and the old owner
+rejoined in epoch 7. In the drain of partition 179, both SDKs read the retained cohort
+while chunk 1 was blocked. The transfer resumed without replaying chunk 0, the drain
+completed in 8.023 seconds, and the controller audited placement in epoch 12. Both
+subscriptions advanced from watermark 1 through watermark 4.
+
+The verifier reconciled 23,309 Rust rounds over 46,618 keys and 23,397 Java rounds over
+46,794 keys. Both SDKs completed ten rounds during the owner outage and one during the
+held copy. The controller sealed the journals and published the diagnostic with
+`production_admitted=false`. Working databases were in tmpfs and the persistent
+archive is under
+`development/w10i-held-copy-ee2dd174b751e379bf81234a4bf25421dfd9858f/diagnostic-6h-20261127T150558Z`.
+The verified `evidence.sha256` manifest has SHA-256
+`edf50df57ebba3a20fef0715b7a632a3689cb77c6fe15f483d2c3232d695de69`,
+and `evidence/report.json` has SHA-256
+`b5ac5479978db14b0bd83f68cb02bbdc296d750e8f2da84c62954fda9a600d38`.
+
+The 24-hour command verified the archived six-hour parent and reached output creation.
+The preflight used an existing output directory to stop before creating a campaign.
+The 24-hour elapsed run is pending. The six-hour run exercised process failures with
+tmpfs, and disk durability remains outside this evidence.
 
 #### Under-load failover and rebalance qualification
 
