@@ -16,6 +16,7 @@ const MAX_LEDGER_ROW: u64 = 1024;
 const MAX_INITIAL_GAP_MS: u64 = 1_000;
 const MAX_INTER_ROUND_GAP_MS: u64 = 20_000;
 const MIN_DRAIN_DIAGNOSTIC_SECONDS: u64 = 45;
+const MIN_POST_RETURN_MS: u64 = 5_000;
 const DRAIN_PROBE_VALUE: &[u8] = b"w10i-live-drain-probe";
 const SCENARIO: &str = "distributed_hc2_routes_public_requests_and_recovers_after_owner_kill";
 
@@ -377,7 +378,7 @@ fn verify_drain(drain: &Drain, fault: &Fault, expected_ms: u64) -> RunResult<()>
         || drain.started_at_ms >= drain.completed_at_ms
         || drain.completed_at_ms > drain.audited_at_ms
         || drain.audited_at_ms >= drain.returned_at_ms
-        || drain.returned_at_ms >= expected_ms
+        || drain.returned_at_ms > expected_ms.saturating_sub(MIN_POST_RETURN_MS)
         || drain.partition >= 271
         || drain.certified_version == 0
         || drain.value_sha256 != crate::imap_qualification_075::digest(DRAIN_PROBE_VALUE)

@@ -246,10 +246,12 @@ pub(super) async fn exercise_live_drain(
 
         let http = w10h_http();
         let admins = &cluster.spec.addresses[6..9];
-        wait_cluster_imap(&http, admins[1], |body| {
+        let ready = wait_cluster_imap(&http, admins[1], |body| {
             body["ready"] == true && cluster_imap_members(body).len() == 3
         })
         .await;
+        let seed_epoch = ready["epoch"].as_u64().unwrap();
+        let seed_identity = Bytes::from(format!("w10e:{seed_epoch}:w10i-live-drain-seed"));
 
         // The earlier fault probe used primary 0/backup 1. This is a different, untouched partition.
         let key = cluster.key_for(0, Some(2), "w10i-live-drain/");
@@ -264,7 +266,7 @@ pub(super) async fn exercise_live_drain(
                     }],
                     Some(RequestOptions {
                         timeout: Duration::from_secs(4),
-                        idempotency_key: Bytes::from_static(b"w10i-live-drain-seed"),
+                        idempotency_key: seed_identity.clone(),
                     }),
                 )
                 .await?;
@@ -282,6 +284,7 @@ pub(super) async fn exercise_live_drain(
         .await;
         let partition = receipt.partition_id;
         let certified_version = receipt.applied.unwrap().version;
+        println!("W10i live drain seed partition={partition} epoch={seed_epoch} version={certified_version}");
         let before = observe_copies(
             &http,
             admins,
@@ -306,6 +309,7 @@ pub(super) async fn exercise_live_drain(
             .unwrap();
         let completed_at_ms = started.elapsed().as_millis() as u64;
         assert_eq!(response["drain"]["timed_out"], false);
+        println!("W10i live drain completed started_at_ms={started_at_ms} completed_at_ms={completed_at_ms}");
         wait_success(&mut cluster.daemons[0].0, Duration::from_secs(8));
         wait_management_json(&http, admins[1], ADMIN_CLUSTER_OVERVIEW_PATH, |body| {
             body["members"].as_array().is_some_and(|members| {
@@ -329,6 +333,7 @@ pub(super) async fn exercise_live_drain(
             wait_w10i_get(client, key.clone(), Some(&value)).await;
         }
         let audited_at_ms = started.elapsed().as_millis() as u64;
+        println!("W10i live drain placement audited epoch={} at_ms={audited_at_ms}", after[0].epoch);
         cluster.daemons[0] = cluster.spec.spawn_after_drain(0);
         let returned = connect_w10i(&cluster.adapters[0], "w10i").await;
         wait_cluster_imap(&http, admins[1], |body| {
