@@ -2176,6 +2176,39 @@ metadata, independently built consumer, JARs, probe logs and control ledgers are
 on AX42. The verified manifest SHA-256 is
 `51e766a9b3bbe4d11b73548309e19c023ac0269171ac0794917da34c7036d92a`.
 
+#### Packaged SDK readback through interrupted drain
+
+The extended 60-second cohort diagnostic runs the owner kill and rejoin, then requests a
+managed drain of the returned member. It uses the existing snapshot fault at chunk index 1.
+Before allowing the copy to resume, two separate processes use the packaged Rust and Java SDKs
+to read all 13 retained keys through the two surviving endpoints. The fault worker then observes
+the unchanged source placement and denies any attempt to resend chunk index 0. Successful drain
+and matching journal digests prove that the new replica took over at the certified prefix.
+
+After the drained member rejoins, both SDKs read the retained cohort and the complete 96 KiB
+moved value through that member. Readback requires a confirmed batch receipt for every key and
+an exact value match. The diagnostic records the start and finish of both SDK readbacks, verifies
+the first readback lies inside the interrupted-copy window, and requires complete control rounds
+with readback both during that window and after rejoin. The original controller's
+`--interrupt-copy` profile continues to exercise the same fault worker.
+
+On AX42, both 60-second runs at `5f2e2aa60c70357c222110cb334e55ec4f3fdab9` preserved
+certified version 1 from topology epoch 7 to epoch 12. The two SDKs agreed on all 13 retained
+keys during the pause and on all 14 keys after rejoin, including the full moved value.
+
+| JVM | Moved partition | Verified control mutations | Verified while copy was blocked | Verified after rejoin |
+| --- | ---: | ---: | ---: | ---: |
+| Java 17 | 170 | 768 | 24 | 312 |
+| Java 21 | 48 | 695 | 24 | 237 |
+
+The original `xtask imap-distributed-qualification --interrupt-copy` diagnostic passed on the
+same candidate. Both four-test SDK suites, four Rust consumer tests, 48 Maven tests and both
+Clippy checks passed. The SDK readbacks took 861 and 886 ms inside the copy holds of 2,363 and
+2,389 ms. The package artifacts, readback manifests, receipts, ledgers, and raw fault markers
+were verified against `development/w10i-sdk-drain-5f2e2aa60c70357c222110cb334e55ec4f3fdab9/w10i-sdk-drain.sha256`
+on AX42. The manifest SHA-256 is
+`0a4623886547cf56eb10fa288f4a5b9524b3e6c143d47e81b7e5513c0804a5bb`.
+
 #### Under-load failover and rebalance qualification
 
 KiviDB's cluster soak pairs continuous mixed load with planned failovers, process kills, slot

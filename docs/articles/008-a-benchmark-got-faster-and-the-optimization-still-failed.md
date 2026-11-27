@@ -1243,6 +1243,16 @@ The final phase waited for a committed, ready roster after restart. Both package
 the 13 keys on Java 17 and 21, and both wrong-value tests failed at the intended comparison.
 [Separate SDK packages](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#separate-packages-for-both-sdks)
 
+## Reading through a paused snapshot transfer
+
+The packaged SDK diagnostic adds two data checks to the interrupted copy. Both clients read the
+13 retained keys through surviving endpoints while the second chunk is blocked. The transfer
+then resumes at its verified cursor. After cutover and rejoin, both clients read those keys and
+the full 96 KiB moved value through the returned endpoint. The control ledger counts mutations
+whose write and readback both completed during the interruption and after rejoin.
+On AX42, each of the Java 17 and 21 runs verified 24 control mutations during its copy pause.
+[Packaged SDK readback during drain](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#packaged-sdk-readback-through-interrupted-drain)
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
