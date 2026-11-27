@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: fork-upstream-advisories-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   audit-upstream:
     runs-on: ubuntu-24.04
@@ -17,6 +21,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Install and test the RustSec scanner
+        timeout-minutes: 15
         run: |
           set -euo pipefail
           rustup toolchain install 1.94.0 --profile minimal
@@ -30,6 +35,7 @@ jobs:
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         if: always()
         with:
-          name: upstream-fork-advisory-review
+          name: upstream-fork-advisory-review-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/upstream-advisories.json
           if-no-files-found: warn
+          retention-days: 30
