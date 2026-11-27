@@ -15,6 +15,8 @@ mod generated_console_assets;
 mod grid_host;
 pub mod hc2;
 mod imap_hc2_route;
+#[doc(hidden)]
+pub mod imap_chrony;
 mod imap_ops;
 pub use imap_ops::{IMapPartitionCounts, IMapReadiness, IMapReadinessReason};
 #[doc(hidden)]

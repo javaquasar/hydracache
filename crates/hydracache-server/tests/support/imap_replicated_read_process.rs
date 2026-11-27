@@ -20,6 +20,7 @@ use hydracache_client_protocol::{
 use hydracache_client_transport_axum::{
     CLIENT_DATA_PATH, HYDRACACHE_CLIENT_ID_HEADER, HYDRACACHE_TENANT_HEADER,
 };
+use hydracache_server::imap_chrony::{ChronyPolicy, ChronySample, ClockReading};
 use hydracache_server::imap_topology::PartitionMember;
 use hydracache_server::imap_value_plane::ReplicaClock;
 use hydracache_server::{
@@ -112,20 +113,50 @@ struct Receipt {
 }
 
 #[derive(Deserialize)]
-struct ClockSample {
-    now_ms: u64,
-    uncertainty_ms: u64,
+#[serde(untagged)]
+enum ClockSample {
+    Direct {
+        now_ms: u64,
+        uncertainty_ms: u64,
+    },
+    Chrony {
+        tracking: String,
+        acquisition: [ClockReading; 2],
+        current: ClockReading,
+    },
 }
 
 struct FileClock(PathBuf);
 
 impl ClusterTimeAuthority for FileClock {
     fn observe(&self) -> Option<TimeObservation> {
-        let sample: ClockSample = read_json(&self.0)?;
-        Some(TimeObservation {
-            now_ms: sample.now_ms,
-            uncertainty_ms: sample.uncertainty_ms,
-        })
+        match read_json(&self.0)? {
+            ClockSample::Direct {
+                now_ms,
+                uncertainty_ms,
+            } => Some(TimeObservation {
+                now_ms,
+                uncertainty_ms,
+            }),
+            ClockSample::Chrony {
+                tracking,
+                acquisition,
+                current,
+            } => {
+                let policy = ChronyPolicy {
+                    maximum_uncertainty_ms: 10,
+                    maximum_snapshot_age_ms: 3_000,
+                    maximum_reference_age_ms: 1_500,
+                    maximum_acquisition_ms: 20,
+                    maximum_drift_ppm: 500,
+                };
+                let allowed = ["192.0.2.1".parse().unwrap()];
+                ChronySample::capture(&tracking, &allowed, acquisition, policy)
+                    .ok()?
+                    .observe(current)
+                    .ok()
+            }
+        }
     }
 }
 
@@ -1967,4 +1998,75 @@ fn distributed_ttl_withholds_expiry_during_replica_cut_and_fences_restarted_owne
         "W10d restarted pid={} epoch={} certified expiry prefix=2, GET nil after clock rewind",
         rejoined[owner].pid, rejoined[owner].epoch
     );
+}
+
+#[test]
+fn distributed_ttl_rejects_stale_chrony_and_a_clock_generation_change() {
+    if std::env::var(RUN).as_deref() != Ok("1") {
+        return;
+    }
+    let nodes = start_nodes(true);
+    let initial = wait_for("three OD-2 members", || all_members(&nodes, 0));
+    let owner = expect_owner(&nodes, b"$-1\r\n");
+    let backup = nodes
+        .iter()
+        .position(|node| Some(&node.identity) == initial[owner].backup.as_ref())
+        .unwrap();
+    let node = &nodes[owner];
+    let reading = |elapsed_ms: u64, generation| ClockReading {
+        realtime_ns: (1_000_100 + elapsed_ms) * 1_000_000,
+        boottime_ns: (5_000 + elapsed_ms) * 1_000_000,
+        read_window_ns: 0,
+        generation,
+    };
+    let set_clock = |reference, captured, current| {
+        let tracking = format!(
+            "C0000201,192.0.2.1,2,{reference},0.0,0.0,0.0,0.0,0.0,0.0,0.001,0.001,1.0,Normal"
+        );
+        publish_json(
+            &node.root.join("clock.json"),
+            &json!({"tracking": tracking, "acquisition": [captured, captured], "current": current}),
+        );
+    };
+    let captured = reading(0, 1);
+    set_clock("1000.000000000", captured, captured);
+    assert_eq!(
+        resp(node.address, &[b"SET", KEY, VALUE, b"PX", b"30"]).unwrap(),
+        b"+OK\r\n"
+    );
+    assert_eq!(resp(node.address, &[b"PTTL", KEY]).unwrap(), b":30\r\n");
+    set_clock("1000.000000000", captured, reading(25, 1));
+    assert_eq!(node.read().unwrap(), expected_value());
+
+    let original_prefix = node.refreshed_status().certificate.unwrap();
+    assert_eq!(original_prefix.version, 1);
+    let verify_withheld = || {
+        assert_eq!(node.read().unwrap(), UNAVAILABLE);
+        assert_eq!(resp(node.address, &[b"PTTL", KEY]).unwrap(), UNAVAILABLE);
+        assert_eq!(node.refreshed_status().certificate, Some(original_prefix));
+        assert_eq!(nodes[backup].refreshed_status().applies, 1);
+    };
+    // The snapshot is still fresh, but its upstream reference is already stale.
+    set_clock("1000.000000000", captured, reading(1_600, 1));
+    verify_withheld();
+    // Reusing the same report with new acquisition timestamps cannot renew the reference.
+    let stale = reading(1_600, 1);
+    set_clock("1000.000000000", stale, stale);
+    verify_withheld();
+    // A fresh upstream time is insufficient when evidence predates a clock step.
+    set_clock("1000.000000000", captured, reading(60, 2));
+    verify_withheld();
+    println!("OD-2 stale-reference and generation-change fences held certified prefix=1");
+
+    let recovered = reading(60, 2);
+    set_clock("1000.140000000", recovered, recovered);
+    wait_for("certified expiry under new clock generation", || {
+        let owner = node.status()?;
+        let backup = nodes[backup].status()?;
+        (owner.version == 2 && backup.applies == 2 && owner.certificate == backup.certificate)
+            .then_some(())
+    });
+    assert_eq!(node.read().unwrap(), b"$-1\r\n");
+    assert_eq!(resp(node.address, &[b"PTTL", KEY]).unwrap(), b":-2\r\n");
+    println!("OD-2 fresh generation certified tombstone prefix=2 on owner and backup");
 }
