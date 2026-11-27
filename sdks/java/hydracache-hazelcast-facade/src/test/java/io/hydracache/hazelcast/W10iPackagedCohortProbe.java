@@ -1,6 +1,7 @@
 package io.hydracache.hazelcast;
 
 import io.hydracache.client.hc2.BatchItemReceipt;
+import io.hydracache.client.hc2.BatchOperation;
 import io.hydracache.client.hc2.HydraCacheClient;
 import io.hydracache.client.hc2.RequestOptions;
 import java.nio.charset.StandardCharsets;
@@ -8,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,10 @@ public final class W10iPackagedCohortProbe {
   public static void main(String[] args) throws Exception {
     requireJar(HydraMap.class);
     requireJar(HydraCacheClient.class);
+    if (args.length == 4 && args[0].equals("check-file")) {
+      verifyPhysical(Path.of(args[1]), args[2], args[3]);
+      return;
+    }
     require(args.length == 6 + PHASES * KEYS_PER_PHASE, "wrong cohort size");
     Path root = Path.of(args[0]);
     String hot = args[4];
@@ -80,6 +86,32 @@ public final class W10iPackagedCohortProbe {
   private static HydraMap<String, String> map(HydraCacheClient client) {
     return new HydraCacheInstance(client, REQUEST.timeout())
         .getMap("w10i-sdk-cohort", HydraCodec.utf8(), HydraCodec.utf8());
+  }
+
+  private static void verifyPhysical(Path root, String endpoint, String file) throws Exception {
+    Path manifest = root.resolve(file);
+    require(Files.size(manifest) <= 128 * 1024, "readback manifest too large");
+    var rows = Files.readAllLines(manifest);
+    require(!rows.isEmpty() && rows.size() <= 14, "invalid readback count");
+    var entries = rows.stream().map(row -> row.split("\t", 2)).toList();
+    var operations = entries.stream().<BatchOperation>map(entry -> {
+      require(entry.length == 2, "readback row lacks its value");
+      return new BatchOperation.Get(HexFormat.of().parseHex(entry[0]));
+    }).toList();
+    try (var client = connect(root, endpoint)) {
+      var outcomes = client.batchOutcomes(operations, REQUEST).join();
+      require(outcomes.size() == entries.size(), "wrong readback outcome count");
+      for (int index = 0; index < entries.size(); ++index) {
+        var outcome = outcomes.get(index);
+        var receipt = outcome.receipt().orElseThrow();
+        require(receipt.state() == BatchItemReceipt.State.CONFIRMED
+            && receipt.applied().orElseThrow().version() > 0, "unconfirmed physical key");
+        var value = outcome.result().orElseThrow().value().orElseThrow().value();
+        require(Arrays.equals(value, entries.get(index)[1].getBytes(StandardCharsets.UTF_8)),
+            "wrong physical value at row " + index);
+      }
+    }
+    System.out.printf("W10i Java cohort action=check-file confirmed=%d%n", entries.size());
   }
 
   private static void verifyValues(HydraMap<String, String> map, Map<String, String> expected)

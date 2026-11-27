@@ -1,6 +1,7 @@
 use super::*;
-use imap_hc2_campaign::{exercise_control, owner_checkpoint};
+use imap_hc2_campaign::{exercise_control, exercise_live_drain, owner_checkpoint};
 use std::ffi::OsStr;
+use std::ops::Range;
 
 const PROFILE: &str = "HYDRACACHE_RUN_W10I_SDK_COHORT";
 const MAP_NAME: &[u8] = b"w10i-sdk-cohort";
@@ -8,6 +9,7 @@ const MAP_NAME: &[u8] = b"w10i-sdk-cohort";
 #[derive(PartialEq, Eq)]
 enum Scenario {
     Correct,
+    InterruptedCopy,
     WrongRust,
     WrongJava,
 }
@@ -15,6 +17,11 @@ enum Scenario {
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn w10i_packaged_rust_and_java_reconcile_retained_cohort() {
     run_cohort(Scenario::Correct).await;
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn w10i_packaged_sdks_read_during_interrupted_copy_and_after_cutover() {
+    run_cohort(Scenario::InterruptedCopy).await;
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -41,10 +48,19 @@ async fn run_cohort(scenario: Scenario) {
     assert!(package.len() == 64 && package.bytes().all(|byte| byte.is_ascii_hexdigit()));
     let _guard = async_daemon_process_guard().await;
     let credentials = pki();
-    let mut cluster =
-        MemberCluster::start_fixture("w10i-sdk-cohort", &credentials, MemberOptions::default())
-            .await;
-    let root = &cluster.spec.root;
+    let interrupt_copy = scenario == Scenario::InterruptedCopy;
+    let duration = Duration::from_secs(if interrupt_copy { 60 } else { 30 });
+    let mut cluster = MemberCluster::start_fixture(
+        "w10i-sdk-cohort",
+        &credentials,
+        MemberOptions {
+            interrupt_copy,
+            ..Default::default()
+        },
+    )
+    .await;
+    let root = cluster.spec.root.clone();
+    let root = &root;
     let rust = RustProbe {
         executable: &executable,
         package: &package,
@@ -105,20 +121,21 @@ async fn run_cohort(scenario: Scenario) {
 
     let started = tokio::time::Instant::now();
     let ledger = root.join("control-ledger.jsonl");
-    let load = (scenario == Scenario::Correct).then(|| {
+    let load = matches!(scenario, Scenario::Correct | Scenario::InterruptedCopy).then(|| {
         tokio::spawn(exercise_control(
             cluster.clients[2].clone(),
             cluster.clients[1].clone(),
             control,
             started,
-            Duration::from_secs(30),
+            duration,
             Some(std::io::BufWriter::new(
                 std::fs::File::create(&ledger).unwrap(),
             )),
             true,
         ))
     });
-    let partition = scope.locate(hot.to_vec()).unwrap().0.value();
+    let hot_partition = scope.locate(hot.to_vec()).unwrap().0;
+    let partition = hot_partition.value();
     let http = w10h_http();
     let mut expected = Vec::new();
     let mut promoted_epoch = None;
@@ -220,29 +237,161 @@ async fn run_cohort(scenario: Scenario) {
     let log = std::fs::read_to_string(&log_path).unwrap();
     assert!(status.success(), "Java cohort failed: {log}");
     print!("{log}");
+    let rejoined = cluster.daemons[0].0.id();
+    let drain_checks = if interrupt_copy {
+        let addresses = cluster.spec.addresses;
+        let mut held_reads = None;
+        let check_while_held = async {
+            held_reads = Some(
+                packaged_readback(
+                    &rust,
+                    (&java, &classpath),
+                    "held",
+                    [addresses[10], addresses[11]],
+                    &expected,
+                    started,
+                )
+                .await,
+            );
+        };
+        let drain = exercise_live_drain(
+            &mut cluster,
+            started,
+            duration,
+            true,
+            hot_partition,
+            check_while_held,
+        )
+        .await;
+        let held = held_reads.expect("the SDKs did not read while the copy was held");
+        let hold = drain.interrupted_window().unwrap();
+        assert!(hold.start <= held.start && held.end <= hold.end);
+        let mut final_values = expected.clone();
+        final_values.push(drain.probe.clone());
+        let returned = packaged_readback(
+            &rust,
+            (&java, &classpath),
+            "returned",
+            [addresses[9]; 2],
+            &final_values,
+            started,
+        )
+        .await;
+        assert!(drain.returned_at_ms <= returned.start);
+        Some((drain, held, returned))
+    } else {
+        None
+    };
     let load = load.unwrap();
     assert!(
         !load.is_finished(),
         "control load ended before cohort verification"
     );
     let counts = load.await.unwrap();
-    let verified_while_offline = std::io::BufReader::new(std::fs::File::open(ledger).unwrap())
+    let rows: Vec<_> = std::io::BufReader::new(std::fs::File::open(ledger).unwrap())
         .lines()
         .map(|line| serde_json::from_str::<serde_json::Value>(&line.unwrap()).unwrap())
+        .collect();
+    let verified_while_offline = verified_control(&rows, &outage);
+    assert!(
+        verified_while_offline > 0,
+        "no verified control round during the owner outage"
+    );
+    println!("W10i SDK cohort retained={} killed_pid={killed} rejoined_pid={rejoined} control_verified={} control_verified_offline={verified_while_offline} offline_from_ms={} offline_to_ms={}", expected.len(), counts.verified, outage.start, outage.end);
+    if let Some((drain, held, returned)) = drain_checks {
+        let held_progress = verified_control(&rows, &drain.interrupted_window().unwrap());
+        let returned_progress =
+            verified_control(&rows, &(drain.returned_at_ms..duration.as_millis() as u64));
+        assert!(
+            held_progress > 0 && returned_progress > 0,
+            "missing control progress during the hold or after rejoin"
+        );
+        let report = serde_json::json!({
+            "drain": drain, "held_readback": held, "returned_readback": returned,
+            "held_verified": held_progress, "returned_verified": returned_progress,
+            "counts": counts,
+        });
+        serde_json::to_writer_pretty(
+            std::fs::File::create(root.join("sdk-drain.json")).unwrap(),
+            &report,
+        )
+        .unwrap();
+        println!("W10i packaged SDK drain retained=13 migrated=1 held_verified={held_progress} returned_verified={returned_progress}");
+    }
+}
+
+fn verified_control(rows: &[serde_json::Value], window: &Range<u64>) -> usize {
+    rows.iter()
         .filter(|row| {
-            outage.contains(&row["elapsed_ms"].as_u64().unwrap())
-                && outage.contains(&row["verified_at_ms"].as_u64().unwrap())
+            window.contains(&row["elapsed_ms"].as_u64().unwrap())
+                && window.contains(&row["verified_at_ms"].as_u64().unwrap())
                 && row["put_ack"] == true
                 && row["cas_ack"] == true
                 && row["delete_ack"] == true
         })
         .count()
-        * 3;
-    assert!(
-        verified_while_offline > 0,
-        "no verified control round during the owner outage"
+        * 3
+}
+
+async fn packaged_readback(
+    rust: &RustProbe<'_>,
+    java: (&OsStr, &OsStr),
+    label: &str,
+    [rust_address, java_address]: [SocketAddr; 2],
+    rows: &[(Bytes, Bytes)],
+    started: tokio::time::Instant,
+) -> Range<u64> {
+    let start = started.elapsed().as_millis() as u64;
+    let file = format!("readback-{label}.tsv");
+    let mut manifest =
+        std::io::BufWriter::new(std::fs::File::create(rust.root.join(&file)).unwrap());
+    use std::io::Write;
+    for (key, value) in rows {
+        writeln!(
+            manifest,
+            "{}\t{}",
+            hex_digest(key),
+            std::str::from_utf8(value).unwrap()
+        )
+        .unwrap();
+    }
+    manifest.flush().unwrap();
+    let (exit, java_log) = tokio::join!(
+        rust.invoke(label, "check-file", rust_address, [file.clone()]),
+        async {
+            let path = rust.root.join(format!("java-check-{label}.log"));
+            let log = std::fs::File::create(&path).unwrap();
+            let mut child = ChildGuard(
+                Command::new(java.0)
+                    .args(["-XX:ActiveProcessorCount=2", "-cp"])
+                    .arg(java.1)
+                    .arg("io.hydracache.hazelcast.W10iPackagedCohortProbe")
+                    .arg("check-file")
+                    .arg(rust.root)
+                    .arg(java_address.to_string())
+                    .arg(&file)
+                    .stdout(Stdio::from(log.try_clone().unwrap()))
+                    .stderr(Stdio::from(log))
+                    .spawn()
+                    .unwrap(),
+            );
+            let status = child_exit(&mut child.0).await;
+            let log = std::fs::read_to_string(path).unwrap();
+            assert!(
+                status.success(),
+                "invalid packaged Java readback: {status}; {log}"
+            );
+            log
+        }
     );
-    println!("W10i SDK cohort retained={} killed_pid={killed} rejoined_pid={} control_verified={} control_verified_offline={verified_while_offline} offline_from_ms={} offline_to_ms={}", expected.len(), cluster.daemons[0].0.id(), counts.verified, outage.start, outage.end);
+    rust.require(exit, "check-file", rows.len());
+    let receipt = format!(
+        "W10i Java cohort action=check-file confirmed={}",
+        rows.len()
+    );
+    assert!(java_log.lines().any(|line| line == receipt), "{java_log}");
+    print!("{java_log}");
+    start..started.elapsed().as_millis() as u64
 }
 
 struct RustProbe<'a> {
@@ -259,19 +408,30 @@ impl RustProbe<'_> {
         address: SocketAddr,
         rows: &[(Bytes, Bytes)],
     ) -> (std::process::ExitStatus, String) {
-        let path = self.root.join(format!("rust-{phase}-{action}.log"));
+        let args = rows.iter().flat_map(|(key, value)| {
+            [
+                hex_digest(key),
+                std::str::from_utf8(value).unwrap().to_owned(),
+            ]
+        });
+        self.invoke(&phase.to_string(), action, address, args).await
+    }
+
+    async fn invoke(
+        &self,
+        label: &str,
+        action: &str,
+        address: SocketAddr,
+        args: impl IntoIterator<Item = String>,
+    ) -> (std::process::ExitStatus, String) {
+        let path = self.root.join(format!("rust-{label}-{action}.log"));
         let log = std::fs::File::create(&path).unwrap();
         let mut child = ChildGuard(
             Command::new(self.executable)
                 .arg(action)
                 .arg(self.root)
                 .arg(address.to_string())
-                .args(rows.iter().flat_map(|(key, value)| {
-                    [
-                        hex_digest(key),
-                        std::str::from_utf8(value).unwrap().to_owned(),
-                    ]
-                }))
+                .args(args)
                 .stdout(Stdio::from(log.try_clone().unwrap()))
                 .stderr(Stdio::from(log))
                 .spawn()

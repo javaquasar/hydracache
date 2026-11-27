@@ -92,7 +92,7 @@ pub(super) struct Drain {
     started_at_ms: u64,
     completed_at_ms: u64,
     audited_at_ms: u64,
-    returned_at_ms: u64,
+    pub(super) returned_at_ms: u64,
     partition: u32,
     certified_version: u64,
     value_sha256: String,
@@ -101,6 +101,15 @@ pub(super) struct Drain {
     replica_digests: ReplicaReconciliation,
     #[serde(skip_serializing_if = "Option::is_none")]
     interrupted_copy: Option<InterruptedCopy>,
+    #[serde(skip)]
+    pub(super) probe: (Bytes, Bytes),
+}
+
+impl Drain {
+    pub(super) fn interrupted_window(&self) -> Option<std::ops::Range<u64>> {
+        let copy = self.interrupted_copy.as_ref()?;
+        Some(copy.hit_at_ms..copy.resumed_at_ms)
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -306,10 +315,11 @@ pub(super) async fn exercise_control(
 pub(super) async fn exercise_live_drain(
     cluster: &mut MemberCluster,
     started: tokio::time::Instant,
-    profile: &Profile,
+    duration: Duration,
+    interrupt_copy: bool,
     hot_partition: hydracache::PartitionId,
+    while_copy_held: impl std::future::Future<Output = ()>,
 ) -> Drain {
-    let duration = profile.duration;
     // Leave five seconds for measured traffic after the drained member returns.
     tokio::time::timeout_at(started + duration - Duration::from_secs(5), async {
         use hydracache_client_hc2::BatchOperation;
@@ -325,9 +335,9 @@ pub(super) async fn exercise_live_drain(
 
         // After the kill, slot 1 owns the promoted and control partitions. For the copy
         // scenario slot 1 holds the probe backup, so the less loaded slot 2 needs a snapshot.
-        let backup_slot = if profile.interrupt_copy { 1 } else { 2 };
+        let backup_slot = if interrupt_copy { 1 } else { 2 };
         let key = cluster.pick_key(0, Some(backup_slot), |i| format!("w10i-live-drain/{i}").into_bytes(), |partition| partition != hot_partition);
-        let value = Bytes::from_static(if profile.interrupt_copy { &INTERRUPTED_COPY_VALUE } else { DRAIN_PROBE_VALUE });
+        let value = Bytes::from_static(if interrupt_copy { &INTERRUPTED_COPY_VALUE } else { DRAIN_PROBE_VALUE });
         let receipt = retry_w10i(|| async {
             let reply = cluster.clients[1]
                 .batch_outcomes(
@@ -370,7 +380,7 @@ pub(super) async fn exercise_live_drain(
 
         tokio::time::sleep_until(started + duration / 2).await;
         let departed_pid = cluster.daemons[0].0.id();
-        if profile.interrupt_copy {
+        if interrupt_copy {
             set_copy_fault(&cluster.spec, 2, 1);
         }
         let started_at_ms = started.elapsed().as_millis() as u64;
@@ -379,8 +389,8 @@ pub(super) async fn exercise_live_drain(
                 .send().await.unwrap().error_for_status().unwrap().json::<serde_json::Value>().await.unwrap();
             (response, started.elapsed().as_millis() as u64)
         }, async {
-            if profile.interrupt_copy {
-                Some(interrupt_and_resume(&cluster.spec, &http, admins, started, partition, &before[0]).await)
+            if interrupt_copy {
+                Some(interrupt_and_resume(&cluster.spec, &http, admins, started, partition, &before[0], while_copy_held).await)
             } else {
                 None
             }
@@ -410,7 +420,7 @@ pub(super) async fn exercise_live_drain(
             partition,
             certified_version,
             |pair| pair[0].primary != pair[1].primary && pair[0].epoch > before[0].epoch
-                && (!profile.interrupt_copy || pair[1].primary),
+                && (!interrupt_copy || pair[1].primary),
         )
         .await;
         for client in &cluster.clients[1..] {
@@ -425,7 +435,7 @@ pub(super) async fn exercise_live_drain(
             body["ready"] == true && cluster_imap_members(body).len() == 3
         })
         .await;
-        wait_w10i_get(&returned, key, Some(&value)).await;
+        wait_w10i_get(&returned, key.clone(), Some(&value)).await;
         cluster.clients[0] = returned;
         let returned_at_ms = started.elapsed().as_millis() as u64;
         let returned_pid = cluster.daemons[0].0.id();
@@ -443,6 +453,7 @@ pub(super) async fn exercise_live_drain(
             after,
             replica_digests: ReplicaReconciliation { before: before_digests, after: after_digests },
             interrupted_copy,
+            probe: (key, value),
         }
     })
     .await
@@ -666,6 +677,7 @@ async fn interrupt_and_resume(
     started: tokio::time::Instant,
     partition: u32,
     before: &CopyObservation,
+    while_copy_held: impl std::future::Future<Output = ()>,
 ) -> InterruptedCopy {
     while !copy_fault_hit(spec, 2, 1) {
         tokio::time::sleep(Duration::from_millis(25)).await;
@@ -673,6 +685,7 @@ async fn interrupt_and_resume(
     let hit_at_ms = started.elapsed().as_millis() as u64;
     println!("W10i interrupted snapshot copy partition={partition} chunk=1 at_ms={hit_at_ms}");
     tokio::time::sleep(COPY_INTERRUPTION_HOLD).await;
+    while_copy_held.await;
     let held_placement = loop {
         let version = before.certified_version;
         let (source, backup, target) = tokio::join!(

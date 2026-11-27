@@ -4,11 +4,13 @@ use hydracache_client_hc2::{
     BatchItemState, BatchOperation, Capability, ClientConfig, GrpcMtlsAdapter, GrpcMtlsConfig,
     Hc2Client, RequestOptions,
 };
+use std::io::Read;
 use std::path::Path;
 use std::time::Duration;
 
 const PACKAGE_SHA256: &str = env!("W10I_RUST_ARTIFACT_SHA256");
-const MAX_ITEMS: usize = 13;
+const MAX_ITEMS: usize = 14;
+const MAX_MANIFEST_BYTES: usize = 128 * 1024;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
@@ -17,14 +19,31 @@ async fn main() {
         panic!("expected action, credentials directory, endpoint and key/value pairs");
     };
     assert!(
-        matches!(action.as_str(), "put" | "check"),
+        matches!(action.as_str(), "put" | "check" | "check-file"),
         "unknown cohort action"
     );
-    assert!(
-        rows.len().is_multiple_of(2) && (2..=MAX_ITEMS * 2).contains(&rows.len()),
-        "invalid cohort size"
-    );
     let root = Path::new(root);
+    let mut manifest = String::new();
+    let entries = if action == "check-file" {
+        let [file] = rows else {
+            panic!("check-file requires one manifest");
+        };
+        std::fs::File::open(root.join(file))
+            .expect("open Rust readback manifest")
+            .take((MAX_MANIFEST_BYTES + 1) as u64)
+            .read_to_string(&mut manifest)
+            .expect("read Rust readback manifest");
+        decode_manifest(&manifest)
+    } else {
+        assert!(
+            rows.len().is_multiple_of(2) && (2..=MAX_ITEMS * 2).contains(&rows.len()),
+            "invalid cohort size"
+        );
+        rows.chunks_exact(2)
+            .map(|pair| (decode_key(&pair[0]), pair[1].as_str()))
+            .collect()
+    };
+    let count = entries.len();
     let read = |name| std::fs::read(root.join(name)).expect("read fixture credential");
     let adapter = GrpcMtlsAdapter::new(
         GrpcMtlsConfig::new(
@@ -41,10 +60,6 @@ async fn main() {
     let client = Hc2Client::connect(&adapter, config)
         .await
         .expect("connect packaged Rust client");
-    let entries: Vec<_> = rows
-        .chunks_exact(2)
-        .map(|pair| (decode_key(&pair[0]), &pair[1]))
-        .collect();
     let operations = entries
         .iter()
         .map(|(key, value)| {
@@ -95,8 +110,24 @@ async fn main() {
     }
     println!(
         "W10i Rust package sha256={PACKAGE_SHA256} action={action} confirmed={}",
-        rows.len() / 2
+        count
     );
+}
+
+fn decode_manifest(input: &str) -> Vec<(Vec<u8>, &str)> {
+    assert!(
+        input.len() <= MAX_MANIFEST_BYTES,
+        "readback manifest too large"
+    );
+    let rows: Vec<_> = input
+        .lines()
+        .map(|line| {
+            let (key, value) = line.split_once('\t').expect("readback row lacks its value");
+            (decode_key(key), value)
+        })
+        .collect();
+    assert!((1..=MAX_ITEMS).contains(&rows.len()), "invalid cohort size");
+    rows
 }
 
 fn decode_key(key: &str) -> Vec<u8> {
@@ -111,6 +142,22 @@ fn decode_key(key: &str) -> Vec<u8> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn decodes_a_manifest_with_a_full_snapshot_probe() {
+        let value = "Z".repeat(96 * 1024);
+        let manifest = format!("4800\tfirst\n42\t{value}\n");
+        assert_eq!(
+            super::decode_manifest(&manifest),
+            [(vec![0x48, 0], "first"), (vec![0x42], value.as_str())]
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "readback row lacks its value")]
+    fn rejects_a_manifest_row_without_a_value() {
+        super::decode_manifest("4800\n");
+    }
+
     #[test]
     fn decodes_the_physical_key_with_embedded_zero() {
         assert_eq!(super::decode_key("484302010000"), b"HC\x02\x01\x00\x00");

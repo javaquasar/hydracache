@@ -468,8 +468,10 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
     let rejoined_at_ms = started.elapsed().as_millis() as u64;
     let drain = if profile.live_drain {
         Some(
-            imap_hc2_campaign::exercise_live_drain(&mut cluster, started, &profile, hot_partition)
-                .await,
+            imap_hc2_campaign::exercise_live_drain(
+                &mut cluster, started, profile.duration, profile.interrupt_copy, hot_partition,
+                std::future::ready(()),
+            ).await,
         )
     } else {
         None
