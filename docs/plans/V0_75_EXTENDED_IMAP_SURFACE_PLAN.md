@@ -1133,10 +1133,39 @@ protocol regressions, and shared conditional, tombstone and durable store tests 
 process traces and digests are in `development/w10d-d88cf27d117a0bccd653a35db17701660c60c550`
 under the AX42 [qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
 
-Production expiry still needs the OD-2 time provider and its target-host admission. The shared
-record-format migration, common embedded decision table, repair and promotion across different
-members, all-replica proof for tombstone reclamation, and the release cost and event gates remain
-open.
+Production expiry still needs the [OD-2 time provider and target-host admission](#od-2-validation-of-bounded-chrony-samples).
+The shared record-format migration, common embedded decision table, repair and promotion across
+different members, all-replica proof for tombstone reclamation, and the release cost and event
+gates remain open.
+
+#### OD-2 validation of bounded chrony samples
+
+`ChronySample` validates one numeric `chronyc -n -c tracking` report bracketed by trusted
+realtime and boottime reads. It checks the admitted reference address, synchronization and
+leap state before adding the acquisition window, rounding and drift to the reported error.
+The snapshot and upstream reference each have an age limit. Reacquiring the same reference
+does not clear its age. The validator withdraws the observation when clock readings disagree
+beyond the allowed drift, their generation changes, or uncertainty exceeds the configured limit.
+
+On AX42, source `9a26e456088acacee3c4b61f5aecf0401b3b654c` passed 134 server unit tests,
+including five validator tests, all 13 `imap_replicated_read_075` tests with process tests enabled,
+and Clippy. With controlled tracking reports and clock reads, a fresh observation permitted a
+TTL write and read through RESP. GET and PTTL refused a stale upstream reference even when the
+report was reacquired. They also refused a report from the previous clock generation. The
+certified prefix stayed at 1. After a fresh report in the new generation, the owner and backup
+agreed on the tombstone at prefix 2. The existing replica-cut and owner-restart scenario also
+passed on the same source.
+
+The AX42 preflight on 2026-11-27 showed synchronized `systemd-timesyncd`, inactive chrony and
+no `chronyc` executable. The tests supplied the tracking reports and clock readings. Logs and
+the host preflight are under `development/w10i-od2-9a26e456088acacee3c4b61f5aecf0401b3b654c`
+in the AX42 [qualification workspace](../testing/imap/0.75/remote-linux-qualification.md).
+The verified `od2-evidence.sha256` manifest has SHA-256
+`e95311e1773820fb3a17fd2ed695b15c0cca9acd0960580fa534331340a941ab`.
+
+Production use needs a managed Linux collector and a kernel clock watcher that invalidates the
+sample on a step, suspend/resume, restart or watcher loss. Target-host evidence must then establish
+the allowed sources, drift, reference age and final uncertainty limit before OD-2 can be accepted.
 
 ### W10e. Implement fenced failover, promotion and retry across owner change
 
@@ -1953,8 +1982,9 @@ The verified `diagnostic.sha256` manifest has SHA-256
 `05b7b38267d4a7a68d83ccd2b3315090b63b2fd6dd08f5480d94bd282eb27b58`.
 
 The commands require `--diagnostic` for this profile and produce `production_admitted=false`.
-The production gate still requires distributed TTL with an admitted OD-2 provider, the packaged
-Rust and Java SDK mixed workload, replica-by-replica reconciliation and accepted OD-3 recovery bounds.
+The production gate still requires [distributed TTL with an admitted OD-2 provider](#od-2-validation-of-bounded-chrony-samples),
+replica-by-replica reconciliation during the full packaged SDK campaign and accepted OD-3
+recovery bounds.
 
 An opt-in `--live-drain` phase runs in the same diagnostic processes and keeps the existing
 control workload active through both faults. After the killed member recovers, the runner seeds
@@ -2670,8 +2700,8 @@ partitions received entries. Counts ranged from 322 to 413 for decimal strings, 
 big-endian `u64` keys, and 321 to 428 for `order:` plus six digits. The [shared Rust/Java vectors](../testing/imap/0.75/partition-hash-fnv1a64-vectors.tsv)
 include a hash with its high bit set. The hash identity and production version are open in W0.
 
-The AX42 OD-2 preflight reported synchronized NTP and no `chronyc` executable. Chrony qualification
-still needs a target host running the proposed provider profile and its uncertainty receipts.
+The [OD-2 AX42 checkpoint](#od-2-validation-of-bounded-chrony-samples) tracks clock validation and
+the remaining target-host qualification.
 
 **D1 performance gate.** D1 puts an async dispatcher behind `Arc<dyn ClientDataBackend>`. A boxed
 future plus an indirect call per operation can cost tens of nanoseconds, which is comparable to a 2%

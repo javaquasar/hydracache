@@ -936,6 +936,15 @@ tombstone advanced the prefix to 2. A rewind of the test clock could no longer m
 readable. These were deterministic clock observations. The production time provider still
 requires OD-2 qualification.
 
+The next checkpoint gave the owner two freshness checks. A recently collected chrony report
+can still carry an old upstream reference, and a clock step invalidates reports from the
+previous clock generation. A three-process RESP test on AX42 supplied those cases through
+controlled clock readings. GET and PTTL refused both, keeping the certified prefix at 1.
+A fresh reference in the new generation let the owner and backup certify the tombstone at
+prefix 2. AX42 was synchronized by `systemd-timesyncd` during the run. OD-2 qualification
+still needs live measurements with a managed chrony profile and a kernel clock watcher.
+[OD-2 checkpoint](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#od-2-validation-of-bounded-chrony-samples)
+
 The hash experiment used three sets of 100,000 keys over 271 partitions. The same FNV-1a function
 produced 365–373 entries per partition for binary integers and 321–428 for prefixed decimal keys.
 That difference matters when choosing a placement policy. A Rust/Java golden vector also covers
