@@ -1170,6 +1170,20 @@ cases. Starting 0.75 on the original volume again preserved the value, the delet
 original idempotent batch receipt.
 [W10i rollback preflight](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#offline-rollback-preflight-for-b74)
 
+## Measuring traffic during a live drain
+
+The W10i diagnostic keeps one workload running across an owner kill and a later planned drain.
+It seeds a separate partition on the departing member. After drain, both survivors report the
+same certified version at the new placement epoch and return the retained value through HC/2.
+The departing member rejoins from its retained volume.
+
+The controller checks both timestamps for every workload round. A round counts toward drain
+progress only when its writes and readbacks started and finished during the drain. It also
+requires verified progress after the third member returns. On AX42, both 60-second runs passed.
+The ledgers verified 37 and 42 mutations during drain and 333 and 339 after return. The reports
+kept unknown outcomes in a separate count.
+[W10i qualification plan](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#w10i-build-the-correctness-and-compatibility-safety-net)
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

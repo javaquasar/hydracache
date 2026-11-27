@@ -1953,10 +1953,45 @@ The verified `diagnostic.sha256` manifest has SHA-256
 `05b7b38267d4a7a68d83ccd2b3315090b63b2fd6dd08f5480d94bd282eb27b58`.
 
 The commands require `--diagnostic` for this profile and produce `production_admitted=false`.
-The production gate still requires distributed TTL with an admitted OD-2 provider, a
-live-drain and interrupted-copy schedule exposed to the daemon harness, the packaged Rust
-and Java SDK mixed workload, replica-by-replica reconciliation,
+The production gate still requires distributed TTL with an admitted OD-2 provider, interrupted
+copy under load, the packaged Rust and Java SDK mixed workload, replica-by-replica reconciliation,
 and accepted OD-3 recovery bounds.
+
+An opt-in `--live-drain` phase runs in the same diagnostic processes and keeps the existing
+control workload active through both faults. After the killed member recovers, the runner seeds
+a separate partition owned by that member and records its certified version and placement. It
+requests the public admin drain at or after the halfway point. From the two surviving members it
+checks the new primary and backup at a common later epoch, verifies that the other member left
+the committed roster, and reads the seeded value through both HC/2 endpoints. It then rejoins
+the departed member on its retained volume and reads the value through that endpoint too.
+
+The controller verifies round start and completion times in the checksummed ledger. Acknowledged
+traffic counts during drain only when the whole write/readback round fits inside the drain window.
+The report also requires verified traffic after the member returns. Short diagnostics with this
+phase allow 45–60 seconds to fit both faults and leave time for post-return traffic. The 6h and 24h
+diagnostic profiles accept the same flag. Confirmation requires a six-hour parent with the same
+schedule and exact source and binaries.
+
+```text
+cargo xtask imap-distributed-qualification --release 0.75 --duration 60s --diagnostic --live-drain --output <new-directory>
+```
+
+On AX42, both 60-second release diagnostics on source `54f1e21fb0fbade6bd278f74524cb50031b2e0e2`
+passed. Each completed an owner kill, a subsequent drain and rejoin, and verified the same
+certified partition version on the two surviving members at epoch 11 after observing it at epoch
+7 before drain. The four controller tests and Clippy for the controller and server process test
+passed on the same source.
+
+| Run | Drain duration | Verified in the drain window | Verified after return | Verified total | Unknown outcomes |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1 | 3.230 s | 37 | 333 | 779 | 8 |
+| 2 | 3.122 s | 42 | 339 | 769 | 13 |
+
+The original 30-second owner-kill diagnostic passed with 339 verified operations and five
+unknown outcomes. The reports, ledgers, logs and exact binaries are under
+`development/w10i-live-drain-54f1e21fb0fbade6bd278f74524cb50031b2e0e2` on AX42. The verified
+`w10i-live-drain.sha256` manifest has SHA-256
+`a51de2aa036f676d841bece456cbe5d3494b4442a1a9055fdff3b2f672f34d0d`.
 
 #### Under-load failover and rebalance qualification
 
