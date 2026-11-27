@@ -1,32 +1,55 @@
 use super::*;
 use imap_hc2_campaign::{exercise_control, owner_checkpoint};
+use std::ffi::OsStr;
 
 const PROFILE: &str = "HYDRACACHE_RUN_W10I_SDK_COHORT";
 const MAP_NAME: &[u8] = b"w10i-sdk-cohort";
 
+#[derive(PartialEq, Eq)]
+enum Scenario {
+    Correct,
+    WrongRust,
+    WrongJava,
+}
+
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn w10i_rust_and_packaged_java_reconcile_retained_cohort() {
-    run_cohort(false).await;
+async fn w10i_packaged_rust_and_java_reconcile_retained_cohort() {
+    run_cohort(Scenario::Correct).await;
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn w10i_packaged_java_rejects_a_divergent_rust_value() {
-    run_cohort(true).await;
+    run_cohort(Scenario::WrongRust).await;
 }
 
-async fn run_cohort(corrupt_seed: bool) {
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn w10i_packaged_rust_rejects_a_divergent_java_value() {
+    run_cohort(Scenario::WrongJava).await;
+}
+
+async fn run_cohort(scenario: Scenario) {
     if std::env::var(PROFILE).as_deref() != Ok("1") {
         return;
     }
     let java = std::env::var_os("HYDRACACHE_W10G_JAVA").expect("SDK cohort requires java");
     let classpath = std::env::var_os("HYDRACACHE_W10G_JAVA_CLASSPATH")
         .expect("SDK cohort requires a packaged Java classpath");
+    let executable = std::env::var_os("HYDRACACHE_W10I_RUST_CONSUMER")
+        .expect("SDK cohort requires an external packaged Rust consumer");
+    let package = std::env::var("HYDRACACHE_W10I_RUST_PACKAGE_SHA256")
+        .expect("SDK cohort requires the Rust package digest");
+    assert!(package.len() == 64 && package.bytes().all(|byte| byte.is_ascii_hexdigit()));
     let _guard = async_daemon_process_guard().await;
     let credentials = pki();
     let mut cluster =
         MemberCluster::start_fixture("w10i-sdk-cohort", &credentials, MemberOptions::default())
             .await;
     let root = &cluster.spec.root;
+    let rust = RustProbe {
+        executable: &executable,
+        package: &package,
+        root,
+    };
     std::fs::write(root.join("java-client.pem"), credentials.client_cert).unwrap();
     std::fs::write(root.join("java-client.key"), credentials.client_key).unwrap();
     let mut prefix = b"HC\x02\x01".to_vec();
@@ -67,6 +90,11 @@ async fn run_cohort(corrupt_seed: bool) {
             .arg(root)
             .args(cluster.spec.addresses[9..].iter().map(ToString::to_string))
             .arg(logical(&hot))
+            .arg(if scenario == Scenario::WrongJava {
+                "wrong-java"
+            } else {
+                "correct"
+            })
             .args(keys.iter().flatten().map(|key| logical(key)))
             .stdout(Stdio::from(log.try_clone().unwrap()))
             .stderr(Stdio::from(log))
@@ -77,7 +105,7 @@ async fn run_cohort(corrupt_seed: bool) {
 
     let started = tokio::time::Instant::now();
     let ledger = root.join("control-ledger.jsonl");
-    let load = (!corrupt_seed).then(|| {
+    let load = (scenario == Scenario::Correct).then(|| {
         tokio::spawn(exercise_control(
             cluster.clients[2].clone(),
             cluster.clients[1].clone(),
@@ -98,21 +126,23 @@ async fn run_cohort(corrupt_seed: bool) {
     let killed = cluster.daemons[0].0.id();
     for (phase, [rust_first, rust_second, java_first, java_second]) in keys.into_iter().enumerate()
     {
-        for key in [rust_first, rust_second] {
-            let value = if corrupt_seed {
+        let seed = [rust_first, rust_second].map(|key| {
+            let value = if scenario == Scenario::WrongRust {
                 Bytes::from_static(b"intentional-wrong-value")
             } else {
                 expected_value("rust", &key)
             };
-            let result =
-                retry_w10i(|| cluster.clients[2].put(key.clone(), value.clone(), None, None)).await;
-            assert!(result.applied);
-            expected.push((key, value));
-        }
+            (key, value)
+        });
+        let put = rust
+            .run(phase, "put", cluster.spec.addresses[11], &seed)
+            .await;
+        rust.require(put, "put", seed.len());
+        expected.extend(seed);
         std::fs::File::create(root.join(format!("cohort-start-{phase}"))).unwrap();
         let complete = format!("cohort-done-{phase}");
-        if corrupt_seed {
-            assert!(!java_exit(&mut probe.0).await.success());
+        if scenario == Scenario::WrongRust {
+            assert!(!child_exit(&mut probe.0).await.success());
             assert!(!root.join(&complete).exists());
             let log = std::fs::read_to_string(&log_path).unwrap();
             assert!(log.contains("wrong value for phase-0-"), "{log}");
@@ -127,10 +157,22 @@ async fn run_cohort(corrupt_seed: bool) {
         if phase == 0 {
             expected.push((hot.clone(), expected_value("java", &hot)));
         }
-        let reader = if phase == 2 { 0 } else { 1 };
-        for (key, value) in &expected {
-            wait_w10i_get(&cluster.clients[reader], key.clone(), Some(value)).await;
+        let reader = if phase == 2 { 9 } else { 10 };
+        let result = rust
+            .run(phase, "check", cluster.spec.addresses[reader], &expected)
+            .await;
+        if scenario == Scenario::WrongJava {
+            let (status, log) = result;
+            assert!(!status.success());
+            assert!(
+                log.contains("wrong value for Rust cohort item 2")
+                    && !log.contains("action=check confirmed="),
+                "{log}"
+            );
+            println!("W10i Rust cohort rejected an incorrect Java value");
+            return;
         }
+        rust.require(result, "check", expected.len());
         if phase == 0 {
             before = Some(owner_checkpoint(&http, &cluster.spec, [0, 1], partition, 1, 1).await);
             outage.start = started.elapsed().as_millis() as u64;
@@ -160,7 +202,7 @@ async fn run_cohort(corrupt_seed: bool) {
             assert_ne!(killed, cluster.daemons[0].0.id());
         }
     }
-    let status = java_exit(&mut probe.0).await;
+    let status = child_exit(&mut probe.0).await;
     let log = std::fs::read_to_string(&log_path).unwrap();
     assert!(status.success(), "Java cohort failed: {log}");
     print!("{log}");
@@ -189,7 +231,63 @@ async fn run_cohort(corrupt_seed: bool) {
     println!("W10i SDK cohort retained={} killed_pid={killed} rejoined_pid={} control_verified={} control_verified_offline={verified_while_offline} offline_from_ms={} offline_to_ms={}", expected.len(), cluster.daemons[0].0.id(), counts.verified, outage.start, outage.end);
 }
 
-async fn java_exit(probe: &mut Child) -> std::process::ExitStatus {
+struct RustProbe<'a> {
+    executable: &'a OsStr,
+    package: &'a str,
+    root: &'a Path,
+}
+
+impl RustProbe<'_> {
+    async fn run(
+        &self,
+        phase: usize,
+        action: &str,
+        address: SocketAddr,
+        rows: &[(Bytes, Bytes)],
+    ) -> (std::process::ExitStatus, String) {
+        let path = self.root.join(format!("rust-{phase}-{action}.log"));
+        let log = std::fs::File::create(&path).unwrap();
+        let mut child = ChildGuard(
+            Command::new(self.executable)
+                .arg(action)
+                .arg(self.root)
+                .arg(address.to_string())
+                .args(rows.iter().flat_map(|(key, value)| {
+                    [
+                        hex_digest(key),
+                        std::str::from_utf8(value).unwrap().to_owned(),
+                    ]
+                }))
+                .stdout(Stdio::from(log.try_clone().unwrap()))
+                .stderr(Stdio::from(log))
+                .spawn()
+                .expect("start packaged Rust probe"),
+        );
+        (
+            child_exit(&mut child.0).await,
+            std::fs::read_to_string(path).unwrap(),
+        )
+    }
+
+    fn require(
+        &self,
+        (status, log): (std::process::ExitStatus, String),
+        action: &str,
+        count: usize,
+    ) {
+        let receipt = format!(
+            "W10i Rust package sha256={} action={action} confirmed={count}",
+            self.package
+        );
+        assert!(
+            status.success() && log.lines().any(|line| line == receipt),
+            "invalid packaged Rust receipt: {status}; {log}"
+        );
+        print!("{log}");
+    }
+}
+
+async fn child_exit(probe: &mut Child) -> std::process::ExitStatus {
     tokio::time::timeout(Duration::from_secs(15), async {
         loop {
             if let Some(status) = probe.try_wait().unwrap() {
@@ -199,5 +297,5 @@ async fn java_exit(probe: &mut Child) -> std::process::ExitStatus {
         }
     })
     .await
-    .expect("Java cohort did not exit")
+    .expect("SDK cohort process did not exit")
 }

@@ -26,9 +26,11 @@ public final class W10iPackagedCohortProbe {
   public static void main(String[] args) throws Exception {
     requireJar(HydraMap.class);
     requireJar(HydraCacheClient.class);
-    require(args.length == 5 + PHASES * KEYS_PER_PHASE, "wrong cohort size");
+    require(args.length == 6 + PHASES * KEYS_PER_PHASE, "wrong cohort size");
     Path root = Path.of(args[0]);
     String hot = args[4];
+    boolean wrongJava = args[5].equals("wrong-java");
+    require(wrongJava || args[5].equals("correct"), "unknown cohort mode");
     var expected = new LinkedHashMap<String, String>();
     try (var writer = connect(root, args[3]); var reader = connect(root, args[2])) {
       var sender = map(writer);
@@ -37,7 +39,7 @@ public final class W10iPackagedCohortProbe {
       for (int phase = 0; phase < PHASES; ++phase) {
         awaitPhase(root.resolve("cohort-start-" + phase));
         List<String> keys = Arrays.asList(args).subList(
-            5 + phase * KEYS_PER_PHASE, 5 + (phase + 1) * KEYS_PER_PHASE);
+            6 + phase * KEYS_PER_PHASE, 6 + (phase + 1) * KEYS_PER_PHASE);
         var rust = new LinkedHashMap<String, String>();
         rust.put(keys.get(0), "rust:" + keys.get(0));
         rust.put(keys.get(1), "rust:" + keys.get(1));
@@ -45,7 +47,7 @@ public final class W10iPackagedCohortProbe {
         expected.putAll(rust);
 
         var java = new LinkedHashMap<String, String>();
-        java.put(keys.get(2), "java:" + keys.get(2));
+        java.put(keys.get(2), wrongJava ? "intentional-wrong-java-value" : "java:" + keys.get(2));
         java.put(keys.get(3), "java:" + keys.get(3));
         if (phase == 0) java.put(hot, "java:" + hot);
         var options = phase == 0
