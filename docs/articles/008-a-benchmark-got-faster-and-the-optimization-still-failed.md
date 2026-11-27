@@ -1154,6 +1154,22 @@ test restored the 0.75 binary and verified a new write through a different endpo
 optimized repetitions passed this sequence.
 [W10h release plan](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#w10h-add-distributed-observability-admission-readiness-and-operational-controls)
 
+## Where rollback stops being safe
+
+An IMap write leaves a certificate in Raft as well as data on its replicas. A member can have an
+empty local value journal and still carry Raft commands that the old binary cannot decode.
+Compaction moves those commands from the log into the recovery snapshot. A rollback check has
+to inspect both representations, plus any pending state in the local value journal.
+
+The offline preflight copies the locked stores to scratch before opening them. Recovery can then
+inspect the copies while leaving the stopped member's original files intact.
+
+On AX42, the published 0.74.0 daemon refused a cold copy containing the certificate in the log and
+refused another copy after compaction moved it into the snapshot. The preflight detected both
+cases. Starting 0.75 on the original volume again preserved the value, the deletion and the
+original idempotent batch receipt.
+[W10i rollback preflight](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#offline-rollback-preflight-for-b74)
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

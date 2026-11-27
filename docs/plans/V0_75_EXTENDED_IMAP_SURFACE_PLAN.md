@@ -1764,7 +1764,7 @@ Peers negotiate internal snapshot schema 2 for IMap; requests for schema 1 retai
 response shape used by 0.74. The two schemas have independent refresh caches. The shared
 observability catalogue defines help text and Prometheus types for the 24 IMap metric families.
 The distributed profile exports them on `/metrics`, with unchanged series names and labels.
-W10i retains the compatibility gates for rollback of volumes that already contain v2 value records.
+W10i adds a durable-state preflight for rollback of volumes that already contain IMap state.
 
 **AX42 qualification (2026-11-27).** Source `8fe9642a3a7927cfbad2dbe469eb4183a192f3c7`,
 Rust 1.94.0, three independent daemons on one Linux host. The server regression passed all 174
@@ -1808,9 +1808,8 @@ are retained on AX42 under `development/w10h-ops-02e3a07cd5371d194329178753f6440
 The verified `w10h-ops.sha256` manifest has SHA-256
 `91fc9b7003f903df19997685bc789e9d8cfd33c764218ac76c0b4b26d4af07d1`.
 
-The scenario qualifies same-volume rollback before the first certified IMap value. Recovery
-of volumes with certified v2 records requires a compatible binary until W10i qualifies a
-downgrade procedure.
+The scenario qualifies same-volume rollback before the first certified IMap value. The W10i
+offline preflight below defines the refusal path for volumes that already contain IMap state.
 [B74 artifact identity](../testing/imap/0.75/d1-b74-intake.md#verified-input)
 
 ### W10i. Build the correctness and compatibility safety net
@@ -1870,6 +1869,46 @@ Every real-process test records cluster/member binary SHA, config hash, route/wi
 partition map before/after, injected seed/schedule, responses with certainty, final per-replica
 digests, resource owners and nested SHA-256. A passed assertion without this receipt is diagnostic,
 not release evidence.
+
+#### Offline rollback preflight for B74
+
+Run the 0.75 binary against a stopped, initialized member volume before considering startup with
+the published 0.74.0 daemon.
+
+```text
+hydracache-server check-b74-rollback /path/to/stopped-member-volume
+```
+
+The command takes the Sled database locks and opens scratch copies of the Raft and IMap stores.
+Place the process temporary directory on a filesystem outside the member volume with room for the
+copies. Exit zero with `decision=compatible` means this inspection found only B74-compatible
+Raft commands and no IMap journal state beyond the scope manifest. A refused scan exits nonzero
+and reports `raft_log`, `raft_snapshot` or `value_journal` when it finds incompatible state.
+A live lock, missing store or unreadable format also exits nonzero. A retained uncommitted IMap
+command can still become applied, so it also blocks a downgrade.
+
+Use this per-volume check while the target remains stopped and IMap admission is fenced across
+the cluster. A compatible result on one member describes its local stores at inspection time.
+Once the cluster has certified IMap values, recover its volumes with a compatible 0.75 binary.
+The check detects incompatible state and leaves any migration to a separately qualified procedure.
+
+The AX42 process test used the signed predecessor ELF retained from B74 intake. One member held
+the committed Raft metadata while both IMap copies lived on the other two members. Its log and
+compacted snapshot each blocked the preflight. The original volume's file hashes matched before
+and after the checks. Separate copies reproduced both startup refusals with the actual 0.74.0
+daemon. Restarting 0.75 on the original volume preserved the committed value, the tombstone and
+the original idempotent batch receipt through public HC/2.
+
+Source `bf5dfd0b1dc20381051c3ba77a77dcea43a0a727` passed 164 server tests and 56 Raft library
+tests with the Sled log store enabled, plus Clippy on the server binary, library and process test.
+The targeted process checks ran against the published `0.74.0` ELF with SHA-256
+`60a37932c554e58a54303f1196c347948fbe0dde162d5a3e32cef5e00f0dd10a`.
+Both process scenarios passed in each of three optimized repetitions. The incompatible command
+was detected at log index 8 and in snapshots at indexes 12, 13 and 13. The logs and executables
+are retained on AX42 under `development/w10i-b74-bf5dfd0b1dc20381051c3ba77a77dcea43a0a727`.
+The verified `w10i-b74.sha256` manifest has SHA-256
+`4d82063621911363ebf82d329a40f6320fe7c3014c344d570f5afd8f368be4d0`.
+[B74 artifact identity](../testing/imap/0.75/d1-b74-intake.md#verified-input)
 
 **Public HC/2 checkpoint.** A member enabling HC/2 must explicitly configure
 `HYDRACACHE_DISTRIBUTED_HC2_CONFIG` with a TOML file containing `tenant` and the lowercase
