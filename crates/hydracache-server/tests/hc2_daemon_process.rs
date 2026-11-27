@@ -321,6 +321,7 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
         started,
         profile.duration,
         profile.ledger().unwrap(),
+        profile.live_drain,
     ));
     tokio::time::sleep_until(started + profile.duration / 3).await;
     let killed = cluster.daemons[0].0.id();
@@ -381,6 +382,11 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
     wait_w10i_get(&clients[0], hot, None).await;
     let rejoined = cluster.daemons[0].0.id();
     let rejoined_at_ms = started.elapsed().as_millis() as u64;
+    let drain = if profile.live_drain {
+        Some(imap_hc2_campaign::exercise_live_drain(&mut cluster, started, profile.duration).await)
+    } else {
+        None
+    };
     let counts = load.await.unwrap();
     assert!(counts.acknowledgements > 0);
     profile
@@ -394,6 +400,7 @@ async fn distributed_hc2_routes_public_requests_and_recovers_after_owner_kill() 
                 rejoined_pid: rejoined,
                 rejoined_at_ms,
             },
+            drain,
         )
         .unwrap();
     println!("W10i public HC/2 killed_pid={killed} rejoined_pid={rejoined} checks={counts:?} retained_cas_and_tombstone=true");
@@ -1849,6 +1856,25 @@ impl MemberClusterSpec {
     }
 
     fn spawn_binary(&self, index: usize, value_profile: bool, binary: &Path) -> ChildGuard {
+        self.spawn_member(index, value_profile, binary, "bootstrap")
+    }
+
+    fn spawn_after_drain(&self, index: usize) -> ChildGuard {
+        self.spawn_member(
+            index,
+            true,
+            Path::new(env!("CARGO_BIN_EXE_hydracache-server")),
+            "join",
+        )
+    }
+
+    fn spawn_member(
+        &self,
+        index: usize,
+        value_profile: bool,
+        binary: &Path,
+        start: &str,
+    ) -> ChildGuard {
         let log = std::fs::File::options()
             .create(true)
             .append(true)
@@ -1886,6 +1912,7 @@ impl MemberClusterSpec {
             command
                 .env("HYDRACACHE_CLIENT_API_ENABLED", "false")
                 .env("HYDRACACHE_ROLE", "member")
+                .env("HYDRACACHE_CLUSTER_START", start)
                 .env("HYDRACACHE_CLUSTER_ADDR", self.addresses[index].to_string())
                 .env(
                     "HYDRACACHE_CLUSTER_ADVERTISE_ADDR",

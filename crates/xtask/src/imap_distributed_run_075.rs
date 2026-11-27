@@ -15,6 +15,8 @@ const MAX_LEDGER_BYTES: u64 = 512 * 1024 * 1024;
 const MAX_LEDGER_ROW: u64 = 1024;
 const MAX_INITIAL_GAP_MS: u64 = 1_000;
 const MAX_INTER_ROUND_GAP_MS: u64 = 20_000;
+const MIN_DRAIN_DIAGNOSTIC_SECONDS: u64 = 45;
+const DRAIN_PROBE_VALUE: &[u8] = b"w10i-live-drain-probe";
 const SCENARIO: &str = "distributed_hc2_routes_public_requests_and_recovers_after_owner_kill";
 
 type RunResult<T> = Result<T, Box<dyn Error>>;
@@ -30,10 +32,12 @@ struct Options {
     seconds: u64,
     output: PathBuf,
     prior: Option<PathBuf>,
+    live_drain: bool,
 }
 
 fn parse(args: Vec<String>, mode: Mode) -> RunResult<Options> {
     let mut diagnostic = false;
+    let mut live_drain = false;
     let mut release = None;
     let mut duration = None;
     let mut output = None;
@@ -43,6 +47,10 @@ fn parse(args: Vec<String>, mode: Mode) -> RunResult<Options> {
         let slot = match option.as_str() {
             "--diagnostic" if !diagnostic => {
                 diagnostic = true;
+                continue;
+            }
+            "--live-drain" if !live_drain => {
+                live_drain = true;
                 continue;
             }
             "--release" => &mut release,
@@ -76,6 +84,11 @@ fn parse(args: Vec<String>, mode: Mode) -> RunResult<Options> {
     if !diagnostic {
         return Err("W10i production admission requires packaged mixed HC/2 workloads, distributed TTL and listeners, live drain and replica proof, and accepted OD-2/OD-3 bounds; the available runs require --diagnostic".into());
     }
+    if live_drain && seconds < MIN_DRAIN_DIAGNOSTIC_SECONDS {
+        return Err(
+            "W10i --live-drain requires at least 45 seconds for both faults and recovery".into(),
+        );
+    }
     if matches!(mode, Mode::Confirmation) != prior.is_some() {
         return Err(
             "only confirmation requires --qualification <completed-six-hour-directory>".into(),
@@ -87,6 +100,7 @@ fn parse(args: Vec<String>, mode: Mode) -> RunResult<Options> {
             .ok_or("W10i requires a fresh --output directory")?
             .into(),
         prior: prior.map(Into::into),
+        live_drain,
     })
 }
 
@@ -112,6 +126,8 @@ struct Receipt {
     ledger_sha256: String,
     fault: Fault,
     counts: Counts,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    drain: Option<Drain>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -126,10 +142,45 @@ struct Fault {
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
+struct Drain {
+    departed_pid: u32,
+    returned_pid: u32,
+    started_at_ms: u64,
+    completed_at_ms: u64,
+    audited_at_ms: u64,
+    returned_at_ms: u64,
+    partition: u32,
+    certified_version: u64,
+    value_sha256: String,
+    before: [CopyObservation; 2],
+    after: [CopyObservation; 2],
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct CopyObservation {
+    member_slot: u8,
+    epoch: u64,
+    certified_version: u64,
+    primary: bool,
+    backup: bool,
+}
+
+#[derive(Debug, Default, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct DrainProgress {
+    verified_during_drain: u64,
+    verified_after_return: u64,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 struct Published {
     worker: Receipt,
     log_sha256: String,
     qualification_sha256: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    drain_progress: Option<DrainProgress>,
 }
 
 #[derive(Deserialize)]
@@ -137,6 +188,8 @@ struct Published {
 struct Round {
     sequence: u64,
     elapsed_ms: u64,
+    #[serde(default)]
+    verified_at_ms: Option<u64>,
     put_value_sha256: String,
     cas_value_sha256: String,
     put_ack: bool,
@@ -152,7 +205,7 @@ pub fn run(args: Vec<String>, mode: Mode) -> RunResult<()> {
     let prior = opts
         .prior
         .as_ref()
-        .map(|directory| read_prior(directory, &source))
+        .map(|directory| read_prior(directory, &source, opts.live_drain))
         .transpose()?;
     fs::create_dir(&opts.output)?;
     let directory = opts.output.canonicalize()?;
@@ -189,6 +242,10 @@ pub fn run(args: Vec<String>, mode: Mode) -> RunResult<()> {
         .env("HYDRACACHE_W10I_RUN_DIR", &directory)
         .env("HYDRACACHE_W10I_SOURCE_SHA", &source)
         .env("HYDRACACHE_W10I_DURATION_SECONDS", opts.seconds.to_string())
+        .env(
+            "HYDRACACHE_W10I_LIVE_DRAIN",
+            if opts.live_drain { "1" } else { "0" },
+        )
         .stdout(Stdio::from(log.try_clone()?))
         .stderr(Stdio::from(log))
         .status()?;
@@ -203,7 +260,7 @@ pub fn run(args: Vec<String>, mode: Mode) -> RunResult<()> {
         return Err("W10i source changed during the diagnostic".into());
     }
     let worker: Receipt = read_json(&directory.join("worker.json"))?;
-    verify(&worker, &directory, &source, opts.seconds)?;
+    let drain_progress = verify(&worker, &directory, &source, opts.seconds, opts.live_drain)?;
     let qualification_sha256 = prior
         .map(|(digest, previous)| {
             match_candidate(&previous.worker, &worker)?;
@@ -214,6 +271,7 @@ pub fn run(args: Vec<String>, mode: Mode) -> RunResult<()> {
         worker,
         log_sha256: digest_file(&directory.join("cargo.log"), 8 * 1024 * 1024)?,
         qualification_sha256,
+        drain_progress,
     };
     let staging = directory.join("report.json.tmp");
     let mut report = new_file(&staging)?;
@@ -228,7 +286,7 @@ pub fn run(args: Vec<String>, mode: Mode) -> RunResult<()> {
     Ok(())
 }
 
-fn read_prior(directory: &Path, source: &str) -> RunResult<(String, Published)> {
+fn read_prior(directory: &Path, source: &str, live_drain: bool) -> RunResult<(String, Published)> {
     let path = directory.join("report.json");
     let report: Published = read_json(&path)?;
     if report.qualification_sha256.is_some()
@@ -236,7 +294,16 @@ fn read_prior(directory: &Path, source: &str) -> RunResult<(String, Published)> 
     {
         return Err("invalid W10i qualification parent evidence".into());
     }
-    verify(&report.worker, directory, source, QUALIFICATION_SECONDS)?;
+    if verify(
+        &report.worker,
+        directory,
+        source,
+        QUALIFICATION_SECONDS,
+        live_drain,
+    )? != report.drain_progress
+    {
+        return Err("W10i qualification parent's drain progress does not match its ledger".into());
+    }
     Ok((digest_file(&path, 16 * 1024)?, report))
 }
 
@@ -250,10 +317,17 @@ fn match_candidate(previous: &Receipt, current: &Receipt) -> RunResult<()> {
     Ok(())
 }
 
-fn verify(receipt: &Receipt, directory: &Path, source: &str, seconds: u64) -> RunResult<()> {
+fn verify(
+    receipt: &Receipt,
+    directory: &Path,
+    source: &str,
+    seconds: u64,
+    live_drain: bool,
+) -> RunResult<Option<DrainProgress>> {
     let expected_ms = seconds * 1_000;
     let fault = &receipt.fault;
-    if receipt.schema_version != 1
+    if receipt.schema_version != if live_drain { 2 } else { 1 }
+        || receipt.drain.is_some() != live_drain
         || receipt.production_admitted
         || receipt.source_sha != source
         || receipt.seconds != seconds
@@ -270,19 +344,70 @@ fn verify(receipt: &Receipt, directory: &Path, source: &str, seconds: u64) -> Ru
     {
         return Err("invalid W10i worker identity, duration or fault sequence".into());
     }
+    if let Some(drain) = &receipt.drain {
+        verify_drain(drain, fault, expected_ms)?;
+    }
     let path = directory.join("ledger.jsonl");
     if receipt.ledger_sha256 != digest_file(&path, MAX_LEDGER_BYTES)? {
         return Err("W10i ledger digest does not match the worker receipt".into());
     }
-    if verify_ledger(BufReader::new(File::open(path)?), expected_ms)? != receipt.counts {
+    let (counts, progress) = verify_ledger(
+        BufReader::new(File::open(path)?),
+        expected_ms,
+        receipt.drain.as_ref(),
+    )?;
+    if counts != receipt.counts {
         return Err("W10i ledger counts do not match the worker receipt".into());
+    }
+    Ok(progress)
+}
+
+fn verify_drain(drain: &Drain, fault: &Fault, expected_ms: u64) -> RunResult<()> {
+    let [old_primary, old_backup] = &drain.before;
+    let [survivor_one, survivor_two] = &drain.after;
+    let valid_copy = |copy: &CopyObservation| {
+        copy.certified_version == drain.certified_version && copy.primary != copy.backup
+    };
+    if drain.departed_pid != fault.rejoined_pid
+        || drain.returned_pid == 0
+        || drain.returned_pid == drain.departed_pid
+        || drain.returned_pid == fault.killed_pid
+        || drain.started_at_ms < expected_ms / 2
+        || drain.started_at_ms <= fault.rejoined_at_ms
+        || drain.started_at_ms >= drain.completed_at_ms
+        || drain.completed_at_ms > drain.audited_at_ms
+        || drain.audited_at_ms >= drain.returned_at_ms
+        || drain.returned_at_ms >= expected_ms
+        || drain.partition >= 271
+        || drain.certified_version == 0
+        || drain.value_sha256 != crate::imap_qualification_075::digest(DRAIN_PROBE_VALUE)
+        || !drain.before.iter().chain(&drain.after).all(valid_copy)
+        || old_primary.member_slot != 0
+        || !old_primary.primary
+        || old_primary.epoch == 0
+        || old_backup.member_slot != 2
+        || !old_backup.backup
+        || old_backup.epoch != old_primary.epoch
+        || survivor_one.member_slot != 1
+        || survivor_two.member_slot != 2
+        || survivor_one.epoch != survivor_two.epoch
+        || survivor_one.epoch <= old_primary.epoch
+        || survivor_one.primary == survivor_two.primary
+    {
+        return Err("invalid W10i live drain sequence or certified placement".into());
     }
     Ok(())
 }
 
-fn verify_ledger(mut input: impl BufRead, expected_ms: u64) -> RunResult<Counts> {
+fn verify_ledger(
+    mut input: impl BufRead,
+    expected_ms: u64,
+    drain: Option<&Drain>,
+) -> RunResult<(Counts, Option<DrainProgress>)> {
     let mut counts = Counts::default();
+    let mut progress = drain.map(|_| DrainProgress::default());
     let mut last = 0;
+    let mut last_verified = 0;
     let mut line = Vec::new();
     loop {
         line.clear();
@@ -325,6 +450,26 @@ fn verify_ledger(mut input: impl BufRead, expected_ms: u64) -> RunResult<Counts>
         last = row.elapsed_ms;
         counts.rounds += 1;
         let ack = u64::from(row.put_ack) + u64::from(row.cas_ack) + u64::from(row.delete_ack);
+        if let Some((drain, progress)) = drain.zip(progress.as_mut()) {
+            let completed = row
+                .verified_at_ms
+                .ok_or("W10i live drain ledger lacks a round completion time")?;
+            if row.elapsed_ms < last_verified
+                || completed < row.elapsed_ms
+                || completed > expected_ms + 60_000
+            {
+                return Err("W10i live drain ledger has invalid round completion times".into());
+            }
+            last_verified = completed;
+            if row.elapsed_ms >= drain.started_at_ms && completed <= drain.completed_at_ms {
+                progress.verified_during_drain += ack;
+            }
+            if row.elapsed_ms >= drain.returned_at_ms && completed <= expected_ms {
+                progress.verified_after_return += ack;
+            }
+        } else if row.verified_at_ms.is_some() {
+            return Err("unexpected W10i live drain timing in the original ledger profile".into());
+        }
         counts.acknowledgements += ack;
         counts.verified += ack;
         counts.unknown += row.unknown;
@@ -334,7 +479,16 @@ fn verify_ledger(mut input: impl BufRead, expected_ms: u64) -> RunResult<Counts>
     {
         return Err("W10i ledger lacks verified progress through the scheduled end".into());
     }
-    Ok(counts)
+    if progress
+        .as_ref()
+        .is_some_and(|p| p.verified_during_drain == 0 || p.verified_after_return == 0)
+    {
+        return Err(
+            "W10i ledger must prove verified traffic during drain and after the member returned"
+                .into(),
+        );
+    }
+    Ok((counts, progress))
 }
 
 fn new_file(path: &Path) -> io::Result<File> {
@@ -448,6 +602,22 @@ mod tests {
             ]);
             assert!(parse(smoke, Mode::Qualification).is_err());
         }
+        for (duration, accepted) in [("40s", false), ("45s", true), ("60s", true), ("6h", true)] {
+            let request = args(&[
+                "--release",
+                "0.75",
+                "--duration",
+                duration,
+                "--diagnostic",
+                "--live-drain",
+                "--output",
+                "out",
+            ]);
+            assert_eq!(
+                parse(request, Mode::Qualification).is_ok_and(|options| options.live_drain),
+                accepted
+            );
+        }
     }
 
     fn row(sequence: u64, elapsed_ms: u64) -> Value {
@@ -471,7 +641,7 @@ mod tests {
     fn ledger_requires_sequence_end_window_matching_digests_and_order() {
         let ledger = rows(&[row(0, 0), row(1, 9_900)]);
         assert_eq!(
-            verify_ledger(ledger.as_slice(), 10_000).unwrap(),
+            verify_ledger(ledger.as_slice(), 10_000, None).unwrap().0,
             Counts {
                 rounds: 2,
                 acknowledgements: 6,
@@ -484,8 +654,9 @@ mod tests {
         partial["delete_ack"] = json!(false);
         partial["unknown"] = json!(1);
         assert_eq!(
-            verify_ledger(rows(&[row(0, 0), partial.clone()]).as_slice(), 10_000)
+            verify_ledger(rows(&[row(0, 0), partial.clone()]).as_slice(), 10_000, None)
                 .unwrap()
+                .0
                 .unknown,
             1
         );
@@ -499,12 +670,14 @@ mod tests {
             let mut tampered = partial.clone();
             tampered[field] = bad;
             assert!(
-                verify_ledger(rows(&[row(0, 0), tampered]).as_slice(), 10_000).is_err(),
+                verify_ledger(rows(&[row(0, 0), tampered]).as_slice(), 10_000, None).is_err(),
                 "{field}"
             );
         }
-        assert!(verify_ledger(&ledger[..ledger.len() - 1], 10_000).is_err());
-        assert!(verify_ledger(rows(&[row(0, 0), row(1, 49_999)]).as_slice(), 50_000).is_err());
+        assert!(verify_ledger(&ledger[..ledger.len() - 1], 10_000, None).is_err());
+        assert!(
+            verify_ledger(rows(&[row(0, 0), row(1, 49_999)]).as_slice(), 50_000, None).is_err()
+        );
     }
 
     #[test]
@@ -528,6 +701,7 @@ mod tests {
                 rejoined_pid: 43,
                 rejoined_at_ms: 5_000,
             },
+            drain: None,
             counts: Counts {
                 rounds: 2,
                 acknowledgements: 6,
@@ -536,22 +710,90 @@ mod tests {
             },
         };
         let previous = serde_json::from_value(serde_json::to_value(&worker).unwrap()).unwrap();
-        verify(&worker, dir.path(), &worker.source_sha, 10).unwrap();
+        verify(&worker, dir.path(), &worker.source_sha, 10, false).unwrap();
         match_candidate(&previous, &worker).unwrap();
         worker.runner_sha256 = "d".repeat(64);
         assert!(match_candidate(&previous, &worker).is_err());
-        assert!(verify(&worker, dir.path(), "another-source", 10).is_err());
-        assert!(verify(&worker, dir.path(), &worker.source_sha, 60).is_err());
+        assert!(verify(&worker, dir.path(), "another-source", 10, false).is_err());
+        assert!(verify(&worker, dir.path(), &worker.source_sha, 60, false).is_err());
         worker.fault.rejoined_pid = worker.fault.killed_pid;
-        assert!(verify(&worker, dir.path(), &worker.source_sha, 10).is_err());
+        assert!(verify(&worker, dir.path(), &worker.source_sha, 10, false).is_err());
         worker.fault.rejoined_pid = 43;
         worker.fault.rejoined_at_ms = 10_001;
-        assert!(verify(&worker, dir.path(), &worker.source_sha, 10).is_err());
+        assert!(verify(&worker, dir.path(), &worker.source_sha, 10, false).is_err());
         worker.fault.rejoined_at_ms = 5_000;
         worker.production_admitted = true;
-        assert!(verify(&worker, dir.path(), &worker.source_sha, 10).is_err());
+        assert!(verify(&worker, dir.path(), &worker.source_sha, 10, false).is_err());
         worker.production_admitted = false;
         fs::write(&path, rows(&[row(0, 0), row(1, 9_950)])).unwrap();
-        assert!(verify(&worker, dir.path(), &worker.source_sha, 10).is_err());
+        assert!(verify(&worker, dir.path(), &worker.source_sha, 10, false).is_err());
+    }
+
+    #[test]
+    fn live_drain_requires_certified_placement_and_verified_traffic_in_both_windows() {
+        let copy = |member_slot, epoch, primary| CopyObservation {
+            member_slot,
+            epoch,
+            certified_version: 5,
+            primary,
+            backup: !primary,
+        };
+        let mut drain = Drain {
+            departed_pid: 43,
+            returned_pid: 44,
+            started_at_ms: 30_000,
+            completed_at_ms: 34_000,
+            audited_at_ms: 35_000,
+            returned_at_ms: 45_000,
+            partition: 11,
+            certified_version: 5,
+            value_sha256: crate::imap_qualification_075::digest(DRAIN_PROBE_VALUE),
+            before: [copy(0, 7, true), copy(2, 7, false)],
+            after: [copy(1, 8, true), copy(2, 8, false)],
+        };
+        let fault = Fault {
+            killed_pid: 42,
+            killed_at_ms: 20_000,
+            recovered_at_ms: 24_000,
+            rejoined_pid: 43,
+            rejoined_at_ms: 25_000,
+        };
+        verify_drain(&drain, &fault, 60_000).unwrap();
+        drain.after[1].certified_version -= 1;
+        assert!(verify_drain(&drain, &fault, 60_000).is_err());
+        drain.after[1].certified_version += 1;
+        drain.after[1].epoch -= 1;
+        assert!(verify_drain(&drain, &fault, 60_000).is_err());
+        drain.after[1].epoch += 1;
+        drain.returned_pid = 42;
+        assert!(verify_drain(&drain, &fault, 60_000).is_err());
+        drain.returned_pid = 44;
+
+        let mut ledger: Vec<_> = [0, 15_000, 30_500, 41_000, 58_000]
+            .into_iter()
+            .enumerate()
+            .map(|(seq, time)| {
+                let mut entry = row(seq as u64, time);
+                entry["verified_at_ms"] = json!(time + 100);
+                entry
+            })
+            .collect();
+        let check = |ledger: &[Value]| verify_ledger(rows(ledger).as_slice(), 60_000, Some(&drain));
+        let (_, progress) = check(&ledger).unwrap();
+        assert_eq!(
+            progress.unwrap(),
+            DrainProgress {
+                verified_during_drain: 3,
+                verified_after_return: 3
+            }
+        );
+        ledger[2]["verified_at_ms"] = json!(34_001);
+        assert!(check(&ledger).is_err());
+        ledger[2]["verified_at_ms"] = json!(30_600);
+        ledger[4]["verified_at_ms"] = json!(60_001);
+        assert!(check(&ledger).is_err());
+        ledger[4]["verified_at_ms"] = Value::Null;
+        assert!(check(&ledger).is_err());
+        assert!(verify_ledger(rows(&ledger).as_slice(), 60_000, None).is_err());
     }
 }
