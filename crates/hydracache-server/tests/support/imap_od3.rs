@@ -111,7 +111,6 @@ fn plan(names: &[String], all: bool, keys_per_partition: usize) -> Vec<Partition
             );
         }
     }
-    assert_eq!(pairs.len(), 6);
     let scope = fixture_imap_scope();
     let mut needed = keys_per_partition * selected.len();
     for sequence in 0.. {
@@ -342,16 +341,19 @@ async fn measures_partition_write_outage_and_replica_recovery_on_hc2() {
 fn selects_every_placement_and_full_partition_coverages() {
     let names = ["member-1".into(), "member-2".into(), "member-3".into()];
     let representative = plan(&names, false, 2);
-    assert_eq!(representative.len(), 6);
-    assert_eq!(
-        representative
-            .iter()
-            .filter(|p| p.original.contains(&VICTIM))
-            .count(),
-        4
-    );
     let all = plan(&names, true, 2);
     assert_eq!(all.len(), D2_PARTITION_COUNT.get() as usize);
+    let original_pairs = |partitions: &[Partition]| {
+        partitions
+            .iter()
+            .map(|partition| partition.original)
+            .collect::<BTreeSet<_>>()
+    };
+    let audited = original_pairs(&representative);
+    assert_eq!(audited, original_pairs(&all));
+    assert_eq!(representative.len(), audited.len());
+    assert!(audited.iter().any(|pair| pair.contains(&VICTIM)));
+    assert!(audited.iter().any(|pair| !pair.contains(&VICTIM)));
     for partition in all {
         assert_eq!(partition.keys.len(), 2);
         assert!(partition
