@@ -2242,6 +2242,48 @@ and fault markers were checked against
 on AX42. The manifest SHA-256 is
 `429be9cc7858fa298a64ca1d85b1e3d010bfb02720146260b015813406c7748b`.
 
+#### Continuous packaged SDK traffic, subscriptions and journal reconciliation
+
+The 60-second interrupted-copy diagnostic runs one external Rust writer and one JVM writer
+using the candidate packages. Each submits an ordered seven-item batch every round on two
+fresh keys assigned to surviving replicas. The items exercise inserts, stale and matching CAS,
+reads and deletion. The packaged streams keep submitting through the owner kill, snapshot hold
+and rejoin while the existing control stream independently drives the fixture.
+The key plans reserve the cohort, witness and control partitions for their existing probes.
+
+Each client flushes its submission before dispatch and records the outcome of every item.
+The ledger distinguishes confirmed results, rejected conditions, definite non-application
+and unknown outcomes. The verifier validates the ordered submissions and receipts against the
+key plan and independently reads a cohort after promotion, while the copy is held, and after
+drain. It then reconciles every submitted key against the sealed client journals. Unknown
+outcomes admit only states permitted by that specific submitted operation and later receipts.
+
+Both packaged subscribers attach to the departing endpoint before the kill and before the
+drain. After each fault, the harness opens a new subscription on a surviving endpoint with
+the SDK's last observed watermark. It requires a stream-wide `RESUME_UNBOUND` gap, a matching
+repair read and a fresh event at a higher watermark. This exercises client-driven reconnection
+and readback in the three-member diagnostic.
+
+AX42 completed both 60-second diagnostics at `f9d2e3f9a64321639b1f39924f6ae0317270b5b4`.
+The independent reader reconciled every submitted key. Both subscribers observed watermarks
+1, 2, 3 and 4 in sequence across the two reconnects and the move back to the returning node.
+An earlier attempt exposed contention between a workload and a checkpoint on the same
+partition. The qualifying runs reserved the checkpoint partitions and kept both producers active.
+
+| JVM | SDK | Batches | Confirmed items | Rejected conditions | Definitely not applied | Unknown outcomes | Reconciled keys | Complete batches during copy hold |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Java 17 | Rust | 148 | 846 | 143 | 16 | 31 | 296 | 4 |
+| Java 17 | Java | 150 | 863 | 143 | 26 | 18 | 300 | 5 |
+| Java 21 | Rust | 165 | 939 | 155 | 41 | 20 | 330 | 5 |
+| Java 21 | Java | 164 | 952 | 161 | 17 | 18 | 328 | 7 |
+
+Eight cluster process tests, two journal replay tests, five isolated Rust consumer tests, 48
+Maven tests and Clippy passed. The journals, subscription logs and independent reconciliation
+reports are covered by
+`development/w10i-continuous-f9d2e3f9a64321639b1f39924f6ae0317270b5b4/w10i-continuous.sha256`
+on AX42. The verified manifest SHA-256 is
+`152c0816a0b53e8eab96f4109e08aefd894a7e83fcca259bdf15fd2505201bae`.
+
 #### Under-load failover and rebalance qualification
 
 KiviDB's cluster soak pairs continuous mixed load with planned failovers, process kills, slot

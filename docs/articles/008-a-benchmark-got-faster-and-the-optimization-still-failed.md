@@ -1263,6 +1263,20 @@ Both AX42 runs verified the mixed batches. The control stream confirmed 24 mutat
 during the blocked copy on Java 17 and 27 on Java 21.
 [W10i mixed batch diagnostic](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#mixed-batches-and-tombstone-readback-from-packaged-sdks)
 
+## Tracking each submitted batch through failover
+
+The two packaged SDKs now keep sending mixed batches during the process kill and interrupted
+transfer. Each records a submission before dispatch and keeps every item outcome. An independent
+reader checks values and absences against the recorded history. A lost reply admits only outcomes
+that the submitted operation could have produced, and later confirmed items narrow that history.
+
+The subscriber probes attach before the departing process stops. On a surviving endpoint they
+reopen from the last observed watermark, verify the gap and repair read, then require a new
+event. The diagnostics therefore capture both continued write progress and resumption of delivery.
+On AX42, the Java 17 and 21 runs reconciled 596 and 658 keys respectively. The journals retained
+87 unknown item outcomes across both runs, and both subscribers reached watermark 4 in each run.
+[Continuous W10i package traffic](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#continuous-packaged-sdk-traffic-subscriptions-and-journal-reconciliation)
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
