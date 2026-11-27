@@ -43,6 +43,7 @@ roles). Crates live under `crates/`; the workspace version is in the root
 | Cross-cutting invariants (rules) | `docs/RULES.md` |
 | Release plans + status | `docs/plans/INDEX.md`, `docs/plans/releases.toml` |
 | Enforcement gates + how to run them | `docs/GATES.md` |
+| Security reporting and advisories | `SECURITY.md`, `docs/SECURITY_ADVISORIES.md` |
 | Compatibility register (durable/wire artifacts) | `docs/COMPAT.md` |
 | Architecture decision records | `docs/adr/` |
 | Architecture overview | `ARCHITECTURE.md`, `docs/architecture/` |

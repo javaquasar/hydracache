@@ -1,0 +1,9 @@
+# Exact source lines under weekly review. The keys are crates.io package names.
+[forks]
+hydra-raft = "0.7.0-hydra.1"
+hydra-raft-proto = "0.7.0-hydra.1"
+hydra-sled = "0.34.7-hydra.1"
+hydra-sqlx = "0.8.6-hydra.1"
+hydra-sqlx-sqlite = "0.8.6-hydra.1"
+hydra-sqlx-macros = "0.8.6-hydra.1"
+hydra-sqlx-macros-core = "0.8.6-hydra.1"

@@ -1,0 +1,35 @@
+name: Fork upstream advisories
+
+on:
+  schedule:
+    - cron: '17 8 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit-upstream:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Install and test the RustSec scanner
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.94.0 --profile minimal
+          cargo +1.94.0 install cargo-audit --version =0.22.2 --locked
+          python3 -B -m unittest scripts.security.test_fork_advisory
+      - name: Audit the pinned upstream versions
+        run: |
+          set -euo pipefail
+          python3 scripts/security/upstream_advisory_input.py docs/security/forks.toml "$RUNNER_TEMP/upstream.lock"
+          cargo audit --deny warnings --json -f "$RUNNER_TEMP/upstream.lock" | tee "$RUNNER_TEMP/upstream-advisories.json"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        if: always()
+        with:
+          name: upstream-fork-advisory-review
+          path: ${{ runner.temp }}/upstream-advisories.json
+          if-no-files-found: warn
