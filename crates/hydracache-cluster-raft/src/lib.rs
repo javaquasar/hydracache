@@ -3008,7 +3008,7 @@ mod tests {
     #[test]
     fn b74_guard_checks_uncommitted_log_and_compacted_metadata() {
         let store = SledRaftLogStore::new_for_tests();
-        let voters = ConfState::from((vec![1], Vec::<u64>::new()));
+        let voters = raft::eraftpb::ConfState::from((vec![1], Vec::<u64>::new()));
         store.save_conf_state(&voters).unwrap();
         let member = RaftMetadataCommand::MemberUpsert {
             node_id: ClusterNodeId::new("a"),
@@ -3050,6 +3050,29 @@ mod tests {
             store.b74_incompatible_metadata().unwrap(),
             Some(B74IncompatibleMetadata::Snapshot { index: 2 })
         );
+    }
+
+    #[cfg(feature = "sled-log-store")]
+    #[test]
+    fn b74_guard_refuses_unrecognized_raft_commands() {
+        let store = SledRaftLogStore::new_for_tests();
+        store
+            .save_conf_state(&raft::eraftpb::ConfState::from((
+                vec![1],
+                Vec::<u64>::new(),
+            )))
+            .unwrap();
+        store
+            .append(&[Entry {
+                index: 1,
+                term: 1,
+                data: b"v1|test|future-command|private-payload".to_vec(),
+                ..Default::default()
+            }])
+            .unwrap();
+        let error = store.b74_incompatible_metadata().unwrap_err().to_string();
+        assert!(error.contains("index 1"));
+        assert!(!error.contains("private-payload"));
     }
 
     #[test]
