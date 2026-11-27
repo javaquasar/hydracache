@@ -945,6 +945,14 @@ prefix 2. AX42 was synchronized by `systemd-timesyncd` during the run. OD-2 qual
 still needs live measurements with a managed chrony profile and a kernel clock watcher.
 [OD-2 checkpoint](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#od-2-validation-of-bounded-chrony-samples)
 
+The Linux collector now feeds the public HC/2 server. It watches realtime for clock steps
+and compares boottime with monotonic time to recognize a suspend. We tested the collector
+on AX42 with controlled chrony reports. A stale reference blocked reads and new TTL writes.
+After the primary died, the promoted owner and its backup still held the original certified
+image. A fresh report allowed them to certify the expiry and accept another TTL write in an
+HC/2 batch. The target-host experiment still needs independent clocks
+disciplined by chrony.
+
 The hash experiment used three sets of 100,000 keys over 271 partitions. The same FNV-1a function
 produced 365–373 entries per partition for binary integers and 321–428 for prefixed decimal keys.
 That difference matters when choosing a placement policy. A Rust/Java golden vector also covers
@@ -973,6 +981,18 @@ backup returned version 2 for the certified retry and reported the second CAS ou
 unknown. A fresh CAS reached local apply only after the configured backup could prove its
 prefix again. Restarting that backup under a different generation blocked further writes
 while the promoted owner continued to serve the certified value.
+
+The next diagnostic measured write recovery separately from replica recovery. Six
+partitions covered every initial primary and backup pairing in the test cluster. Losing
+one process affected four of them. We recorded the last refusal and first acknowledged
+write for each, then read the value through both survivors and compared their certified
+journals. In this small profile, the elapsed times to the first acknowledgements summed
+to 32.501 partition-seconds. The last matching replica proof was observed at 9.770 seconds.
+With one 256-byte value in each of all 271 partitions, the same fault affected 185.
+All probes recovered and the last replica proof arrived at 145.346 seconds. Both runs
+exercised the same durability checks. The larger run captures how recovery changes when
+many repair operations share the same cluster.
+[OD-3 measurement](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#od-3-measurement-across-primary-and-backup-loss)
 
 ## Replacing a backup while the old node is down
 

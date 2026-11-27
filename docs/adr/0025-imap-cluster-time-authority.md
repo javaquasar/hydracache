@@ -59,12 +59,42 @@ existing [quorum read barrier](0024-imap-quorum-backed-read-barrier.md) checks i
 
 ## Verification before acceptance
 
-- Deterministic tests in the planned `time_authority` target cover exact-bound expiry, either
+- Deterministic tests in the server's `imap_chrony` and replicated value tests cover exact-bound expiry, either
   direction of a clock step, aged references, sample timeout, backward/forward slew, overflow,
   source loss, recovery, and independent observations on two members.
 - Run a three-member Linux qualification with the admitted host profile. Record the earliest
   allowed expiry across owner promotion, the fenced tombstone and applied prefixes, and recovery
   after a clock fault. Failure to qualify the bound leaves OD-2 open.
+
+### Collecting evidence on a target host
+
+The distributed HC/2 profile accepts a Linux `[chrony]` table with the absolute `chronyc` path,
+the `references` IP allowlist and `sample_interval_ms`. Its `[chrony.policy]` table names
+`maximum_uncertainty_ms`, `maximum_snapshot_age_ms`, `maximum_reference_age_ms`,
+`maximum_acquisition_ms` and `maximum_drift_ppm`. Set these explicitly for the host profile.
+The local observer runs `chronyc -n -c -h 127.0.0.1 tracking` on an interval. The operator must
+enable chronyd's read-only monitoring on loopback and use the same disciplined clock for the
+collector and the member. Readiness reports `clock_uncertainty_exceeded` when the clock
+withholds its observation after the topology and replica checks pass.
+
+To record evaluation data, place the contents of the `chrony` table in a standalone TOML
+document, using `[policy]` for its nested table. On each independently clocked member host,
+use the frozen candidate and the desired observation window.
+
+```sh
+HYDRACACHE_OD2_CHRONY_PROFILE=/path/to/clock.toml \
+HYDRACACHE_OD2_CLOCK_REPORT=/path/to/fresh-clock-report.jsonl \
+HYDRACACHE_OD2_SAMPLE_SECONDS=60 \
+cargo test --locked -p hydracache-server --lib -- --exact \
+  imap_chrony::linux::tests::records_od2_clock_evidence_on_the_current_host --nocapture
+```
+
+The JSONL records local elapsed time, clock generation, uncertainty, snapshot age and an upper
+bound on reference age when the clock supplies an observation. A refused observation has no
+uncertainty value. Record the host's chrony version and configuration, the exact candidate and
+binary hashes, and the timestamps of source loss, holdover, clock step or suspend and recovery
+alongside the log. Use the matching HC/2 and replica receipts to verify the expiry decision across
+promotion before approving the profile.
 
 ## Revisit when
 

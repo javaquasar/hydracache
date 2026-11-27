@@ -1163,9 +1163,24 @@ in the AX42 [qualification workspace](../testing/imap/0.75/remote-linux-qualific
 The verified `od2-evidence.sha256` manifest has SHA-256
 `e95311e1773820fb3a17fd2ed695b15c0cca9acd0960580fa534331340a941ab`.
 
-Production use needs a managed Linux collector and a kernel clock watcher that invalidates the
-sample on a step, suspend/resume, restart or watcher loss. Target-host evidence must then establish
-the allowed sources, drift, reference age and final uncertainty limit before OD-2 can be accepted.
+The Linux collector attaches to the distributed HC/2 listener through an explicit chrony
+profile. It runs a bounded local monitoring command on a background task. A realtime timerfd
+and paired boot and monotonic reads invalidate stale clock generations. Any observation after
+invalidation needs a fresh upstream reference. The HC/2 profile admits a finite TTL on single
+and batch PUT, with the owner applying its current time bound. CAS with a finite TTL still
+requires its own wire and owner semantics.
+
+Use the [ADR-0025 host capture](../adr/0025-imap-cluster-time-authority.md#collecting-evidence-on-a-target-host)
+to retain uncertainty and freshness observations. OD-2 acceptance still needs independently
+disciplined Linux clocks and a frozen profile on the target hosts. Exercise realtime steps,
+suspend, reference loss, holdover and recovery on those hosts before approving the bounds.
+
+The AX42 HC/2 fixture at `5cb8fe032b1dbe823ef27ec211ccba51237fb1d9` used the Linux kernel watcher
+and a controlled monitoring executable. It confirmed a finite PUT before the primary died,
+withheld reads and new finite writes with a stale reference, and promoted and repaired the
+original certified image at prefix 1. Restoring the feed allowed a matching tombstone at
+prefix 2 and a subsequent finite PUT in a public batch. The separate clock capture wrote eight
+admitted samples and one startup refusal. Those samples exercised the capture path on AX42.
 
 ### W10e. Implement fenced failover, promotion and retry across owner change
 
@@ -1273,6 +1288,44 @@ fence certificates across partitions. The protocol fixture drives promotion on t
 host. Automatic failure-driven selection, production routing and SDK retries, replacement
 replica repair, and the full kill/pause and deterministic replay matrix remain release work.
 The AX42 single-partition schedule does not establish the OD-3 availability targets.
+
+#### OD-3 measurement across primary and backup loss
+
+The HC/2 diagnostic seeds and audits a selected set of partitions on three member processes.
+It observes each original primary and synchronous backup, kills one process, then runs two
+independent probes. One records the first acknowledged replacement write and the last
+`Unavailable` response before that acknowledgement. The other polls the surviving primary
+and backup for the same certified prefix and journal digest. Both surviving public endpoints
+read back the probe value. A partition stays unresolved in the report if either check times out.
+
+The report sums the elapsed times to each first acknowledged write on affected partitions.
+It also retains the sum to the last observed refusal and the maximum elapsed time to the
+matching replica proof. Control partitions have their own rows. Probe dispatch, polling and
+proof collection contribute to these timings. The release limits require repeated measurements
+at the frozen cardinality and value size.
+
+The six-partition AX42 profile on `5cb8fe032b1dbe823ef27ec211ccba51237fb1d9` used one 256-byte
+value per partition. The loss affected four partitions. The sum to the last observed refusals
+was 32.027 partition-seconds and the sum to first acknowledged writes was 32.501
+partition-seconds. The last matching replica proof on an affected partition was observed at
+9.770 seconds. Both control partitions and all four affected partitions completed readback.
+
+The full 271-partition diagnostic on the same SHA used the same value size and cardinality
+per partition. The loss affected 185 partitions and left 86 controls. All 271 completed
+their write, replica proof and readback checks. The sum to the last observed refusals was
+18,083.725 partition-seconds and the sum to first acknowledged writes was 18,340.738
+partition-seconds. The last matching replica proof arrived at 145.346 seconds. The test
+used three processes on AX42 and the unoptimized Cargo test profile. This is a recovery
+measurement for the stated workload. The qualified cardinality, payload and numeric OD-3
+limits remain open.
+
+```sh
+HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 HYDRACACHE_OD3_ALL_PARTITIONS=1 \
+HYDRACACHE_OD3_KEYS_PER_PARTITION=1 HYDRACACHE_OD3_VALUE_BYTES=256 \
+HYDRACACHE_OD3_REPORT=/path/to/fresh-od3-report.json \
+cargo test --locked -p hydracache-server --test hc2_daemon_process -- --exact \
+  imap_od3::measures_partition_write_outage_and_replica_recovery_on_hc2 --nocapture
+```
 
 ### W10f. Implement bounded rebalance and replica repair
 
@@ -2313,6 +2366,22 @@ reports are covered by
 `development/w10i-continuous-f9d2e3f9a64321639b1f39924f6ae0317270b5b4/w10i-continuous.sha256`
 on AX42. The verified manifest SHA-256 is
 `152c0816a0b53e8eab96f4109e08aefd894a7e83fcca259bdf15fd2505201bae`.
+
+After the managed-clock changes, the 60-second packaged diagnostic passed on AX42 at
+`5cb8fe032b1dbe823ef27ec211ccba51237fb1d9` with Java 17. It reused the byte-verified packages
+above and checked that their source inputs were unchanged. Both clients submitted 147
+seven-item batches and the independent reader reconciled all 588 submitted keys. The
+two subscribers reached watermark 4. The control stream verified 24 mutations during
+the interrupted copy and 237 after rejoin. This was the established diagnostic workload
+and duration. The 6-hour and 24-hour production commands both refused admission before
+creating output. The production path requires the admitted OD-2 and OD-3 profiles and the
+packaged workload with its reconciliation across the full long-run schedule.
+
+On the same source, Clippy, 137 server unit tests and 13 replicated-value tests passed.
+The clock capture and HC/2 fault scenario, both OD-3 reports, SDK journals and admission
+checks are in `development/w10i-managed-clock-5cb8fe032b1dbe823ef27ec211ccba51237fb1d9` on
+AX42. The verified `w10i-managed-clock.sha256` manifest has SHA-256
+`4903be5729adb6fa09204bd1518a29a0641643cc1e121078fd2d61536407df3e`.
 
 #### Under-load failover and rebalance qualification
 
