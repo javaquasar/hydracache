@@ -99,9 +99,9 @@ async fn run_cohort(scenario: Scenario) {
     let log_path = root.join("java-probe.log");
     let log = std::fs::File::create(&log_path).unwrap();
     let mut probe = ChildGuard(
-        Command::new(java)
+        Command::new(&java)
             .args(["-XX:ActiveProcessorCount=2", "-cp"])
-            .arg(classpath)
+            .arg(&classpath)
             .arg("io.hydracache.hazelcast.W10iPackagedCohortProbe")
             .arg(root)
             .args(cluster.spec.addresses[9..].iter().map(ToString::to_string))
