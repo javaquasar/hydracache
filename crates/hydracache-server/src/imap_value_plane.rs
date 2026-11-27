@@ -521,6 +521,9 @@ impl ValueReplica {
         if self.journal.apply(required, mutation, false)? != ApplyResult::Flushed {
             return Err(replica_rejected());
         }
+        if let Some(operations) = &self.operations {
+            operations.backup_acknowledged(prefix);
+        }
         self.applies.fetch_add(1, Ordering::Relaxed);
         Ok(ReplicaApplyAck {
             version: request.version,
@@ -1045,7 +1048,10 @@ impl<S: RaftLogStore> ValueBackend<S> {
                             };
                             let (owned, clear) =
                                 self.replica.departure_progress(&snapshot, &reachable);
-                            if clear {
+                            // A remote owner can still certify a write after our backup permit
+                            // was released. Wait for that certificate or its epoch fence before
+                            // trusting a view that had no certified value for the partition.
+                            if clear && ops.backup_acks_settled(&snapshot) {
                                 return true;
                             }
                             if !owned.is_empty() {

@@ -1049,6 +1049,15 @@ async fn w10h_drains_primaries_and_backups_before_member_exit_under_load() {
     .await
     .unwrap();
     assert_eq!(page["partitions"][0]["id"], 2);
+    for (query, expected) in [("limit=65", 400), ("after=1", 400), ("sequence=0", 409)] {
+        let status =
+            w10h_admin(http.get(format!("http://{surviving}{MANAGEMENT_IMAP_PATH}?{query}")))
+                .send()
+                .await
+                .unwrap()
+                .status();
+        assert_eq!(status, expected);
+    }
     let proxy_metrics = imap_metrics(&http, surviving).await;
     assert!(imap_metric(&proxy_metrics, "hydracache_imap_proxy_total") >= 1);
     assert!(imap_metric(&proxy_metrics, "hydracache_imap_direct_total") >= 1);
@@ -1182,7 +1191,31 @@ async fn w10h_failed_drain_keeps_membership_when_a_spare_is_down() {
         .unwrap()
         .iter()
         .any(|member| member["node_id"] == cluster.spec.names[0]));
-    println!("W10h incomplete drain readiness=draining replica_floor_enforced=true membership_retained=true");
+    cluster.daemons[2] = cluster.spec.spawn(2);
+    let restored = connect_w10i(&cluster.adapters[2], "w10i").await;
+    let retry_deadline = tokio::time::Instant::now() + Duration::from_secs(30);
+    loop {
+        let response = w10h_admin(http.post(format!("http://{departing}{ADMIN_DRAIN_PATH}")))
+            .send()
+            .await
+            .unwrap();
+        if response.status().is_success() {
+            assert_eq!(
+                response.json::<serde_json::Value>().await.unwrap()["drain"]["timed_out"],
+                false
+            );
+            break;
+        }
+        assert_eq!(response.status(), 504);
+        assert!(
+            tokio::time::Instant::now() < retry_deadline,
+            "drain stayed incomplete after the spare rejoined"
+        );
+    }
+    wait_success(&mut cluster.daemons[0].0, Duration::from_secs(8));
+    wait_w10i_get(&restored, affected, Some(&value)).await;
+    wait_w10i_get(&restored, retained, Some(&value)).await;
+    println!("W10h incomplete drain readiness=draining replica_floor_enforced=true membership_retained=true retry_after_spare_rejoin=true");
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]

@@ -6,7 +6,9 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::RwLock;
 use std::time::{Duration, Instant};
 
-use hydracache::{ClusterEpoch, ClusterGeneration, ClusterNodeId};
+use hydracache::{
+    ClusterEpoch, ClusterGeneration, ClusterNodeId, PartitionId, PartitionValuePrefix,
+};
 use hydracache_cluster_raft::RaftPartitionSnapshot;
 use serde::Serialize;
 use tokio::sync::{watch, Semaphore, SemaphorePermit, TryAcquireError};
@@ -138,6 +140,7 @@ pub(crate) struct IMapOps {
     pub membership_left: AtomicBool,
     sample: RwLock<Option<Sample>>,
     compatible: RwLock<BTreeMap<ClusterNodeId, ClusterGeneration>>,
+    replica_acks: RwLock<BTreeMap<PartitionId, PartitionValuePrefix>>,
     pub counters: IMapCounters,
 }
 
@@ -152,6 +155,7 @@ impl IMapOps {
             membership_left: AtomicBool::new(false),
             sample: RwLock::new(None),
             compatible: RwLock::new(BTreeMap::new()),
+            replica_acks: RwLock::new(BTreeMap::new()),
             counters: IMapCounters::default(),
         }
     }
@@ -262,6 +266,30 @@ impl IMapOps {
             start: Instant::now(),
             success: false,
         }
+    }
+
+    pub fn backup_acknowledged(&self, prefix: PartitionValuePrefix) {
+        let mut acks = self.replica_acks.write().expect("IMap replica ACK lock");
+        if acks
+            .get(&prefix.partition)
+            .is_none_or(|old| (prefix.epoch, prefix.version) >= (old.epoch, old.version))
+        {
+            acks.insert(prefix.partition, prefix);
+        }
+    }
+
+    pub fn backup_acks_settled(&self, snapshot: &RaftPartitionSnapshot) -> bool {
+        self.replica_acks
+            .read()
+            .expect("IMap replica ACK lock")
+            .values()
+            .all(|ack| {
+                ack.epoch < snapshot.epoch
+                    || snapshot
+                        .value_prefixes
+                        .get(&ack.partition)
+                        .is_some_and(|committed| committed.version >= ack.version)
+            })
     }
 
     pub fn publish(&self, observation: HealthObservation) {
@@ -447,6 +475,74 @@ impl Drop for AckObservation<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use hydracache::{ClusterMember, ClusterRole};
+
+    fn snapshot() -> RaftPartitionSnapshot {
+        RaftPartitionSnapshot {
+            term: 1,
+            epoch: ClusterEpoch::new(4),
+            commit_index: 4,
+            applied_index: 4,
+            members: Vec::new(),
+            value_prefixes: BTreeMap::new(),
+            value_promotions: BTreeMap::new(),
+            value_repairs: BTreeMap::new(),
+            primary_rebalance: None,
+        }
+    }
+
+    #[test]
+    fn a_restarted_member_must_prove_its_new_generation() {
+        let ops = IMapOps::new(IMapOperationalConfig::default());
+        let mut cut = snapshot();
+        let proof = PartitionMember {
+            node: ClusterNodeId::new("peer"),
+            generation: ClusterGeneration::new(7),
+        };
+        cut.members.push(ClusterMember {
+            node_id: proof.node.clone(),
+            generation: proof.generation,
+            role: ClusterRole::Member,
+            epoch: cut.epoch,
+            endpoints: Default::default(),
+            metadata: Default::default(),
+        });
+        ops.record_compatible(&cut, vec![proof.clone()]);
+        assert!(ops.proves_member(&proof));
+        let restarted = PartitionMember {
+            generation: proof.generation.next(),
+            ..proof.clone()
+        };
+        cut.epoch = ClusterEpoch::new(5);
+        cut.members[0].generation = restarted.generation;
+        ops.record_compatible(&cut, vec![proof.clone()]);
+        assert!(!ops.proves_member(&proof));
+        assert!(!ops.proves_member(&restarted));
+        ops.record_compatible(&cut, vec![restarted.clone()]);
+        assert!(ops.proves_member(&restarted));
+    }
+
+    #[test]
+    fn backup_acknowledgement_blocks_departure_until_certified_or_fenced() {
+        let ops = IMapOps::new(IMapOperationalConfig::default());
+        let mut cut = snapshot();
+        let ack = PartitionValuePrefix {
+            partition: PartitionId::new(5),
+            epoch: cut.epoch,
+            version: 1,
+            previous: [0; 32],
+            digest: [1; 32],
+        };
+        assert!(ops.backup_acks_settled(&cut));
+        ops.backup_acknowledged(ack);
+        ops.begin_drain();
+        assert!(!ops.backup_acks_settled(&cut));
+        cut.value_prefixes.insert(ack.partition, ack);
+        assert!(ops.backup_acks_settled(&cut));
+        cut.value_prefixes.clear();
+        cut.epoch = ClusterEpoch::new(5);
+        assert!(ops.backup_acks_settled(&cut));
+    }
 
     #[test]
     fn admission_seals_both_paths_without_discarding_inflight_work() {
