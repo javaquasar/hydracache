@@ -155,7 +155,6 @@ async fn run_cohort(scenario: Scenario) {
             .run(phase, "put", cluster.spec.addresses[11], &seed)
             .await;
         rust.require(put, "put", seed.len());
-        expected.extend(seed);
         std::fs::File::create(root.join(format!("cohort-start-{phase}"))).unwrap();
         let complete = format!("cohort-done-{phase}");
         if scenario == Scenario::WrongRust {
@@ -166,17 +165,21 @@ async fn run_cohort(scenario: Scenario) {
             println!("W10i Java cohort rejected an incorrect Rust value");
             return;
         }
-        await_java_marker(&mut probe.0, root, &complete).await;
-        for key in [java_first, java_second] {
+        let java_seeded = format!("cohort-java-seeded-{phase}");
+        await_java_marker(&mut probe.0, root, &java_seeded).await;
+        let java_seed = [java_first, java_second].map(|key| {
             let value = expected_value("java", &key);
-            expected.push((key, value));
-        }
-        if phase == 0 {
-            expected.push((hot.clone(), expected_value("java", &hot)));
-        }
-        let reader = if phase == 2 { 9 } else { 10 };
+            (key, value)
+        });
+        let hot_seed = (phase == 0).then(|| (hot.clone(), expected_value("java", &hot)));
+        let seeded: Vec<_> = seed
+            .iter()
+            .chain(&java_seed)
+            .chain(&hot_seed)
+            .cloned()
+            .collect();
         let result = rust
-            .run(phase, "check", cluster.spec.addresses[reader], &expected)
+            .run(phase, "check", cluster.spec.addresses[10], &seeded)
             .await;
         if scenario == Scenario::WrongJava {
             let (status, log) = result;
@@ -189,7 +192,32 @@ async fn run_cohort(scenario: Scenario) {
             println!("W10i Rust cohort rejected an incorrect Java value");
             return;
         }
-        rust.require(result, "check", expected.len());
+        rust.require(result, "check", seeded.len());
+        let mixed = rust
+            .run(phase, "mixed", cluster.spec.addresses[11], &java_seed)
+            .await;
+        rust.require(mixed, "mixed", 5);
+        std::fs::File::create(root.join(format!("cohort-rust-mixed-{phase}"))).unwrap();
+        for [(update, original), (deleted, _)] in [seed, java_seed] {
+            let mut replacement = b"updated:".to_vec();
+            replacement.extend_from_slice(&original);
+            expected.push((update, Some(Bytes::from(replacement))));
+            expected.push((deleted, None));
+        }
+        expected.extend(hot_seed.map(|(key, value)| (key, Some(value))));
+        await_java_marker(&mut probe.0, root, &complete).await;
+        let label = phase.to_string();
+        let manifest = readback_manifest(root, &label, &expected);
+        let reader = if phase == 2 { 9 } else { 10 };
+        let reconciled = rust
+            .invoke(
+                &label,
+                "check-file",
+                cluster.spec.addresses[reader],
+                [manifest],
+            )
+            .await;
+        rust.require(reconciled, "check-file", expected.len());
         if phase == 0 {
             let original = owner_checkpoint(&http, &cluster.spec, [0, 1], partition, 1, 1).await;
             outage.start = started.elapsed().as_millis() as u64;
@@ -267,7 +295,7 @@ async fn run_cohort(scenario: Scenario) {
         let hold = drain.interrupted_window().unwrap();
         assert!(hold.start <= held.start && held.end <= hold.end);
         let mut final_values = expected.clone();
-        final_values.push(drain.probe.clone());
+        final_values.push((drain.probe.0.clone(), Some(drain.probe.1.clone())));
         let returned = packaged_readback(
             &rust,
             (&java, &classpath),
@@ -338,24 +366,11 @@ async fn packaged_readback(
     java: (&OsStr, &OsStr),
     label: &str,
     [rust_address, java_address]: [SocketAddr; 2],
-    rows: &[(Bytes, Bytes)],
+    rows: &[(Bytes, Option<Bytes>)],
     started: tokio::time::Instant,
 ) -> Range<u64> {
     let start = started.elapsed().as_millis() as u64;
-    let file = format!("readback-{label}.tsv");
-    let mut manifest =
-        std::io::BufWriter::new(std::fs::File::create(rust.root.join(&file)).unwrap());
-    use std::io::Write;
-    for (key, value) in rows {
-        writeln!(
-            manifest,
-            "{}\t{}",
-            hex_digest(key),
-            std::str::from_utf8(value).unwrap()
-        )
-        .unwrap();
-    }
-    manifest.flush().unwrap();
+    let file = readback_manifest(rust.root, label, rows);
     let (exit, java_log) = tokio::join!(
         rust.invoke(label, "check-file", rust_address, [file.clone()]),
         async {
@@ -392,6 +407,28 @@ async fn packaged_readback(
     assert!(java_log.lines().any(|line| line == receipt), "{java_log}");
     print!("{java_log}");
     start..started.elapsed().as_millis() as u64
+}
+
+fn readback_manifest(root: &Path, label: &str, rows: &[(Bytes, Option<Bytes>)]) -> String {
+    use std::io::Write;
+
+    let file = format!("readback-{label}.tsv");
+    let mut manifest = std::io::BufWriter::new(std::fs::File::create(root.join(&file)).unwrap());
+    for (key, value) in rows {
+        let key = hex_digest(key);
+        if let Some(value) = value {
+            writeln!(
+                manifest,
+                "{key}\tpresent\t{}",
+                std::str::from_utf8(value).unwrap()
+            )
+            .unwrap();
+        } else {
+            writeln!(manifest, "{key}\tabsent").unwrap();
+        }
+    }
+    manifest.flush().unwrap();
+    file
 }
 
 struct RustProbe<'a> {

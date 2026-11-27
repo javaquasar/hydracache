@@ -12,6 +12,11 @@ const PACKAGE_SHA256: &str = env!("W10I_RUST_ARTIFACT_SHA256");
 const MAX_ITEMS: usize = 14;
 const MAX_MANIFEST_BYTES: usize = 128 * 1024;
 
+enum Expected {
+    Mutation(bool),
+    Value(Option<Vec<u8>>),
+}
+
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
     let args: Vec<_> = std::env::args().skip(1).collect();
@@ -19,7 +24,7 @@ async fn main() {
         panic!("expected action, credentials directory, endpoint and key/value pairs");
     };
     assert!(
-        matches!(action.as_str(), "put" | "check" | "check-file"),
+        matches!(action.as_str(), "put" | "check" | "check-file" | "mixed"),
         "unknown cohort action"
     );
     let root = Path::new(root);
@@ -40,10 +45,33 @@ async fn main() {
             "invalid cohort size"
         );
         rows.chunks_exact(2)
-            .map(|pair| (decode_key(&pair[0]), pair[1].as_str()))
+            .map(|pair| (decode_key(&pair[0]), Some(pair[1].as_str())))
             .collect()
     };
-    let count = entries.len();
+    let (operations, checks): (Vec<_>, Vec<_>) = if action == "mixed" {
+        mixed_batch(&entries)
+    } else {
+        entries
+            .into_iter()
+            .map(|(key, value)| {
+                if action == "put" {
+                    (
+                        BatchOperation::Put {
+                            key: key.into(),
+                            value: value.unwrap().as_bytes().to_vec().into(),
+                            ttl: None,
+                        },
+                        Expected::Mutation(true),
+                    )
+                } else {
+                    (
+                        BatchOperation::Get { key: key.into() },
+                        Expected::Value(value.map(|value| value.as_bytes().to_vec())),
+                    )
+                }
+            })
+            .unzip()
+    };
     let read = |name| std::fs::read(root.join(name)).expect("read fixture credential");
     let adapter = GrpcMtlsAdapter::new(
         GrpcMtlsConfig::new(
@@ -60,22 +88,6 @@ async fn main() {
     let client = Hc2Client::connect(&adapter, config)
         .await
         .expect("connect packaged Rust client");
-    let operations = entries
-        .iter()
-        .map(|(key, value)| {
-            if action == "put" {
-                BatchOperation::Put {
-                    key: key.clone().into(),
-                    value: value.as_bytes().to_vec().into(),
-                    ttl: None,
-                }
-            } else {
-                BatchOperation::Get {
-                    key: key.clone().into(),
-                }
-            }
-        })
-        .collect();
     let options = RequestOptions {
         timeout: Duration::from_secs(4),
         idempotency_key: Default::default(),
@@ -84,8 +96,10 @@ async fn main() {
         .batch_outcomes(operations, Some(options))
         .await
         .expect("execute Rust cohort batch");
-    assert_eq!(outcomes.len(), entries.len());
-    for (index, (outcome, (_, expected))) in outcomes.into_iter().zip(entries).enumerate() {
+    let count = checks.len();
+    assert_eq!(outcomes.len(), count);
+    for (index, (outcome, expected)) in outcomes.into_iter().zip(checks).enumerate() {
+        assert_eq!(outcome.item_id as usize, index + 1);
         let receipt = outcome.receipt.expect("distributed Rust batch receipt");
         assert_eq!(
             receipt.state,
@@ -96,16 +110,19 @@ async fn main() {
             .applied
             .is_some_and(|applied| applied.version > 0 && applied.epoch > 0));
         let result = outcome.result.expect("confirmed Rust batch outcome");
-        if action == "put" {
-            assert!(result.mutation.is_some_and(|mutation| mutation.applied));
-        } else {
-            let expected = expected.as_bytes();
-            assert!(
+        match expected {
+            Expected::Mutation(applied) => assert!(
                 result
-                    .value
-                    .is_some_and(|value| value.value.as_ref() == expected),
+                    .mutation
+                    .is_some_and(|mutation| mutation.applied == applied),
+                "wrong mutation outcome for Rust cohort item {index}"
+            ),
+            Expected::Value(expected) => assert!(
+                result.mutation.is_none()
+                    && result.value.as_ref().map(|value| value.value.as_ref())
+                        == expected.as_deref(),
                 "wrong value for Rust cohort item {index}"
-            );
+            ),
         }
     }
     println!(
@@ -114,7 +131,41 @@ async fn main() {
     );
 }
 
-fn decode_manifest(input: &str) -> Vec<(Vec<u8>, &str)> {
+fn mixed_batch(entries: &[(Vec<u8>, Option<&str>)]) -> (Vec<BatchOperation>, Vec<Expected>) {
+    let [(update, Some(original)), (remove, Some(_))] = entries else {
+        panic!("mixed batch requires one update and one removal key");
+    };
+    let replacement = format!("updated:{original}").into_bytes();
+    let compare = |expected: &[u8]| BatchOperation::CompareAndSet {
+        key: update.clone().into(),
+        expected: expected.to_vec().into(),
+        replacement: replacement.clone().into(),
+        ttl: None,
+    };
+    let operations = vec![
+        compare(b"intentionally-stale"),
+        compare(original.as_bytes()),
+        BatchOperation::Get {
+            key: update.clone().into(),
+        },
+        BatchOperation::Delete {
+            key: remove.clone().into(),
+        },
+        BatchOperation::Get {
+            key: remove.clone().into(),
+        },
+    ];
+    let checks = vec![
+        Expected::Mutation(false),
+        Expected::Mutation(true),
+        Expected::Value(Some(replacement)),
+        Expected::Mutation(true),
+        Expected::Value(None),
+    ];
+    (operations, checks)
+}
+
+fn decode_manifest(input: &str) -> Vec<(Vec<u8>, Option<&str>)> {
     assert!(
         input.len() <= MAX_MANIFEST_BYTES,
         "readback manifest too large"
@@ -122,7 +173,18 @@ fn decode_manifest(input: &str) -> Vec<(Vec<u8>, &str)> {
     let rows: Vec<_> = input
         .lines()
         .map(|line| {
-            let (key, value) = line.split_once('\t').expect("readback row lacks its value");
+            let (key, expected) = line
+                .split_once('\t')
+                .expect("readback row lacks its expectation");
+            let value = if expected == "absent" {
+                None
+            } else {
+                Some(
+                    expected
+                        .strip_prefix("present\t")
+                        .expect("invalid readback expectation"),
+                )
+            };
             (decode_key(key), value)
         })
         .collect();
@@ -145,17 +207,28 @@ mod tests {
     #[test]
     fn decodes_a_manifest_with_a_full_snapshot_probe() {
         let value = "Z".repeat(96 * 1024);
-        let manifest = format!("4800\tfirst\n42\t{value}\n");
+        let manifest = format!("4800\tpresent\tfirst\n42\tpresent\t{value}\n");
         assert_eq!(
             super::decode_manifest(&manifest),
-            [(vec![0x48, 0], "first"), (vec![0x42], value.as_str())]
+            [
+                (vec![0x48, 0], Some("first")),
+                (vec![0x42], Some(value.as_str()))
+            ]
         );
     }
 
     #[test]
-    #[should_panic(expected = "readback row lacks its value")]
+    #[should_panic(expected = "readback row lacks its expectation")]
     fn rejects_a_manifest_row_without_a_value() {
         super::decode_manifest("4800\n");
+    }
+
+    #[test]
+    fn distinguishes_a_tombstone_from_an_empty_value() {
+        assert_eq!(
+            super::decode_manifest("41\tabsent\n42\tpresent\t\n"),
+            [(vec![0x41], None), (vec![0x42], Some(""))]
+        );
     }
 
     #[test]

@@ -1,6 +1,8 @@
 package io.hydracache.hazelcast;
 
 import io.hydracache.client.hc2.BatchItemReceipt;
+import io.hydracache.client.hc2.BatchItemOutcome;
+import io.hydracache.client.hc2.BatchItemResult;
 import io.hydracache.client.hc2.BatchOperation;
 import io.hydracache.client.hc2.HydraCacheClient;
 import io.hydracache.client.hc2.RequestOptions;
@@ -24,6 +26,7 @@ public final class W10iPackagedCohortProbe {
   private static final RequestOptions REQUEST = RequestOptions.withTimeout(Duration.ofSeconds(3));
   private static final int KEYS_PER_PHASE = 4;
   private static final int PHASES = 3;
+  private static final String MAP_NAME = "w10i-sdk-cohort";
 
   public static void main(String[] args) throws Exception {
     requireJar(HydraMap.class);
@@ -70,6 +73,13 @@ public final class W10iPackagedCohortProbe {
               "Java did not confirm " + item.key() + ": " + receipt);
         }
         expected.putAll(java);
+        Files.createFile(root.resolve("cohort-java-seeded-" + phase));
+        awaitPhase(root.resolve("cohort-rust-mixed-" + phase));
+        mixed(writer, keys.get(0), rust.get(keys.get(0)), keys.get(1));
+        expected.put(keys.get(0), "updated:" + rust.get(keys.get(0)));
+        expected.put(keys.get(1), null);
+        expected.put(keys.get(2), "updated:" + java.get(keys.get(2)));
+        expected.put(keys.get(3), null);
         verifyValues(observer, expected);
         if (phase == PHASES - 1) {
           try (var returned = connect(root, args[1])) {
@@ -78,6 +88,7 @@ public final class W10iPackagedCohortProbe {
         }
         System.out.printf("W10i Java cohort phase=%d confirmed=%d readback=%d%n",
             phase, outcomes.size(), expected.size());
+        System.out.printf("W10i Java mixed phase=%d confirmed=5%n", phase);
         Files.createFile(root.resolve("cohort-done-" + phase));
       }
     }
@@ -85,7 +96,36 @@ public final class W10iPackagedCohortProbe {
 
   private static HydraMap<String, String> map(HydraCacheClient client) {
     return new HydraCacheInstance(client, REQUEST.timeout())
-        .getMap("w10i-sdk-cohort", HydraCodec.utf8(), HydraCodec.utf8());
+        .getMap(MAP_NAME, HydraCodec.utf8(), HydraCodec.utf8());
+  }
+
+  private static void mixed(HydraCacheClient client, String update, String original, String delete) {
+    var keys = new KeySpace((byte) 1, MAP_NAME);
+    byte[] updateKey = keys.key(update.getBytes(StandardCharsets.UTF_8));
+    byte[] deleteKey = keys.key(delete.getBytes(StandardCharsets.UTF_8));
+    byte[] replacement = ("updated:" + original).getBytes(StandardCharsets.UTF_8);
+    var outcomes = client.batchOutcomes(List.of(
+        new BatchOperation.CompareAndSet(updateKey, "intentionally-stale".getBytes(StandardCharsets.UTF_8), replacement, null),
+        new BatchOperation.CompareAndSet(updateKey, original.getBytes(StandardCharsets.UTF_8), replacement, null),
+        new BatchOperation.Get(updateKey),
+        new BatchOperation.Delete(deleteKey),
+        new BatchOperation.Get(deleteKey)), REQUEST).join();
+    require(outcomes.size() == 5, "wrong mixed batch outcome count");
+    require(!confirmed(outcomes.get(0), 0).mutation().orElseThrow().applied(), "stale Java CAS applied");
+    require(confirmed(outcomes.get(1), 1).mutation().orElseThrow().applied(), "Java CAS did not apply");
+    require(Arrays.equals(confirmed(outcomes.get(2), 2).value().orElseThrow().value(), replacement),
+        "mixed batch did not read the Java CAS");
+    require(confirmed(outcomes.get(3), 3).mutation().orElseThrow().applied(), "Java delete did not apply");
+    var deleted = confirmed(outcomes.get(4), 4);
+    require(deleted.value().isEmpty() && deleted.mutation().isEmpty(), "mixed batch read a deleted key");
+  }
+
+  private static BatchItemResult confirmed(BatchItemOutcome outcome, int index) {
+    require(outcome.itemId() == index + 1, "batch receipt order changed");
+    var receipt = outcome.receipt().orElseThrow();
+    require(receipt.state() == BatchItemReceipt.State.CONFIRMED
+        && receipt.applied().orElseThrow().version() > 0, "unconfirmed physical key");
+    return outcome.result().orElseThrow();
   }
 
   private static void verifyPhysical(Path root, String endpoint, String file) throws Exception {
@@ -93,22 +133,21 @@ public final class W10iPackagedCohortProbe {
     require(Files.size(manifest) <= 128 * 1024, "readback manifest too large");
     var rows = Files.readAllLines(manifest);
     require(!rows.isEmpty() && rows.size() <= 14, "invalid readback count");
-    var entries = rows.stream().map(row -> row.split("\t", 2)).toList();
+    var entries = rows.stream().map(row -> row.split("\t", 3)).toList();
     var operations = entries.stream().<BatchOperation>map(entry -> {
-      require(entry.length == 2, "readback row lacks its value");
+      require((entry.length == 2 && entry[1].equals("absent"))
+          || (entry.length == 3 && entry[1].equals("present")), "invalid readback expectation");
       return new BatchOperation.Get(HexFormat.of().parseHex(entry[0]));
     }).toList();
     try (var client = connect(root, endpoint)) {
       var outcomes = client.batchOutcomes(operations, REQUEST).join();
       require(outcomes.size() == entries.size(), "wrong readback outcome count");
       for (int index = 0; index < entries.size(); ++index) {
-        var outcome = outcomes.get(index);
-        var receipt = outcome.receipt().orElseThrow();
-        require(receipt.state() == BatchItemReceipt.State.CONFIRMED
-            && receipt.applied().orElseThrow().version() > 0, "unconfirmed physical key");
-        var value = outcome.result().orElseThrow().value().orElseThrow().value();
-        require(Arrays.equals(value, entries.get(index)[1].getBytes(StandardCharsets.UTF_8)),
-            "wrong physical value at row " + index);
+        var result = confirmed(outcomes.get(index), index);
+        String[] entry = entries.get(index);
+        byte[] expected = entry.length == 2 ? null : entry[2].getBytes(StandardCharsets.UTF_8);
+        byte[] value = result.value().map(item -> item.value()).orElse(null);
+        require(result.mutation().isEmpty() && Arrays.equals(value, expected), "wrong physical value at row " + index);
       }
     }
     System.out.printf("W10i Java cohort action=check-file confirmed=%d%n", entries.size());
@@ -117,11 +156,17 @@ public final class W10iPackagedCohortProbe {
   private static void verifyValues(HydraMap<String, String> map, Map<String, String> expected)
       throws InterruptedException {
     awaitBatch(map, List.copyOf(expected.keySet()), rows -> {
+      boolean complete = true;
       for (var row : rows) {
-        row.value().ifPresent(value -> require(value.equals(expected.get(row.key())),
+        String wanted = expected.get(row.key());
+        row.value().ifPresent(value -> require(value.equals(wanted),
             "wrong value for " + row.key()));
+        var outcome = row.outcome();
+        complete &= row.value().isPresent() == (wanted != null) && outcome.result().isPresent()
+            && outcome.receipt().isPresent() && outcome.receipt().orElseThrow().state() == BatchItemReceipt.State.CONFIRMED
+            && outcome.receipt().orElseThrow().applied().isPresent();
       }
-      return rows.stream().allMatch(row -> row.value().isPresent());
+      return complete;
     });
   }
 
