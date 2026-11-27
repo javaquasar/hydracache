@@ -1718,15 +1718,67 @@ backpressure. Keys, values, tenant IDs and unbounded node/partition labels are f
 
 **Focused tests and commands:**
 
-- extend `config.rs` unit/property tests and add hostile config fixtures;
-- extend `cluster_status.rs`, `management_aggregation.rs`, `management_http.rs` tests for every
-  readiness/completeness state and cardinality rules;
-- add `hc2_value_plane_drain.rs` and extend mixed-daemon tests for owner eligibility and fail-loud
-  wire/durable incompatibility;
-- run `cargo test -p hydracache-server config value_plane readiness management --locked`;
-- run `cargo test -p hydracache-observability --all-targets --locked`;
-- run `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test
-  hc2_value_plane_drain --locked -- --nocapture`.
+- `cargo test --locked -p hydracache-server --lib` covers config validation, admission seals,
+  observation freshness, metric buckets, process-generation fencing and late backup ACKs;
+- `cargo test --locked -p hydracache-observability --all-targets` exercises exporter regressions;
+- `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test --locked -p hydracache-server --test
+  hc2_daemon_process -- w10h_ --test-threads=1 --nocapture` exercises the public HC/2 and admin
+  paths with separate Raft member processes.
+
+**Implementation.** The distributed member profile validates RF=2, write quorum=2, a readiness
+floor of 2–16 eligible members and independent ingress and owner limits of 1–256 in-flight
+operations. The defaults are two eligible members, 64 in-flight operations per limit and a 30-second
+drain deadline. The overrides are `HYDRACACHE_IMAP_MINIMUM_READY_MEMBERS`,
+`HYDRACACHE_IMAP_MAX_INFLIGHT` and `HYDRACACHE_DRAIN_TIMEOUT_MS`.
+
+`/readyz` evaluates a bounded ReadIndex-backed observation for the applied epoch and
+reports HTTP 503 with a reason when the observation is stale, the local value journal cannot
+serve its prefix, or certified placements lack reachable replicas. The public HC/2 path and the
+owner and replica handlers enforce their own checks. During an unrelated partition failure, a
+request can still proceed when its own route and replica checks pass.
+
+`/metrics` includes IMap route counters, bounded counts by partition state, retained decisions and
+the replica ACK histogram. The authenticated per-member `/management/v1/imap` endpoint includes
+readiness, observation freshness and completeness, configured limits, and up to 64 partition rows
+per page. Continuation requests carry the observation sequence and receive HTTP 409 if the sample
+changed. Management rows carry partition IDs. The IMap metric dimensions are fixed enums.
+
+Managed drain seals new IMap work and closes active subscriptions. It waits for in-flight work
+and any current-epoch backup ACK that can still advance a certified prefix. It then uses the
+existing Raft primary-handoff and backup-repair paths and checks the surviving replica floor and
+all certified placements before leaving membership. A deadline failure before that point returns
+HTTP 504 and leaves the node in the roster with admission sealed. The admin endpoint stays up so
+an operator can inspect or retry the operation once capacity returns.
+
+The profile refuses mixed value generations. A member proves support with an authenticated
+internal echo scoped to the admitted process generation. A restart requires a fresh proof. Value
+traffic can resume when all members in the authenticated roster have proved support. The
+federated management projection and shared metric descriptor catalogue remain follow-up work.
+Rolling upgrade and rollback with literal 0.74 artifacts remain W10i evidence gates.
+
+**AX42 qualification (2026-11-27).** Source `8fe9642a3a7927cfbad2dbe469eb4183a192f3c7`,
+Rust 1.94.0, three independent daemons on one Linux host. The server regression passed all 174
+tests, including the packaged Java HC/2 regression, and the observability suite passed 77 tests
+with one existing ignored test. Clippy with `-D warnings` passed for the server library and the
+daemon-process tests.
+
+All three optimized repetitions passed each scenario:
+
+- Under a 12-second writer workload, the surviving endpoint confirmed 940, 836 and 701 writes
+  respectively. The drained member exited after moving its primary and backup data. The survivors
+  returned the original bulk mutation receipt and reported zero active subscriptions.
+- When the spare was killed, readiness went to HTTP 503 and the two-second drain returned HTTP
+  504 with the departing member still in the committed roster. After the spare rejoined, the
+  retried drain completed and both seeded values remained readable.
+- A restarted member without the value attachment caused public HC/2 to refuse a write before
+  owner dispatch. Restarting that member with the compatible profile restored readiness and the
+  original value.
+
+The logs and binaries are in `development/w10h-8fe9642a3a7927cfbad2dbe469eb4183a192f3c7` on
+AX42. The verified `w10h.sha256` manifest has SHA-256
+`739ac6c5b756fd333fd797dc658d2bc45c6290717727f341378213efb84865c3`.
+The short fault runs qualify the W10h controls for the tested RF=2 profile.
+[AX42 qualification workspace](../testing/imap/0.75/remote-linux-qualification.md)
 
 ### W10i. Build the correctness and compatibility safety net
 

@@ -1118,6 +1118,30 @@ passed these scenarios. After closing the subscriptions, all three daemons repor
 zero active registrations.
 [W10g release evidence](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#w10g-make-bulk-operations-and-listeners-cluster-wide)
 
+## What it takes to drain a replica
+
+A Raft quorum can be healthy while a value partition is missing its backup. The two checks
+answer different questions. HydraCache takes a bounded observation of the applied topology and
+the reachable value replicas for `/readyz`. The management endpoint adds paged evidence about
+which certified partitions are behind, moving or under-replicated. Prometheus groups partitions
+by state. It also records how long successful replica acknowledgements take and how often they
+fail.
+
+A drain closes admission before it changes membership. A backup may already have flushed and
+acknowledged a write while the owner is still waiting to certify it through Raft. The departing
+backup waits until the prefix is committed or a newer epoch fences the old acknowledgement.
+Raft then coordinates the transfer of primaries and backups. The process can leave once all
+certified data placements have surviving replicas and the local subscriptions have closed. If a
+spare is unavailable and the drain runs out of time, the node stays in the roster with admission
+sealed and the admin endpoint up for a retry.
+
+On AX42, three release repetitions exercised the drain with separate member processes and an
+active writer. Each repetition preserved the transferred values and the original bulk mutation
+receipt, and left zero live subscriptions on the survivors. In a separate failure scenario,
+killing the spare made the drain time out while the departing member stayed in the roster. The
+retry completed after the spare returned, and both seeded values were still readable.
+[W10h release plan](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#w10h-add-distributed-observability-admission-readiness-and-operational-controls)
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
