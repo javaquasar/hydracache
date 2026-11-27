@@ -141,9 +141,7 @@ async fn probe_write(
     let first_attempt_ms = millis(killed);
     let mut last_unavailable_reply_ms = None;
     let mut timeouts = 0;
-    let mut sequence = 0;
     loop {
-        sequence += 1;
         let reply = client
             .put(
                 key.clone(),
@@ -151,7 +149,7 @@ async fn probe_write(
                 None,
                 Some(RequestOptions {
                     timeout: Duration::from_millis(750),
-                    idempotency_key: Bytes::from(format!("od3-probe-{}-{sequence}", partition.id)),
+                    idempotency_key: Bytes::new(),
                 }),
             )
             .await;
@@ -255,70 +253,73 @@ async fn measures_partition_write_outage_and_replica_recovery_on_hc2() {
     cluster.daemons[usize::from(VICTIM)].0.wait().unwrap();
     let writes = Semaphore::new(PARALLELISM);
     let confirmations = Semaphore::new(PARALLELISM);
-    let mut rows = tokio::time::timeout(PROBE_TIMEOUT, async {
-        stream::iter(selected.iter().zip(baseline))
-            .map(|(partition, baseline)| {
-                let cluster = &cluster;
-                let http = &http;
-                let replacement = &replacement;
-                let writes = &writes;
-                let confirmations = &confirmations;
-                async move {
-                    let slots = partition.surviving_pair();
-                    let probe =
-                        probe_write(&cluster.clients[1], partition, replacement, killed, writes);
-                    let recover = async {
-                        loop {
-                            let permit = confirmations.acquire().await.unwrap();
-                            let cut = observe_certified_pair(
-                                http,
-                                &cluster.spec,
-                                slots,
-                                partition.id,
-                                version,
-                            )
-                            .await;
-                            drop(permit);
-                            if let Some(cut) = cut {
-                                return (millis(killed), cut);
-                            }
-                            tokio::time::sleep(POLL_INTERVAL).await;
-                        }
-                    };
-                    let (probe, (replica_proof_observed_ms, recovered)) =
-                        tokio::join!(probe, recover);
-                    for slot in SURVIVORS {
-                        wait_w10i_get(
-                            &cluster.clients[usize::from(slot)],
-                            partition.keys[0].clone(),
-                            Some(replacement),
+    let recovery = stream::iter(selected.iter().zip(baseline))
+        .map(|(partition, baseline)| {
+            let cluster = &cluster;
+            let http = &http;
+            let replacement = &replacement;
+            let writes = &writes;
+            let confirmations = &confirmations;
+            async move {
+                let slots = partition.surviving_pair();
+                let probe =
+                    probe_write(&cluster.clients[1], partition, replacement, killed, writes);
+                let recover = async {
+                    loop {
+                        let permit = confirmations.acquire().await.unwrap();
+                        let cut = observe_certified_pair(
+                            http,
+                            &cluster.spec,
+                            slots,
+                            partition.id,
+                            version,
                         )
                         .await;
+                        drop(permit);
+                        if let Some(cut) = cut {
+                            return (millis(killed), cut);
+                        }
+                        tokio::time::sleep(POLL_INTERVAL).await;
                     }
-                    assert_eq!(baseline.rows(), keys_per_partition);
-                    assert_eq!(recovered.rows(), keys_per_partition);
-                    PartitionEvidence {
-                        partition: partition.id,
-                        original: partition.original,
-                        surviving: slots,
-                        epoch_before: baseline.epoch(),
-                        epoch_after: recovered.epoch(),
-                        replica_proof_observed_ms,
-                        probe,
-                        baseline,
-                        recovered,
-                    }
+                };
+                let (probe, (replica_proof_observed_ms, recovered)) = tokio::join!(probe, recover);
+                for slot in SURVIVORS {
+                    wait_w10i_get(
+                        &cluster.clients[usize::from(slot)],
+                        partition.keys[0].clone(),
+                        Some(replacement),
+                    )
+                    .await;
                 }
-            })
-            .buffer_unordered(selected.len())
-            .collect::<Vec<_>>()
-            .await
-    })
-    .await
-    .expect("partition write recovery did not complete within the diagnostic budget");
+                assert_eq!(baseline.rows(), keys_per_partition);
+                assert_eq!(recovered.rows(), keys_per_partition);
+                PartitionEvidence {
+                    partition: partition.id,
+                    original: partition.original,
+                    surviving: slots,
+                    epoch_before: baseline.epoch(),
+                    epoch_after: recovered.epoch(),
+                    replica_proof_observed_ms,
+                    probe,
+                    baseline,
+                    recovered,
+                }
+            }
+        })
+        .buffer_unordered(selected.len());
+    futures_util::pin_mut!(recovery);
+    let mut rows = Vec::with_capacity(selected.len());
+    let deadline = killed + PROBE_TIMEOUT;
+    while let Ok(Some(row)) = tokio::time::timeout_at(deadline, recovery.next()).await {
+        rows.push(row);
+    }
     rows.sort_by_key(|row| row.partition);
+    let unresolved: Vec<_> = selected
+        .iter()
+        .map(|partition| partition.id)
+        .filter(|id| rows.binary_search_by_key(id, |row| row.partition).is_err())
+        .collect();
     let summary = totals(&rows);
-    assert!(summary.affected_partitions > 0 && summary.control_partitions > 0);
     let report = serde_json::json!({
         "schema_version": 1,
         "production_admitted": false,
@@ -326,6 +327,8 @@ async fn measures_partition_write_outage_and_replica_recovery_on_hc2() {
         "keys_per_partition": keys_per_partition,
         "payload_bytes": payload_bytes,
         "concurrency": PARALLELISM,
+        "requested_partitions": selected.len(),
+        "unresolved_partitions": unresolved,
         "totals": summary,
         "partitions": rows
     });
@@ -335,6 +338,11 @@ async fn measures_partition_write_outage_and_replica_recovery_on_hc2() {
         file.sync_all().unwrap();
     }
     println!("OD-3 HC/2 diagnostic: {summary:?}; profile={keys_per_partition} keys/partition x {payload_bytes} bytes");
+    assert!(
+        unresolved.is_empty(),
+        "partition write recovery exceeded the diagnostic budget for {unresolved:?}"
+    );
+    assert!(summary.affected_partitions > 0 && summary.control_partitions > 0);
 }
 
 #[test]
