@@ -104,6 +104,28 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
         self.owner.replica.operations.as_deref()
     }
 
+    pub(crate) fn ttl_configured(&self) -> bool {
+        self.profile.chrony.is_some()
+    }
+
+    fn operation_key<'a>(
+        &self,
+        request: &'a ClientRequest,
+    ) -> Option<(&'a Namespace, &'a StructuredKey)> {
+        match request {
+            ClientRequest::Put { ns, key, ttl_ms, .. }
+                if ttl_ms.is_none() || self.ttl_configured() =>
+            {
+                Some((ns, key))
+            }
+            ClientRequest::Get { ns, key }
+            | ClientRequest::Invalidate { ns, key }
+            | ClientRequest::CompareAndSet { ns, key, .. }
+            | ClientRequest::RemoveIfValue { ns, key, .. } => Some((ns, key)),
+            _ => None,
+        }
+    }
+
     pub(crate) async fn replica_digest(
         &self,
         query: crate::imap_value_plane::audit::IMapReplicaDigestQuery,
@@ -200,7 +222,7 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
         tenant: &str,
         request: &ClientRequest,
     ) -> Result<PartitionPlacement, ClientErrorEnvelope> {
-        let (ns, key) = operation_key(request).ok_or_else(unsupported)?;
+        let (ns, key) = self.operation_key(request).ok_or_else(unsupported)?;
         let partition = self
             .owner
             .replica
@@ -280,7 +302,7 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
             .raft
             .partition_snapshot()
             .ok_or_else(unavailable)?;
-        let (namespace, key) = operation_key(&call.envelope.request).ok_or_else(unsupported)?;
+        let (namespace, key) = self.operation_key(&call.envelope.request).ok_or_else(unsupported)?;
         let partition = self
             .owner
             .replica
@@ -363,22 +385,6 @@ impl<S: RaftLogStore + 'static> ClientDataBackend for RoutedValueBackend<S> {
             }
             reply.outcome
         })
-    }
-}
-
-fn operation_key(request: &ClientRequest) -> Option<(&Namespace, &StructuredKey)> {
-    match request {
-        ClientRequest::Get { ns, key }
-        | ClientRequest::Invalidate { ns, key }
-        | ClientRequest::Put {
-            ns,
-            key,
-            ttl_ms: None,
-            ..
-        }
-        | ClientRequest::CompareAndSet { ns, key, .. }
-        | ClientRequest::RemoveIfValue { ns, key, .. } => Some((ns, key)),
-        _ => None,
     }
 }
 

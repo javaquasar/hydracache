@@ -15,7 +15,7 @@ use tokio::io::AsyncReadExt;
 use tokio::process::Command;
 use tokio::sync::watch;
 
-use super::{ChronySample, ClockReading, NS_PER_SEC};
+use super::{ChronyEvidenceError, ChronySample, ClockReading, NS_PER_SEC};
 use crate::config::IMapChronyConfig;
 
 const MAX_REPORT_BYTES: u64 = 1025;
@@ -90,7 +90,14 @@ impl ClusterTimeAuthority for ChronyClock {
         let mut state = self.state.lock().ok()?;
         state.sample.as_ref()?;
         let now = state.read()?;
-        state.sample.as_ref()?.observe(now).ok()
+        match state.sample.as_ref()?.observe(now) {
+            Ok(observation) => Some(observation),
+            Err(ChronyEvidenceError::ClockChanged) => {
+                state.invalidate();
+                None
+            }
+            Err(_) => None,
+        }
     }
 }
 

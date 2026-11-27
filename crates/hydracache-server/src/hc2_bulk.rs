@@ -36,7 +36,7 @@ pub(super) async fn dispatch(
             "HC/2 batch concurrency bound exceeded",
         );
     };
-    let requests = match normalize(batch, service.state.limits()) {
+    let requests = match normalize(batch, service.state.limits(), member.plane.ttl_configured()) {
         Ok(requests) if meta.idempotency_key.len() <= 128 => requests,
         Ok(_) => {
             return wire_error(
@@ -170,6 +170,7 @@ pub(super) async fn dispatch(
 fn normalize(
     batch: BatchRequest,
     limits: hydracache_client_transport_axum::ClientSurfaceLimits,
+    ttl_configured: bool,
 ) -> Result<Vec<ClientRequest>, (StableErrorCode, &'static str)> {
     use StableErrorCode::*;
     if batch.items.is_empty()
@@ -196,7 +197,7 @@ fn normalize(
                 item.operation
                     .ok_or((StableErrorInvalidRequest, "batch operation is required"))?,
             );
-            if !admitted_distributed_operation(&operation) {
+            if !admitted_distributed_operation(&operation, ttl_configured) {
                 return Err((
                     StableErrorUnsupported,
                     "batch item is outside the distributed profile",
@@ -250,7 +251,7 @@ mod tests {
                 key: Bytes::from_static(b"a"),
             })),
         };
-        let admit = |items| normalize(BatchRequest { items }, Default::default());
+        let admit = |items| normalize(BatchRequest { items }, Default::default(), false);
         assert!(admit(vec![get(1), get(2)]).is_ok());
         assert!(admit(vec![get(1), get(1)]).is_err());
         assert!(admit(vec![

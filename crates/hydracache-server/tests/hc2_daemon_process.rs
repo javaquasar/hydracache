@@ -37,6 +37,8 @@ mod imap_hc2_campaign;
 #[cfg(target_os = "linux")]
 #[path = "support/imap_chrony_process.rs"]
 mod imap_chrony_process;
+#[path = "support/imap_od3.rs"]
+mod imap_od3;
 #[path = "support/imap_sdk_cohort.rs"]
 mod imap_sdk_cohort;
 

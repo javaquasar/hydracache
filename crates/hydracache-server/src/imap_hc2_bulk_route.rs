@@ -321,7 +321,7 @@ impl<S: RaftLogStore> RoutedValueBackend<S> {
         envelope: &ClientRequestEnvelope,
     ) -> Result<PartitionId, ClientErrorEnvelope> {
         envelope.validate_protocol()?;
-        let (namespace, key) = operation_key(&envelope.request).ok_or_else(unsupported)?;
+        let (namespace, key) = self.operation_key(&envelope.request).ok_or_else(unsupported)?;
         if !matches!(envelope.request, ClientRequest::Get { .. })
             && !WriteOp::request(&envelope.request)
                 .is_some_and(|(_, _, op)| op.fits(self.max_value_bytes.min(MAX_VALUE_BYTES)))

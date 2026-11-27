@@ -1,4 +1,5 @@
 use super::*;
+use hydracache_client_hc2::{BatchItemState, BatchOperation};
 use imap_hc2_campaign::owner_checkpoint;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -20,13 +21,22 @@ async fn distributed_ttl_fences_a_stale_chrony_reference_through_owner_promotion
     let admin = cluster.spec.addresses[7];
     wait_imap_readiness(&http, admin, "ready").await;
     let key = cluster.key_for(0, Some(1), "od2");
+    let batch_key = cluster.key_for(1, Some(2), "od2-batch-");
     let partition = fixture_imap_scope().locate(key.to_vec()).unwrap().0.value();
     let ttl = Duration::from_secs(6);
     let started = tokio::time::Instant::now();
     let value = Bytes::from_static(b"temporary");
     assert!(
         cluster.clients[1]
-            .put(key.clone(), value.clone(), Some(ttl), None)
+            .put(
+                key.clone(),
+                value.clone(),
+                Some(ttl),
+                Some(RequestOptions {
+                    timeout: Duration::from_secs(2),
+                    idempotency_key: Bytes::from_static(b"od2-finite-put"),
+                }),
+            )
             .await
             .unwrap()
             .applied
@@ -50,21 +60,25 @@ async fn distributed_ttl_fences_a_stale_chrony_reference_through_owner_promotion
             .code(),
         ErrorCode::Unavailable
     );
+    assert_eq!(
+        cluster.clients[1]
+            .put(batch_key.clone(), value.clone(), Some(ttl), None)
+            .await
+            .unwrap_err()
+            .code(),
+        ErrorCode::Unavailable
+    );
     cluster.daemons[0].0.kill().unwrap();
     cluster.daemons[0].0.wait().unwrap();
-    let promoted = tokio::time::timeout(
-        Duration::from_secs(45),
-        owner_checkpoint(
-            &http,
-            &cluster.spec,
-            [1, 2],
-            partition,
-            1,
-            before.epoch() + 1,
-        ),
+    let promoted = owner_checkpoint(
+        &http,
+        &cluster.spec,
+        [1, 2],
+        partition,
+        1,
+        before.epoch() + 1,
     )
-    .await
-    .expect("promote and repair the TTL partition while chrony is stale");
+    .await;
     before.assert_same_image(&promoted);
     // Keep the clock fenced past the point at which the original TTL is due.
     tokio::time::sleep_until(started + ttl).await;
@@ -80,6 +94,22 @@ async fn distributed_ttl_fences_a_stale_chrony_reference_through_owner_promotion
     wait_w10i_get(&cluster.clients[2], key, None).await;
     let expired =
         owner_checkpoint(&http, &cluster.spec, [1, 2], partition, 2, promoted.epoch()).await;
+    let batch = cluster.clients[2]
+        .batch_outcomes(
+            vec![BatchOperation::Put {
+                key: batch_key.clone(),
+                value: value.clone(),
+                ttl: Some(ttl),
+            }],
+            None,
+        )
+        .await
+        .unwrap();
+    assert_eq!(batch.len(), 1);
+    assert!(batch[0].receipt.as_ref().is_some_and(|receipt| {
+        receipt.state == BatchItemState::Confirmed && receipt.applied.is_some()
+    }));
+    wait_w10i_get(&cluster.clients[1], batch_key, Some(&value)).await;
     println!(
         "OD-2 HC/2: stale chrony fenced TTL before and after promotion on partition {partition}; epochs {} -> {}; certified expiry prefix=2",
         before.epoch(),

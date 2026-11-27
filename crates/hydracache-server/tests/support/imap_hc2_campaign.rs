@@ -564,6 +564,29 @@ async fn reconcile_copies(
     Some([first, second])
 }
 
+pub(super) async fn observe_certified_pair(
+    http: &reqwest::Client,
+    spec: &MemberClusterSpec,
+    slots: [u8; 2],
+    partition: u32,
+    min_version: u64,
+) -> Option<ReplicaCheckpoint> {
+    let (primary, backup) = tokio::join!(
+        observe_latest_partition(http, spec.addresses[6 + usize::from(slots[0])], slots[0], partition),
+        observe_latest_partition(http, spec.addresses[6 + usize::from(slots[1])], slots[1], partition),
+    );
+    let placement = [primary?, backup?];
+    let [primary, backup] = &placement;
+    if !(primary.primary && backup.backup && primary.healthy && backup.healthy
+        && primary.epoch == backup.epoch && primary.certified_version >= min_version
+        && primary.certified_version == backup.certified_version)
+    {
+        return None;
+    }
+    let digests = reconcile_copies(http, spec, partition, &placement).await?;
+    Some(ReplicaCheckpoint { placement, digests })
+}
+
 fn assert_same_image(first: &IMapReplicaDigest, second: &IMapReplicaDigest) {
     assert_eq!(
         first.prefix, second.prefix,
@@ -775,6 +798,17 @@ async fn observe_partition(
     partition: u32,
     version: u64,
 ) -> Option<CopyObservation> {
+    observe_latest_partition(http, admin, member_slot, partition)
+        .await
+        .filter(|observation| observation.certified_version == version)
+}
+
+async fn observe_latest_partition(
+    http: &reqwest::Client,
+    admin: SocketAddr,
+    member_slot: u8,
+    partition: u32,
+) -> Option<CopyObservation> {
     async fn page(http: &reqwest::Client, url: &str) -> Option<serde_json::Value> {
         w10h_admin(http.get(url))
             .timeout(Duration::from_secs(1))
@@ -800,7 +834,7 @@ async fn observe_partition(
     let backup = row["local_backup"].as_bool()?;
     let certified_version = row["certified_version"].as_u64()?;
     let epoch = body["observation_epoch"].as_u64()?;
-    (body["complete"] == true && row["id"] == partition && certified_version == version).then_some(
+    (body["complete"] == true && row["id"] == partition).then_some(
         CopyObservation {
             member_slot,
             epoch,

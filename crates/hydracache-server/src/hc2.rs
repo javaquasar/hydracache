@@ -917,7 +917,7 @@ async fn dispatch_invocation_async(
         if let invocation_request::Operation::Batch(batch) = operation {
             return bulk::dispatch(service, member, correlation_id, meta, identity, batch).await;
         }
-        if !admitted_distributed_operation(&operation) {
+        if !admitted_distributed_operation(&operation, member.plane.ttl_configured()) {
             return wire_error(
                 StableErrorCode::StableErrorUnsupported,
                 "operation is outside the distributed HC/2 profile",
@@ -1060,11 +1060,14 @@ fn scoped_identity(bytes: &[u8]) -> Option<String> {
     Some(token.to_owned())
 }
 
-fn admitted_distributed_operation(operation: &invocation_request::Operation) -> bool {
+fn admitted_distributed_operation(
+    operation: &invocation_request::Operation,
+    ttl_configured: bool,
+) -> bool {
     use invocation_request::Operation;
     match operation {
         Operation::Get(_) | Operation::Delete(_) | Operation::RemoveIfValue(_) => true,
-        Operation::Put(value) => value.ttl_ms == 0,
+        Operation::Put(value) => value.ttl_ms == 0 || ttl_configured,
         Operation::CompareAndSet(value) => value.ttl_ms == 0,
         _ => false,
     }
@@ -1660,26 +1663,25 @@ mod tests {
     fn distributed_hc2_rejects_unavailable_operations_and_checks_epoch_tokens() {
         use hydracache_client_hc2::wire::{CompareAndSetRequest, GetRequest, PutRequest};
         use invocation_request::Operation;
-        assert!(admitted_distributed_operation(&Operation::Get(
-            GetRequest {
-                key: Bytes::from_static(b"k"),
-            }
-        )));
-        assert!(!admitted_distributed_operation(&Operation::Put(
-            PutRequest {
-                key: Bytes::from_static(b"k"),
-                value: Bytes::from_static(b"value"),
-                ttl_ms: 1,
-            }
-        )));
-        assert!(!admitted_distributed_operation(&Operation::CompareAndSet(
-            CompareAndSetRequest {
-                key: Bytes::from_static(b"k"),
-                expected: Bytes::from_static(b"old"),
-                replacement: Bytes::from_static(b"new"),
-                ttl_ms: 1,
-            }
-        )));
+        let get = Operation::Get(GetRequest {
+            key: Bytes::from_static(b"k"),
+        });
+        let put = Operation::Put(PutRequest {
+            key: Bytes::from_static(b"k"),
+            value: Bytes::from_static(b"value"),
+            ttl_ms: 1,
+        });
+        let cas = Operation::CompareAndSet(CompareAndSetRequest {
+            key: Bytes::from_static(b"k"),
+            expected: Bytes::from_static(b"old"),
+            replacement: Bytes::from_static(b"new"),
+            ttl_ms: 1,
+        });
+        assert!(admitted_distributed_operation(&get, false));
+        assert!(!admitted_distributed_operation(&put, false));
+        assert!(admitted_distributed_operation(&put, true));
+        assert!(!admitted_distributed_operation(&cas, false));
+        assert!(!admitted_distributed_operation(&cas, true));
         assert_eq!(
             scoped_identity(b"w10e:3:valid_0-a").as_deref(),
             Some("w10e:3:valid_0-a")
