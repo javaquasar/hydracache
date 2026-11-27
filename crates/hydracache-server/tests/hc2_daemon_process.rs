@@ -22,8 +22,9 @@ use hydracache_client_transport_axum::{
 };
 use hydracache_server::imap_replicated_read::{ReplicaReadScope, D2_PARTITION_COUNT};
 use hydracache_server::{
-    ADMIN_CLUSTER_OVERVIEW_PATH, ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH, ADMIN_READYZ_PATH,
-    MANAGEMENT_CLUSTER_IMAP_PATH, MANAGEMENT_CONSENSUS_PROGRESS_PATH, MANAGEMENT_IMAP_PATH,
+    ADMIN_CLUSTER_OVERVIEW_PATH, ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH, ADMIN_RAFT_COMPACTION_PATH,
+    ADMIN_READYZ_PATH, MANAGEMENT_CLUSTER_IMAP_PATH, MANAGEMENT_CONSENSUS_PROGRESS_PATH,
+    MANAGEMENT_IMAP_PATH,
 };
 use sha2::{Digest, Sha256};
 use tokio::sync::{Mutex, MutexGuard};
@@ -1336,16 +1337,10 @@ async fn w10h_published_b74_same_volume_rollback_before_value_activation() {
     if !w10h_enabled() {
         return;
     }
-    let Some(path) = std::env::var_os("HYDRACACHE_W10H_B74_DAEMON") else {
-        eprintln!("SKIP: set HYDRACACHE_W10H_B74_DAEMON to the published Linux binary");
+    let Some(b74) = published_b74() else {
         return;
     };
-    let b74 = PathBuf::from(path);
     let digest = sha256_hex(&std::fs::read(&b74).unwrap());
-    assert_eq!(
-        digest,
-        "60a37932c554e58a54303f1196c347948fbe0dde162d5a3e32cef5e00f0dd10a"
-    );
     let _guard = async_daemon_process_guard().await;
     let mut cluster = MemberCluster::start("w10h-published-b74").await;
     let http = w10h_http();
@@ -1356,6 +1351,17 @@ async fn w10h_published_b74_same_volume_rollback_before_value_activation() {
         .all(|row| { row["observation"]["partitions"]["empty"] == D2_PARTITION_COUNT.get() }));
     cluster.daemons[2].0.kill().unwrap();
     cluster.daemons[2].0.wait().unwrap();
+    let blank_volume = cluster.spec.root.join(&cluster.spec.names[2]);
+    let check = run_b74_check(&blank_volume);
+    assert!(
+        check.status.success(),
+        "{}",
+        String::from_utf8_lossy(&check.stderr)
+    );
+    assert_eq!(
+        serde_json::from_slice::<serde_json::Value>(&check.stdout).unwrap()["decision"],
+        "compatible"
+    );
     cluster.daemons[2] = cluster.spec.spawn_binary(2, false, &b74);
     wait_imap_readiness(&http, current, "wire_generation_incompatible").await;
     wait_cluster_imap(&http, current, |body| {
@@ -1400,6 +1406,248 @@ async fn w10h_published_b74_same_volume_rollback_before_value_activation() {
     );
     wait_w10i_get(&rejoined, key, Some(&value)).await;
     println!("W10h published_b74_sha256={digest} same_volume_rollback_before_value_records=true legacy_snapshot_schema_1=true incompatible_before_dispatch=true reupgrade=true");
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn w10i_b74_blocks_certified_log_and_snapshot_and_current_recovers() {
+    use hydracache_client_hc2::BatchOperation;
+    if !w10h_enabled() {
+        return;
+    }
+    let Some(b74) = published_b74() else {
+        return;
+    };
+    let _guard = async_daemon_process_guard().await;
+    let mut cluster = MemberCluster::start_fixture(
+        "w10i-b74-certified",
+        &pki(),
+        MemberOptions {
+            raft_compaction: true,
+            ..Default::default()
+        },
+    )
+    .await;
+    let victim = 2;
+    let volume = cluster.spec.root.join(&cluster.spec.names[victim]);
+    let live = run_b74_check(&volume);
+    assert!(!live.status.success());
+    assert!(live.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&live.stderr).contains("cannot lock member database"));
+
+    let keep = cluster.key_for(1, Some(0), "w10i-b74-keep/");
+    let remove = cluster.key_for(0, Some(1), "w10i-b74-remove/");
+    let value = Bytes::from_static(b"certified-v2-value");
+    let options = RequestOptions {
+        timeout: Duration::from_secs(4),
+        idempotency_key: Bytes::from_static(b"w10i-b74-retained-receipt"),
+    };
+    let put = BatchOperation::Put {
+        key: keep.clone(),
+        value: value.clone(),
+        ttl: None,
+    };
+    let write = |client: Hc2Client| {
+        let put = put.clone();
+        let options = options.clone();
+        async move {
+            let results = client.batch_outcomes(vec![put], Some(options)).await?;
+            results[0].result.as_ref().map_err(Clone::clone)?;
+            Ok(results[0].receipt.unwrap())
+        }
+    };
+    let receipt = retry_w10i(|| write(cluster.clients[1].clone())).await;
+    assert!(
+        retry_w10i(|| cluster.clients[1].put(remove.clone(), value.clone(), None, None))
+            .await
+            .applied
+    );
+    assert!(
+        retry_w10i(|| cluster.clients[1].delete(remove.clone(), None))
+            .await
+            .applied
+    );
+    wait_w10i_get(&cluster.clients[victim], keep.clone(), Some(&value)).await;
+
+    cluster.daemons[victim].0.kill().unwrap();
+    cluster.daemons[victim].0.wait().unwrap();
+    let log_index = assert_b74_blocked(&volume, "raft_log");
+    let log_copy = tempfile::tempdir_in(&cluster.spec.root).unwrap();
+    let log_dir = log_copy.path().join("member");
+    copy_member_fixture(&volume, &log_dir);
+    assert_old_b74_refuses_copy(
+        &cluster.spec,
+        victim,
+        &b74,
+        &log_dir,
+        "invalid raft metadata command",
+    )
+    .await;
+    cluster.daemons[victim] = cluster.spec.spawn(victim);
+    let rejoined = connect_w10i(&cluster.adapters[victim], "w10i").await;
+    wait_w10i_get(&rejoined, keep.clone(), Some(&value)).await;
+    let http = w10h_http();
+    let admin = cluster.spec.addresses[6 + victim];
+    wait_imap_readiness(&http, admin, "ready").await;
+    let reply = w10h_admin(http.post(format!("http://{admin}{ADMIN_RAFT_COMPACTION_PATH}")))
+        .send()
+        .await
+        .unwrap()
+        .error_for_status()
+        .unwrap()
+        .json::<serde_json::Value>()
+        .await
+        .unwrap();
+    let index = reply["last_snapshot_index"].as_u64().unwrap();
+    assert!(index >= log_index);
+
+    cluster.daemons[victim].0.kill().unwrap();
+    cluster.daemons[victim].0.wait().unwrap();
+    assert_eq!(assert_b74_blocked(&volume, "raft_snapshot"), index);
+    let snapshot_copy = tempfile::tempdir_in(&cluster.spec.root).unwrap();
+    let snapshot_dir = snapshot_copy.path().join("member");
+    copy_member_fixture(&volume, &snapshot_dir);
+    assert_old_b74_refuses_copy(
+        &cluster.spec,
+        victim,
+        &b74,
+        &snapshot_dir,
+        "unknown variant `CommitValuePrefix`",
+    )
+    .await;
+
+    cluster.daemons[victim] = cluster.spec.spawn(victim);
+    let recovered = connect_w10i(&cluster.adapters[victim], "w10i").await;
+    wait_w10i_get(&recovered, keep, Some(&value)).await;
+    wait_w10i_get(&recovered, remove, None).await;
+    assert_eq!(retry_w10i(|| write(recovered.clone())).await, receipt);
+    println!("W10i B74 rollback refused log_index={log_index} snapshot_index={index} source_bytes_unchanged=true published_b74_refused_both_copies=true compatible_restart_value_tombstone_receipt=true");
+}
+
+fn published_b74() -> Option<PathBuf> {
+    let Some(path) = std::env::var_os("HYDRACACHE_W10H_B74_DAEMON") else {
+        eprintln!("SKIP: set HYDRACACHE_W10H_B74_DAEMON to the published Linux binary");
+        return None;
+    };
+    let path = PathBuf::from(path);
+    assert_eq!(
+        sha256_hex(&std::fs::read(&path).unwrap()),
+        "60a37932c554e58a54303f1196c347948fbe0dde162d5a3e32cef5e00f0dd10a"
+    );
+    Some(path)
+}
+
+fn run_b74_check(volume: &Path) -> std::process::Output {
+    Command::new(env!("CARGO_BIN_EXE_hydracache-server"))
+        .arg("check-b74-rollback")
+        .arg(volume)
+        .output()
+        .unwrap()
+}
+
+fn assert_b74_blocked(volume: &Path, reason: &str) -> u64 {
+    let mut before = std::collections::BTreeMap::new();
+    fn read_files(
+        root: &Path,
+        path: &Path,
+        manifest: &mut std::collections::BTreeMap<PathBuf, String>,
+    ) {
+        for entry in std::fs::read_dir(path).unwrap() {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if entry.file_type().unwrap().is_dir() {
+                read_files(root, &path, manifest);
+            } else {
+                manifest.insert(
+                    path.strip_prefix(root).unwrap().to_path_buf(),
+                    sha256_hex(&std::fs::read(path).unwrap()),
+                );
+            }
+        }
+    }
+    read_files(volume, volume, &mut before);
+    let check = run_b74_check(volume);
+    assert!(!check.status.success());
+    let report: serde_json::Value = serde_json::from_slice(&check.stdout)
+        .unwrap_or_else(|err| panic!("{err}: {}", String::from_utf8_lossy(&check.stderr)));
+    assert_eq!(report["decision"], "blocked");
+    assert_eq!(report["reason"], reason);
+    let mut after = std::collections::BTreeMap::new();
+    read_files(volume, volume, &mut after);
+    assert_eq!(before, after);
+    report["raft_index"].as_u64().unwrap()
+}
+
+fn copy_member_fixture(source: &Path, destination: &Path) {
+    std::fs::create_dir(destination).unwrap();
+    for entry in std::fs::read_dir(source).unwrap() {
+        let entry = entry.unwrap();
+        let target = destination.join(entry.file_name());
+        if entry.file_type().unwrap().is_dir() {
+            copy_member_fixture(&entry.path(), &target);
+        } else {
+            std::fs::copy(entry.path(), target).unwrap();
+        }
+    }
+}
+
+async fn assert_old_b74_refuses_copy(
+    spec: &MemberClusterSpec,
+    victim: usize,
+    binary: &Path,
+    copy: &Path,
+    reason: &str,
+) {
+    let ([cluster, admin, client, hc2], reservations) = reserve_addrs::<4>();
+    let mut command = daemon_command_for(
+        binary,
+        client,
+        admin,
+        hc2,
+        &spec.server_cert,
+        &spec.server_key,
+        &spec.ca,
+    );
+    command
+        .env("HYDRACACHE_ROLE", "member")
+        .env("HYDRACACHE_CLIENT_API_ENABLED", "false")
+        .env("HYDRACACHE_HC2_ENABLED", "false")
+        .env_remove("HYDRACACHE_DISTRIBUTED_HC2_CONFIG")
+        .env("HYDRACACHE_CLUSTER_ADDR", cluster.to_string())
+        .env("HYDRACACHE_CLUSTER_ADVERTISE_ADDR", cluster.to_string())
+        .env("HYDRACACHE_NODE_ID", &spec.names[victim])
+        .env("HYDRACACHE_SEEDS", "")
+        .env("HYDRACACHE_STORAGE_DIR", copy)
+        .env("HYDRACACHE_CLUSTER_AUTH_KEY_ID", "w10i-fixture")
+        .env(
+            "HYDRACACHE_CLUSTER_AUTH_TOKEN_FILE",
+            spec.root.join("cluster-token"),
+        );
+    drop(reservations);
+    let mut child = ChildGuard(command.spawn().unwrap());
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(8);
+    loop {
+        if let Some(status) = child.0.try_wait().unwrap() {
+            assert!(!status.success());
+            let mut stderr = String::new();
+            child
+                .0
+                .stderr
+                .take()
+                .unwrap()
+                .read_to_string(&mut stderr)
+                .unwrap();
+            assert!(
+                stderr.contains(reason),
+                "published 0.74 refused for a different reason: {stderr}"
+            );
+            return;
+        }
+        assert!(
+            tokio::time::Instant::now() < deadline,
+            "published 0.74 started with incompatible durable IMap metadata"
+        );
+        tokio::time::sleep(Duration::from_millis(25)).await;
+    }
 }
 
 fn cluster_imap_members(body: &serde_json::Value) -> &[serde_json::Value] {
@@ -1538,12 +1786,14 @@ struct MemberClusterSpec {
     ca: PathBuf,
     event_fault: Option<PathBuf>,
     drain_timeout_ms: Option<u64>,
+    raft_compaction: bool,
 }
 
 #[derive(Default)]
 struct MemberOptions {
     event_fault: bool,
     drain_timeout_ms: Option<u64>,
+    raft_compaction: bool,
 }
 
 impl MemberClusterSpec {
@@ -1601,6 +1851,9 @@ impl MemberClusterSpec {
         }
         if let Some(timeout) = self.drain_timeout_ms {
             command.env("HYDRACACHE_DRAIN_TIMEOUT_MS", timeout.to_string());
+        }
+        if self.raft_compaction {
+            command.env("HYDRACACHE_RAFT_COMPACTION", "true");
         }
         if value_profile {
             command.env(
@@ -1700,6 +1953,7 @@ impl MemberCluster {
                 .event_fault
                 .then(|| root.join(&names[2]).join("event-fault.json")),
             drain_timeout_ms: options.drain_timeout_ms,
+            raft_compaction: options.raft_compaction,
             root,
             addresses,
             names,

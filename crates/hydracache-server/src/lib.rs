@@ -115,3 +115,5 @@ pub use services::{DrainOutcome, GracefulShutdown, ServiceSet};
 pub use upgrade::{
     GracefulUpgrade, UpgradeError, UpgradePhase, UpgradePlan, UpgradeReport, UpgradeStrategy,
 };
+mod b74_rollback;
+pub use b74_rollback::{check_b74_rollback, B74RollbackCheck, B74RollbackReason};

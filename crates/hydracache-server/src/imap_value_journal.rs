@@ -292,6 +292,15 @@ impl ValueJournal {
         sled::open(path).map(Self).map_err(storage_error)
     }
 
+    pub(crate) fn has_value_state(&self) -> CacheResult<bool> {
+        for key in self.0.iter().keys() {
+            if key.map_err(storage_error)?.as_ref() != b"scope" {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
     pub fn bind_scope(&self, tenant: &str, namespace: &str, generation: u64) -> CacheResult<()> {
         let expected =
             serde_json::to_vec(&(1u16, tenant, namespace, generation)).map_err(storage_error)?;

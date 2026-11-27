@@ -1024,6 +1024,77 @@ impl RaftMetadataRuntime<SledRaftLogStore> {
     }
 }
 
+/// Location of the first metadata command unsupported by the published 0.74.0 daemon.
+#[cfg(feature = "sled-log-store")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum B74IncompatibleMetadata {
+    Snapshot { index: u64 },
+    Log { index: u64 },
+}
+
+#[cfg(feature = "sled-log-store")]
+impl SledRaftLogStore {
+    /// Inspect an offline copy of the durable metadata for the published 0.74.0 decoder.
+    /// Uncommitted entries can still be applied after restart and are checked as well.
+    pub fn b74_incompatible_metadata(&self) -> CacheResult<Option<B74IncompatibleMetadata>> {
+        let state = self.initial_state().map_err(to_cache_error)?;
+        if state.conf_state.voters.is_empty() {
+            return Err(CacheError::Decode(
+                "durable Raft voter configuration is missing".into(),
+            ));
+        }
+        let snapshot = self.snapshot(0, 0).map_err(to_cache_error)?;
+        let index = snapshot.get_metadata().index;
+        if index != 0 || !snapshot.data.is_empty() {
+            let exported = decode_metadata_snapshot_payload(&snapshot.data).map_err(|_| {
+                CacheError::Decode("cannot verify the durable Raft snapshot format".to_owned())
+            })?;
+            if exported.applied_index != index {
+                return Err(CacheError::Decode(
+                    "Raft snapshot metadata index differs from its payload".into(),
+                ));
+            }
+            if exported
+                .commands
+                .iter()
+                .any(|entry| !b74_supports_command(&entry.command))
+            {
+                return Ok(Some(B74IncompatibleMetadata::Snapshot { index }));
+            }
+            validate_snapshot_apply_contract(&exported)?;
+        }
+        for entry in self.retained_entries().map_err(to_cache_error)? {
+            if entry.index <= index
+                || entry.data.is_empty()
+                || entry.get_entry_type() != EntryType::EntryNormal
+            {
+                continue;
+            }
+            let command = decode_envelope(&entry.data).map_err(|_| {
+                CacheError::Decode(format!(
+                    "cannot verify the durable Raft command at index {}",
+                    entry.index
+                ))
+            })?;
+            if !b74_supports_command(&command.command) {
+                return Ok(Some(B74IncompatibleMetadata::Log { index: entry.index }));
+            }
+        }
+        Ok(None)
+    }
+}
+
+#[cfg(feature = "sled-log-store")]
+fn b74_supports_command(command: &RaftMetadataCommand) -> bool {
+    matches!(
+        command,
+        RaftMetadataCommand::MemberUpsert { .. }
+            | RaftMetadataCommand::ClientUpsert { .. }
+            | RaftMetadataCommand::NodeLeft { .. }
+            | RaftMetadataCommand::CommitTopology { .. }
+    )
+}
+
 impl<S> RaftMetadataRuntime<S>
 where
     S: RaftLogStore,
@@ -2931,6 +3002,54 @@ mod tests {
         snapshot.mut_metadata().index = export.applied_index;
         snapshot.data = encode_metadata_snapshot_payload(export).unwrap();
         snapshot
+    }
+
+    #[cfg(feature = "sled-log-store")]
+    #[test]
+    fn b74_guard_checks_uncommitted_log_and_compacted_metadata() {
+        let store = SledRaftLogStore::new_for_tests();
+        let voters = ConfState::from((vec![1], Vec::<u64>::new()));
+        store.save_conf_state(&voters).unwrap();
+        let member = RaftMetadataCommand::MemberUpsert {
+            node_id: ClusterNodeId::new("a"),
+            epoch: ClusterEpoch::new(1),
+            generation: ClusterGeneration::new(1),
+        };
+        let prefix = RaftMetadataCommand::CommitValuePrefix(hydracache::PartitionValuePrefix {
+            partition: hydracache::PartitionId::new(3),
+            epoch: ClusterEpoch::new(1),
+            version: 1,
+            previous: [0; 32],
+            digest: [1; 32],
+        });
+        let export = metadata_export_from_commands("test", 1, 2, vec![member, prefix]);
+        let entries: Vec<_> = export
+            .commands
+            .iter()
+            .enumerate()
+            .map(|(i, envelope)| Entry {
+                index: i as u64 + 1,
+                term: 1,
+                data: envelope.encode(),
+                ..Default::default()
+            })
+            .collect();
+        store.append(&entries[..1]).unwrap();
+        assert_eq!(store.b74_incompatible_metadata().unwrap(), None);
+        store.append(&entries[1..]).unwrap();
+        assert_eq!(store.initial_state().unwrap().hard_state.commit, 0);
+        assert_eq!(
+            store.b74_incompatible_metadata().unwrap(),
+            Some(B74IncompatibleMetadata::Log { index: 2 })
+        );
+        let mut snapshot = protobuf_snapshot_from_export(&export);
+        snapshot.mut_metadata().term = 1;
+        snapshot.mut_metadata().set_conf_state(voters);
+        store.save_snapshot(&snapshot, 0).unwrap();
+        assert_eq!(
+            store.b74_incompatible_metadata().unwrap(),
+            Some(B74IncompatibleMetadata::Snapshot { index: 2 })
+        );
     }
 
     #[test]

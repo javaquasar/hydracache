@@ -16,6 +16,7 @@ async-trait.workspace = true
 axum.workspace = true
 axum-server.workspace = true
 bytes.workspace = true
+fs2.workspace = true
 futures-util.workspace = true
 hydracache.workspace = true
 hydracache-actuator-axum.workspace = true
@@ -34,6 +35,7 @@ serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
 sled.workspace = true
+tempfile = "3"
 thiserror.workspace = true
 tokio = { workspace = true, features = ["signal"] }
 tokio-rustls.workspace = true
@@ -42,7 +44,6 @@ toml.workspace = true
 tonic.workspace = true
 
 [dev-dependencies]
-fs2.workspace = true
 hydracache = { workspace = true, features = ["durable-value-store"] }
 hydracache-client-protocol.workspace = true
 hydracache-cluster-testkit.workspace = true

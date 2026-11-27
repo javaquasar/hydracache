@@ -80,6 +80,8 @@ const MAX_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS: u64 = 60_000;
 const TEST_RAFT_OUTBOUND_FAULT_SCHEMA_VERSION: u32 = 1;
 const MAX_TEST_RAFT_OUTBOUND_DELAY_MS: u64 = 1_000;
 const NODE_IDENTITY_FILE: &str = "node-identity.json";
+pub(crate) const RAFT_LOG_DIR: &str = "raft-log";
+pub(crate) const IMAP_HC2_DIR: &str = "imap-hc2";
 const NODE_IDENTITY_FORMAT_VERSION: u32 = 1;
 static NODE_IDENTITY_TEMP_SEQ: AtomicU64 = AtomicU64::new(0);
 
@@ -177,7 +179,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     let node_id = identity.node_id;
     let raft_node_id = identity.raft_node_id;
     let topology = raft_topology(config, node_id.clone(), raft_node_id)?;
-    let raft_log_dir = storage_dir.join("raft-log");
+    let raft_log_dir = storage_dir.join(RAFT_LOG_DIR);
     fs::create_dir_all(&raft_log_dir).map_err(|error| {
         CacheError::Backend(format!(
             "failed to create raft log directory {}: {error}",
@@ -2652,7 +2654,7 @@ impl MemberReadHost {
         };
         let operations = Arc::new(crate::imap_ops::IMapOps::new(profile.value_plane));
         let backend = self.attach_value_backend(
-            &storage.join("imap-hc2"),
+            &storage.join(IMAP_HC2_DIR),
             replication,
             scope,
             None,

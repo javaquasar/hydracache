@@ -1,18 +1,38 @@
 use std::error::Error;
+use std::path::Path;
 use std::sync::Arc;
 
 use hydracache_client_transport_axum::{
     AxumClientSurface, CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS,
 };
 use hydracache_server::{
-    serve_hc2_listener, serve_redis_listener, AdminHttpSurface, Hc2ListenerTls, ServerConfig,
-    ServerRuntime,
+    check_b74_rollback, serve_hc2_listener, serve_redis_listener, AdminHttpSurface,
+    B74RollbackCheck, Hc2ListenerTls, ServerConfig, ServerRuntime,
 };
 use tokio::net::TcpListener;
 use tokio::sync::{mpsc, watch};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    let mut arguments = std::env::args_os().skip(1);
+    if let Some(command) = arguments.next() {
+        const USAGE: &str = "usage: hydracache-server [check-b74-rollback <stopped-member-volume>]";
+        let volume = arguments.next().ok_or(USAGE)?;
+        if command != "check-b74-rollback" || arguments.next().is_some() {
+            return Err(USAGE.into());
+        }
+        let check = check_b74_rollback(Path::new(&volume))?;
+        let mut report = serde_json::to_value(check)?;
+        report["schema_version"] = serde_json::json!(1);
+        report["target_release"] = serde_json::json!("0.74.0");
+        println!("{report}");
+        return match check {
+            B74RollbackCheck::Compatible => Ok(()),
+            B74RollbackCheck::Blocked { .. } => {
+                Err("B74 rollback blocked by durable member state".into())
+            }
+        };
+    }
     let config = ServerConfig::from_env()?;
     let admin_enabled = config.admin_api.enabled;
     let admin_addr = config.admin_api.listen_addr;
