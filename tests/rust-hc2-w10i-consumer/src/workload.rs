@@ -4,7 +4,7 @@ use hydracache_client_hc2::{
 };
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::Path;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use super::{decode_key, PACKAGE_SHA256};
 
@@ -13,13 +13,14 @@ pub(crate) async fn load(client: &Hc2Client, root: &Path, args: &[String]) {
         panic!("load requires a shared time origin");
     };
     let origin: u128 = origin.parse().unwrap();
-    let elapsed = || {
-        SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_millis()
-            - origin
-    };
+    let aligned_at = Instant::now();
+    let offset = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_millis()
+        .checked_sub(origin)
+        .expect("Rust probe started before the campaign origin");
+    let elapsed = || offset + aligned_at.elapsed().as_millis();
     let plan = BufReader::new(std::fs::File::open(root.join("rust-load.plan")).unwrap());
     let mut ledger = BufWriter::new(std::fs::File::create(root.join("rust-load.tsv")).unwrap());
     let mut rounds = 0;

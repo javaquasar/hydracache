@@ -41,6 +41,9 @@ public final class W10iPackagedLoadProbe {
 
   private static void load(HydraCacheClient client, Path root, long origin) throws Exception {
     var stop = root.resolve("packaged-load.stop");
+    long alignedAt = System.nanoTime();
+    long offset = System.currentTimeMillis() - origin;
+    require(offset >= 0, "Java probe started before the campaign origin");
     int seq = 0;
     try (var plan = Files.newBufferedReader(root.resolve("java-load.plan"), StandardCharsets.UTF_8);
          var file = new FileOutputStream(root.resolve("java-load.tsv").toFile());
@@ -55,7 +58,7 @@ public final class W10iPackagedLoadProbe {
             new BatchOperation.CompareAndSet(a, bytes("seed"), bytes("updated"), null),
             new BatchOperation.Get(a), new BatchOperation.Put(b, bytes("seed"), null),
             new BatchOperation.Delete(b), new BatchOperation.Get(b));
-        ledger.write("submit\t" + seq + "\t" + (System.currentTimeMillis() - origin) + "\t" + pair[0] + "\t" + pair[1] + "\n");
+        ledger.write("submit\t" + seq + "\t" + elapsed(offset, alignedAt) + "\t" + pair[0] + "\t" + pair[1] + "\n");
         ledger.flush();
         String encoded;
         try {
@@ -68,7 +71,7 @@ public final class W10iPackagedLoadProbe {
           if (!unavailable(error.getCause())) throw error;
           encoded = "u\tu\tu\tu\tu\tu\tu";
         }
-        ledger.write("outcome\t" + seq + "\t" + (System.currentTimeMillis() - origin) + "\t" + encoded + "\n");
+        ledger.write("outcome\t" + seq + "\t" + elapsed(offset, alignedAt) + "\t" + encoded + "\n");
         ledger.flush();
         if (seq == 0) Files.createFile(root.resolve("java-load.ready"));
         ++seq;
@@ -78,6 +81,10 @@ public final class W10iPackagedLoadProbe {
       file.getFD().sync();
     }
     System.out.printf("W10i Java packaged action=load rounds=%d%n", seq);
+  }
+
+  private static long elapsed(long offset, long alignedAt) {
+    return offset + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - alignedAt);
   }
 
   private static String encode(BatchItemOutcome row, int index) {

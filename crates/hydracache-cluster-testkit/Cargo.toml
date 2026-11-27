@@ -18,6 +18,7 @@ hydracache-client-protocol.workspace = true
 hydracache-cluster-raft.workspace = true
 hydracache-cluster-transport-axum.workspace = true
 raft.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
 tokio.workspace = true

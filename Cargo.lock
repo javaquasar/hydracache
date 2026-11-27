@@ -2380,6 +2380,7 @@ dependencies = [
  "hydracache-client-protocol",
  "hydracache-cluster-raft",
  "hydracache-cluster-transport-axum",
+ "serde",
  "serde_json",
  "sha2 0.11.0",
  "tokio",
