@@ -146,20 +146,22 @@ Diesel and SeaORM have equivalent adapters. See
 
 ## How it fits
 
-```text
-  your Rust service
- ┌──────────────────────────────────────────────┐
- │  repository code (sqlx / diesel / seaorm)     │
- │        │ read                    │ write+commit│
- │        ▼                         ▼            │
- │  ┌───────────┐  miss   ┌───────────────────┐  │
- │  │ HydraCache│───────▶ │  loader → SQL DB  │  │
- │  │  (local)  │◀─────── └───────────────────┘  │
- │  └─────┬─────┘  invalidation plan / outbox    │
- └────────┼─────────────────────────────────────┘
-          │ opt-in: invalidation bus, peer fetch, raft control plane
-          ▼
-   other HydraCache members  ·  standalone server  ·  remote clients
+```mermaid
+flowchart TB
+    subgraph svc["Your Rust service"]
+        repo["Repository code<br/>sqlx / diesel / seaorm"]
+        cache[("HydraCache<br/>in-process")]
+        plan["InvalidationPlan<br/>/ transactional outbox"]
+    end
+    db[("SQL database")]
+    grid["Other HydraCache members<br/>standalone server, remote clients"]
+
+    repo -- "read" --> cache
+    cache -. "miss: run loader" .-> db
+    repo -- "write + commit" --> db
+    repo -- "after commit" --> plan
+    plan -- "invalidate keys / tags" --> cache
+    cache <-. "opt-in: invalidation bus,<br/>peer fetch, raft control plane" .-> grid
 ```
 
 The cluster layer is developed against a deterministic simulator. Its
