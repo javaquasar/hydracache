@@ -2122,8 +2122,7 @@ process test requires at least one complete round with readbacks between the kil
 markers, and retains the timed control ledger. The test runs with
 `HYDRACACHE_RUN_W10I_SDK_COHORT=1`, `HYDRACACHE_W10G_JAVA` and
 `HYDRACACHE_W10G_JAVA_CLASSPATH`. Run the filter `imap_sdk_cohort::` in the `hc2_daemon_process`
-target. The Rust SDK is linked from the same checkout. An independently packaged Rust consumer,
-the full operation mix and the complete fault schedule still belong to the campaign below.
+target. In that run, the Rust SDK was linked from the same checkout.
 
 On AX42, candidate `21edeef07a6cf9049d120772ffec756539fbc8b6` passed the Maven reactor with 48
 tests, Clippy, and both process tests on each JVM. The faulted partition preserved certified
@@ -2138,6 +2137,44 @@ The candidate JARs, process binaries, ledgers, and positive and negative probe l
 `development/w10i-sdk-qualified-21edeef07a6cf9049d120772ffec756539fbc8b6/w10i-sdk-cohort.sha256`
 on AX42. The verified manifest SHA-256 is
 `2f2b203f6a1c480a11182394bf9ccbe7971720a211fe9d2050abfd6eafea463f`.
+
+#### Separate packages for both SDKs
+
+The retained cohort now launches an [external Rust consumer](../../tests/rust-hc2-w10i-consumer/src/main.rs)
+for each write and readback. Package the SDK with `cargo package --locked --offline
+-p hydracache-client-hc2 --no-verify` in a fresh `--target-dir`. Verify the archive with `gzip -t`,
+copy the consumer project outside the workspace, and unpack the `.crate` into its `sdk/` directory.
+Check the archive's `.cargo_vcs_info.json` against the candidate SHA and use Cargo metadata to
+confirm the dependency resolves to the unpacked manifest. Seed the consumer lock from the
+archive lock, resolve the consumer graph offline, then build the resulting lock with `--locked`.
+Set `W10I_RUST_ARTIFACT_SHA256` at build time. Set `HYDRACACHE_W10I_RUST_CONSUMER` and
+`HYDRACACHE_W10I_RUST_PACKAGE_SHA256` when running the process test.
+
+The Rust consumer requires a confirmed HC/2 batch receipt with an applied version for each
+mutation and each read. The harness binds all six Rust batch results to the `.crate` digest
+and the expected count. Both client processes check all 13 retained values after rejoin. Two
+canaries deliberately return a wrong value across the SDK boundary, one in each direction.
+The offline cohort phase starts after the promoted backup and its new replica agree at the old
+prefix. The final cohort phase waits for committed membership at a newer epoch with all three
+members ready. The separate fixture control stream measures write and readback progress across
+the outage, including both membership transitions.
+
+On AX42, `18cc4effc363c0a95c120a8a70196fe04fcca829` passed the positive scenario and both
+canaries on Java 17 and 21. The faulted partition preserved certified version 1 from epoch 3
+to epoch 6. The rejoined roster was ready at epoch 7. Two isolated Rust consumer tests, 48
+Maven tests and both Clippy checks passed.
+
+| JVM | Retained keys verified by each packaged SDK | Control mutations verified | Control mutations verified during the outage |
+| --- | ---: | ---: | ---: |
+| Java 17 | 13 | 339 | 99 |
+| Java 21 | 13 | 349 | 96 |
+
+The verified `.crate` SHA-256 is
+`8ebdee9225bd90ec00cd7a649fce0bd1802edf80b5e8d870f4b18ccd0f8e37ed`. The archive, extracted-package
+metadata, independently built consumer, JARs, probe logs and control ledgers are covered by
+`development/w10i-packaged-sdk-qualified-18cc4effc363c0a95c120a8a70196fe04fcca829/w10i-packaged-sdk.sha256`
+on AX42. The verified manifest SHA-256 is
+`51e766a9b3bbe4d11b73548309e19c023ac0269171ac0794917da34c7036d92a`.
 
 #### Under-load failover and rebalance qualification
 

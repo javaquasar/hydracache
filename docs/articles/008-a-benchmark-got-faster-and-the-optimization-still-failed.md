@@ -1236,6 +1236,13 @@ Both checks passed on Java 17 and 21 on AX42. The separate Rust control stream v
 84 mutations, respectively, with each complete round contained inside the owner outage.
 [W10i cross-SDK cohort](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#cross-sdk-retained-cohort-through-an-owner-outage)
 
+The next run used an external Rust executable built from the candidate `.crate` beside the Java
+JARs. Each Rust batch had to carry a confirmed receipt for every key. The harness checked the
+package digest in the Rust report and ran the wrong-value test in both directions.
+The final phase waited for a committed, ready roster after restart. Both packaged SDKs verified
+the 13 keys on Java 17 and 21, and both wrong-value tests failed at the intended comparison.
+[Separate SDK packages](../plans/V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#separate-packages-for-both-sdks)
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
