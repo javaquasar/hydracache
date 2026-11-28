@@ -97,7 +97,8 @@ async fn daemon_serves_metrics_and_cluster_overview_with_source_on_internal_port
 
 #[test]
 fn deploy_smoke_helm_chart_exposes_replicas_rf_tls_and_backup_values() {
-    let chart = include_str!("../../../deploy/helm/hydracache/Chart.yaml");
+    // Normalized so a CRLF checkout (core.autocrlf on Windows) matches too.
+    let chart = include_str!("../../../deploy/helm/hydracache/Chart.yaml").replace("\r\n", "\n");
     let values = include_str!("../../../deploy/helm/hydracache/values.yaml");
     let helpers = include_str!("../../../deploy/helm/hydracache/templates/_helpers.tpl");
     let statefulset = include_str!("../../../deploy/helm/hydracache/templates/statefulset.yaml");

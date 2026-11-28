@@ -22,6 +22,9 @@ storage:
 # server would refuse to start with, instead of producing pods that crash-loop:
 # - tls.enabled requires tls.secretName (a Secret with tls.crt, tls.key,
 #   ca.crt) and clusterAuth (a TLS member rejects unauthenticated raft peers).
+#   tls.crt must list each member as a DNS SAN
+#   (<release>-<ordinal>.<release>-headless); a `*.<release>-headless`
+#   wildcard is rejected by the peers. See docs/cluster/runbooks/deploy.md.
 # - tls.enabled=false requires tls.acknowledgeInsecure=true, because members
 #   listen on non-loopback addresses and plaintext is refused by default.
 tls:
